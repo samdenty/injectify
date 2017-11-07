@@ -4,8 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "install-all": "cd source && npm install && cd site && npm install && cd ../server && npm install && cd .. && bundler install --quiet",
     "dev": "cd source && del Gemfile.lock >nul 2>&1 && start \"AUTORELOAD: Jekyll\" cmd /c \"jekyll build -w\" && cd site && webpack-dev-server --progress --colors --hot --config ./webpack.config.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "npm run install-all && cd source/site && webpack -p --progress --colors --config ./webpack.config.js && cd .. && jekyll build",
+
+    "build": "cd source/site && npm run build && cd .. && bundler install --quiet && jekyll build",
   },
   "repository": {
     "type": "git",
