@@ -8,7 +8,7 @@
     "dev": "cd source && del Gemfile.lock >nul 2>&1 && start \"AUTORELOAD: Jekyll\" cmd /c \"jekyll build -w\" && cd site && webpack-dev-server --progress --colors --hot --config ./webpack.config.js",
     "test": "npm run install-all && cd source/site && webpack -p --progress --colors --config ./webpack.config.js && cd .. && jekyll build",
 
-    "build": "cd source/site && npm run build && cd .. && bundler install --quiet && jekyll build",
+    "build": "cd source/site && npm run build && cd .. && bundler install --quiet && jekyll build"
   },
   "repository": {
     "type": "git",
