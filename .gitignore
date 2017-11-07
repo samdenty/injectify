@@ -5,3 +5,4 @@ git/*
 node_modules
 output/*
 .git-metadata
+Gemfile.lock
