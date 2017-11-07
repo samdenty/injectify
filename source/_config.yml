@@ -1,0 +1,19 @@
+includes_dir: dynamic
+
+# Compress CSS
+sass:
+    style: compressed
+
+exclude: ["dynamic/", "Gemfile", "Gemfile.lock", "*node_modules*", "site/*webpack*.js", "site/*package.json*"]
+
+url: https://injectify.samdd.me
+logo: https://widgetbot.io/widgetbot.png
+
+plugins:
+  - jekyll-seo-tag
+  - jekyll-git_metadata
+
+jekyll_tidy:
+  exclude: ["*.js"]
+
+destination:     ../output

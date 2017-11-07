@@ -1,0 +1,37 @@
+{
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "webpack-dev-server --progress --colors --hot --config ./webpack.config.js",
+    "build": "webpack -p --progress --colors --config ./webpack.config.js",
+    "pre-build": "webpack --progress --colors --config ./webpack-pre.config.js"
+  },
+  "devDependencies": {
+    "babel-core": "^6.24.1",
+    "babel-loader": "^7.0.0",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-react": "^6.24.1",
+    "babel-preset-stage-2": "^6.24.1",
+    "eslint": "^4.8.0",
+    "eslint-plugin-react": "^7.4.0",
+    "react": "^15.5.4",
+    "react-dom": "^15.5.4",
+    "react-hot-loader": "^1.3.1",
+    "webpack": "^2.5.1",
+    "webpack-dev-server": "^2.4.5"
+  },
+  "babel": {
+    "presets": [
+      "es2015",
+      "react",
+      "stage-2"
+    ]
+  },
+  "dependencies": {
+    "query-string": "^5.0.0",
+    "react-twemoji": "0.0.8",
+    "socket.io": "^2.0.3",
+    "socket.io-client": "^2.0.3",
+    "tapable": "^0.2.8"
+  },
+  "private": true
+}

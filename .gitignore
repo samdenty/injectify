@@ -1,0 +1,7 @@
+stats/*
+icon/*
+awstats*
+git/*
+node_modules
+output/*
+.git-metadata

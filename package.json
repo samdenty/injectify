@@ -1,0 +1,23 @@
+{
+  "name": "injectify",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "cd source && del Gemfile.lock >nul 2>&1 && start \"AUTORELOAD: Jekyll\" cmd /c \"jekyll build -w\" && cd site && webpack-dev-server --progress --colors --hot --config ./webpack.config.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/samdenty99/injectify.git"
+  },
+  "author": "samdd",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/samdenty99/injectify/issues"
+  },
+  "homepage": "https://github.com/samdenty99/injectify#readme",
+  "dependencies": {
+    "webpack": "^3.8.1"
+  }
+}
