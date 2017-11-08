@@ -2,36 +2,21 @@
 const MongoClient = require('mongodb').MongoClient
 const express = require('express')
 const server = express()
-const ps = require('ps-node')
+const path = require('path')
+const request = require('request');
 const execSync = require('child_process').execSync
 const chalk = require('chalk')
 
 // Configuration
 const config = {
 	mongodb : "mongodb://localhost:19000/injectify",
-	express : 3000
+	express : 3000,
+	dev		: process.env.NODE_ENV.toUpperCase() != 'PRODUCTION'
 }
-// Indicate whether MongoDB is running
-ps.lookup({
-	command: 'mongoda',
-	psargs: '-l'
-	}, function(err, resultList ) {
-	if (err) {
-		throw new Error( err );
-	} else if (!resultList) {
-		console.log(chalk.yellowBright('[mongodb] ') + chalk.whiteBright('couldn\'t find MongoDB process!'))
-		execSync('npm run mongo-background')
-	} else {
-		console.log(chalk.greenBright('[mongodb] ') + chalk.whiteBright('found MongoDB process, no action necessary'))
-	}
-});
-
-
 
 // Enable EJS
-server.set('view engine', 'ejs')
+//server.set('view engine', 'ejs')
 
-server.get('/', (req, res) => res.send('Hello World!'))
 server.get('/auth/github', function (req, res) {
 	if (req.query.code) {
 		res.sendFile(__dirname + '/www/auth.html')
@@ -43,6 +28,15 @@ server.get('/auth/github', function (req, res) {
 		}))
 	}
 })
+// Proxy through to webpack-dev-server
+if (config.dev) {
+	server.use('/*', function (req, res) {
+		request("http://localhost:8080" + req.originalUrl).pipe(res);
+	})
+} else {
+	server.use(express.static(path.join(__dirname, '../../output/site')))
+}
+
 
 server.listen(config.express, () => console.log(chalk.greenBright('[express] ') + chalk.whiteBright('server started on port ' + config.express)))
 

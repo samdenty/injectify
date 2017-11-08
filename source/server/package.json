@@ -5,6 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "cross-env NODE_ENV=development node main",
+    "serve": "cross-env NODE_ENV=production node main",
     "mongo": "mongod --dbpath=./database --port 19000",
     "mongo-background": "mongod --dbpath=./database --port 19000 --fork --logpath /home/injectify/logs/mongod.log"
   },
@@ -23,6 +25,10 @@
     "ejs": "^2.5.7",
     "express": "^4.16.2",
     "mongodb": "^2.2.33",
-    "ps-node": "^0.1.6"
+    "ps-node": "^0.1.6",
+    "request": "^2.83.0"
+  },
+  "devDependencies": {
+    "cross-env": "^5.1.1"
   }
 }
