@@ -2,8 +2,10 @@
 const MongoClient = require('mongodb').MongoClient
 const express = require('express')
 const server = express()
-const ps = require('ps-node');
+const ps = require('ps-node')
+const execSync = require('child_process').execSync
 const chalk = require('chalk')
+
 // Configuration
 const config = {
 	mongodb : "mongodb://localhost:19000/injectify",
@@ -18,6 +20,7 @@ ps.lookup({
 		throw new Error( err );
 	} else if (!resultList) {
 		console.log(chalk.yellowBright('[mongodb] ') + chalk.whiteBright('couldn\'t find MongoDB process!'))
+		execSync('npm run mongo-background')
 	} else {
 		console.log(chalk.greenBright('[mongodb] ') + chalk.whiteBright('found MongoDB process, no action necessary'))
 	}
