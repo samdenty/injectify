@@ -2,14 +2,30 @@
 const MongoClient = require('mongodb').MongoClient
 const express = require('express')
 const server = express()
+const ps = require('ps-node');
 const chalk = require('chalk')
-
 // Configuration
 const config = {
 	mongodb : "mongodb://localhost:19000/injectify",
 	express : 3000
 }
-// Enable ejs
+// Indicate whether MongoDB is running
+ps.lookup({
+	command: 'mongoda',
+	psargs: '-l'
+	}, function(err, resultList ) {
+	if (err) {
+		throw new Error( err );
+	} else if (!resultList) {
+		console.log(chalk.yellowBright('[mongodb] ') + chalk.whiteBright('couldn\'t find MongoDB process!'))
+	} else {
+		console.log(chalk.greenBright('[mongodb] ') + chalk.whiteBright('found MongoDB process, no action necessary'))
+	}
+});
+
+
+
+// Enable EJS
 server.set('view engine', 'ejs')
 
 server.get('/', (req, res) => res.send('Hello World!'))
