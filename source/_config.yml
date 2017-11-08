@@ -4,7 +4,7 @@ includes_dir: dynamic
 sass:
     style: compressed
 
-exclude: ["dynamic/", "Gemfile", "Gemfile.lock", "*node_modules*", "site/*webpack*.js", "site/*package.json*"]
+exclude: ["dynamic/", "Gemfile", "Gemfile.lock", "*node_modules*", "site/*webpack*.js", "site/*package.json*", "server/"]
 
 url: https://injectify.samdd.me
 logo: https://widgetbot.io/widgetbot.png

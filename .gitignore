@@ -1,8 +1,8 @@
-stats/*
-icon/*
-awstats*
 git/*
 node_modules
 output/*
 .git-metadata
 Gemfile.lock
+source/server/database/*
+.profile
+.bash*

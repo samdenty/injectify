@@ -1,0 +1,26 @@
+{
+  "name": "injectify-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "mongo": "mongod --dbpath=./database --port 19000"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/samdenty99/injectify.git"
+  },
+  "author": "samdd",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/samdenty99/injectify/issues"
+  },
+  "homepage": "https://github.com/samdenty99/injectify#readme",
+  "dependencies": {
+    "chalk": "^2.3.0",
+    "ejs": "^2.5.7",
+    "express": "^4.16.2",
+    "mongodb": "^2.2.33"
+  }
+}
