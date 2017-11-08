@@ -26,6 +26,9 @@
 	</style>
 	<div>Closing window...</div>
 	<script>
+	var url = new URL(window.location.href),
+	  state = url.searchParams.get("state");
+	if (state == "localhost") window.location = window.location.href.replace('https://injectify.samdd.me', 'http://localhost:3000')
 	if (location.host === "localhost:3000")
 		opener.postMessage(location.href, "http://localhost:3000/")
 	else

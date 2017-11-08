@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "install-all": "cd source/site && npm install && cd .. && bundler install --quiet",
+    "install-all": "cd source/site && npm install && cd ../server && npm install && cd .. && bundler install --quiet",
     "dev": "cd source && del Gemfile.lock >nul 2>&1 && start \"AUTORELOAD: Jekyll\" cmd /c \"jekyll build -w\" && cd site && cross-env NODE_ENV=development npm run dev",
     "test": "npm run install-all && cd source/site && webpack -p --progress --colors --config ./webpack.config.js && cd .. && jekyll build",
     "build": "cd source/site && cross-env NODE_ENV=production npm run build && cd .. && bundler install --quiet && cross-env NODE_ENV=production jekyll build"

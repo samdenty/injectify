@@ -2,7 +2,7 @@ module.exports = {
   apps : [{
     name        : "injectify-server",
     script      : "./main.js",
-    watch       : true,
+    watch       : false,
     env: {
       "NODE_ENV": "development",
     },
