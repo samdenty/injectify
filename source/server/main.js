@@ -115,7 +115,7 @@ server.listen(config.express, () => console.log(
 	chalk.greenBright('[express] ') + 
 	chalk.whiteBright('server started on port ' + config.express))
 )
-socketServer.listen(2096)
+socketServer.listen(2053)
 
 
 
