@@ -21,50 +21,52 @@ class Injectify extends Component {
 	state = { data: {} }
 
 	componentDidMount() {    
-		socket.on(`server:event`, data => {
-			this.setState({ data })
+		socket.on(`auth:github`, data => {
+			this.setState({ success: data.success.toString()})
+			if (data.success && data.token) {
+				localStorage.setItem("token", data.token)
+			} else {
+
+			}
+			console.log(data)
+		})
+		socket.on(`auth:github/stale`, data => {
+			localStorage.removeItem("token")
+			this.auth()
 		})
 	}
-	
-	sendMessage = message => {
-		socket.emit(`client:sendMessage`, message)
-	}
-	
-	render() {
-		return (
-			<div className="main">
-				<LoginWithGithub />
-			</div>
-		)
-	}
-}
 
-class LoginWithGithub extends Component {
-	render() {
-		return (
-			<button onClick={this.auth.bind(this)}>
-				Login with GitHub
-			</button>
-		)
-	}
 	auth() {
-		global.oauth = window.open(`https://github.com/login/oauth/authorize?client_id=95dfa766d1ceda2d163d${process.env.NODE_ENV == 'development' ? `&state=localhost` : ``}`, "popup", "height=600,width=500")
+		if (localStorage.getItem("token")) {
+			socket.emit("auth:github/token", localStorage.getItem("token"))
+			return
+		}
+		global.oauth = window.open(`https://github.com/login/oauth/authorize?client_id=95dfa766d1ceda2d163d${process.env.NODE_ENV == 'development' ? `&state=localhost` : ``}&scope=user%20gist`, "popup", "height=600,width=500")
 		window.addEventListener("message", data => {
 			if (data.origin == "http://localhost:3000" || data.origin == "https://injectify.samdd.me") {
 				if (typeof oauth !== "undefined" && typeof data.data == "string") {
 					oauth.close()
 					let urlParsed = url.parse(data.data)
 					let urlData = queryString.parse(urlParsed.query)
-					console.log(urlData)
-
 					if (urlData.code) {
 						socket.emit("auth:github", urlData)
-						localStorage.setItem("token", urlData.code)
-						//this.setState({ chat: 4, loginPopup: false })
 					}
 				}
 			}
 		})
+	}
+	
+	render() {
+		return (
+			<div className="main">
+				<div>
+					{this.state.code}
+				</div>
+				<button onClick={this.auth.bind(this)}>
+					Login with GitHub
+				</button>
+			</div>
+		)
 	}
 }
 

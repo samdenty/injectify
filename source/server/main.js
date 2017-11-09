@@ -20,74 +20,102 @@ const config = {
 	}
 }
 
-io.on('connection', function (socket) {
-	socket.emit('news', { hello: 'world' });
-
-	socket.on('auth:github', function (data) {
-		if (config.debug) console.log(chalk.greenBright("[websocket] ") + chalk.yellowBright("client => github:auth "), data);
-		if (data.code) {
-			// Retrieve the users token from the Github API
+io.on('connection', socket => {
+	var getToken = code => {
+		return new Promise((resolve, reject) => {
 			request({
-				url: 'https://github.com/login/oauth/access_token',
-				method: 'POST',
+					url: 'https://github.com/login/oauth/access_token',
+					method: 'POST',
+					headers: {
+						'Accept': 'application/json'
+					},
+					qs: {
+						'client_id': config.github.client_id,
+						'client_secret': config.github.client_secret,
+						'code': code
+					}
+				}, (error, response, github) => {
+					try {
+						github = JSON.parse(github)
+					} catch(e) {
+						console.log(chalk.redBright("[websocket] ") + chalk.yellowBright("failed to retrieve token "), github);
+						console.error(e)
+						reject(Error("Failed to parse GitHub response"))
+					}
+					if (!error && response.statusCode == 200 && github.access_token) {
+						resolve(github.access_token)
+					} else {
+						reject(Error("Failed to authenticate account, invalid code"))
+					}
+				}
+			)
+		});
+	}
+	var getUser = token => {
+		return new Promise((resolve, reject) => {
+			request({
+				url: 'https://api.github.com/user?access_token=' + token,
+				method: 'GET',
 				headers: {
-					'Accept': 'application/json'
-				},
-				qs: {
-					'client_id': config.github.client_id,
-					'client_secret': config.github.client_secret,
-					'code': data.code
+					'Accept': 'application/json',
+					'User-Agent': 'Injectify'
 				}
-			}, function (error, response, github) {
+			}, (error, response, user) => {
 				try {
-					github = JSON.parse(github)
-					if (config.debug) console.log(chalk.greenBright("[GitHub] ") + chalk.yellowBright("retrieved token "), github);
+					user = JSON.parse(user)
 				} catch(e) {
-					console.log(chalk.redBright("[websocket] ") + chalk.yellowBright("failed to retrieve token "), github);
-					console.log(e)
-					socket.emit('auth:github', {
-						success: false,
-						error: 'Server side Github authentication error'
-					})
-					return
+					console.log(chalk.redBright("[websocket] ") + chalk.yellowBright("failed to retrieve user API "), user);
+					console.error(e)
+					reject(Error("Failed to parse GitHub user API response"))
 				}
-				if (!error && response.statusCode == 200 && github.access_token) {
-					request({
-						url: 'https://api.github.com/user?access_token=' + github.access_token,
-						method: 'GET',
-						headers: {
-							'Accept': 'application/json',
-							'User-Agent': 'Injectify'
-						}
-					}, function (error, response, user) {
-						try {
-							user = JSON.parse(user)
-							if (config.debug) console.log(chalk.greenBright("[GitHub] ") + chalk.yellowBright("retrieved user API "));
-						} catch(e) {
-							console.log(chalk.redBright("[websocket] ") + chalk.yellowBright("failed to retrieve user API "), user);
-							console.log(e)
-							socket.emit('auth:github', {
-								success: false,
-								error: 'Server side Github user authentication error'
-							})
-							return
-						}
-						if (!error && response.statusCode == 200 && user.login) {
-							socket.emit('auth:github', {
-								success: true,
-								user: user
-							})
-							if (config.debug) console.log(chalk.greenBright("[websocket] ") + chalk.yellowBright("client <= github:auth "), user);
-						}
-					})
-				} else {
+				if (!error && response.statusCode == 200 && user.login) {
 					socket.emit('auth:github', {
-						success: false,
-						error: 'Could not authenticate account on Github'
+						success: true,
+						token: token,
+						user: user
 					})
+					resolve(user)
+				} else {
+					reject(Error("Failed to authenticate user with token"))
 				}
 			})
+		});
+	}
+
+	socket.on('auth:github', (data) => {
+		if (config.debug) console.log(chalk.greenBright("[websocket] ") + chalk.yellowBright("client => github:auth "), data);
+		if (data.code) {
+			getToken(data.code).then(token => {
+				if (config.debug) console.log(chalk.greenBright("[GitHub] ") + chalk.yellowBright("retrieved token "), token);
+				getUser(token).then(user => {
+					if (config.debug) console.log(chalk.greenBright("[websocket] ") + chalk.yellowBright("client <= github:auth "), user);
+				}).catch(error => {
+					console.log(chalk.redBright("[GitHub] "), error);
+					socket.emit('auth:github', {
+						success: false,
+						message: error.toString()
+					})
+				})
+			}).catch(error => {
+				console.log(chalk.redBright("[GitHub] "), error);
+				socket.emit('auth:github', {
+					success: false,
+					message: error.toString()
+				})
+			})
 		}
+	});
+
+	socket.on('auth:github/token', data => {
+		getUser(data).then(user => {
+			if (config.debug) console.log(chalk.greenBright("[websocket] ") + chalk.yellowBright("client <= github:auth "), user);
+		}).catch(error => {
+			console.log(chalk.redBright("[GitHub] "), error);
+			socket.emit('auth:github/stale', {
+				success: false,
+				message: error.toString()
+			})
+		})
 	});
 });
 
@@ -95,7 +123,7 @@ io.on('connection', function (socket) {
 // Enable EJS
 //server.set('view engine', 'ejs')
 
-server.get('/auth/github', function (req, res) {
+server.get('/auth/github', (req, res) => {
 	if (req.query.code) {
 		res.sendFile(__dirname + '/www/auth.html')
 	} else {
@@ -108,7 +136,7 @@ server.get('/auth/github', function (req, res) {
 })
 // Proxy through to webpack-dev-server
 if (config.dev) {
-	server.use('/*', function (req, res) {
+	server.use('/*', (req, res) => {
 		request("http://localhost:8080" + req.originalUrl).pipe(res);
 	})
 } else {
@@ -124,7 +152,7 @@ socketServer.listen(2053)
 
 
 
-MongoClient.connect(config.mongodb, function(err, db) {
+MongoClient.connect(config.mongodb, (err, db) => {
 	if (err) throw err;
 	console.log("Database created!");
 	db.close();
