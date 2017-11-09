@@ -7,9 +7,9 @@ import url from "url"
 const development = process.env.NODE_ENV == 'development' ? true : false
 let socket
 if (development) {
-	socket = io('ws://localhost:2053')
+	socket = io('ws://localhost:3000')
 } else {
-	socket = io(window.location.origin + ':2053')
+	socket = io(window.location.origin)
 }
 
 console.log("%c  _____        _           _   _  __       \n  \\_   \\_ __  (_) ___  ___| |_(_)/ _|_   _ \n   / /\\/ '_ \\ | |/ _ \\/ __| __| | |_| | | |\n/\\/ /_ | | | || |  __/ (__| |_| |  _| |_| |\n\\____/ |_| |_|/ |\\___|\\___|\\__|_|_|  \\__, |\n            |__/  " + "%chttps://samdd.me" + "%c   |___/ " + "\n", "color: #ef5350; font-weight: bold", "color: #FF9800", "color: #ef5350", {

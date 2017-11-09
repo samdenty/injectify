@@ -1,13 +1,3 @@
-// Include libraries
-const MongoClient 	= require('mongodb').MongoClient
-const express 		= require('express')
-const server 		= express()
-const socketServer 	= require('http').Server(server)
-const io 			= require('socket.io')(socketServer)
-const path 			= require('path')
-const request 		= require('request')
-const chalk 		= require('chalk')
-
 // Configuration
 const config = {
 	debug 	: true,
@@ -19,6 +9,17 @@ const config = {
 		client_secret: '1809473ac6467f85f483c33c1098d4dadf8be9e8'
 	}
 }
+
+// Include libraries
+const MongoClient 	= require('mongodb').MongoClient
+const express 		= require('express')
+const app 	 		= express()
+const server 		= app.listen(config.express)
+const io 			= require('socket.io').listen(server)
+const path 			= require('path')
+const request 		= require('request')
+const chalk 		= require('chalk')
+
 
 io.on('connection', socket => {
 	var getToken = code => {
@@ -121,9 +122,9 @@ io.on('connection', socket => {
 
 
 // Enable EJS
-//server.set('view engine', 'ejs')
+//app.set('view engine', 'ejs')
 
-server.get('/auth/github', (req, res) => {
+app.get('/auth/github', (req, res) => {
 	if (req.query.code) {
 		res.sendFile(__dirname + '/www/auth.html')
 	} else {
@@ -136,20 +137,12 @@ server.get('/auth/github', (req, res) => {
 })
 // Proxy through to webpack-dev-server
 if (config.dev) {
-	server.use('/*', (req, res) => {
+	app.use('/*', (req, res) => {
 		request("http://localhost:8080" + req.originalUrl).pipe(res);
 	})
 } else {
-	server.use(express.static(path.join(__dirname, '../../output/site')))
+	app.use(express.static(path.join(__dirname, '../../output/site')))
 }
-
-
-server.listen(config.express, () => console.log(
-	chalk.greenBright('[express] ') + 
-	chalk.whiteBright('server started on port ' + config.express))
-)
-socketServer.listen(2053)
-
 
 
 MongoClient.connect(config.mongodb, (err, db) => {
