@@ -29,11 +29,17 @@
 	var url = new URL(window.location.href),
 	  state = url.searchParams.get("state");
 	if (location.host === "localhost:3000") {
+		console.log("Posting to localhost:3000")
 		opener.postMessage(location.href, "http://localhost:3000/")
 	} else {
-		if (state == "localhost") window.location = window.location.href.replace('https://injectify.samdd.me', 'http://localhost:3000')
-		opener.postMessage(location.href, "https://injectify.samdd.me/")
-}
+		if (state == "localhost") {
+			console.log("Redirecting...")
+			window.location = window.location.href.replace('https://injectify.samdd.me', 'http://localhost:3000')
+		} else {
+			console.log("Posting to injectify.samdd.me")
+			opener.postMessage(location.href, "https://injectify.samdd.me/")
+		}
+	}
 	</script>
 </body>
 </html>
