@@ -10,6 +10,7 @@ const chalk 		= require('chalk')
 
 // Configuration
 const config = {
+	debug 	: true,
 	mongodb : 'mongodb://localhost:19000/injectify',
 	express : 3000,
 	dev		: process.env.NODE_ENV.toUpperCase() == 'DEVELOPMENT',
@@ -23,6 +24,7 @@ io.on('connection', function (socket) {
 	socket.emit('news', { hello: 'world' });
 
 	socket.on('auth:github', function (data) {
+		if (config.debug) console.log(chalk.greenBright("[websocket] ") + chalk.yellowBright("client => github:auth "), data);
 		if (data.code) {
 			// Retrieve the users token from the Github API
 			request({
@@ -39,7 +41,9 @@ io.on('connection', function (socket) {
 			}, function (error, response, github) {
 				try {
 					github = JSON.parse(github)
+					if (config.debug) console.log(chalk.greenBright("[GitHub] ") + chalk.yellowBright("retrieved token "), github);
 				} catch(e) {
+					console.log(chalk.redBright("[websocket] ") + chalk.yellowBright("failed to retrieve token "), github);
 					console.log(e)
 					socket.emit('auth:github', {
 						success: false,
@@ -58,8 +62,9 @@ io.on('connection', function (socket) {
 					}, function (error, response, user) {
 						try {
 							user = JSON.parse(user)
+							if (config.debug) console.log(chalk.greenBright("[GitHub] ") + chalk.yellowBright("retrieved user API "));
 						} catch(e) {
-							console.log(user)
+							console.log(chalk.redBright("[websocket] ") + chalk.yellowBright("failed to retrieve user API "), user);
 							console.log(e)
 							socket.emit('auth:github', {
 								success: false,
@@ -72,6 +77,7 @@ io.on('connection', function (socket) {
 								success: true,
 								user: user
 							})
+							if (config.debug) console.log(chalk.greenBright("[websocket] ") + chalk.yellowBright("client <= github:auth "), user);
 						}
 					})
 				} else {
@@ -82,7 +88,6 @@ io.on('connection', function (socket) {
 				}
 			})
 		}
-		console.log(data);
 	});
 });
 
