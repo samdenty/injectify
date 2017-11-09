@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "cd ../.. && npm run build",
     "dev": "cross-env NODE_ENV=development node main",
     "serve": "cross-env NODE_ENV=production node main",
     "mongo": "mongod --dbpath=./database --port 19000",
