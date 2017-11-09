@@ -11,7 +11,7 @@ const chalk = require('chalk')
 const config = {
 	mongodb : "mongodb://localhost:19000/injectify",
 	express : 3000,
-	dev		: process.env.NODE_ENV.toUpperCase() != 'PRODUCTION'
+	dev		: process.env.NODE_ENV.toUpperCase() == 'DEVELOPMENT'
 }
 
 // Enable EJS
