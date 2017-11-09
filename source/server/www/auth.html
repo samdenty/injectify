@@ -31,6 +31,7 @@
 	if (location.host === "localhost:3000") {
 		console.log("Posting to localhost:3000")
 		opener.postMessage(location.href, "http://localhost:3000/")
+		window.close()
 	} else {
 		if (state == "localhost") {
 			console.log("Redirecting...")
@@ -38,6 +39,7 @@
 		} else {
 			console.log("Posting to injectify.samdd.me")
 			opener.postMessage(location.href, "https://injectify.samdd.me/")
+			window.close()
 		}
 	}
 	</script>

@@ -27,7 +27,8 @@
     "express": "^4.16.2",
     "mongodb": "^2.2.33",
     "ps-node": "^0.1.6",
-    "request": "^2.83.0"
+    "request": "^2.83.0",
+    "socket.io": "^2.0.4"
   },
   "devDependencies": {
     "cross-env": "^5.1.1"
