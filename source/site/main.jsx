@@ -17,16 +17,17 @@ console.log("%c  _____        _           _   _  __       \n  \\_   \\_ __  (_) 
 	environment: process.env.NODE_ENV
 })
 
-class Injectify extends Component {
-	state = { data: {} }
 
-	componentDidMount() {    
+class Injectify extends Component {
+	state = {user: {}}
+	componentDidMount() {
+		this.sessionAuth()    
 		socket.on(`auth:github`, data => {
-			this.setState({ success: data.success.toString()})
+			this.setState(data)
 			if (data.success && data.token) {
 				localStorage.setItem("token", data.token)
 			} else {
-
+				console.log('error')
 			}
 			console.log(data)
 		})
@@ -37,10 +38,7 @@ class Injectify extends Component {
 	}
 
 	auth() {
-		if (localStorage.getItem("token")) {
-			socket.emit("auth:github/token", localStorage.getItem("token"))
-			return
-		}
+		this.sessionAuth()
 		global.oauth = window.open(`https://github.com/login/oauth/authorize?client_id=95dfa766d1ceda2d163d${process.env.NODE_ENV == 'development' ? `&state=localhost` : ``}&scope=user%20gist`, "popup", "height=600,width=500")
 		window.addEventListener("message", data => {
 			if (data.origin == "http://localhost:3000" || data.origin == "https://injectify.samdd.me") {
@@ -55,13 +53,24 @@ class Injectify extends Component {
 			}
 		})
 	}
+
+	sessionAuth() {
+		if (localStorage.getItem("token")) {
+			socket.emit("auth:github/token", localStorage.getItem("token"))
+			return
+		}
+	}
 	
 	render() {
 		return (
 			<div className="main">
-				<div>
-					{this.state.code}
-				</div>
+				<table>
+					<tbody>
+						<tr><td>{this.state.user.name}</td></tr>
+						<tr><td>{this.state.user.login}</td></tr>
+						<tr><td>{this.state.user.bio}</td></tr>
+					</tbody>
+				</table>
 				<button onClick={this.auth.bind(this)}>
 					Login with GitHub
 				</button>
