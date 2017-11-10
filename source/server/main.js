@@ -88,10 +88,9 @@ MongoClient.connect(config.mongodb, function(err, db) {
 
 		var addUser = (user, token) => {
 			return new Promise((resolve, reject) => {
-				let users = db.collection("users")
-				db.collection('users', (err, collection) => {
+				db.collection('users', (err, users) => {
 					if (err) throw err
-					collection.findOne({id: user.id}).then(doc => {
+					users.findOne({id: user.id}).then(doc => {
 						if(doc !== null) {
 							//console.log(doc)
 						} else {

@@ -3,6 +3,8 @@ import React, { Component } from "react"
 import queryString from "query-string"
 import io from "socket.io-client"
 import url from "url"
+import Button from 'material-ui/Button'
+import AppBar from 'material-ui/AppBar'
 
 const development = process.env.NODE_ENV == 'development' ? true : false
 let socket
@@ -34,7 +36,6 @@ class Injectify extends Component {
 		socket.on(`auth:github/stale`, data => {
 			console.log(data)
 			localStorage.removeItem("token")
-			this.auth()
 		})
 		socket.on(`debug:log`, data => {
 			console.log(data)
@@ -67,23 +68,31 @@ class Injectify extends Component {
 	
 	render() {
 		return (
-			<div className="main">
+			<app className="main">
+				<AppBar>
+					test
+				</AppBar>
 				<table>
 					<tbody>
+						<tr><td>{this.state.user.avatar_url ? (
+							<img src={this.state.user.avatar_url} />
+						): (
+							<span></span>
+						)}</td></tr>
 						<tr><td>{this.state.user.name}</td></tr>
 						<tr><td>{this.state.user.login}</td></tr>
 						<tr><td>{this.state.user.bio}</td></tr>
 					</tbody>
 				</table>
-				<button onClick={this.auth.bind(this)}>
+				<Button onClick={this.auth.bind(this)}>
 					Login with GitHub
-				</button>
-			</div>
+				</Button>
+			</app>
 		)
 	}
 }
 
 render(
   <Injectify />,
-  document.getElementsByTagName("main")[0]
+  document.getElementsByTagName("react")[0]
 )

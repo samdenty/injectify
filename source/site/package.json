@@ -26,6 +26,7 @@
     ]
   },
   "dependencies": {
+    "material-ui": "^1.0.0-beta.20",
     "query-string": "^5.0.0",
     "socket.io": "^2.0.3",
     "socket.io-client": "^2.0.3",
