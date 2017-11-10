@@ -32,14 +32,18 @@ class Injectify extends Component {
 			console.log(data)
 		})
 		socket.on(`auth:github/stale`, data => {
+			console.log(data)
 			localStorage.removeItem("token")
 			this.auth()
+		})
+		socket.on(`debug:log`, data => {
+			console.log(data)
 		})
 	}
 
 	auth() {
-		this.sessionAuth()
-		global.oauth = window.open(`https://github.com/login/oauth/authorize?client_id=95dfa766d1ceda2d163d${process.env.NODE_ENV == 'development' ? `&state=localhost` : ``}&scope=user%20gist`, "popup", "height=600,width=500")
+		if (this.sessionAuth()) return
+		global.oauth = window.open(`https://github.com/login/oauth/authorize?client_id=95dfa766d1ceda2d163d${process.env.NODE_ENV == 'development' ? `&state=localhost` : `&state=` + new Date().getTime()}&scope=user%20gist`, "popup", "height=600,width=500")
 		window.addEventListener("message", data => {
 			if (data.origin == "http://localhost:3000" || data.origin == "https://injectify.samdd.me") {
 				if (typeof oauth !== "undefined" && typeof data.data == "string") {
@@ -57,7 +61,7 @@ class Injectify extends Component {
 	sessionAuth() {
 		if (localStorage.getItem("token")) {
 			socket.emit("auth:github/token", localStorage.getItem("token"))
-			return
+			return true
 		}
 	}
 	

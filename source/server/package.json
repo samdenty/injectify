@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "cd ../.. && npm run build",
-    "dev": "cross-env NODE_ENV=development node main",
+    "dev": "cross-env NODE_ENV=development node --inspect main",
     "serve": "cross-env NODE_ENV=production node main",
     "mongo": "mongod --dbpath=./database --port 19000",
     "mongo-background": "mongod --dbpath=./database --port 19000 --fork --logpath /home/injectify/logs/mongod.log"
