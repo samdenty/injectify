@@ -7,7 +7,7 @@ import Button from 'material-ui/Button'
 import AppBar from 'material-ui/AppBar'
 
 const development = process.env.NODE_ENV == 'development' ? true : false
-let socket
+let socket, token
 if (development) {
 	socket = io('ws://localhost:3000')
 } else {
@@ -28,8 +28,7 @@ class Injectify extends Component {
 			this.setState(data)
 			if (data.success && data.token) {
 				localStorage.setItem("token", data.token)
-			} else {
-				console.log('error')
+				token = data.token
 			}
 			console.log(data)
 		})
@@ -37,8 +36,8 @@ class Injectify extends Component {
 			console.log(data)
 			localStorage.removeItem("token")
 		})
-		socket.on(`debug:log`, data => {
-			console.log(data)
+		socket.on(`err`, error => {
+			console.error(error)
 		})
 	}
 
@@ -62,7 +61,18 @@ class Injectify extends Component {
 	sessionAuth() {
 		if (localStorage.getItem("token")) {
 			socket.emit("auth:github/token", localStorage.getItem("token"))
+			token = localStorage.getItem("token")
 			return true
+		}
+	}
+
+	newProject() {
+		let project = prompt("Choose project name")
+		if (project) {
+			socket.emit("project:create", {
+				name: project,
+				token: token
+			})
 		}
 	}
 	
@@ -86,6 +96,9 @@ class Injectify extends Component {
 				</table>
 				<Button onClick={this.auth.bind(this)}>
 					Login with GitHub
+				</Button>
+				<Button onClick={this.newProject.bind(this)}>
+					New project
 				</Button>
 			</app>
 		)

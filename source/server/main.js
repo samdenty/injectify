@@ -70,70 +70,129 @@ MongoClient.connect(config.mongodb, function(err, db) {
 					} catch(e) {
 						console.log(chalk.redBright("[websocket] ") + chalk.yellowBright("failed to retrieve user API "), user);
 						console.error(e)
-						reject(Error("Failed to parse GitHub user API response"))
+						reject({
+							title	: "Could not authenticate you",
+							message	: "Failed to parse the GitHub user API response"
+						})
 					}
 					if (!error && response.statusCode == 200 && user.login) {
-						socket.emit('auth:github', {
-							success: true,
-							token: token,
-							user: user
-						})
 						resolve(user)
 					} else {
-						reject(Error("Failed to authenticate user with token"))
+						reject({
+							title	: "Could not authenticate you",
+							message	: "GitHub API rejected token!"
+						})
 					}
 				})
 			});
 		}
-
-		var addUser = (user, token) => {
+		var returnUser = (user, token) => {
 			return new Promise((resolve, reject) => {
 				db.collection('users', (err, users) => {
 					if (err) throw err
 					users.findOne({id: user.id}).then(doc => {
 						if(doc !== null) {
+							// User exists in database
 							//console.log(doc)
+							users.updateOne({
+								id: user.id
+							},
+							{
+								$set: {
+									github: user
+								}
+							})
 						} else {
+							// User doesn't exist in database
 							users.insertOne({
 								username: user.login,
-								id: user.id,
-								token: token,
-								created_at: Math.round(new Date().getTime() / 1000),
-								github: user,
-								slots : {
-									1: {
-										name: "Slot 1",
-										domains: ['http://example.com', 'http://example2.com'],
-										entries: {
-											127891273: {
-												ip: "192.168.1.1",
-												user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.40 Safari/537.36",
-												username: "test",
-												password: "mypassword"
-											}
-										}
-									}
-								}
+								id			: user.id,
+								token		: token,
+								created_at	: Math.round(new Date().getTime() / 1000),
+								github		: user
 							}, (err, res) => {
-								console.log(chalk.greenBright("[database] ") + chalk.yellowBright("added user '" + user.id + "' (" + user.login + ")"));
+								if (err) {
+									throw err
+								} else {
+									console.log(
+										chalk.greenBright("[database] ") + 
+										chalk.yellowBright("added user ") + 
+										chalk.magentaBright(user.id) + 
+										chalk.cyanBright(" (" + user.login + ")")
+									)
+								}
 							});
 						}
 					})
 				})
 			});
 		}
+		var newProject = (project, user) => {
+			return new Promise((resolve, reject) => {
+				db.collection('projects', (err, projects) => {
+					if (err) throw err
+					projects.findOne({name: project}).then(doc => {
+						if(doc == null) {
+							// Project doesn't exist in database
+							projects.insertOne({
+								name		: project,
+								permissions : {
+									owner	: user.id,
+									admin	: [],
+									readonly: []
+								},
+								config		: {
+									domains		: [],
+									created_at	: Math.round(new Date().getTime() / 1000)
+								},
+								records		: {}
+							}, (err, res) => {
+								if (err) {
+									throw err
+								} else {
+									console.log(
+										chalk.greenBright("[database] ") + 
+										chalk.magentaBright(user.id) + 
+										chalk.cyanBright(" (" + user.login + ") ") + 
+										chalk.yellowBright("added project ") + 
+										chalk.magentaBright(project)
+									)
+								}
+							});
+						} else {
+							// Project already exists
+							console.log(
+								chalk.redBright("[database] ") + 
+								chalk.yellowBright("project ") +
+								chalk.magentaBright(project) +
+								chalk.yellowBright(" already exists ")
+							)
+							reject({
+								title	: "Project name already taken",
+								message	: "Please choose another name"
+							})
+						}
+					})
+				})
+			});
+		}
 
-		socket.on('auth:github', (data) => {
-			if (config.debug) console.log(chalk.greenBright("[websocket] ") + chalk.yellowBright("client => github:auth "), data);
+		socket.on('auth:github', data => {
 			if (data.code) {
+				if (config.debug) console.log(chalk.greenBright("[websocket] ") + chalk.yellowBright("client => github:auth "), data);
 				// Convert the code into a user-token
 				getToken(data.code).then(token => {
 					if (config.debug) console.log(chalk.greenBright("[GitHub] ") + chalk.yellowBright("retrieved token "), token);
 					// Convert the token into a user object
 					getUser(token).then(user => {
+						socket.emit('auth:github', {
+							success: true,
+							token: token,
+							user: user
+						})
 						if (config.debug) console.log(chalk.greenBright("[websocket] ") + chalk.yellowBright("client <= github:auth "), user);
 						// Add the user to the database if they don't exist
-						addUser(user, token).then(() => {
+						returnUser(user, token).then(() => {
 							if (config.debug) console.log(chalk.greenBright("[database] ") + chalk.yellowBright("added user "), user.login);
 						}).catch(error => {
 							console.log(chalk.redBright("[database] "), error);
@@ -143,45 +202,77 @@ MongoClient.connect(config.mongodb, function(err, db) {
 							})
 						})
 					}).catch(error => {
-						console.log(chalk.redBright("[GitHub] "), error);
-						socket.emit('auth:github', {
-							success: false,
-							message: error.toString()
+						console.log(chalk.redBright("[auth:github] "), error.message);
+						socket.emit('err', {
+							title	: error.title.toString(),
+							message	: error.message.toString()
 						})
 					})
 				}).catch(error => {
-					console.log(chalk.redBright("[GitHub] "), error);
-					socket.emit('auth:github', {
-						success: false,
-						message: error.toString()
+					console.log(chalk.redBright("[auth:github] "), error.message);
+					socket.emit('err', {
+						title	: error.title.toString(),
+						message	: error.message.toString()
 					})
 				})
 			}
 		});
 
-		socket.on('auth:github/token', data => {
-			// Convert the token into a user object
-			getUser(data).then(user => {
-				if (config.debug) console.log(chalk.greenBright("[websocket] ") + chalk.yellowBright("client <= github:auth "), user);
-				// Add the user to the database if they don't exist
-				addUser(user, data).then(() => {
-					if (config.debug) console.log(chalk.greenBright("[database] ") + chalk.yellowBright("added user "), user.login);
+		socket.on('auth:github/token', token => {
+			if (token) {
+				// Convert the token into a user object
+				getUser(token).then(user => {
+					socket.emit('auth:github', {
+						success: true,
+						token: token,
+						user: user
+					})
+					if (config.debug) console.log(chalk.greenBright("[websocket] ") + chalk.yellowBright("client <= github:auth "), user);
+					// Add the user to the database if they don't exist
+					returnUser(user, token).then(() => {
+						
+					}).catch(error => {
+						console.log(chalk.redBright("[database] "), error);
+						socket.emit('database:registration', {
+							success: false,
+							message: error.toString()
+						})
+					})
 				}).catch(error => {
-					console.log(chalk.redBright("[database] "), error);
-					socket.emit('database:registration', {
-						success: false,
-						message: error.toString()
+					// Signal the user to re-authenticate their GitHub account
+					console.log(chalk.redBright("[auth:github/token] "), error.message)
+					socket.emit('auth:github/stale', {
+						title	: error.title.toString(),
+						message	: error.message.toString()
 					})
 				})
-			}).catch(error => {
-				// Signal the user to re-authenticate their GitHub account
-				console.log(chalk.redBright("[GitHub] "), error);
-				socket.emit('auth:github/stale', {
-					success: false,
-					message: error.toString()
-				})
-			})
+			}
 		});
+
+		socket.on('project:create', project => {
+			if (project.name && project.token) {
+				getUser(project.token).then(user => {
+					newProject(project.name, user).then(value => {
+						socket.emit('project:create', {
+							success	: true,
+							project : project.name
+						})
+					}).catch(e => {
+						socket.emit('err', {
+							title	: e.title,
+							message	: e.message
+						})
+					})
+				}).catch(error => {
+					// Failed to authenticate user with token
+					console.log(chalk.redBright("[project:create] "), error.message);
+					socket.emit('err', {
+						title	: error.title.toString(),
+						message	: error.message.toString()
+					})
+				})
+			}
+		})
 	});
 
 
