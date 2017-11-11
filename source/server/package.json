@@ -9,7 +9,8 @@
     "dev": "cross-env NODE_ENV=development node --inspect main",
     "serve": "cross-env NODE_ENV=production node main",
     "mongo": "mongod --dbpath=./database --port 19000",
-    "mongo-background": "mongod --dbpath=./database --port 19000 --fork --logpath /home/injectify/logs/mongod.log"
+    "mongo-background": "mongod --dbpath=./database --port 19000 --fork --logpath /home/injectify/logs/mongod.log",
+    "pm2": "pm2 start server.config.js"
   },
   "repository": {
     "type": "git",

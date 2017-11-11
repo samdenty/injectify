@@ -99,7 +99,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 							},
 							{
 								$set: {
-									github: user
+									github: user // Update the GitHub object with latest values
 								}
 							})
 						} else {
