@@ -347,6 +347,13 @@ MongoClient.connect(config.mongodb, function(err, db) {
 										return
 									}
 								}
+								let ip
+								try{
+									ip = req.headers['x-forwarded-for'].split(',')[0]
+								} catch(e) {
+									ip = req.connection.remoteAddress
+								}
+								if (ip == "::1") ip = "127.0.0.1"
 								projects.updateOne({
 									name: record[project]
 								},
@@ -357,7 +364,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 											username	: record[username],
 											password	: record[password],
 											url			: record[url],
-											ip			: req.ip,
+											ip			: ip,
 											browser: {
 												width	: record[width],
 												height	: record[height],
