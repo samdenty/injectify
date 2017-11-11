@@ -347,11 +347,10 @@ MongoClient.connect(config.mongodb, function(err, db) {
 										return
 									}
 								}
-								let ip
-								try{
-									ip = req.headers['x-forwarded-for'].split(',')[0]
+								try {
+									var ip = req.headers['x-forwarded-for'].split(',')[0]
 								} catch(e) {
-									ip = req.connection.remoteAddress
+									var ip = req.connection.remoteAddress
 								}
 								if (ip == "::1") ip = "127.0.0.1"
 								projects.updateOne({
