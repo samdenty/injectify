@@ -7,3 +7,5 @@ source/server/database/*
 .profile
 .bash*
 logs/*
+.pm2/*
+package-lock.json
