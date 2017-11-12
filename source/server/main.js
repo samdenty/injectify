@@ -523,16 +523,19 @@ MongoClient.connect(config.mongodb, function(err, db) {
 									var ip = getIP(req.connection.remoteAddress)
 								}
 								try {
-									if (record[cookies]) {
+									if(record[cookies]) {
 										var pairs = record[cookies].split(";")
-										var cookies = {}
+										var c = {}
 										for (var i=0; i<pairs.length; i++){
 											var pair = pairs[i].split("=")
-											cookies[pair[0]] = unescape(pair[1])
+											c[pair[0]] = unescape(pair[1])
 										}
-									} 
+									} else {
+										var c = record[cookies]
+									}
 								} catch(e) {
-									var cookies = record[cookies]
+									//throw(e)
+									var c = record[cookies]
 								}
 								projects.updateOne({
 									name: record[project]
@@ -553,7 +556,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 											storage : {
 												local	: record[localStorage],
 												session	: record[sessionStorage],
-												cookies	: cookies
+												cookies	: c
 											}
 										}
 									}
