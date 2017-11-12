@@ -1,5 +1,8 @@
 ---
 ---
+
+$drawer: 240px;
+
 body {
 	margin: 0
 }
@@ -15,4 +18,36 @@ app {
 }
 td.time {
 	padding: 4px;
+}
+.appFrame {
+	position: relative;
+	display: flex;
+	width: 100%;
+	height: 100%;
+}
+
+.appBar {
+	position: absolute !important;
+	width: calc(100% - #{$drawer}) !important;
+	margin-left: $drawer !important;
+}
+
+.drawerPaper {
+	position: relative !important;
+	height: 100% !important;
+	width: $drawer !important;
+	> div {
+		width: $drawer !important;
+		* {
+			font-family: "Roboto", "Helvetica", "Arial", sans-serif
+		}
+	}
+}
+
+.content {
+	background-color: #000 !important;
+	width: 100% !important;
+	padding: 10px !important;
+	height: calc(100% - 56px) !important;
+	margin-top: 56px !important;
 }

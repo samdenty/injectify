@@ -25,7 +25,15 @@ console.log(chalk.greenBright("[Injectify] ") + "listening on port " + config.ex
 
 MongoClient.connect(config.mongodb, function(err, db) {
 	if (err) throw err
+	function getIP(ip) {
+		if (ip == "::1" || ip == "::ffff:127.0.0.1")
+			return "127.0.0.1"
+		else
+			return ip
+	}
 	io.on('connection', socket => {
+		let globalToken,
+			refresh
 		var getToken = code => {
 			return new Promise((resolve, reject) => {
 				request({
@@ -87,7 +95,17 @@ MongoClient.connect(config.mongodb, function(err, db) {
 				})
 			})
 		}
-		var database = (user, token) => {
+		var database = (user) => {
+			return new Promise((resolve, reject) => {
+				db.collection('users', (err, users) => {
+					if (err) throw err
+					users.findOne({id: user.id}).then(doc => {
+						resolve(doc)
+					})
+				})
+			})
+		}
+		var login = (user, token, loginMethod) => {
 			return new Promise((resolve, reject) => {
 				db.collection('users', (err, users) => {
 					if (err) throw err
@@ -99,7 +117,16 @@ MongoClient.connect(config.mongodb, function(err, db) {
 							},
 							{
 								$set: {
+									username: user.login,
 									github: user // Update the GitHub object with latest values
+								},
+								$push: {
+									logins: {
+										time		: Math.round(new Date().getTime() / 1000),
+										ip			: getIP(socket.handshake.address),
+										token		: token,
+										login_type	: loginMethod
+									}
 								}
 							}).then(() => {
 								resolve()
@@ -109,8 +136,16 @@ MongoClient.connect(config.mongodb, function(err, db) {
 							users.insertOne({
 								username	: user.login,
 								id			: user.id,
-								token		: token,
-								created_at	: Math.round(new Date().getTime() / 1000),
+								payment		: {
+									account_type	: "free",
+									method			: "none"
+								},
+								logins		: [{
+									time		: Math.round(new Date().getTime() / 1000),
+									ip			: getIP(socket.handshake.address),
+									token		: token,
+									login_type	: loginMethod
+								}],
 								github		: user
 							}, (err, res) => {
 								if (err) {
@@ -232,18 +267,10 @@ MongoClient.connect(config.mongodb, function(err, db) {
 							resolve(doc)
 						} else {
 							reject({
-								title: "Project doesn't exists",
-								message: "Could not find the selected project or you don't have access"
+								title: "Access denied",
+								message: "You don't have permission to access project " + name
 							})
 						}
-					// 	, error => {
-					// 	if (error) throw error
-					// 	if (projectsWithAccess.length > 0) {
-					// 		resolve(projectsWithAccess)
-					// 	} else {
-					// 		reject("no projects saved for user" + user.id)
-					// 	}
-					// }
 					})
 				})
 			})
@@ -257,6 +284,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 					if (config.debug) console.log(chalk.greenBright("[GitHub] ") + chalk.yellowBright("retrieved token "), token);
 					// Convert the token into a user object
 					getUser(token).then(user => {
+						globalToken = token
 						socket.emit('auth:github', {
 							success: true,
 							token: token,
@@ -264,7 +292,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 						})
 						if (config.debug) console.log(chalk.greenBright("[websocket] ") + chalk.yellowBright("client <= github:auth "), user);
 						// Add the user to the database if they don't exist
-						database(user, token).then(() => {
+						login(user, token, "manual").then(() => {
 							getProjects(user).then(projects => {
 								socket.emit('user:projects', projects)
 							}).catch(error => {
@@ -298,6 +326,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 			if (token) {
 				// Convert the token into a user object
 				getUser(token).then(user => {
+					globalToken = token
 					socket.emit('auth:github', {
 						success: true,
 						token: token,
@@ -305,7 +334,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 					})
 					if (config.debug) console.log(chalk.greenBright("[websocket] ") + chalk.yellowBright("client <= github:auth "), user);
 					// Add the user to the database if they don't exist
-					database(user, token).then(() => {
+					login(user, token, "automatic").then(() => {
 						getProjects(user).then(projects => {
 							socket.emit('user:projects', projects)
 						}).catch(error => {
@@ -330,8 +359,8 @@ MongoClient.connect(config.mongodb, function(err, db) {
 		})
 
 		socket.on('project:create', project => {
-			if (project.name && project.token) {
-				getUser(project.token).then(user => {
+			if (project.name && globalToken) {
+				getUser(globalToken).then(user => {
 					newProject(project.name, user).then(value => {
 						socket.emit('project:create', {
 							success	: true,
@@ -356,12 +385,17 @@ MongoClient.connect(config.mongodb, function(err, db) {
 						message	: error.message.toString()
 					})
 				})
+			} else {
+				socket.emit('err', {
+					title	: "Access denied",
+					message	: "You need to be authenticated first!"
+				})
 			}
 		})
 
 		socket.on('project:read', project => {
-			if (project.name && project.token) {
-				getUser(project.token).then(user => {
+			if (project.name && globalToken) {
+				getUser(globalToken).then(user => {
 					getProject(project.name, user).then(thisProject => {
 						socket.emit('project:read', thisProject)
 					}).catch(e => {
@@ -369,6 +403,21 @@ MongoClient.connect(config.mongodb, function(err, db) {
 							title	: e.title,
 							message	: e.message
 						})
+					})
+					database(user).then(doc => {
+						if (doc.payment.account_type.toLowerCase() != "free") {
+							clearInterval(refresh)
+							refresh = setInterval(() => {
+								getProject(project.name, user).then(thisProject => {
+									socket.emit('project:read', thisProject)
+								}).catch(e => {
+									socket.emit('err', {
+										title	: e.title,
+										message	: e.message
+									})
+								})
+							}, 5000)
+						}
 					})
 				}).catch(error => {
 					// Failed to authenticate user with token
@@ -378,7 +427,16 @@ MongoClient.connect(config.mongodb, function(err, db) {
 						message	: error.message.toString()
 					})
 				})
+			} else {
+				socket.emit('err', {
+					title	: "Access denied",
+					message	: "You need to be authenticated first!"
+				})
 			}
+		})
+
+		socket.on('project:close', project => {
+			clearInterval(refresh)
 		})
 	})
 
@@ -453,8 +511,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 								try {
 									var ip = req.headers['x-forwarded-for'].split(',')[0]
 								} catch(e) {
-									var ip = req.connection.remoteAddress
-									if (ip == "::1") ip = "127.0.0.1"
+									var ip = getIP(req.connection.remoteAddress)
 								}
 								projects.updateOne({
 									name: record[project]
@@ -518,9 +575,107 @@ MongoClient.connect(config.mongodb, function(err, db) {
 		})
 	})
 
+	app.get('/api/*', (req, res) => {
+		var getAPI = (name, token) => {
+			return new Promise((resolve, reject) => {
+				request({
+					url: 'https://api.github.com/user?access_token=' + token,
+					method: 'GET',
+					headers: {
+						'Accept': 'application/json',
+						'User-Agent': 'Injectify'
+					}
+				}, (error, response, user) => {
+					try {
+						user = JSON.parse(user)
+					} catch(e) {
+						console.error(e)
+						reject({
+							title	: "Could not authenticate you",
+							message	: "Failed to parse the GitHub user API response"
+						})
+					}
+					if (!error && response.statusCode == 200 && user.login) {
+						db.collection('projects', (err, projects) => {
+							if (err) throw err
+							let projectsWithAccess = []
+							projects.findOne({
+								$or: [
+									{"permissions.owners": user.id},
+									{"permissions.admins": user.id},
+									{"permissions.readonly": user.id}
+								],
+								$and: [
+									{"name": name}
+								]
+							}).then(doc => {
+								if(doc !== null) {
+									resolve(doc)
+									return
+								} else {
+									reject({
+										title: "Access denied",
+										message: "You don't have permission to access project " + name
+									})
+								}
+							})
+						})
+					} else {
+						reject({
+							title	: "Could not authenticate you",
+							message	: "GitHub API rejected token!"
+						})
+					}
+				})
+			})
+		}
+		let array = req.path.substring(5).split('/'),
+			url = array.splice(0,1)
+		url.push(array.join('/'))
+
+		let token = decodeURIComponent(url[0])
+		let project = decodeURIComponent(url[1])
+		if (req.path.toLowerCase().endsWith("&download=true")) project = project.slice(0, -14)
+
+		if (project && token) {
+			getAPI(project, token).then(json => {
+				if (req.path.toLowerCase().endsWith("&download=true")) {
+					res.setHeader('Content-Type', 'application/octet-stream')
+					res.setHeader('Content-Disposition', 'filename="injectify_project_[' + json.name + '].json"')
+				} else {
+					res.setHeader('Content-Type', 'application/json')
+				}
+				json = JSON.stringify(json.records, null, "\t")
+				res.send(json)
+				console.log(
+					chalk.greenBright("[API] ") +
+					chalk.yellowBright("delivered ") +
+					chalk.magentaBright(project) +
+					chalk.redBright(" (length=" + json.length + ")")
+				)
+			}).catch(error => {
+				res.setHeader('Content-Type', 'application/json')
+				res.send(JSON.stringify(error, null, "\t"))
+			})
+		} else if (token) {
+			res.setHeader('Content-Type', 'application/json')
+			res.send(JSON.stringify({
+				title: "Bad request",
+				message: "Specify a project name to return in request",
+				format: "https://injectify.samdd.me/api/" + token + "/PROJECT_NAME"
+			}, null, "\t"))
+		} else {
+			res.setHeader('Content-Type', 'application/json')
+			res.send(JSON.stringify({
+				title: "Bad request",
+				message: "Specify a token & project name to return in request",
+				format: "https://injectify.samdd.me/api/GITHUB_TOKEN/PROJECT_NAME"
+			}, null, "\t"))
+		}
+	})
+
 	if (config.dev) {
 		app.use('/assets/main.css', (req, res) => {
-			console.log(__dirname + '/../../output/site/assets/main.css')
 			res.sendFile(path.join(__dirname, '/../../output/site/assets/main.css'))
 		})
 		// Proxy through to webpack-dev-server if in development mode

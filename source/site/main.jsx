@@ -54,8 +54,7 @@ class Injectify extends Component {
 		let project = document.getElementById("newProject").value
 		if (project) {
 			socket.emit("project:create", {
-				name: project,
-				token: token
+				name: project
 			})
 			this.handleRequestClose()
 		}
@@ -83,9 +82,11 @@ class Injectify extends Component {
 		})
 		socket.on(`project:read`, project => {
 			console.log("%c[websocket] " + "%cproject:read =>", "color: #ef5350", "color:  #FF9800", project)
-			this.setState({
-				project: project
-			})
+			if(JSON.stringify(this.state.project) != JSON.stringify(project)) {
+				this.setState({
+					project: project
+				})
+			}
 		})
 		socket.on(`err`, error => {
 			console.error("%c[websocket] " + "%cerr =>", "color: #ef5350", "color:  #FF9800", error)
@@ -197,35 +198,67 @@ class Injectify extends Component {
 class Records extends Component {
 	state = {
 		open: false,
-	};
+	}
+
+	scrollToBottom = (hide) => {
+		const node = ReactDOM.findDOMNode(this.scrollContainer)
+		if (node) {
+			setTimeout(() =>{
+				try {
+					node.scrollTo({
+						'behavior': 'smooth',
+						'left': 0,
+						'top': node.scrollHeight
+					});
+				} catch(e) {
+					node.scrollTop = node.scrollHeight
+				}
+			}, 0)
+		}
+	}
+
+	componentWillUpdate() {
+		this.scrollToBottom()
+	}
+
+	componentDidUpdate() {
+		if (this.props.projectData) this.scrollToBottom()
+	}
 
 	handleClickOpen = (a) => {
 		socket.emit("project:read", {
-			name: this.props.record,
-			token: token
+			name: this.props.record
 		})
 		this.setState({ open: true });
 	};
 
 	handleRequestClose = () => {
+		socket.emit("project:close", {
+			name: this.props.record
+		})
 		this.setState({ open: false });
-	};
+	}
+
+	downloadJSON = () => {
+		window.open("/api/" + encodeURIComponent(token) + "/" + encodeURIComponent(this.props.projectData.name) + "&download=true")
+		console.log(token)
+	}
 
 	render() {
 		let id = 0;
 		function createData(name, calories, fat, carbs, protein) {
 			id += 1;
 			return { id, name, calories, fat, carbs, protein };
-		}
+		}	  
 		return (
 			<div>
 				<Button onClick={this.handleClickOpen}>{this.props.record}</Button>
-				{this.props.projectData ? (
+				{this.props.projectData && this.props.projectData.name == this.props.record ? (
 					<Dialog open={this.state.open} onRequestClose={this.handleRequestClose}>
 						<DialogTitle>
 							<span>{`Project ${this.props.projectData.name}`}</span>
 						</DialogTitle>
-						<DialogContent>
+						<DialogContent ref={(el) => { this.scrollContainer = el }}>
 							<Table>
 								<TableHead>
 									<TableRow>
@@ -250,15 +283,16 @@ class Records extends Component {
 											</TableRow>
 										);
 									})}
+									<tr ref={el => this.tableEnd = el} className="tableEnd"></tr>
 								</TableBody>
 							</Table>
 						</DialogContent>
 						<DialogActions>
 							<Button onClick={this.handleRequestClose} color="primary">
-								Disagree
+								Close
 							</Button>
-							<Button onClick={this.handleRequestClose} color="primary" autoFocus>
-								Agree
+							<Button onClick={this.downloadJSON} color="primary" autoFocus>
+								Download JSON
 							</Button>
 						</DialogActions>
 					</Dialog>
