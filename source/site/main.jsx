@@ -5,6 +5,7 @@ import io from "socket.io-client"
 import url from "url"
 import PropTypes from 'prop-types'
 import TextField from 'material-ui/TextField'
+import { withStyles } from 'material-ui/styles'
 import Dialog, {
   DialogActions,
   DialogContent,
@@ -17,6 +18,8 @@ import Typography from 'material-ui/Typography'
 import Button from 'material-ui/Button'
 import IconButton from 'material-ui/IconButton'
 import MenuIcon from 'material-ui-icons/Menu'
+import Table, { TableBody, TableCell, TableHead, TableRow } from 'material-ui/Table';
+import Paper from 'material-ui/Paper';
 
 const development = process.env.NODE_ENV == 'development' ? true : false
 let socket, token
