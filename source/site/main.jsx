@@ -4,9 +4,19 @@ import queryString from "query-string"
 import io from "socket.io-client"
 import url from "url"
 import PropTypes from 'prop-types'
-import { withStyles } from 'material-ui/styles'
-import Button from 'material-ui/Button'
+import TextField from 'material-ui/TextField'
+import Dialog, {
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+} from 'material-ui/Dialog'
 import AppBar from 'material-ui/AppBar'
+import Toolbar from 'material-ui/Toolbar'
+import Typography from 'material-ui/Typography'
+import Button from 'material-ui/Button'
+import IconButton from 'material-ui/IconButton'
+import MenuIcon from 'material-ui-icons/Menu'
 
 const development = process.env.NODE_ENV == 'development' ? true : false
 let socket, token
@@ -22,7 +32,30 @@ console.log("%c  _____        _           _   _  __       \n  \\_   \\_ __  (_) 
 })
 
 class Injectify extends Component {
-	state = {user: {}}
+	state = {
+		user: {},
+		open: false
+	}
+
+	handleClickOpen = () => {
+		this.setState({ open: true });
+	}
+
+	handleRequestClose = () => {
+		this.setState({ open: false });
+	}
+
+	handleRequestNewProject = () => {
+		let project = document.getElementById("newProject").value
+		if (project) {
+			socket.emit("project:create", {
+				name: project,
+				token: token
+			})
+			this.handleRequestClose()
+		}
+	}
+
 	componentDidMount() {
 		this.sessionAuth()    
 		socket.on(`auth:github`, data => {
@@ -48,7 +81,7 @@ class Injectify extends Component {
 		})
 	}
 
-	auth() {
+	signIn() {
 		if (this.sessionAuth()) return
 		global.oauth = window.open(`https://github.com/login/oauth/authorize?client_id=95dfa766d1ceda2d163d${process.env.NODE_ENV == 'development' ? `&state=localhost` : `&state=` + new Date().getTime()}&scope=user%20gist`, "popup", "height=600,width=500")
 		window.addEventListener("message", data => {
@@ -73,27 +106,42 @@ class Injectify extends Component {
 		}
 	}
 
-	newProject() {
-		let project = prompt("Choose project name")
-		if (project) {
-			socket.emit("project:create", {
-				name: project,
-				token: token
-			})
-		}
+	signOut() {
+		localStorage.removeItem("token")
+		token = ''
+		this.setState({
+			user: {},
+			projects: {}
+		})
 	}
 	
 	render() {
 		return (
 			<app className="main">
-				<AppBar>
-					test
+				<AppBar position="static">
+					<Toolbar>
+						<IconButton className="menuButton" color="contrast" aria-label="Menu">
+							<MenuIcon />
+						</IconButton>
+						<Typography type="title" color="inherit" className="flex">
+							Injectify
+						</Typography>
+						{this.state.user.login ? (
+							<Button color="contrast" onClick={this.signOut.bind(this)}>
+								{this.state.user.login}
+							</Button>
+						) : (
+							<Button color="contrast" onClick={this.signIn.bind(this)}>
+								Login with GitHub
+							</Button>
+						)}
+					</Toolbar>
 				</AppBar>
 				<table>
 					<tbody>
 						<tr><td>{this.state.user.avatar_url ? (
 							<img src={this.state.user.avatar_url} />
-						): (
+						) : (
 							<span></span>
 						)}</td></tr>
 						<tr><td>{this.state.user.name}</td></tr>
@@ -102,12 +150,32 @@ class Injectify extends Component {
 					</tbody>
 				</table>
 				<Projects projects={this.state.projects} />
-				<Button onClick={this.auth.bind(this)}>
-					Login with GitHub
-				</Button>
-				<Button onClick={this.newProject.bind(this)}>
-					New project
-				</Button>
+				<Button onClick={this.handleClickOpen}>New project</Button>
+				<Dialog open={this.state.open} onRequestClose={this.handleRequestClose}>
+					<DialogTitle>New project</DialogTitle>
+					<DialogContent>
+						<DialogContentText>
+							To subscribe to this website, please enter your email address here. We will send
+							updates occationally.
+						</DialogContentText>
+						<TextField
+							autoFocus
+							margin="dense"
+							id="newProject"
+							label="Project name"
+							type="text"
+							fullWidth
+						/>
+					</DialogContent>
+					<DialogActions>
+						<Button onClick={this.handleRequestClose} color="primary">
+							Cancel
+						</Button>
+						<Button onClick={this.handleRequestNewProject} color="primary">
+							Create
+						</Button>
+					</DialogActions>
+				</Dialog>
 			</app>
 		)
 	}
@@ -115,7 +183,7 @@ class Injectify extends Component {
 
 class Projects extends Component {
 	render () {
-		if (this.props.projects && this.props.projects[0].name) {
+		if (this.props.projects && this.props.projects[0]) {
 			return (
 				<div>
 					{this.props.projects.map((project, i) =>
