@@ -3,6 +3,8 @@ import React, { Component } from "react"
 import queryString from "query-string"
 import io from "socket.io-client"
 import url from "url"
+import PropTypes from 'prop-types'
+import { withStyles } from 'material-ui/styles'
 import Button from 'material-ui/Button'
 import AppBar from 'material-ui/AppBar'
 
@@ -19,7 +21,6 @@ console.log("%c  _____        _           _   _  __       \n  \\_   \\_ __  (_) 
 	environment: process.env.NODE_ENV
 })
 
-
 class Injectify extends Component {
 	state = {user: {}}
 	componentDidMount() {
@@ -35,6 +36,12 @@ class Injectify extends Component {
 		socket.on(`auth:github/stale`, data => {
 			console.log(data)
 			localStorage.removeItem("token")
+		})
+		socket.on(`user:projects`, data => {
+			console.log(data)
+			this.setState({
+				projects: data
+			})
 		})
 		socket.on(`err`, error => {
 			console.error(error)
@@ -94,6 +101,7 @@ class Injectify extends Component {
 						<tr><td>{this.state.user.bio}</td></tr>
 					</tbody>
 				</table>
+				<Projects projects={this.state.projects} />
 				<Button onClick={this.auth.bind(this)}>
 					Login with GitHub
 				</Button>
@@ -103,6 +111,24 @@ class Injectify extends Component {
 			</app>
 		)
 	}
+}
+
+class Projects extends Component {
+	render () {
+		if (this.props.projects && this.props.projects[0].name) {
+			return (
+				<div>
+					{this.props.projects.map((project, i) =>
+					<Button raised color="primary" key={i}>
+						{project.name}
+					</Button>
+					)} 
+				</div>
+			)
+		} else {
+			return null
+		}
+	 }
 }
 
 render(

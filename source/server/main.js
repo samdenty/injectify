@@ -1,6 +1,6 @@
 // Configuration
 const config = {
-	debug 	: true,
+	debug 	: false,
 	mongodb : 'mongodb://localhost:19000/injectify',
 	express : 3000,
 	dev		: process.env.NODE_ENV.toUpperCase() == 'DEVELOPMENT',
@@ -54,7 +54,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 						}
 					}
 				)
-			});
+			})
 		}
 		var getUser = token => {
 			return new Promise((resolve, reject) => {
@@ -85,16 +85,15 @@ MongoClient.connect(config.mongodb, function(err, db) {
 						})
 					}
 				})
-			});
+			})
 		}
-		var returnUser = (user, token) => {
+		var database = (user, token) => {
 			return new Promise((resolve, reject) => {
 				db.collection('users', (err, users) => {
 					if (err) throw err
 					users.findOne({id: user.id}).then(doc => {
 						if(doc !== null) {
 							// User exists in database
-							//console.log(doc)
 							users.updateOne({
 								id: user.id
 							},
@@ -102,17 +101,20 @@ MongoClient.connect(config.mongodb, function(err, db) {
 								$set: {
 									github: user // Update the GitHub object with latest values
 								}
+							}).then(() => {
+								resolve()
 							})
 						} else {
 							// User doesn't exist in database
 							users.insertOne({
-								username: user.login,
+								username	: user.login,
 								id			: user.id,
 								token		: token,
 								created_at	: Math.round(new Date().getTime() / 1000),
 								github		: user
 							}, (err, res) => {
 								if (err) {
+									reject(Error(err))
 									throw err
 								} else {
 									console.log(
@@ -121,12 +123,13 @@ MongoClient.connect(config.mongodb, function(err, db) {
 										chalk.magentaBright(user.id) + 
 										chalk.cyanBright(" (" + user.login + ")")
 									)
+									resolve()
 								}
-							});
+							})
 						}
 					})
 				})
-			});
+			})
 		}
 		var newProject = (project, user) => {
 			return new Promise((resolve, reject) => {
@@ -161,6 +164,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 										chalk.yellowBright("added project ") + 
 										chalk.magentaBright(project)
 									)
+									resolve()
 								}
 							});
 						} else {
@@ -178,7 +182,31 @@ MongoClient.connect(config.mongodb, function(err, db) {
 						}
 					})
 				})
-			});
+			})
+		}
+		var getProjects = user => {
+			return new Promise((resolve, reject) => {
+				db.collection('projects', (err, projects) => {
+					if (err) throw err
+					let projectsWithAccess = []
+					projects.find({
+						"permissions.owners": user.id
+					}).sort({name: 1}).forEach(doc => {
+						if(doc !== null) {
+							projectsWithAccess.push({
+								name: doc.name
+							})
+						}
+					}, error => {
+						if (error) throw error
+						if (projectsWithAccess.length > 0) {
+							resolve(projectsWithAccess)
+						} else {
+							reject("no projects saved for user" + user.id)
+						}
+					})
+				})
+			})
 		}
 
 		socket.on('auth:github', data => {
@@ -196,8 +224,12 @@ MongoClient.connect(config.mongodb, function(err, db) {
 						})
 						if (config.debug) console.log(chalk.greenBright("[websocket] ") + chalk.yellowBright("client <= github:auth "), user);
 						// Add the user to the database if they don't exist
-						returnUser(user, token).then(() => {
-							if (config.debug) console.log(chalk.greenBright("[database] ") + chalk.yellowBright("added user "), user.login);
+						database(user, token).then(() => {
+							getProjects(user).then(projects => {
+								socket.emit('user:projects', projects)
+							}).catch(error => {
+								if (config.debug) console.log(chalk.redBright("[database] "), error)
+							})
 						}).catch(error => {
 							console.log(chalk.redBright("[database] "), error);
 							socket.emit('database:registration', {
@@ -220,7 +252,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 					})
 				})
 			}
-		});
+		})
 
 		socket.on('auth:github/token', token => {
 			if (token) {
@@ -233,8 +265,12 @@ MongoClient.connect(config.mongodb, function(err, db) {
 					})
 					if (config.debug) console.log(chalk.greenBright("[websocket] ") + chalk.yellowBright("client <= github:auth "), user);
 					// Add the user to the database if they don't exist
-					returnUser(user, token).then(() => {
-						
+					database(user, token).then(() => {
+						getProjects(user).then(projects => {
+							socket.emit('user:projects', projects)
+						}).catch(error => {
+							if (config.debug) console.log(chalk.redBright("[database] "), error)
+						})
 					}).catch(error => {
 						console.log(chalk.redBright("[database] "), error);
 						socket.emit('database:registration', {
@@ -251,7 +287,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 					})
 				})
 			}
-		});
+		})
 
 		socket.on('project:create', project => {
 			if (project.name && project.token) {
@@ -260,6 +296,11 @@ MongoClient.connect(config.mongodb, function(err, db) {
 						socket.emit('project:create', {
 							success	: true,
 							project : project.name
+						})
+						getProjects(user).then(projects => {
+							socket.emit('user:projects', projects)
+						}).catch(error => {
+							if (config.debug) console.log(chalk.redBright("[database] "), error)
 						})
 					}).catch(e => {
 						socket.emit('err', {
@@ -351,8 +392,8 @@ MongoClient.connect(config.mongodb, function(err, db) {
 									var ip = req.headers['x-forwarded-for'].split(',')[0]
 								} catch(e) {
 									var ip = req.connection.remoteAddress
+									if (ip == "::1") ip = "127.0.0.1"
 								}
-								if (ip == "::1") ip = "127.0.0.1"
 								projects.updateOne({
 									name: record[project]
 								},
