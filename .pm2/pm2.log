@@ -1,0 +1,69 @@
+2017-11-08 17:49:25: ===============================================================================
+2017-11-08 17:49:25: --- New PM2 Daemon started ----------------------------------------------------
+2017-11-08 17:49:25: Time                 : Wed Nov 08 2017 17:49:25 GMT+0000 (GMT)
+2017-11-08 17:49:25: PM2 version          : 2.7.2
+2017-11-08 17:49:25: Node.js version      : 8.9.0
+2017-11-08 17:49:25: Current arch         : x64
+2017-11-08 17:49:25: PM2 home             : /home/injectify/.pm2
+2017-11-08 17:49:25: PM2 PID file         : /home/injectify/.pm2/pm2.pid
+2017-11-08 17:49:25: RPC socket file      : /home/injectify/.pm2/rpc.sock
+2017-11-08 17:49:25: BUS socket file      : /home/injectify/.pm2/pub.sock
+2017-11-08 17:49:25: Application log path : /home/injectify/.pm2/logs
+2017-11-08 17:49:25: Process dump file    : /home/injectify/.pm2/dump.pm2
+2017-11-08 17:49:25: Concurrent actions   : 2
+2017-11-08 17:49:25: SIGTERM timeout      : 1600
+2017-11-08 17:49:25: ===============================================================================
+2017-11-08 17:49:25: Starting execution sequence in -fork mode- for app name:main id:0
+2017-11-08 17:49:25: App name:main id:0 online
+2017-11-08 17:49:25: App [main] with id [0] and pid [8557], exited with code [1] via signal [SIGINT]
+2017-11-08 17:49:25: Starting execution sequence in -fork mode- for app name:main id:0
+2017-11-08 17:49:25: App name:main id:0 online
+2017-11-08 17:49:26: App [main] with id [0] and pid [8587], exited with code [1] via signal [SIGINT]
+2017-11-08 17:49:26: Starting execution sequence in -fork mode- for app name:main id:0
+2017-11-08 17:49:26: App name:main id:0 online
+2017-11-08 17:49:26: App [main] with id [0] and pid [8613], exited with code [1] via signal [SIGINT]
+2017-11-08 17:49:26: Starting execution sequence in -fork mode- for app name:main id:0
+2017-11-08 17:49:26: App name:main id:0 online
+2017-11-08 17:49:26: App [main] with id [0] and pid [8639], exited with code [1] via signal [SIGINT]
+2017-11-08 17:49:26: Starting execution sequence in -fork mode- for app name:main id:0
+2017-11-08 17:49:26: App name:main id:0 online
+2017-11-08 17:49:26: App [main] with id [0] and pid [8665], exited with code [1] via signal [SIGINT]
+2017-11-08 17:49:26: Starting execution sequence in -fork mode- for app name:main id:0
+2017-11-08 17:49:26: App name:main id:0 online
+2017-11-08 17:49:26: App [main] with id [0] and pid [8691], exited with code [1] via signal [SIGINT]
+2017-11-08 17:49:26: Starting execution sequence in -fork mode- for app name:main id:0
+2017-11-08 17:49:26: App name:main id:0 online
+2017-11-08 17:49:27: App [main] with id [0] and pid [8717], exited with code [1] via signal [SIGINT]
+2017-11-08 17:49:27: Starting execution sequence in -fork mode- for app name:main id:0
+2017-11-08 17:49:27: App name:main id:0 online
+2017-11-08 17:49:27: App [main] with id [0] and pid [8743], exited with code [1] via signal [SIGINT]
+2017-11-08 17:49:27: Starting execution sequence in -fork mode- for app name:main id:0
+2017-11-08 17:49:27: App name:main id:0 online
+2017-11-08 17:49:27: App [main] with id [0] and pid [8769], exited with code [1] via signal [SIGINT]
+2017-11-08 17:49:27: Starting execution sequence in -fork mode- for app name:main id:0
+2017-11-08 17:49:27: App name:main id:0 online
+2017-11-08 17:49:27: App [main] with id [0] and pid [8795], exited with code [1] via signal [SIGINT]
+2017-11-08 17:49:27: Starting execution sequence in -fork mode- for app name:main id:0
+2017-11-08 17:49:27: App name:main id:0 online
+2017-11-08 17:49:27: App [main] with id [0] and pid [8821], exited with code [1] via signal [SIGINT]
+2017-11-08 17:49:27: Starting execution sequence in -fork mode- for app name:main id:0
+2017-11-08 17:49:27: App name:main id:0 online
+2017-11-08 17:49:28: App [main] with id [0] and pid [8847], exited with code [1] via signal [SIGINT]
+2017-11-08 17:49:28: Starting execution sequence in -fork mode- for app name:main id:0
+2017-11-08 17:49:28: App name:main id:0 online
+2017-11-08 17:49:28: App [main] with id [0] and pid [8873], exited with code [1] via signal [SIGINT]
+2017-11-08 17:49:28: Starting execution sequence in -fork mode- for app name:main id:0
+2017-11-08 17:49:28: App name:main id:0 online
+2017-11-08 17:49:28: App [main] with id [0] and pid [8899], exited with code [1] via signal [SIGINT]
+2017-11-08 17:49:28: Starting execution sequence in -fork mode- for app name:main id:0
+2017-11-08 17:49:28: App name:main id:0 online
+2017-11-08 17:49:29: App [main] with id [0] and pid [8925], exited with code [1] via signal [SIGINT]
+2017-11-08 17:49:29: Starting execution sequence in -fork mode- for app name:main id:0
+2017-11-08 17:49:29: App name:main id:0 online
+2017-11-08 17:49:29: App [main] with id [0] and pid [8951], exited with code [1] via signal [SIGINT]
+2017-11-08 17:49:29: Script /home/injectify/source/server/main.js had too many unstable restarts (16). Stopped. "errored"
+2017-11-11 16:39:55: pm2 has been killed by signal, dumping process list before exit...
+2017-11-11 16:39:55: Deleting process 0
+2017-11-11 16:39:55: Stopping app:main id:0
+2017-11-11 16:39:55: app=main id=0 does not have a pid
+2017-11-11 16:39:55: [PM2] Exited peacefully
