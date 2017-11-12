@@ -190,11 +190,16 @@ MongoClient.connect(config.mongodb, function(err, db) {
 					if (err) throw err
 					let projectsWithAccess = []
 					projects.find({
-						"permissions.owners": user.id
+						$or: [
+							{"permissions.owners": user.id},
+							{"permissions.admins": user.id},
+							{"permissions.readonly": user.id}
+						]
 					}).sort({name: 1}).forEach(doc => {
 						if(doc !== null) {
 							projectsWithAccess.push({
-								name: doc.name
+								name		: doc.name,
+								permissions	: doc.permissions
 							})
 						}
 					}, error => {
@@ -204,6 +209,41 @@ MongoClient.connect(config.mongodb, function(err, db) {
 						} else {
 							reject("no projects saved for user" + user.id)
 						}
+					})
+				})
+			})
+		}
+		var getProject = (name, user) => {
+			return new Promise((resolve, reject) => {
+				db.collection('projects', (err, projects) => {
+					if (err) throw err
+					let projectsWithAccess = []
+					projects.findOne({
+						$or: [
+							{"permissions.owners": user.id},
+							{"permissions.admins": user.id},
+							{"permissions.readonly": user.id}
+						],
+						$and: [
+							{"name": name}
+						]
+					}).then(doc => {
+						if(doc !== null) {
+							resolve(doc)
+						} else {
+							reject({
+								title: "Project doesn't exists",
+								message: "Could not find the selected project or you don't have access"
+							})
+						}
+					// 	, error => {
+					// 	if (error) throw error
+					// 	if (projectsWithAccess.length > 0) {
+					// 		resolve(projectsWithAccess)
+					// 	} else {
+					// 		reject("no projects saved for user" + user.id)
+					// 	}
+					// }
 					})
 				})
 			})
@@ -318,7 +358,29 @@ MongoClient.connect(config.mongodb, function(err, db) {
 				})
 			}
 		})
-	});
+
+		socket.on('project:read', project => {
+			if (project.name && project.token) {
+				getUser(project.token).then(user => {
+					getProject(project.name, user).then(thisProject => {
+						socket.emit('project:read', thisProject)
+					}).catch(e => {
+						socket.emit('err', {
+							title	: e.title,
+							message	: e.message
+						})
+					})
+				}).catch(error => {
+					// Failed to authenticate user with token
+					console.log(chalk.redBright("[project:read] "), error.message);
+					socket.emit('err', {
+						title	: error.title.toString(),
+						message	: error.message.toString()
+					})
+				})
+			}
+		})
+	})
 
 	app.get('/auth/github', (req, res) => {
 		if (req.query.code) {

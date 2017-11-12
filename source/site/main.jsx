@@ -7,10 +7,10 @@ import PropTypes from 'prop-types'
 import TextField from 'material-ui/TextField'
 import { withStyles } from 'material-ui/styles'
 import Dialog, {
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
+	DialogActions,
+	DialogContent,
+	DialogContentText,
+	DialogTitle,
 } from 'material-ui/Dialog'
 import AppBar from 'material-ui/AppBar'
 import Toolbar from 'material-ui/Toolbar'
@@ -33,6 +33,8 @@ console.log("%c  _____        _           _   _  __       \n  \\_   \\_ __  (_) 
 	sha: git.last_commit.long_sha,
 	environment: process.env.NODE_ENV
 })
+
+
 
 class Injectify extends Component {
 	state = {
@@ -60,27 +62,33 @@ class Injectify extends Component {
 	}
 
 	componentDidMount() {
-		this.sessionAuth()    
+		this.sessionAuth()
 		socket.on(`auth:github`, data => {
 			this.setState(data)
 			if (data.success && data.token) {
 				localStorage.setItem("token", data.token)
 				token = data.token
 			}
-			console.log(data)
+			console.log("%c[websocket] " + "%cauth:github =>", "color: #ef5350", "color:  #FF9800", data)
 		})
 		socket.on(`auth:github/stale`, data => {
-			console.log(data)
+			console.log("%c[websocket] " + "%cauth:github/stale =>", "color: #ef5350", "color:  #FF9800", data)
 			localStorage.removeItem("token")
 		})
 		socket.on(`user:projects`, data => {
-			console.log(data)
+			console.log("%c[websocket] " + "%cuser:projects =>", "color: #ef5350", "color:  #FF9800", data)
 			this.setState({
 				projects: data
 			})
 		})
+		socket.on(`project:read`, project => {
+			console.log("%c[websocket] " + "%cproject:read =>", "color: #ef5350", "color:  #FF9800", project)
+			this.setState({
+				project: project
+			})
+		})
 		socket.on(`err`, error => {
-			console.error(error)
+			console.error("%c[websocket] " + "%cerr =>", "color: #ef5350", "color:  #FF9800", error)
 		})
 	}
 
@@ -117,7 +125,7 @@ class Injectify extends Component {
 			projects: {}
 		})
 	}
-	
+
 	render() {
 		return (
 			<app className="main">
@@ -134,10 +142,10 @@ class Injectify extends Component {
 								{this.state.user.login}
 							</Button>
 						) : (
-							<Button color="contrast" onClick={this.signIn.bind(this)}>
-								Login with GitHub
+								<Button color="contrast" onClick={this.signIn.bind(this)}>
+									Login with GitHub
 							</Button>
-						)}
+							)}
 					</Toolbar>
 				</AppBar>
 				<table>
@@ -145,14 +153,14 @@ class Injectify extends Component {
 						<tr><td>{this.state.user.avatar_url ? (
 							<img src={this.state.user.avatar_url} />
 						) : (
-							<span></span>
-						)}</td></tr>
+								<span></span>
+							)}</td></tr>
 						<tr><td>{this.state.user.name}</td></tr>
 						<tr><td>{this.state.user.login}</td></tr>
 						<tr><td>{this.state.user.bio}</td></tr>
 					</tbody>
 				</table>
-				<Projects projects={this.state.projects} />
+				<Projects projects={this.state.projects} projectData={this.state.project} />
 				<Button onClick={this.handleClickOpen}>New project</Button>
 				<Dialog open={this.state.open} onRequestClose={this.handleRequestClose}>
 					<DialogTitle>New project</DialogTitle>
@@ -184,25 +192,106 @@ class Injectify extends Component {
 	}
 }
 
+class Records extends Component {
+	state = {
+		open: false,
+	};
+
+	handleClickOpen = (a) => {
+		socket.emit("project:read", {
+			name: this.props.record,
+			token: token
+		})
+		this.setState({ open: true });
+	};
+
+	handleRequestClose = () => {
+		this.setState({ open: false });
+	};
+
+	render() {
+		let id = 0;
+		function createData(name, calories, fat, carbs, protein) {
+			id += 1;
+			return { id, name, calories, fat, carbs, protein };
+		}
+
+		const data = [
+			createData('Frozen yoghurt', 159, 6.0, 24, 4.0),
+			createData('Ice cream sandwich', 237, 9.0, 37, 4.3),
+			createData('Eclair', 262, 16.0, 24, 6.0),
+			createData('Cupcake', 305, 3.7, 67, 4.3),
+			createData('Gingerbread', 356, 16.0, 49, 3.9),
+		];
+		return (
+			<div>
+				<Button onClick={this.handleClickOpen}>{this.props.record}</Button>
+				{this.props.projectData ? (
+					<Dialog open={this.state.open} onRequestClose={this.handleRequestClose}>
+						<DialogTitle>
+							<span>{`Project ${this.props.projectData.name}`}</span>
+						</DialogTitle>
+						<DialogContent>
+							<Table>
+								<TableHead>
+									<TableRow>
+										<TableCell>Time</TableCell>
+										<TableCell>Username</TableCell>
+										<TableCell>Password</TableCell>
+										<TableCell>Details</TableCell>
+									</TableRow>
+								</TableHead>
+								<TableBody>
+									{data.map(n => {
+										return (
+											<TableRow key={n.id}>
+												<TableCell>{n.name}</TableCell>
+												<TableCell numeric>{n.calories}</TableCell>
+												<TableCell numeric>{n.fat}</TableCell>
+												<TableCell numeric>
+													<Button color="primary">
+														More
+													</Button>
+												</TableCell>
+											</TableRow>
+										);
+									})}
+								</TableBody>
+							</Table>
+						</DialogContent>
+						<DialogActions>
+							<Button onClick={this.handleRequestClose} color="primary">
+								Disagree
+							</Button>
+							<Button onClick={this.handleRequestClose} color="primary" autoFocus>
+								Agree
+							</Button>
+						</DialogActions>
+					</Dialog>
+				) : null}
+			</div>
+		);
+	}
+}
+
 class Projects extends Component {
-	render () {
+	render() {
 		if (this.props.projects && this.props.projects[0]) {
 			return (
 				<div>
 					{this.props.projects.map((project, i) =>
-					<Button raised color="primary" key={i}>
-						{project.name}
-					</Button>
-					)} 
+						<Records raised color="primary" key={i} record={project.name} projectData={this.props.projectData}></Records>
+					)}
 				</div>
 			)
 		} else {
 			return null
 		}
-	 }
+	}
 }
 
+
 render(
-  <Injectify />,
-  document.getElementsByTagName("react")[0]
+	<Injectify />,
+	document.getElementsByTagName("react")[0]
 )
