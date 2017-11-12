@@ -8,8 +8,8 @@
     "build": "cd ../.. && npm run build",
     "dev": "cross-env NODE_ENV=development nodemon --inspect main",
     "serve": "cross-env NODE_ENV=production node main",
-    "mongo": "mongod --dbpath=./database --port 19000",
-    "mongo-background": "mongod --dbpath=./database --port 19000 --fork --logpath /home/injectify/logs/mongod.log",
+    "mongo": "mongod --dbpath=./database --port 19000 --bind_ip 0.0.0.0",
+    "mongo-background": "mongod --dbpath=./database --port 19000 --fork --logpath /home/injectify/logs/mongod.log --bind_ip 0.0.0.0",
     "pm2": "pm2 start server.config.js"
   },
   "repository": {
