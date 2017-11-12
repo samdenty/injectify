@@ -169,8 +169,7 @@ class Injectify extends Component {
 					<DialogTitle>New project</DialogTitle>
 					<DialogContent>
 						<DialogContentText>
-							To subscribe to this website, please enter your email address here. We will send
-							updates occationally.
+							Choose a new project ID ~ nothing identifying as it could be intercepted by a third-party
 						</DialogContentText>
 						<TextField
 							autoFocus
