@@ -411,7 +411,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 					database(user).then(doc => {
 						if (doc.payment.account_type.toLowerCase() != "free") {
 							if ((doc.payment.account_type.toLowerCase() == "elite")) {
-								let timeout = 1000
+								let timeout = 500
 							} else {
 								let timeout = 10000
 							}
