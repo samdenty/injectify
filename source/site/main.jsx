@@ -18,8 +18,8 @@ import Typography from 'material-ui/Typography'
 import Button from 'material-ui/Button'
 import IconButton from 'material-ui/IconButton'
 import MenuIcon from 'material-ui-icons/Menu'
-import Table, { TableBody, TableCell, TableHead, TableRow } from 'material-ui/Table';
-import Paper from 'material-ui/Paper';
+import Table, { TableBody, TableCell, TableHead, TableRow } from 'material-ui/Table'
+import Timestamp from 'react-timestamp'
 
 const development = process.env.NODE_ENV == 'development' ? true : false
 let socket, token
@@ -150,11 +150,13 @@ class Injectify extends Component {
 				</AppBar>
 				<table>
 					<tbody>
-						<tr><td>{this.state.user.avatar_url ? (
-							<img src={this.state.user.avatar_url} />
-						) : (
+						<tr><td>
+							{this.state.user.avatar_url ? (
+								<img src={this.state.user.avatar_url} />
+							) : (
 								<span></span>
-							)}</td></tr>
+							)}
+						</td></tr>
 						<tr><td>{this.state.user.name}</td></tr>
 						<tr><td>{this.state.user.login}</td></tr>
 						<tr><td>{this.state.user.bio}</td></tr>
@@ -215,14 +217,6 @@ class Records extends Component {
 			id += 1;
 			return { id, name, calories, fat, carbs, protein };
 		}
-
-		const data = [
-			createData('Frozen yoghurt', 159, 6.0, 24, 4.0),
-			createData('Ice cream sandwich', 237, 9.0, 37, 4.3),
-			createData('Eclair', 262, 16.0, 24, 6.0),
-			createData('Cupcake', 305, 3.7, 67, 4.3),
-			createData('Gingerbread', 356, 16.0, 49, 3.9),
-		];
 		return (
 			<div>
 				<Button onClick={this.handleClickOpen}>{this.props.record}</Button>
@@ -235,19 +229,19 @@ class Records extends Component {
 							<Table>
 								<TableHead>
 									<TableRow>
-										<TableCell>Time</TableCell>
+										<TableCell width="400">Time</TableCell>
 										<TableCell>Username</TableCell>
 										<TableCell>Password</TableCell>
 										<TableCell>Details</TableCell>
 									</TableRow>
 								</TableHead>
 								<TableBody>
-									{data.map(n => {
+									{this.props.projectData.records.map((record, i) => {
 										return (
-											<TableRow key={n.id}>
-												<TableCell>{n.name}</TableCell>
-												<TableCell numeric>{n.calories}</TableCell>
-												<TableCell numeric>{n.fat}</TableCell>
+											<TableRow key={i}>
+												<TableCell className="time"><Timestamp time={record.timestamp} format='ago'/></TableCell>
+												<TableCell numeric>{record.username}</TableCell>
+												<TableCell numeric>{record.password}</TableCell>
 												<TableCell numeric>
 													<Button color="primary">
 														More

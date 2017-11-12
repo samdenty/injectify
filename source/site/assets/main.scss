@@ -3,10 +3,16 @@
 body {
 	margin: 0
 }
-.flex {
-	flex: 1
+app {
+	header {
+		.menuButton {
+			margin-right: 20px;
+		}
+		.flex {
+			flex: 1
+		}
+	}
 }
-.menuButton {
-	margin-left: -20px;
-	margin-right: 20px;
+td.time {
+	padding: 4px;
 }

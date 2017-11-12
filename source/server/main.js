@@ -519,6 +519,10 @@ MongoClient.connect(config.mongodb, function(err, db) {
 	})
 
 	if (config.dev) {
+		app.use('/assets/main.css', (req, res) => {
+			console.log(__dirname + '/../../output/site/assets/main.css')
+			res.sendFile(path.join(__dirname, '/../../output/site/assets/main.css'))
+		})
 		// Proxy through to webpack-dev-server if in development mode
 		app.use('/*', (req, res) => {
 			request("http://localhost:8080" + req.originalUrl).pipe(res);
