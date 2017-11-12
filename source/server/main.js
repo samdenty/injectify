@@ -788,7 +788,23 @@ y.addEventListener(v, function () {
 				)
 			}
 		} else {
-			res.send('invalid')
+			res.setHeader('Content-Type', 'application/javascript')
+			res.send(`
+/***************************\\
+ Injectify payload generator
+ ---------------------------
+ GET_PARAM              TYPE
+ ---------------------------
+ project              STRING
+ proxy                   URL
+ screenSize          BOOLEAN
+ location            BOOLEAN
+ localStorage        BOOLEAN
+ sessionStorage      BOOLEAN
+ cookies             BOOLEAN
+ ---------------------------
+ compress            BOOLEAN
+\\***************************/`)
 		}
 	})
 
