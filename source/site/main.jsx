@@ -239,8 +239,8 @@ class Records extends Component {
 		this.setState({ open: false });
 	}
 
-	downloadJSON = () => {
-		window.open("/api/" + encodeURIComponent(token) + "/" + encodeURIComponent(this.props.projectData.name) + "&download=true")
+	viewJSON = () => {
+		window.open("/api/" + encodeURIComponent(token) + "/" + encodeURIComponent(this.props.projectData.name) /*+ "&download=true"*/)
 		console.log(token)
 	}
 
@@ -291,8 +291,8 @@ class Records extends Component {
 							<Button onClick={this.handleRequestClose} color="primary">
 								Close
 							</Button>
-							<Button onClick={this.downloadJSON} color="primary" autoFocus>
-								Download JSON
+							<Button onClick={this.viewJSON} color="primary" autoFocus>
+								View JSON
 							</Button>
 						</DialogActions>
 					</Dialog>
