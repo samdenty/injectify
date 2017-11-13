@@ -684,7 +684,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 				} else {
 					res.setHeader('Content-Type', 'application/json')
 				}
-				json = JSON.stringify(json.records, null, "\t")
+				json = JSON.stringify(json.records, null, "    ")
 				res.send(json)
 				console.log(
 					chalk.greenBright("[API] ") +
@@ -694,7 +694,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 				)
 			}).catch(error => {
 				res.setHeader('Content-Type', 'application/json')
-				res.send(JSON.stringify(error, null, "\t"))
+				res.send(JSON.stringify(error, null, "    "))
 			})
 		} else if (token) {
 			res.setHeader('Content-Type', 'application/json')
@@ -702,14 +702,14 @@ MongoClient.connect(config.mongodb, function(err, db) {
 				title: "Bad request",
 				message: "Specify a project name to return in request",
 				format: "https://injectify.samdd.me/api/" + token + "/PROJECT_NAME"
-			}, null, "\t"))
+			}, null, "    "))
 		} else {
 			res.setHeader('Content-Type', 'application/json')
 			res.send(JSON.stringify({
 				title: "Bad request",
 				message: "Specify a token & project name to return in request",
 				format: "https://injectify.samdd.me/api/GITHUB_TOKEN/PROJECT_NAME"
-			}, null, "\t"))
+			}, null, "    "))
 		}
 	})
 
