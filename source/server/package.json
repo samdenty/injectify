@@ -28,7 +28,6 @@
     "chalk": "^2.3.0",
     "ejs": "^2.5.7",
     "express": "^4.16.2",
-    "javascript-obfuscator": "^0.12.1",
     "js-beautify": "^1.7.4",
     "mongodb": "^2.2.33",
     "ps-node": "^0.1.6",
