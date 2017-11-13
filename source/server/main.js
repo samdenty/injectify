@@ -146,13 +146,13 @@ MongoClient.connect(config.mongodb, function(err, db) {
 									account_type	: "free",
 									method			: "none"
 								},
+								github		: user,
 								logins		: [{
 									time		: Math.round(new Date().getTime() / 1000),
 									ip			: ipAddress,
 									token		: token,
 									login_type	: loginMethod
-								}],
-								github		: user
+								}]
 							}, (err, res) => {
 								if (err) {
 									reject(Error(err))
