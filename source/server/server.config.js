@@ -3,7 +3,7 @@ module.exports = {
     name        : "injectify-server",
     script      : "./main.js",
     node_args: [
-      "--debug=18999"
+      "--inspect=18999"
     ],
     watch       : false,
     env: {
