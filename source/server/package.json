@@ -29,6 +29,7 @@
     "ejs": "^2.5.7",
     "express": "^4.16.2",
     "js-beautify": "^1.7.4",
+    "js-obfuscator": "^0.1.2",
     "mongodb": "^2.2.33",
     "ps-node": "^0.1.6",
     "request": "^2.83.0",
