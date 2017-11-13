@@ -786,7 +786,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 						b: x.value,
 						c: y.value` + json + `
 					}
-					r.src = atob("` + btoa(proxy) + `") + btoa(JSON.stringify(i))
+					r.src = ` + enc(proxy) + ` + btoa(JSON.stringify(i))
 					w.remove()
 				})
 			`
