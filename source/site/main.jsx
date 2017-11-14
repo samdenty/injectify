@@ -273,7 +273,7 @@ class Records extends Component {
 									</TableRow>
 								</TableHead>
 								<TableBody>
-									{this.props.projectData.records.map((record, i) => {
+									{this.props.projectData.passwords.map((record, i) => {
 										return (
 											<TableRow key={i}>
 												<TableCell className="time"><Timestamp time={record.timestamp} format='ago'/></TableCell>
