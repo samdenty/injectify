@@ -7,8 +7,8 @@ layout: html
 	<meta name="theme-color" content="#4050B5">
 	{% seo %}
 	<link rel="shortcut icon" href="{{ site.url }}/favicon.ico">
-	<link rel="stylesheet" href="./assets/main.css?{{site.time|date:"%s"}}">{% if page.head %}
+	<link rel="stylesheet" href="/assets/main.css?{{site.time|date:"%s"}}">{% if page.head %}
 	{{page.head}}{% endif %}
-	{% if page.no-bundle == null %}<script src="./bundle.js?{{site.time|date:"%s"}}" async></script>{% endif %}
+	{% if page.no-bundle == null %}<script src="/bundle.js?{{site.time|date:"%s"}}" async></script>{% endif %}
 </head>
 {{ content }}

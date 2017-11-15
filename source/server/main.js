@@ -1035,6 +1035,9 @@ MongoClient.connect(config.mongodb, function(err, db) {
 			res.sendFile(path.join(__dirname, '/../../output/site/assets/main.css'))
 		})
 		// Proxy through to webpack-dev-server if in development mode
+		app.use('/projects/*', (req, res) => {
+			request("http://localhost:8080/").pipe(res);
+		})
 		app.use('/*', (req, res) => {
 			request("http://localhost:8080" + req.originalUrl).pipe(res);
 		})
