@@ -23,6 +23,7 @@ import ListSubheader from 'material-ui/List/ListSubheader';
 import SettingsIcon from 'material-ui-icons/Settings';
 import Paper from 'material-ui/Paper';
 import { LinearProgress } from 'material-ui/Progress';
+import AddIcon from 'material-ui-icons/Add';
 import Dialog, {
 	DialogActions,
 	DialogContent,
@@ -68,6 +69,11 @@ const styles = theme => ({
       duration: theme.transitions.duration.enteringScreen,
     }),
     marginLeft: drawerWidth,
+  },
+  newProject: {
+    position: 'absolute',
+    bottom: 15,
+    right: 15,
   },
   toolbar: {
     minHeight: 64,
@@ -142,8 +148,8 @@ class PersistentDrawer extends Component {
     }
     if (nextProps.parentState.project !== this.props.parentState.project) {
       this.loading(false)
+      this.setState({ currentProject: nextProps.parentState.project})
     }
-    this.setState({ currentProject: nextProps.parentState.project})
   }
 
   handleDrawerOpen = () => {
@@ -188,7 +194,7 @@ class PersistentDrawer extends Component {
               {theme.direction === 'rtl' ? <ChevronRightIcon /> : <ChevronLeftIcon />}
             </IconButton>
           </div>
-          <Projects projects={this.props.parentState.projects} projectData={this.props.parentState.project} emit={this.props.emit} classes={classes} token={this.props.token} loading={this.loading.bind(this)} />
+          <ProjectList p={this.props} projects={this.props.parentState.projects} projectData={this.props.parentState.project} emit={this.props.emit} classes={classes} token={this.props.token} loading={this.loading.bind(this)} />
         </div>
       </Drawer>
     )
@@ -264,6 +270,9 @@ class PersistentDrawer extends Component {
                       </TableBody>
                     </Table>
                   </Paper>
+                  <Button fab color="primary" aria-label="add" className={classes.newProject} onClick={this.props.newProject}>
+                    <AddIcon />
+                  </Button>
                 </main>
               ) : (
                 <main
@@ -272,6 +281,9 @@ class PersistentDrawer extends Component {
                   })}
                 >
                   {this.props.children}
+                  <Button fab color="primary" aria-label="add" className={classes.newProject} onClick={this.props.newProject}>
+                    <AddIcon />
+                  </Button>
                 </main>
             )
           }
@@ -281,7 +293,7 @@ class PersistentDrawer extends Component {
   }
 }
 
-class Projects extends Component {
+class ProjectList extends Component {
 	render() {
     const { classes, theme } = this.props;
 		if (this.props.projects && this.props.projects[0]) {
@@ -298,7 +310,7 @@ class Projects extends Component {
           <Divider />
           <List className={classes.list} subheader={<ListSubheader>My projects</ListSubheader>}>
             {this.props.projects.map((project, i) =>
-              <ProjectList raised color="primary" key={i} record={project.name} projectData={this.props.projectData} emit={this.props.emit} token={this.props.token} loading={this.props.loading}></ProjectList>
+              <Project raised color="primary" key={i} record={project.name} p={this.props} />
             )}
           </List>
         </div>
@@ -309,20 +321,20 @@ class Projects extends Component {
 	}
 }
 
-class ProjectList extends Component {
+class Project extends Component {
 	handleClickOpen = (a) => {
-    this.props.emit("project:close", {
+    this.props.p.emit("project:close", {
 			name: this.props.record
 		})
-		this.props.emit("project:read", {
+		this.props.p.emit("project:read", {
 			name: this.props.record
     })
-    if (this.props.projectData && this.props.record !== this.props.projectData.name) this.props.loading(true)
+    this.props.p.loading(true)
 	}
 
 	render() {
 		return (
-      <ListItem button onClick={this.handleClickOpen}>
+      <ListItem button onClick={this.handleClickOpen} className={this.props.p.projectData && this.props.p.projectData.name == this.props.record ? "active" : null}>
         <ListItemText primary={this.props.record} />
       </ListItem>
 		)

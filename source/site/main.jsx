@@ -65,11 +65,9 @@ class Injectify extends Component {
 		})
 		socket.on(`project:read`, project => {
 			console.log("%c[websocket] " + "%cproject:read =>", "color: #ef5350", "color:  #FF9800", project)
-			if(JSON.stringify(this.state.project) != JSON.stringify(project)) {
-				this.setState({
-					project: project
-				})
-			}
+			this.setState({
+				project: project
+			})
 		})
 		socket.on(`err`, error => {
 			console.error("%c[websocket] " + "%cerr =>", "color: #ef5350", "color:  #FF9800", error)
@@ -139,7 +137,7 @@ class Injectify extends Component {
 	render() {
 		return (
 			<app className="main">
-				<PersistentDrawer parentState={this.state} signIn={this.signIn.bind(this)} signOut={this.signOut.bind(this)} emit={(a, b) => socket.emit(a, b)} token={token}>
+				<PersistentDrawer parentState={this.state} signIn={this.signIn.bind(this)} signOut={this.signOut.bind(this)} emit={(a, b) => socket.emit(a, b)} token={token} newProject={this.handleClickOpen.bind(this)}>
 					{this.state.user.login ? (
 						<div>
 							<table>
@@ -150,32 +148,6 @@ class Injectify extends Component {
 								</tbody>
 							</table>
 							<Button onClick={this.handleClickOpen}>New project</Button>
-							<Dialog open={this.state.open} onRequestClose={this.handleRequestClose}>
-								<DialogTitle>New project</DialogTitle>
-								<DialogContent>
-									<DialogContentText>
-										Choose a new project ID ~ nothing identifying as it could be intercepted by a third-party
-									</DialogContentText>
-									<TextField
-										autoFocus
-										margin="dense"
-										id="newProject"
-										label="Project name"
-										type="text"
-										fullWidth
-										onKeyPress={this.handleKeyPress}
-									/>
-								</DialogContent>
-								<DialogActions>
-									<Button onClick={this.handleRequestClose} color="primary">
-										Cancel
-									</Button>
-									<Button onClick={this.handleRequestNewProject} color="primary">
-										Create
-									</Button>
-								</DialogActions>
-							</Dialog>
-							<Agree open={this.state.agreeOpen} />
 						</div>
 					) : (
 						<div>
@@ -183,6 +155,32 @@ class Injectify extends Component {
 						</div>
 					)}
 				</PersistentDrawer>
+				<Dialog open={this.state.open} onRequestClose={this.handleRequestClose}>
+					<DialogTitle>New project</DialogTitle>
+					<DialogContent>
+						<DialogContentText>
+							Choose a new project ID ~ nothing identifying as it could be intercepted by a third-party
+						</DialogContentText>
+						<TextField
+							autoFocus
+							margin="dense"
+							id="newProject"
+							label="Project name"
+							type="text"
+							fullWidth
+							onKeyPress={this.handleKeyPress}
+						/>
+					</DialogContent>
+					<DialogActions>
+						<Button onClick={this.handleRequestClose} color="primary">
+							Cancel
+						</Button>
+						<Button onClick={this.handleRequestNewProject} color="primary">
+							Create
+						</Button>
+					</DialogActions>
+				</Dialog>
+				<Agree open={this.state.agreeOpen} />
 			</app>
 		)
 	}

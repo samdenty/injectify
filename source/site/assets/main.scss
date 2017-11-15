@@ -52,6 +52,17 @@ app {
 			}
 		}
 	}
+	li.active {
+		background: rgba(64, 80, 181, 0.25);
+		&:hover {
+			background: rgba(64, 80, 181, 0.35);
+		}
+		div {
+			h3 {
+				color: #2c3886
+			}
+		}
+	}
 }
 
 .content {
