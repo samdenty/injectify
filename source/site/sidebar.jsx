@@ -176,6 +176,14 @@ class PersistentDrawer extends Component {
     this.props.signOut()
   }
 
+  viewJS = () => {
+		window.open("/payload/?project=" + encodeURIComponent(this.state.currentProject.name))
+	}
+
+	viewJSON = () => {
+		window.open("/api/" + encodeURIComponent(this.props.token) + "/" + encodeURIComponent(this.state.currentProject.name) /*+ "&download=true"*/)
+	}
+
   render() {
     const { classes, theme, signIn } = this.props;
     const { open } = this.state;
@@ -270,6 +278,15 @@ class PersistentDrawer extends Component {
                       </TableBody>
                     </Table>
                   </Paper>
+                  <br />
+                  <Tooltip title="Payload for this project" placement="left">
+                    <Button onClick={this.viewJS} color="primary">
+                      Javascript code
+                    </Button>
+                  </Tooltip>
+                  <Button onClick={this.viewJSON} color="primary" autoFocus>
+                    View JSON
+                  </Button>
                   <Button fab color="primary" aria-label="add" className={classes.newProject} onClick={this.props.newProject}>
                     <AddIcon />
                   </Button>
@@ -289,7 +306,7 @@ class PersistentDrawer extends Component {
           }
         </div>
       </div>
-    );
+    )
   }
 }
 
