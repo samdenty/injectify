@@ -12,14 +12,13 @@ import Dialog, {
 	DialogContentText,
 	DialogTitle,
 } from 'material-ui/Dialog'
-import AppBar from 'material-ui/AppBar'
-import Toolbar from 'material-ui/Toolbar'
 import Typography from 'material-ui/Typography'
 import Button from 'material-ui/Button'
 import IconButton from 'material-ui/IconButton'
-import MenuIcon from 'material-ui-icons/Menu'
 import Table, { TableBody, TableCell, TableHead, TableRow } from 'material-ui/Table'
 import Timestamp from 'react-timestamp'
+import Tooltip from 'material-ui/Tooltip'
+import PersistentDrawer from "./sidebar.jsx"
 
 const development = process.env.NODE_ENV == 'development' ? true : false
 let socket, token
@@ -39,25 +38,8 @@ console.log("%c  _____        _           _   _  __       \n  \\_   \\_ __  (_) 
 class Injectify extends Component {
 	state = {
 		user: {},
-		open: false
-	}
-
-	handleClickOpen = () => {
-		this.setState({ open: true });
-	}
-
-	handleRequestClose = () => {
-		this.setState({ open: false });
-	}
-
-	handleRequestNewProject = () => {
-		let project = document.getElementById("newProject").value
-		if (project) {
-			socket.emit("project:create", {
-				name: project
-			})
-			this.handleRequestClose()
-		}
+		open: false,
+		acceptOpen: false
 	}
 
 	componentDidMount() {
@@ -67,6 +49,9 @@ class Injectify extends Component {
 			if (data.success && data.token) {
 				localStorage.setItem("token", data.token)
 				token = data.token
+				this.setState({
+					agreeOpen: true
+				})
 			}
 			console.log("%c[websocket] " + "%cauth:github =>", "color: #ef5350", "color:  #FF9800", data)
 		})
@@ -92,6 +77,26 @@ class Injectify extends Component {
 			console.error("%c[websocket] " + "%cerr =>", "color: #ef5350", "color:  #FF9800", error)
 		})
 	}
+	
+	handleClickOpen = () => {
+		this.setState({ open: true });
+	}
+
+	handleRequestClose = () => {
+		this.setState({ open: false });
+	}
+
+	handleRequestNewProject = () => {
+		let project = document.getElementById("newProject").value
+		if(project.length !== 0) {
+			if (project) {
+				socket.emit("project:create", {
+					name: project
+				})
+				this.handleRequestClose()
+			}
+		}
+	}
 
 	signIn() {
 		if (this.sessionAuth()) return
@@ -110,14 +115,6 @@ class Injectify extends Component {
 		})
 	}
 
-	sessionAuth() {
-		if (localStorage.getItem("token")) {
-			socket.emit("auth:github/token", localStorage.getItem("token"))
-			token = localStorage.getItem("token")
-			return true
-		}
-	}
-
 	signOut() {
 		localStorage.removeItem("token")
 		token = ''
@@ -127,68 +124,68 @@ class Injectify extends Component {
 		})
 	}
 
+	sessionAuth() {
+		if (localStorage.getItem("token")) {
+			socket.emit("auth:github/token", localStorage.getItem("token"))
+			token = localStorage.getItem("token")
+			return true
+		}
+	}
+
+	handleKeyPress = (e) => {
+		if (e.key === 'Enter') {
+			this.handleRequestNewProject()
+		}
+	}
+
 	render() {
 		return (
 			<app className="main">
-				<AppBar position="static">
-					<Toolbar>
-						<IconButton className="menuButton" color="contrast" aria-label="Menu">
-							<MenuIcon />
-						</IconButton>
-						<Typography type="title" color="inherit" className="flex">
-							Injectify
-						</Typography>
-						{this.state.user.login ? (
-							<Button color="contrast" onClick={this.signOut.bind(this)}>
-								{this.state.user.login}
-							</Button>
-						) : (
-								<Button color="contrast" onClick={this.signIn.bind(this)}>
-									Login with GitHub
-							</Button>
-							)}
-					</Toolbar>
-				</AppBar>
-				<table>
-					<tbody>
-						<tr><td>
-							{this.state.user.avatar_url ? (
-								<img src={this.state.user.avatar_url} />
-							) : (
-								<span></span>
-							)}
-						</td></tr>
-						<tr><td>{this.state.user.name}</td></tr>
-						<tr><td>{this.state.user.login}</td></tr>
-						<tr><td>{this.state.user.bio}</td></tr>
-					</tbody>
-				</table>
-				<Projects projects={this.state.projects} projectData={this.state.project} />
-				<Button onClick={this.handleClickOpen}>New project</Button>
-				<Dialog open={this.state.open} onRequestClose={this.handleRequestClose}>
-					<DialogTitle>New project</DialogTitle>
-					<DialogContent>
-						<DialogContentText>
-							Choose a new project ID ~ nothing identifying as it could be intercepted by a third-party
-						</DialogContentText>
-						<TextField
-							autoFocus
-							margin="dense"
-							id="newProject"
-							label="Project name"
-							type="text"
-							fullWidth
-						/>
-					</DialogContent>
-					<DialogActions>
-						<Button onClick={this.handleRequestClose} color="primary">
-							Cancel
-						</Button>
-						<Button onClick={this.handleRequestNewProject} color="primary">
-							Create
-						</Button>
-					</DialogActions>
-				</Dialog>
+				<PersistentDrawer parentState={this.state} signIn={this.signIn.bind(this)} signOut={this.signOut.bind(this)}>
+					{this.state.user.login ? (
+						<div>
+							<table>
+								<tbody>
+									<tr><td>{this.state.user.name}</td></tr>
+									<tr><td>{this.state.user.login}</td></tr>
+									<tr><td>{this.state.user.bio}</td></tr>
+								</tbody>
+							</table>
+							<Projects projects={this.state.projects} projectData={this.state.project} />
+							<Button onClick={this.handleClickOpen}>New project</Button>
+							<Dialog open={this.state.open} onRequestClose={this.handleRequestClose}>
+								<DialogTitle>New project</DialogTitle>
+								<DialogContent>
+									<DialogContentText>
+										Choose a new project ID ~ nothing identifying as it could be intercepted by a third-party
+									</DialogContentText>
+									<TextField
+										autoFocus
+										margin="dense"
+										id="newProject"
+										label="Project name"
+										type="text"
+										fullWidth
+										onKeyPress={this.handleKeyPress}
+									/>
+								</DialogContent>
+								<DialogActions>
+									<Button onClick={this.handleRequestClose} color="primary">
+										Cancel
+									</Button>
+									<Button onClick={this.handleRequestNewProject} color="primary">
+										Create
+									</Button>
+								</DialogActions>
+							</Dialog>
+							<Agree open={this.state.agreeOpen} />
+						</div>
+					) : (
+						<div>
+							Please login to continue
+						</div>
+					)}
+				</PersistentDrawer>
 			</app>
 		)
 	}
@@ -196,24 +193,7 @@ class Injectify extends Component {
 
 class Records extends Component {
 	state = {
-		open: false,
-	}
-
-	scrollToBottom = (hide) => {
-		const node = ReactDOM.findDOMNode(this.scrollContainer)
-		if (node) {
-			setTimeout(() =>{
-				try {
-					node.scrollTo({
-						'behavior': 'smooth',
-						'left': 0,
-						'top': node.scrollHeight
-					});
-				} catch(e) {
-					node.scrollTop = node.scrollHeight
-				}
-			}, 0)
-		}
+		open: false
 	}
 
 	componentWillUpdate() {
@@ -236,6 +216,23 @@ class Records extends Component {
 			name: this.props.record
 		})
 		this.setState({ open: false });
+	}
+
+	scrollToBottom = (hide) => {
+		const node = ReactDOM.findDOMNode(this.scrollContainer)
+		if (node) {
+			setTimeout(() =>{
+				try {
+					node.scrollTo({
+						'behavior': 'smooth',
+						'left': 0,
+						'top': node.scrollHeight
+					});
+				} catch(e) {
+					node.scrollTop = node.scrollHeight
+				}
+			}, 0)
+		}
 	}
 
 	viewJS = () => {
@@ -292,9 +289,11 @@ class Records extends Component {
 							</Table>
 						</DialogContent>
 						<DialogActions>
-							<Button onClick={this.viewJS} color="primary">
-								Javascript
-							</Button>
+							<Tooltip title="Payload for this project" placement="left">
+								<Button onClick={this.viewJS} color="primary">
+									Javascript code
+								</Button>
+							</Tooltip>
 							<Button onClick={this.viewJSON} color="primary" autoFocus>
 								View JSON
 							</Button>
@@ -303,6 +302,47 @@ class Records extends Component {
 				) : null}
 			</div>
 		);
+	}
+}
+
+class Agree extends Component {
+	state = {
+		open: this.props.open
+	}
+
+	handleAgree = () => {
+		this.setState({ open: false })
+		localStorage.setItem("agree", true)
+	}
+
+	handleDisagree = () => {
+		this.setState({ open: false })
+		localStorage.removeItem("token")
+		window.location.reload()
+	}
+	render() {
+		if (localStorage.getItem("agree") != "true") {
+			return (
+				<Dialog open={this.props.open}>
+					<DialogTitle>{"Terms and Conditions"}</DialogTitle>
+					<DialogContent>
+						<DialogContentText>
+							You will only use injectify and it's associated payloads on your own devices, for whitehat purposes only. Failure to comply will result in your account being terminated.
+						</DialogContentText>
+					</DialogContent>
+					<DialogActions>
+						<Button onClick={this.handleDisagree} color="primary">
+							Disagree
+						</Button>
+						<Button onClick={this.handleAgree} color="primary" autoFocus>
+							Agree
+						</Button>
+					</DialogActions>
+				</Dialog>
+			)
+		} else {
+			return null
+		}
 	}
 }
 
@@ -321,6 +361,7 @@ class Projects extends Component {
 		}
 	}
 }
+
 
 
 render(

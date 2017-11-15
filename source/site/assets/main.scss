@@ -3,45 +3,31 @@
 
 $drawer: 240px;
 
+html,
 body {
-	margin: 0
+	margin: 0;
+	height: 100%;
+	width: 100%;
 }
 app {
 	header {
-		.menuButton {
-			margin-right: 20px;
-		}
-		.flex {
-			flex: 1
+		button {
+			&.signed-in {
+				padding: 4px 16px;
+				min-height: 64px;
+				max-height: 64px;
+				border-radius: 0;
+				div[class|='MuiAvatar-root'] {
+					width: 35px;
+					height: 35px;
+					margin-left: 8px;
+				}
+			}
 		}
 	}
 }
 td.time {
 	padding: 4px;
-}
-.appFrame {
-	position: relative;
-	display: flex;
-	width: 100%;
-	height: 100%;
-}
-
-.appBar {
-	position: absolute !important;
-	width: calc(100% - #{$drawer}) !important;
-	margin-left: $drawer !important;
-}
-
-.drawerPaper {
-	position: relative !important;
-	height: 100% !important;
-	width: $drawer !important;
-	> div {
-		width: $drawer !important;
-		* {
-			font-family: "Roboto", "Helvetica", "Arial", sans-serif
-		}
-	}
 }
 
 .content {
