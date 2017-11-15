@@ -33,6 +33,7 @@
     "mongodb": "^2.2.33",
     "ps-node": "^0.1.6",
     "request": "^2.83.0",
+    "reverse-string": "0.0.6",
     "socket.io": "^2.0.4",
     "uglify-js": "^3.1.9"
   },
