@@ -139,7 +139,7 @@ class Injectify extends Component {
 	render() {
 		return (
 			<app className="main">
-				<PersistentDrawer parentState={this.state} signIn={this.signIn.bind(this)} signOut={this.signOut.bind(this)} emit={(a, b) => socket.emit(a, b)}>
+				<PersistentDrawer parentState={this.state} signIn={this.signIn.bind(this)} signOut={this.signOut.bind(this)} emit={(a, b) => socket.emit(a, b)} token={token}>
 					{this.state.user.login ? (
 						<div>
 							<table>

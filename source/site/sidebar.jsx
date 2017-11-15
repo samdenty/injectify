@@ -153,7 +153,7 @@ class PersistentDrawer extends Component {
               {theme.direction === 'rtl' ? <ChevronRightIcon /> : <ChevronLeftIcon />}
             </IconButton>
           </div>
-          <Projects projects={this.props.parentState.projects} projectData={this.props.parentState.project} emit={this.props.emit} classes={classes} />
+          <Projects projects={this.props.parentState.projects} projectData={this.props.parentState.project} emit={this.props.emit} classes={classes} token={this.props.token} />
         </div>
       </Drawer>
     )
@@ -224,7 +224,7 @@ class Projects extends Component {
           <Divider />
           <List className={classes.list} subheader={<ListSubheader>My projects</ListSubheader>}>
             {this.props.projects.map((project, i) =>
-              <Records raised color="primary" key={i} record={project.name} projectData={this.props.projectData} emit={this.props.emit}></Records>
+              <Records raised color="primary" key={i} record={project.name} projectData={this.props.projectData} emit={this.props.emit} token={this.props.token}></Records>
             )}
           </List>
         </div>
@@ -284,7 +284,7 @@ class Records extends Component {
 	}
 
 	viewJSON = () => {
-		window.open("/api/" + encodeURIComponent(token) + "/" + encodeURIComponent(this.props.projectData.name) /*+ "&download=true"*/)
+		window.open("/api/" + encodeURIComponent(this.props.token) + "/" + encodeURIComponent(this.props.projectData.name) /*+ "&download=true"*/)
 	}
 
 	render() {
