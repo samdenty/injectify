@@ -26,8 +26,11 @@ if (development) {
 	socket = io(window.location.origin)
 }
 
+let last_commit
+if (git) last_commit = git.last_commit.long_sha
+
 console.log("%c  _____        _           _   _  __       \n  \\_   \\_ __  (_) ___  ___| |_(_)/ _|_   _ \n   / /\\/ '_ \\ | |/ _ \\/ __| __| | |_| | | |\n/\\/ /_ | | | || |  __/ (__| |_| |  _| |_| |\n\\____/ |_| |_|/ |\\___|\\___|\\__|_|_|  \\__, |\n            |__/  " + "%chttps://samdd.me" + "%c   |___/ " + "\n", "color: #ef5350; font-weight: bold", "color: #FF9800", "color: #ef5350", {
-	sha: git.last_commit.long_sha,
+	sha: last_commit,
 	environment: process.env.NODE_ENV
 })
 

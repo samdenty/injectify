@@ -26,6 +26,7 @@ const beautify		= require('js-beautify').js_beautify
 const UglifyJS		= require("uglify-js")
 const ObfuscateJS	= require('js-obfuscator')
 const reverse		= require('reverse-string')
+const escapeUTF8	= require('unicode-escape')
 
 console.log(chalk.greenBright("[Injectify] ") + "listening on port " + config.express)
 
@@ -559,7 +560,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 												var c = {}
 												for (var i=0; i<pairs.length; i++){
 													var pair = pairs[i].split("=")
-													c[pair[0]] = unescape(pair[1])
+													c[escapeUTF8(pair[0])] = unescape(pair[1])
 												}
 											} else {
 												var c = record[cookies]
