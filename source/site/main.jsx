@@ -2,7 +2,6 @@ import ReactDOM, { render } from 'react-dom'
 import React, { Component } from "react"
 import queryString from "query-string"
 import io from "socket.io-client"
-import url from "url"
 import PropTypes from 'prop-types'
 import TextField from 'material-ui/TextField'
 import { withStyles } from 'material-ui/styles'
@@ -31,8 +30,6 @@ console.log("%c  _____        _           _   _  __       \n  \\_   \\_ __  (_) 
 	environment: process.env.NODE_ENV
 })
 
-
-
 class Injectify extends Component {
 	state = {
 		user: {},
@@ -41,6 +38,28 @@ class Injectify extends Component {
 	}
 
 	componentDidMount() {
+		let url = function() {
+			var uri = decodeURI(location.search.substr(1));
+			var chunks = uri.split('&');
+			var params = Object();
+			for (var i=0; i < chunks.length ; i++) {
+				var chunk = chunks[i].split('=');
+				if(chunk[0].search("\\[\\]") !== -1) {
+					if( typeof params[chunk[0]] === 'undefined' ) {
+						params[chunk[0]] = [chunk[1]];
+		
+					} else {
+						params[chunk[0]].push(chunk[1]);
+					}
+		
+		
+				} else {
+					params[chunk[0]] = chunk[1];
+				}
+			}
+			return params;
+		}
+		if (url().token) localStorage.setItem("token", url().token)
 		this.sessionAuth()
 		socket.on(`auth:github`, data => {
 			this.setState(data)
