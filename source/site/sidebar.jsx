@@ -121,7 +121,7 @@ const styles = theme => ({
     ...theme.mixins.toolbar,
   },
   content: {
-    width: '100%',
+    minWidth: '100%',
     flexGrow: 1,
     backgroundColor: theme.palette.background.default,
     marginLeft: -drawerWidth,
@@ -146,6 +146,32 @@ const styles = theme => ({
       duration: theme.transitions.duration.enteringScreen,
     }),
     marginLeft: 0,
+  },
+  paper: {
+    display: 'inline-block',
+  },
+  tableCell: {
+    padding: '4px 25px',
+  },
+  center: {
+    textAlign: 'center',
+  },
+  '@media (max-width: 500px)': {
+    content: {
+      padding: theme.spacing.unit * 3 + "px " + theme.spacing.unit + "px",
+    },
+    tableCell: {
+      padding: '4px 15px',
+    }
+  },
+  '@media (max-width: 400px)': {
+    content: {
+      padding: theme.spacing.unit * 2 + "px " + theme.spacing.unit * .5 + "px",
+    },
+    tableCell: {
+      padding: '4px 5px',
+      textAlign: 'center',
+    }
   },
 })
 
@@ -279,24 +305,38 @@ class PersistentDrawer extends Component {
                     [classes.contentShift]: open,
                   })}
                 >
-                  <Paper>
+                  <Paper className={classes.paper}>
                     <Table>
                       <TableHead>
                         <TableRow>
-                          <TableCell width="400">Time</TableCell>
-                          <TableCell>Username</TableCell>
-                          <TableCell>Password</TableCell>
-                          <TableCell>Details</TableCell>
+                          <TableCell className={classes.tableCell}>
+                            Time
+                          </TableCell>
+                          <TableCell className={classes.tableCell}>
+                            Username
+                          </TableCell>
+                          <TableCell className={classes.tableCell}>
+                            Password
+                          </TableCell>
+                          <TableCell className={`${classes.tableCell} ${classes.center}`} width={64}>
+                            Details
+                          </TableCell>
                         </TableRow>
                       </TableHead>
                       <TableBody>
                         {this.state.currentProject.passwords.map((record, i) => {
                           return (
                             <TableRow key={i}>
-                              <TableCell className="time"><Timestamp time={record.timestamp} format='ago'/></TableCell>
-                              <TableCell numeric>{record.username}</TableCell>
-                              <TableCell numeric>{record.password}</TableCell>
-                              <TableCell numeric>
+                              <TableCell className={classes.tableCell}>
+                                <Timestamp time={record.timestamp} format='ago'/>
+                              </TableCell>
+                              <TableCell className={classes.tableCell}>
+                                {record.username}
+                              </TableCell>
+                              <TableCell className={classes.tableCell}>
+                                {record.password}
+                              </TableCell>
+                              <TableCell className={classes.tableCell} numeric>
                                 <Button color="primary" dense onClick={() => {this.handleRecordOpen(record)}}>
                                   More
                                 </Button>
