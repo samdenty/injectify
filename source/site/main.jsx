@@ -45,7 +45,7 @@ class Injectify extends Component {
 		}
 		if (loc.code && loc.state) {
 			if (url.parse(loc.state).hostname && window.location.hostname !== url.parse(loc.state).hostname) {
-				window.location = window.location.href.replace(window.location.origin, url.parse(loc.state).origin)
+				console.log(window.location.href.replace(window.location.origin, url.parse(loc.state).origin))
 			} else {
 				socket.emit("auth:github", loc)
 				window.history.pushState("","", "./")
