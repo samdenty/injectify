@@ -19,14 +19,11 @@ import Tooltip from 'material-ui/Tooltip'
 import PersistentDrawer from "./sidebar.jsx"
 
 const development = process.env.NODE_ENV == 'development' ? true : false
-let socket, token
-if (development) {
-	socket = io('ws://localhost:3000')
-} else {
-	socket = io(window.location.origin)
-}
+let socket = io(window.location.origin),
+	token,
+	last_commit,
+	loc = queryString.parse(location.search)
 
-let last_commit
 if (git) last_commit = git.last_commit.long_sha
 
 console.log("%c  _____        _           _   _  __       \n  \\_   \\_ __  (_) ___  ___| |_(_)/ _|_   _ \n   / /\\/ '_ \\ | |/ _ \\/ __| __| | |_| | | |\n/\\/ /_ | | | || |  __/ (__| |_| |  _| |_| |\n\\____/ |_| |_|/ |\\___|\\___|\\__|_|_|  \\__, |\n            |__/  " + "%chttps://samdd.me" + "%c   |___/ " + "\n", "color: #ef5350; font-weight: bold", "color: #FF9800", "color: #ef5350", {
@@ -42,26 +39,14 @@ class Injectify extends Component {
 	}
 
 	componentDidMount() {
-		let url = function() {
-			var uri = decodeURI(location.search.substr(1));
-			var chunks = uri.split('&');
-			var params = Object();
-			for (var i=0; i < chunks.length ; i++) {
-				var chunk = chunks[i].split('=');
-				if(chunk[0].search("\\[\\]") !== -1) {
-					if( typeof params[chunk[0]] === 'undefined' ) {
-						params[chunk[0]] = [chunk[1]];
-		
-					} else {
-						params[chunk[0]].push(chunk[1]);
-					}
-				} else {
-					params[chunk[0]] = chunk[1];
-				}
-			}
-			return params;
+		if (loc.code) {
+			socket.emit("auth:github", loc)
+			window.history.pushState("","", "./")
 		}
-		if (url().token) localStorage.setItem("token", url().token)
+		if (loc.token) {
+			localStorage.setItem("token", loc.token)
+			window.history.pushState("","", "./")
+		}
 		this.sessionAuth()
 		socket.on(`auth:github`, data => {
 			this.setState(data)
@@ -117,19 +102,7 @@ class Injectify extends Component {
 
 	signIn() {
 		if (this.sessionAuth()) return
-		global.oauth = window.open(`https://github.com/login/oauth/authorize?client_id=95dfa766d1ceda2d163d${process.env.NODE_ENV == 'development' ? `&state=localhost` : `&state=` + new Date().getTime()}&scope=user%20gist`, "popup", "height=600,width=500")
-		window.addEventListener("message", data => {
-			if (data.origin == "http://localhost:3000" || data.origin == "https://injectify.samdd.me") {
-				if (typeof oauth !== "undefined" && typeof data.data == "string") {
-					oauth.close()
-					let urlParsed = url.parse(data.data)
-					let urlData = queryString.parse(urlParsed.query)
-					if (urlData.code) {
-						socket.emit("auth:github", urlData)
-					}
-				}
-			}
-		})
+		window.location = "https://github.com/login/oauth/authorize?client_id=95dfa766d1ceda2d163d&state=" + encodeURIComponent(window.location.href.split("?")[0].split("#")[0]) + "&scope=user%20gist&redirect_url="
 	}
 
 	signOut() {
