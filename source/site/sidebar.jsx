@@ -93,6 +93,11 @@ const styles = theme => ({
     cursor: 'pointer',
     userSelect: 'none',
   },
+  avatar: {
+    width: 35,
+    height: 35,
+    marginLeft: 8,
+  },
   menuButton: {
     marginLeft: 12,
     marginRight: 20,
@@ -255,7 +260,7 @@ class PersistentDrawer extends Component {
                   <Tooltip title="Log out" placement="bottom">
                     <Button color="contrast" onClick={this.signOut} className="signed-in">
                       {this.props.parentState.user.login}
-                      <Avatar src={`${this.props.parentState.user.avatar_url}&s=40`} />
+                      <Avatar src={`${this.props.parentState.user.avatar_url}&s=40`} className={classes.avatar}/>
                     </Button>
                   </Tooltip>
                 ) : (

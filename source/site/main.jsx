@@ -4,6 +4,7 @@ import queryString from "query-string"
 import io from "socket.io-client"
 import PropTypes from 'prop-types'
 import TextField from 'material-ui/TextField'
+import url from 'url'
 import { withStyles } from 'material-ui/styles'
 import Dialog, {
 	DialogActions,
@@ -51,8 +52,6 @@ class Injectify extends Component {
 					} else {
 						params[chunk[0]].push(chunk[1]);
 					}
-		
-		
 				} else {
 					params[chunk[0]] = chunk[1];
 				}
