@@ -2,32 +2,34 @@
 ---
 $drawer: 240px;
 
-::-webkit-scrollbar {
-	width: 15px;
-	background: #FAFAFA;
-}
-
-::-webkit-scrollbar-thumb {
-	background-color: #9a9898;
-	border: 2px solid #FAFAFA;
-	border-top: 4px solid #FAFAFA;
-	border-bottom: 4px solid #FAFAFA;
-	&:hover {
-		background-color: #8a8787;
+@media (min-width: 620px) {
+	::-webkit-scrollbar {
+		width: 15px;
+		background: #FAFAFA;
 	}
-	&:active {
-		background-color: #747272;
+	
+	::-webkit-scrollbar-thumb {
+		background-color: #9a9898;
+		border: 2px solid #FAFAFA;
+		border-top: 4px solid #FAFAFA;
+		border-bottom: 4px solid #FAFAFA;
+		&:hover {
+			background-color: #8a8787;
+		}
+		&:active {
+			background-color: #747272;
+		}
 	}
-}
-
-::-webkit-scrollbar-button {
-	display: none;
-	width: 0;
-	height: 0
-}
-
-::-webkit-scrollbar-corner {
-	background-color: transparent
+	
+	::-webkit-scrollbar-button {
+		display: none;
+		width: 0;
+		height: 0
+	}
+	
+	::-webkit-scrollbar-corner {
+		background-color: transparent
+	}
 }
 
 html,
