@@ -39,13 +39,17 @@ class Injectify extends Component {
 	}
 
 	componentDidMount() {
-		if (loc.code) {
-			socket.emit("auth:github", loc)
-			window.history.pushState("","", "./")
-		}
 		if (loc.token) {
 			localStorage.setItem("token", loc.token)
 			window.history.pushState("","", "./")
+		}
+		if (loc.code && loc.state) {
+			if (window.location.hostname !== url.parse(loc.state).hostname) {
+				window.location = loc.state
+			} else {
+				socket.emit("auth:github", loc)
+				window.history.pushState("","", "./")
+			}
 		}
 		this.sessionAuth()
 		socket.on(`auth:github`, data => {
