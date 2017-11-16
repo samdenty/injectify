@@ -464,18 +464,6 @@ MongoClient.connect(config.mongodb, function(err, db) {
 		})
 	})
 
-	app.get('/auth/github', (req, res) => {
-		if (req.query.code) {
-			res.sendFile(__dirname + '/www/auth.html')
-		} else {
-			res.set('Content-Type', 'application/json')
-			res.send(JSON.stringify({
-				success: false,
-				message: "No authorization token specified in request"
-			}))
-		}
-	})
-
 	app.get('/record/*', (req, res) => {
 		var validate = base64 => {
 			return new Promise((resolve, reject) => {
