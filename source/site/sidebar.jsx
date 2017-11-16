@@ -121,7 +121,7 @@ const styles = theme => ({
     ...theme.mixins.toolbar,
   },
   content: {
-    minWidth: '100%',
+    width: '100%',
     flexGrow: 1,
     backgroundColor: theme.palette.background.default,
     marginLeft: -drawerWidth,
@@ -149,6 +149,7 @@ const styles = theme => ({
   },
   paper: {
     display: 'inline-block',
+    minWidth: '100%',
   },
   tableCell: {
     padding: '4px 25px',
