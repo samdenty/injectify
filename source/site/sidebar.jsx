@@ -263,6 +263,7 @@ class PersistentDrawer extends Component {
           paper: classes.drawerPaper,
         }}
         open={open}
+        onRequestClose={this.handleDrawerClose.bind(this)}
       >
         <div className={classes.drawerInner}>
           <div className={classes.drawerHeader}>
