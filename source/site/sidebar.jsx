@@ -72,13 +72,15 @@ const styles = theme => ({
     width: '100%',
     position: 'absolute',
   },
-  appBarShift: {
-    width: `calc(100% - ${drawerWidth}px)`,
-    transition: theme.transitions.create(['margin', 'width'], {
-      easing: theme.transitions.easing.easeOut,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    marginLeft: drawerWidth,
+  '@media (min-width: 700px)': {
+    appBarShift: {
+      width: `calc(100% - ${drawerWidth}px)`,
+      transition: theme.transitions.create(['margin', 'width'], {
+        easing: theme.transitions.easing.easeOut,
+        duration: theme.transitions.duration.enteringScreen,
+      }),
+      marginLeft: drawerWidth,
+    },
   },
   newProject: {
     position: 'absolute',
@@ -138,6 +140,15 @@ const styles = theme => ({
         height: 'calc(100% - 64px)',
         marginTop: 64,
       },
+    },
+  },
+  '@media (max-width: 700px)': {
+    content: {
+      marginLeft: 0,
+    },
+    drawerPaper: {
+      flex: 'none',
+      width: '256px !important',
     },
   },
   contentShift: {
@@ -247,7 +258,7 @@ class PersistentDrawer extends Component {
 
     const drawer = (
       <Drawer
-        type="persistent"
+        type={this.props.parentState.width > 700 ? "persistent" : ''}
         classes={{
           paper: classes.drawerPaper,
         }}

@@ -24,10 +24,7 @@ let socket = io(window.location.origin),
 	last_commit,
 	loc = queryString.parse(location.search)
 
-if (git) last_commit = git.last_commit.long_sha
-
 console.log("%c  _____        _           _   _  __       \n  \\_   \\_ __  (_) ___  ___| |_(_)/ _|_   _ \n   / /\\/ '_ \\ | |/ _ \\/ __| __| | |_| | | |\n/\\/ /_ | | | || |  __/ (__| |_| |  _| |_| |\n\\____/ |_| |_|/ |\\___|\\___|\\__|_|_|  \\__, |\n            |__/  " + "%chttps://samdd.me" + "%c   |___/ " + "\n", "color: #ef5350; font-weight: bold", "color: #FF9800", "color: #ef5350", {
-	sha: last_commit,
 	environment: process.env.NODE_ENV
 })
 
@@ -35,10 +32,19 @@ class Injectify extends Component {
 	state = {
 		user: {},
 		open: false,
-		acceptOpen: false
+		acceptOpen: false,
+		width: '0',
+		height: '0',
+	}
+
+	constructor(props) {
+		super(props);
+		this.updateWindowDimensions = this.updateWindowDimensions.bind(this);
 	}
 
 	componentDidMount() {
+		this.updateWindowDimensions()
+		window.addEventListener('resize', this.updateWindowDimensions)
 		if (loc.token) {
 			localStorage.setItem("token", loc.token)
 			window.history.pushState("","", "./")
@@ -82,6 +88,14 @@ class Injectify extends Component {
 		socket.on(`err`, error => {
 			console.error("%c[websocket] " + "%cerr =>", "color: #ef5350", "color:  #FF9800", error)
 		})
+	}
+
+	componentWillUnmount() {
+		window.removeEventListener('resize', this.updateWindowDimensions);
+	}
+	
+	updateWindowDimensions() {
+		this.setState({ width: window.innerWidth, height: window.innerHeight });
 	}
 	
 	handleClickOpen = () => {
