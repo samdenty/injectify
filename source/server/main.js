@@ -892,7 +892,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 							b: g,
 							c: f
 						}
-						` + enc(`c.src=p+btoa(encodeURI(JSON.stringify(i))).split('').reverse().join('')`, true) + `
+						c.src=p+btoa(encodeURI(JSON.stringify(i))).split('').reverse().join('')
 						f = []
 					}, 3000)
 				`
