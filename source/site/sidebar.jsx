@@ -196,7 +196,7 @@ class PersistentDrawer extends Component {
   };
 
   componentWillReceiveProps(nextProps) {
-    if (nextProps.parentState.user.login !== this.props.parentState.user.login) {
+    if (nextProps.parentState.user.login !== this.props.parentState.user.login && this.props.parentState.width >= 700) {
       if (nextProps.parentState.user.login) {
         this.setState({ open: true })
       } else {
@@ -214,6 +214,7 @@ class PersistentDrawer extends Component {
   }
 
   handleDrawerClose = () => {
+    console.log('closed')
     this.setState({ open: false })
   }
 
@@ -258,7 +259,7 @@ class PersistentDrawer extends Component {
 
     const drawer = (
       <Drawer
-        type={this.props.parentState.width > 700 ? "persistent" : ''}
+        type={this.props.parentState.width >= 700 ? "persistent" : ''}
         classes={{
           paper: classes.drawerPaper,
         }}
@@ -271,7 +272,7 @@ class PersistentDrawer extends Component {
               {theme.direction === 'rtl' ? <ChevronRightIcon /> : <ChevronLeftIcon />}
             </IconButton>
           </div>
-          <ProjectList p={this.props} projects={this.props.parentState.projects} projectData={this.props.parentState.project} emit={this.props.emit} classes={classes} token={this.props.token} loading={this.loading.bind(this)} />
+          <ProjectList p={this.props} projects={this.props.parentState.projects} projectData={this.props.parentState.project} emit={this.props.emit} classes={classes} token={this.props.token} loading={this.loading.bind(this)} closeDrawer={this.handleDrawerClose.bind(this)}/>
         </div>
       </Drawer>
     )
@@ -482,6 +483,7 @@ class ProjectList extends Component {
 
 class Project extends Component {
 	handleClickOpen = (a) => {
+    if(this.props.p.p.parentState.width <= 700) this.props.p.closeDrawer()
     this.props.p.emit("project:close", {
 			name: this.props.record
 		})
