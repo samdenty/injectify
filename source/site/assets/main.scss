@@ -65,11 +65,32 @@ app {
 		}
 	}
 }
+pre {
+	&::-webkit-scrollbar {
+		background: #282C34;
+	}
+	
+	&::-webkit-scrollbar-thumb {
+		background-color: #4d525c;
+		border: 2px solid #282C34;
+		border-top: 4px solid #282C34;
+		border-bottom: 4px solid #282C34;
+		&:hover {
+			background-color: #616770;
+		}
+		&:active {
+			background-color: #353941;
+		}
+	}
 
-.content {
-	background-color: #000 !important;
-	width: 100% !important;
-	padding: 10px !important;
-	height: calc(100% - 56px) !important;
-	margin-top: 56px !important;
+	::selection {
+		background: #4d75c5;
+	}
+	::-moz-selection {
+		background: #4d75c5;
+	}
+	
+	code:nth-child(1) {
+		user-select: none;
+	}
 }

