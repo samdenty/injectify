@@ -6,6 +6,8 @@ import PropTypes from 'prop-types'
 import TextField from 'material-ui/TextField'
 import url from 'url'
 import { withStyles } from 'material-ui/styles'
+import Snackbar from 'material-ui/Snackbar';
+import CloseIcon from 'material-ui-icons/Close';
 import Dialog, {
 	DialogActions,
 	DialogContent,
@@ -35,6 +37,8 @@ class Injectify extends Component {
 		acceptOpen: false,
 		width: '0',
 		height: '0',
+		notify: false,
+		notifyOpen: false,
 	}
 
 	constructor(props) {
@@ -87,6 +91,28 @@ class Injectify extends Component {
 		})
 		socket.on(`err`, error => {
 			console.error("%c[websocket] " + "%cerr =>", "color: #ef5350", "color:  #FF9800", error)
+			this.setState({
+				notify: error,
+				notifyOpen: true
+			})
+		})
+		socket.on(`notify`, message => {
+			console.log("%c[websocket] " + "%cnotify =>", "color: #ef5350", "color:  #FF9800", message)
+			this.setState({
+				notify: message,
+				notifyOpen: true
+			})
+		})
+		socket.on(`disconnect`, () => {
+			console.error("%c[websocket] " + "%cdisconnected =>", "color: #ef5350", "color:  #FF9800", "abruptly disconnected")
+			this.setState({
+				notify: {
+					title	: "Connectivity issues",
+					message	: "Disconnected from server",
+					id		: "reconnect"
+				},
+				notifyOpen: true
+			})
 		})
 	}
 
@@ -97,7 +123,7 @@ class Injectify extends Component {
 	updateWindowDimensions() {
 		this.setState({ width: window.innerWidth, height: window.innerHeight });
 	}
-	
+
 	handleClickOpen = () => {
 		this.setState({ open: true });
 	}
@@ -118,6 +144,19 @@ class Injectify extends Component {
 		}
 	}
 
+	handleNotifyClose = (event, reason) => {
+		if (reason === 'clickaway') {
+			return;
+		}
+		this.setState({ notifyOpen: false })
+	}
+
+	handleKeyPress = (e) => {
+		if (e.key === 'Enter') {
+			this.handleRequestNewProject()
+		}
+	}
+
 	signIn() {
 		if (this.sessionAuth()) return
 		window.location = "https://github.com/login/oauth/authorize?client_id=95dfa766d1ceda2d163d&state=" + encodeURIComponent(window.location.href.split("?")[0].split("#")[0]) + "&scope=user%20gist&redirect_url="
@@ -130,6 +169,7 @@ class Injectify extends Component {
 			user: {},
 			projects: {}
 		})
+		socket.emit("auth:signout")
 	}
 
 	sessionAuth() {
@@ -137,12 +177,6 @@ class Injectify extends Component {
 			socket.emit("auth:github/token", localStorage.getItem("token"))
 			token = localStorage.getItem("token")
 			return true
-		}
-	}
-
-	handleKeyPress = (e) => {
-		if (e.key === 'Enter') {
-			this.handleRequestNewProject()
 		}
 	}
 
@@ -193,6 +227,39 @@ class Injectify extends Component {
 					</DialogActions>
 				</Dialog>
 				<Agree open={this.state.agreeOpen} />
+				<Snackbar
+					anchorOrigin={{
+						vertical: 'bottom',
+						horizontal: 'left',
+					}}
+					open={this.state.notifyOpen}
+					autoHideDuration={this.state.notify.id ? 100000 : 6000}
+					onRequestClose={this.handleNotifyClose}
+					SnackbarContentProps={{
+						'aria-describedby': 'message-id',
+					}}
+					message={<span id="message-id"><b>{this.state.notify.title}</b><br/>{this.state.notify.message}</span>}
+					action={[
+						this.state.notify.id == "reconnect" ? (
+							<Button key="reconnect" color="accent" dense onClick={() => { location.reload() }}>
+								Reconnect
+							</Button>
+						) : null,
+						this.state.notify.id == "upgrade" ? (
+							<Button key="reconnect" color="accent" dense onClick={() => { location.reload() }}>
+								Upgrade
+							</Button>
+						) : null,
+						<IconButton
+							key="close"
+							aria-label="Close"
+							color="inherit"
+							onClick={this.handleNotifyClose}
+						>
+						<CloseIcon />
+						</IconButton>,
+					]}
+					/>
 			</app>
 		)
 	}

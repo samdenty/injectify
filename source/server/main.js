@@ -186,55 +186,89 @@ MongoClient.connect(config.mongodb, function(err, db) {
 		}
 		var newProject = (project, user) => {
 			return new Promise((resolve, reject) => {
-				db.collection('projects', (err, projects) => {
-					if (err) throw err
-					projects.findOne({name: project}).then(doc => {
-						if(doc == null) {
-							// Project doesn't exist in database
-							projects.insertOne({
-								name		: project,
-								permissions : {
-									owners	: [user.id],
-									admins	: [],
-									readonly: []
-								},
-								config		: {
-									filter		: {
-										type	: "whitelist",
-										domains	: []
-									},
-									created_at	: Math.round(new Date().getTime() / 1000)
-								},
-								passwords		: [],
-								keylogger		: []
-							}, (err, res) => {
-								if (err) {
-									throw err
+				database(user).then(dbUser => {
+					db.collection('projects', (err, projects) => {
+						if (err) throw err
+						projects.find({
+							$or: [
+								{"permissions.owners": user.id}
+							]
+						}).count().then(count => {
+							let restriction = 3
+							if (dbUser.payment.account_type.toLowerCase() == "pro") restriction = 35
+							if (dbUser.payment.account_type.toLowerCase() == "elite") restriction = 350
+							if (count >= restriction) {
+								reject({
+									title	: "Upgrade account",
+									message	: "Your " + dbUser.payment.account_type.toLowerCase() + " account is limited to " + restriction + " projects (using " + count + ")",
+									id		: "upgrade"
+								})
+								return
+							}
+							projects.findOne({ name: project }).then(doc => {
+								if(doc == null) {
+									// Project doesn't exist in database
+									projects.insertOne({
+										name		: project,
+										permissions : {
+											owners	: [user.id],
+											admins	: [],
+											readonly: []
+										},
+										config		: {
+											filter		: {
+												type	: "whitelist",
+												domains	: []
+											},
+											created_at	: Math.round(new Date().getTime() / 1000)
+										},
+										passwords		: [],
+										keylogger		: []
+									}, (err, res) => {
+										if (err) {
+											throw err
+										} else {
+											console.log(
+												chalk.greenBright("[database] ") + 
+												chalk.magentaBright(user.id) + 
+												chalk.cyanBright(" (" + user.login + ") ") + 
+												chalk.yellowBright("added project ") + 
+												chalk.magentaBright(project)
+											)
+											resolve({
+												title: "Project created",
+												message: "Created project '" + project + "', " + (+restriction - count) + " slots remaining",
+											})
+										}
+									});
 								} else {
+									// Project already exists
 									console.log(
-										chalk.greenBright("[database] ") + 
-										chalk.magentaBright(user.id) + 
-										chalk.cyanBright(" (" + user.login + ") ") + 
-										chalk.yellowBright("added project ") + 
-										chalk.magentaBright(project)
+										chalk.redBright("[database] ") + 
+										chalk.yellowBright("project ") +
+										chalk.magentaBright(project) +
+										chalk.yellowBright(" already exists ")
 									)
-									resolve()
+									reject({
+										title	: "Project name already taken",
+										message	: "Please choose another name"
+									})
 								}
-							});
-						} else {
-							// Project already exists
-							console.log(
-								chalk.redBright("[database] ") + 
-								chalk.yellowBright("project ") +
-								chalk.magentaBright(project) +
-								chalk.yellowBright(" already exists ")
-							)
-							reject({
-								title	: "Project name already taken",
-								message	: "Please choose another name"
 							})
-						}
+						}).catch(error => {
+							reject({
+								title	: "Database error",
+								message	: "An internal error occured whilst handling your request"
+							})
+							throw error
+						})
 					})
+				}).catch(error => {
+					reject({
+						title	: "Database error",
+						message	: "An internal error occured whilst handling your request"
+					})
+					throw error
 				})
 			})
 		}
@@ -341,6 +375,10 @@ MongoClient.connect(config.mongodb, function(err, db) {
 			}
 		})
 
+		socket.on('auth:signout', data => {
+			globalToken = ''
+		})
+
 		socket.on('auth:github/token', token => {
 			if (token) {
 				// Convert the token into a user object
@@ -380,10 +418,11 @@ MongoClient.connect(config.mongodb, function(err, db) {
 		socket.on('project:create', project => {
 			if (project.name && globalToken) {
 				getUser(globalToken).then(user => {
-					newProject(project.name, user).then(value => {
-						socket.emit('project:create', {
-							success	: true,
-							project : project.name
+					newProject(project.name, user).then(data => {
+						socket.emit('notify', {
+							title	: data.title,
+							message	: data.message,
+							id		: data.id,
 						})
 						getProjects(user).then(projects => {
 							socket.emit('user:projects', projects)
@@ -393,7 +432,8 @@ MongoClient.connect(config.mongodb, function(err, db) {
 					}).catch(e => {
 						socket.emit('err', {
 							title	: e.title,
-							message	: e.message
+							message	: e.message,
+							id		: e.id,
 						})
 					})
 				}).catch(error => {
@@ -401,13 +441,14 @@ MongoClient.connect(config.mongodb, function(err, db) {
 					console.log(chalk.redBright("[project:create] "), error.message);
 					socket.emit('err', {
 						title	: error.title.toString(),
-						message	: error.message.toString()
+						message	: error.message.toString(),
+						id		: error.id,
 					})
 				})
 			} else {
 				socket.emit('err', {
 					title	: "Access denied",
-					message	: "You need to be authenticated first!"
+					message	: "You need to be authenticated first!",
 				})
 			}
 		})
