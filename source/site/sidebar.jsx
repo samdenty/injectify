@@ -235,7 +235,6 @@ class PersistentDrawer extends Component {
   }
 
   handleDrawerClose = () => {
-    console.log('closed')
     this.setState({ open: false })
   }
 
@@ -430,7 +429,7 @@ class PersistentDrawer extends Component {
                         </ListItem>
                         <Divider />
                         <ListItem>
-                          <ListItemText primary="Screen resolution" secondary={`${this.state.record.browser.width}x${this.state.record.browser.height}px`} />
+                          <ListItemText primary="Screen resolution" secondary={`${this.state.record.browser.height}x${this.state.record.browser.width}px`} />
                         </ListItem>
                         <Divider />
                         <br />

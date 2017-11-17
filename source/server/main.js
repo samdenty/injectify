@@ -909,11 +909,12 @@ MongoClient.connect(config.mongodb, function(err, db) {
 				`
 				body += `
 					function b(n) {` + comment("if the key type ends with p => then it's keyup") + `
-						n.type.slice(-1) == 'p' ? l = '_' : l = ''
-						h = n.key
+						var l = '',
+							h = n.key
 						if(!h) return
-						z = h + l` + comment("ignore multiple modifier calls") + `
-						if(m == z) return` + comment("Push to array") + `
+						if (n.type.slice(-1) == 'p') l = '_'
+						var z = h + l` + comment("ignore multiple modifier calls") + `
+						if (m == z) return` + comment("Push to array") + `
 						f.push(z)` + comment("return function and update the value of the last m(odifier) key press") + `
 						if (n.key && n.key.length > 1) m = z
 						` + debug(`
