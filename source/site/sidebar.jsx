@@ -150,7 +150,7 @@ const styles = theme => ({
       },
     },
   },
-  '@media (max-width: 700px)': {
+  '@media (max-width: 699px)': {
     content: {
       marginLeft: 0,
     },
@@ -356,7 +356,8 @@ class PersistentDrawer extends Component {
                           return (
                             <TableRow key={i}>
                               <TableCell className={classes.tableCell}>
-                                <Timestamp time={record.timestamp}
+                                <Timestamp
+                                  time={record.timestamp}
                                   format='ago'
                                   precision={this.props.parentState.width > 600 ? 2 : 1}
                                 />

