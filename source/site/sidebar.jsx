@@ -381,7 +381,7 @@ class PersistentDrawer extends Component {
                     </Table>
                   </Paper>
                   <br />
-                  <Javascript parentState={this.state} classes={classes} />
+                  <Javascript parentState={this.state} notify={this.props.notify} classes={classes} />
                   <Tooltip title="Show the raw JSON database entries" placement="bottom">
                     <Button onClick={this.viewJSON} color="primary">
                       View JSON
@@ -610,10 +610,6 @@ class Javascript extends Component {
     window.open(this.state.javascriptURL, '_blank')
   }
 
-  copy = () => {
-
-  }
-
   render() {
     return (
       <div>
@@ -651,9 +647,15 @@ class Javascript extends Component {
                               <Button onClick={this.raw.bind(this)} color="contrast">
                                 Raw
                               </Button>
-                              {/* <Button onClick={this.copy.bind(this)} color="contrast">
-                                Copy
-                              </Button> */}
+                              <CopyToClipboard text={result.text}
+                                onCopy={() => this.props.notify({
+                                  title: "Copied to clipboard!",
+                                  message: "Try testing it in DevTools"
+                              })}>
+                                <Button color="contrast">
+                                  Copy
+                                </Button>
+                              </CopyToClipboard>
                             </DialogActions>
                           </Dialog>
                         </div>
