@@ -705,7 +705,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 		}
 		let path
 		if(req.path.slice(-1) == "$") {
-			path = req.path.slice(-1).substring(1).split(/\/(.+)?/, 2)[1]
+			path = req.path.substring(1).split(/\/(.+)?/, 2)[1].slice(0, -1)
 			res.set('Content-Type', 'text/html')
 			   .send("<script>window.history.back()</script>")
 		} else {
@@ -721,7 +721,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 			   .status(200)
 			   .send(new Buffer(data))
 		}
-		   
+		console.log(path)
 		validate(path).then(record => {
 			Record(record).then(message => {
 				if (config.debug) console.log(

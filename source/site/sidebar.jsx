@@ -687,7 +687,7 @@ class Javascript extends Component {
                         onChange={(event, checked) => this.setState({ options: { ...this.state.options, bypassCors: checked } } )}
                       />
                     }
-                    label="Bypass CORS (redirects page instead of making a direct request)"
+                    label="Bypass CORS - redirects page"
                   />
                   <FormControlLabel
                     control={
