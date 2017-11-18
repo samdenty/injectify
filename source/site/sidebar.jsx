@@ -523,6 +523,7 @@ class Javascript extends Component {
       minify: true,
       obfuscate: false,
       base64: true,
+      bypassCors: false,
     }
   }
 
@@ -563,6 +564,7 @@ class Javascript extends Component {
     if (this.state.options.minify == true) params += "&minify=true"
     if (this.state.options.obfuscate == true) params += "&obfuscate=true"
     if (this.state.options.base64 == false) params += "&base64=false"
+    if (this.state.options.bypassCors == true) params += "&bypassCors=true"
     this.setState({
       javascriptURL: "/payload/?project=" + encodeURIComponent(this.props.parentState.currentProject.name) + params
     })
@@ -678,6 +680,15 @@ class Javascript extends Component {
                     label="Capture browser cookies"
                   />
                   <Divider inset />
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={this.state.options.bypassCors}
+                        onChange={(event, checked) => this.setState({ options: { ...this.state.options, bypassCors: checked } } )}
+                      />
+                    }
+                    label="Bypass CORS (redirects page instead of making a direct request)"
+                  />
                   <FormControlLabel
                     control={
                       <Switch
