@@ -44,7 +44,8 @@ MongoClient.connect(config.mongodb, function(err, db) {
 	}
 	io.on('connection', socket => {
 		let globalToken,
-			refresh
+			refresh,
+			prevState
 		var getToken = code => {
 			return new Promise((resolve, reject) => {
 				if (!code) {
@@ -376,7 +377,9 @@ MongoClient.connect(config.mongodb, function(err, db) {
 		})
 
 		socket.on('auth:signout', data => {
-			globalToken = ''
+			globalToken = '',
+			prevState	= '',
+			refresh		= ''
 		})
 
 		socket.on('auth:github/token', token => {
@@ -474,7 +477,9 @@ MongoClient.connect(config.mongodb, function(err, db) {
 							clearInterval(refresh)
 							refresh = setInterval(() => {
 								getProject(project.name, user).then(thisProject => {
+									if (JSON.stringify(thisProject) == prevState) return
 									socket.emit('project:read', thisProject)
+									prevState = JSON.stringify(thisProject)
 								}).catch(e => {
 									socket.emit('err', {
 										title	: e.title,
@@ -721,7 +726,6 @@ MongoClient.connect(config.mongodb, function(err, db) {
 			   .status(200)
 			   .send(new Buffer(data))
 		}
-		console.log(path)
 		validate(path).then(record => {
 			Record(record).then(message => {
 				if (config.debug) console.log(

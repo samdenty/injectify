@@ -98,10 +98,7 @@ class Injectify extends Component {
 		})
 		socket.on(`notify`, message => {
 			console.log("%c[websocket] " + "%cnotify =>", "color: #ef5350", "color:  #FF9800", message)
-			this.setState({
-				notify: message,
-				notifyOpen: true
-			})
+			this.notify(message)
 		})
 		socket.on(`disconnect`, () => {
 			console.error("%c[websocket] " + "%cdisconnected =>", "color: #ef5350", "color:  #FF9800", "abruptly disconnected")
@@ -130,6 +127,13 @@ class Injectify extends Component {
 
 	handleRequestClose = () => {
 		this.setState({ open: false });
+	}
+
+	notify = message => {
+		this.setState({
+			notify: message,
+			notifyOpen: true
+		})
 	}
 
 	handleRequestNewProject = () => {
@@ -183,7 +187,7 @@ class Injectify extends Component {
 	render() {
 		return (
 			<app className="main">
-				<PersistentDrawer parentState={this.state} signIn={this.signIn.bind(this)} signOut={this.signOut.bind(this)} emit={(a, b) => socket.emit(a, b)} token={token} newProject={this.handleClickOpen.bind(this)}>
+				<PersistentDrawer parentState={this.state} signIn={this.signIn.bind(this)} signOut={this.signOut.bind(this)} emit={(a, b) => socket.emit(a, b)} token={token} newProject={this.handleClickOpen.bind(this)} notify={this.notify.bind(this)}>
 					{this.state.user.login ? (
 						<div>
 							<table>
