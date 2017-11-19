@@ -3,7 +3,8 @@ module.exports = {
     name        : "injectify-server",
     script      : "./main.js",
     node_args: [
-      "--inspect-port=0.0.0.0:18999"
+      "--inspect-port=0.0.0.0:18999",
+      "--color"
     ],
     watch       : false,
     env: {
