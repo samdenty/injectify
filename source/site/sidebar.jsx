@@ -445,8 +445,8 @@ class PersistentDrawer extends Component {
                           </ListItem>
                         </CopyToClipboard>
                         <Divider />
-                        <ListItem button onClick={() => {window.open(this.state.record.url).bind}}>
-                          <ListItemText primary="Capture URL" secondary={this.state.record.url} />
+                        <ListItem button onClick={() => {window.open(this.state.record.url.href).bind}}>
+                          <ListItemText primary="Capture URL" secondary={this.state.record.url.href} />
                         </ListItem>
                         <Divider />
                         <ListItem button onClick={() => {window.open("https://tools.keycdn.com/geo?host=" + this.state.record.ip.query)}}>

