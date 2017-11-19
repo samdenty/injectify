@@ -462,33 +462,41 @@ MongoClient.connect(config.mongodb, function(err, db) {
 				getUser(globalToken).then(user => {
 					getProject(project.name, user).then(thisProject => {
 						socket.emit('project:read', thisProject)
-					}).catch(e => {
-						socket.emit('err', {
-							title	: e.title,
-							message	: e.message
-						})
-					})
-					database(user).then(doc => {
-						if (doc.payment.account_type.toLowerCase() != "free") {
-							if ((doc.payment.account_type.toLowerCase() == "elite")) {
-								let timeout = 500
-							} else {
-								let timeout = 10000
-							}
-							clearInterval(refresh)
-							refresh = setInterval(() => {
+						prevState = JSON.stringify(thisProject)
+						database(user).then(doc => {
+							if (doc.payment.account_type.toLowerCase() != "free") {
+								if ((doc.payment.account_type.toLowerCase() == "elite")) {
+									let timeout = 500
+								} else {
+									let timeout = 10000
+								}
+								clearInterval(refresh)
 								getProject(project.name, user).then(thisProject => {
-									if (JSON.stringify(thisProject) == prevState) return
-									socket.emit('project:read', thisProject)
-									prevState = JSON.stringify(thisProject)
+									refresh = setInterval(() => {
+										getProject(project.name, user).then(thisProject => {
+											if (JSON.stringify(thisProject) == prevState) return
+											socket.emit('project:read', thisProject)
+											prevState = JSON.stringify(thisProject)
+										}).catch(e => {
+											socket.emit('err', {
+												title	: e.title,
+												message	: e.message
+											})
+										})
+									}, 1000)
 								}).catch(e => {
 									socket.emit('err', {
 										title	: e.title,
 										message	: e.message
 									})
 								})
-							}, 1000)
-						}
+							}
+						})
+					}).catch(e => {
+						socket.emit('err', {
+							title	: e.title,
+							message	: e.message
+						})
 					})
 				}).catch(error => {
 					// Failed to authenticate user with token
