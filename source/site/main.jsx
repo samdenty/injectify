@@ -75,7 +75,7 @@ class Injectify extends Component {
 				let project = window.location.pathname.slice(10)
 				if (project) {
 					socket.emit("project:read", {
-						name: project
+						name: decodeURIComponent(project)
 					})
 				}
 			}
