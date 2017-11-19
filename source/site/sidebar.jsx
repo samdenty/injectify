@@ -529,6 +529,7 @@ class Project extends Component {
 			name: this.props.record
     })
     this.props.p.loading(true)
+    window.history.pushState('', this.props.record + ' - Injectify', '/projects/' + this.props.record)
 	}
 
 	render() {

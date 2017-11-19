@@ -1098,12 +1098,22 @@ MongoClient.connect(config.mongodb, function(err, db) {
 		})
 		// Proxy through to webpack-dev-server if in development mode
 		app.use('/projects/*', (req, res) => {
-			request("http://localhost:8080/").pipe(res);
+			request("http://localhost:8080" + req.originalUrl.substring(9), (error, response) => {
+				if (error) throw error
+				if (response.statusCode == 404) {
+					request("http://localhost:8080/").pipe(res)
+				} else {
+					request("http://localhost:8080" + req.originalUrl.substring(9)).pipe(res)
+				}
+			})
 		})
 		app.use('/*', (req, res) => {
 			request("http://localhost:8080" + req.originalUrl).pipe(res);
 		})
 	} else {
+		app.use('/projects/*', (req, res) => {
+			res.sendFile(path.join(__dirname, '../../output/site/index.html'))
+		})
 		app.use(express.static(path.join(__dirname, '../../output/site')))
 	}
 })

@@ -71,6 +71,14 @@ class Injectify extends Component {
 					agreeOpen: true
 				})
 			}
+			if (window.location.pathname.toLowerCase().slice(0, 10) == "/projects/") {
+				let project = window.location.pathname.toLowerCase().slice(10)
+				if (project) {
+					socket.emit("project:read", {
+						name: project
+					})
+				}
+			}
 			console.log("%c[websocket] " + "%cauth:github =>", "color: #ef5350", "color:  #FF9800", data)
 		})
 		socket.on(`auth:github/stale`, data => {
@@ -88,6 +96,12 @@ class Injectify extends Component {
 			this.setState({
 				project: project
 			})
+			document.getElementsByTagName('title')[0].innerHTML =
+				project.name +
+				' - Injectify'
+				.replace('<','&lt;')
+				.replace('>','&gt;')
+				.replace(' & ',' &amp; ')
 		})
 		socket.on(`err`, error => {
 			console.error("%c[websocket] " + "%cerr =>", "color: #ef5350", "color:  #FF9800", error)
