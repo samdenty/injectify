@@ -9,6 +9,7 @@ import AppBar from 'material-ui/AppBar';
 import Toolbar from 'material-ui/Toolbar';
 import List, { ListItem, ListItemIcon, ListItemText } from 'material-ui/List';
 import { MenuItem } from 'material-ui/Menu';
+import url from 'url';
 import Typography from 'material-ui/Typography';
 import TextField from 'material-ui/TextField';
 import Divider from 'material-ui/Divider';
@@ -371,9 +372,31 @@ class PersistentDrawer extends Component {
                                 {record.password}
                               </TableCell>
                               <TableCell className={classes.tableCell} numeric>
-                                <Button color="primary" dense onClick={() => {this.handleRecordOpen(record)}}>
-                                  More
-                                </Button>
+                                <Tooltip
+                                  title={
+                                    <span>
+                                      {record.url.href && url.parse(record.url.href).hostname && record.url.title ? (
+                                        <span>
+                                          {url.parse(record.url.href).hostname} ({record.url.title})
+                                          <br/>
+                                        </span>
+                                      ) : null}
+                                      {record.ip.query && record.ip.country ? (
+                                        <span>
+                                          {record.ip.query} ({record.ip.country})
+                                          <br/>
+                                        </span>
+                                      ) : null}
+                                    </span>
+                                  }
+                                  placement="left"
+                                  disableTriggerFocus
+                                  disableTriggerTouch
+                                >
+                                  <Button color="primary" dense onClick={() => {this.handleRecordOpen(record)}}>
+                                    More
+                                  </Button>
+                                </Tooltip>
                               </TableCell>
                             </TableRow>
                           )
