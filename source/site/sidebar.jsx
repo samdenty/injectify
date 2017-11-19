@@ -253,6 +253,8 @@ class PersistentDrawer extends Component {
   returnHome = () => {
     this.setState({ currentProject: null })
     this.props.emit("project:close")
+    window.history.pushState('', 'Injectify', '/')
+    document.getElementsByTagName('title')[0].innerHTML = 'Injectify'
   }
 
   loading = value => {
