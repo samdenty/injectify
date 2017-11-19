@@ -1,6 +1,7 @@
 const path = require("path")
 const webpack = require("webpack")
 const UglifyJSPlugin = require('uglifyjs-webpack-plugin')
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
 
 module.exports = {
 	entry: ["./main.jsx"],
@@ -18,7 +19,8 @@ module.exports = {
 	plugins: [
 		new webpack.DefinePlugin({
 			'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development')
-		})
+		}),
+		new BundleAnalyzerPlugin()
 		//new UglifyJSPlugin()
 	],
 	resolve: {
