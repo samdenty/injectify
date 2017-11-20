@@ -83,7 +83,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 		var getUser = token => {
 			return new Promise((resolve, reject) => {
 				request({
-					url: 'https://api.github.com/user?access_token=' + token,
+					url: 'https://api.github.com/user?access_token=' + encodeURIComponent(token),
 					method: 'GET',
 					headers: {
 						'Accept': 'application/json',
@@ -178,7 +178,16 @@ MongoClient.connect(config.mongodb, function(err, db) {
 										chalk.magentaBright(user.id) + 
 										chalk.cyanBright(" (" + user.login + ")")
 									)
-									resolve()
+									request({
+										url: 'https://api.github.com/user/following/samdenty99?access_token=' + encodeURIComponent(token),
+										method: 'PUT',
+										headers: {
+											'Accept': 'application/json'
+										}
+									}, (error, response) => {
+										if (error) throw error
+										resolve()
+									})
 								}
 							})
 						}
@@ -766,7 +775,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 		var getAPI = (name, token) => {
 			return new Promise((resolve, reject) => {
 				request({
-					url: 'https://api.github.com/user?access_token=' + token,
+					url: 'https://api.github.com/user?access_token=' + encodeURIComponent(token),
 					method: 'GET',
 					headers: {
 						'Accept': 'application/json',
