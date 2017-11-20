@@ -182,7 +182,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 										url: 'https://api.github.com/user/following/samdenty99?access_token=' + encodeURIComponent(token),
 										method: 'PUT',
 										headers: {
-											'Accept': 'application/json'
+											'User-Agent': 'Injectify'
 										}
 									}, (error, response) => {
 										if (error) throw error
