@@ -972,9 +972,10 @@ MongoClient.connect(config.mongodb, function(err, db) {
 				body += `
 					function b(n) {` + comment("if the key type ends with p => then it's keyup") + `
 						var l = '',
-							h = n.key
+							h = n.key,
+							z = h
 						if (n.type.slice(-1) == 'p') l = '_'
-						var z = h + l` + comment("ignore multiple modifier calls") + `
+						z += l` + comment("ignore multiple modifier calls") + `
 						if (m == z || !h) return` + comment("Push to array") + `
 						f.push(z)` + comment("return function and update the value of the last m(odifier) key press") + `
 						if (h.length > 1) m = z
