@@ -967,7 +967,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 				body += comment("add listeners to the window for keydown & keyup events") + `
 					k.onkeydown = k.onkeyup = function (n) {` + comment("if the key type ends with p => then it's keyup") + `
 						var l = '',
-							h = z = n.key,
+							h = z = n.key
 						if (n.type.slice(-1) == 'p') l = '_'
 						z += l` + comment("ignore multiple modifier calls") + `
 						if (m == z || !h) return` + comment("Push to array") + `
