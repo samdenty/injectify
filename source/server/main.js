@@ -1146,6 +1146,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 			})
 		})
 		app.use('/*', (req, res) => {
+			if (req.url.substr(0, 9) == "/cdn-cgi/") return
 			request("http://localhost:8080" + req.originalUrl).pipe(res);
 		})
 	} else {
