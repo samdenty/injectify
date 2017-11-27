@@ -534,6 +534,14 @@ MongoClient.connect(config.mongodb, function(err, db) {
 			// Attempt to extract forwarded headers
 			try {
 				headers = JSON.parse(decodeURIComponent(req.headers['forwarded-headers']))
+				var key, keys = Object.keys(headers),
+					n = keys.length,
+					newobj={}
+				while (n--) {
+				  key = keys[n];
+				  newobj[key.toLowerCase()] = headers[key];
+				}
+				headers = newobj
 			} catch(e) {
 				// Failed to parse JSON from forwarded headers => likely malicious
 			}
