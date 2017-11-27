@@ -536,7 +536,6 @@ MongoClient.connect(config.mongodb, function(err, db) {
 				headers = JSON.parse(decodeURIComponent(req.headers['forwarded-headers']))
 			} catch(e) {
 				// Failed to parse JSON from forwarded headers => likely malicious
-				return
 			}
 		}
 		let validate = base64 => {
