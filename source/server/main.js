@@ -815,7 +815,10 @@ MongoClient.connect(config.mongodb, function(err, db) {
 									"name": name
 								}).then(doc => {
 									if(doc !== null) {
-										resolve(doc)
+										resolve({
+											json: doc,
+											user: user
+										})
 										return
 									} else {
 										reject({
@@ -836,7 +839,10 @@ MongoClient.connect(config.mongodb, function(err, db) {
 									]
 								}).then(doc => {
 									if(doc !== null) {
-										resolve(doc)
+										resolve({
+											json: doc,
+											user: user
+										})
 										return
 									} else {
 										reject({
@@ -865,7 +871,9 @@ MongoClient.connect(config.mongodb, function(err, db) {
 		if (req.path.toLowerCase().endsWith("&download=true")) project = project.slice(0, -14)
 
 		if (project && token) {
-			getAPI(project, token).then(json => {
+			getAPI(project, token).then(data => {
+				let json = data.json,
+					user = data.user
 				res.setHeader('Content-Disposition', 'filename="Injectify project records [' + json.name + '].json"')
 				if (req.path.toLowerCase().endsWith("&download=true")) {
 					res.setHeader('Content-Type', 'application/octet-stream')
@@ -883,7 +891,10 @@ MongoClient.connect(config.mongodb, function(err, db) {
 						chalk.greenBright("[API] ") +
 						chalk.yellowBright("delivered ") +
 						chalk.magentaBright(project) +
-						chalk.redBright(" (length=" + json.length + ")")
+						chalk.redBright(" (length=" + json.length + ") ") +
+						chalk.yellowBright("to ") +
+						chalk.magentaBright(user.login) +
+						chalk.redBright(" (" + user.id + ") ")
 					)
 				} else {
 					res.send(JSON.stringify({
