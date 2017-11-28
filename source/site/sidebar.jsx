@@ -20,6 +20,8 @@ import ChevronRightIcon from 'material-ui-icons/ChevronRight';
 import Button from 'material-ui/Button';
 import Avatar from 'material-ui/Avatar';
 import Tooltip from 'material-ui/Tooltip';
+import Radio, { RadioGroup } from 'material-ui/Radio';
+import { FormGroup, FormLabel, FormControl, FormControlLabel, FormHelperText } from 'material-ui/Form';
 import Timestamp from 'react-timestamp';
 import ListSubheader from 'material-ui/List/ListSubheader';
 import SettingsIcon from 'material-ui-icons/Settings';
@@ -31,7 +33,6 @@ import { CircularProgress } from 'material-ui/Progress';
 import Slide from 'material-ui/transitions/Slide';
 import ReactJson from 'react-json-view';
 import {CopyToClipboard} from 'react-copy-to-clipboard';
-import { FormControlLabel, FormGroup } from 'material-ui/Form';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { atomOneDark } from 'react-syntax-highlighter/styles/hljs';
 import { indigo } from 'material-ui/colors';
@@ -571,15 +572,13 @@ class Javascript extends Component {
     open: false,
     javascriptURL: false,
     options: {
+      format: 'minified',
       cookies: true,
-      sessionStorage: true,
-      localStorage: true,
+      storage: true,
       keylogger: false,
-      minify: true,
-      obfuscate: false,
       base64: true,
       bypassCors: false,
-    }
+    },
   }
 
   handleClickOpen = () => {
@@ -605,25 +604,30 @@ class Javascript extends Component {
       localStorage.setItem("payload-generator", '')
       return
     }
-    if (savedOptions) {
+    if (savedOptions && Object.keys(savedOptions).length == Object.keys(this.state.options).length) {
       this.setState({ options: savedOptions})
+    } else {
+      localStorage.setItem("payload-generator", '')
     }
+  }
+
+  componentDidUpdate() {
+    localStorage.setItem("payload-generator", JSON.stringify(this.state.options))
   }
 
   viewJS = () => {
     let params = ''
     if (this.state.options.cookies == false) params += "&cookies=false"
-    if (this.state.options.localStorage == false) params += "&localStorage=false"
-    if (this.state.options.sessionStorage == false) params += "&sessionStorage=false"
+    if (this.state.options.storage == false) params += "&sessionStorage=false&localStorage=false"
+    if (this.state.options.format == 'commented') params += "&comments=true"
+    if (this.state.options.format == 'minified') params += "&minify=true"
+    if (this.state.options.format == 'obfuscated') params += "&obfuscate=true"
     if (this.state.options.keylogger == true) params += "&keylogger=true"
-    if (this.state.options.minify == true) params += "&minify=true"
-    if (this.state.options.obfuscate == true) params += "&obfuscate=true"
     if (this.state.options.base64 == false) params += "&base64=false"
     if (this.state.options.bypassCors == true) params += "&bypassCors=true"
     this.setState({
       javascriptURL: "/payload/?project=" + encodeURIComponent(this.props.parentState.currentProject.name) + params
     })
-    localStorage.setItem("payload-generator", JSON.stringify(this.state.options))
   }
 
   back = () => {
@@ -704,28 +708,19 @@ class Javascript extends Component {
                       <Switch
                         checked={this.state.options.keylogger}
                         onChange={(event, checked) => this.setState({ options: { ...this.state.options, keylogger: checked } } )}
+                        disabled={this.state.options.bypassCors ? true : false}
                       />
                     }
                     label="Record keystrokes (keylogger)"
                   />
-                  <Divider inset />
                   <FormControlLabel
                     control={
                       <Switch
-                        checked={this.state.options.sessionStorage}
-                        onChange={(event, checked) => this.setState({ options: { ...this.state.options, sessionStorage: checked } } )}
+                        checked={this.state.options.storage}
+                        onChange={(event, checked) => this.setState({ options: { ...this.state.options, storage: checked } } )}
                       />
                     }
-                    label="Capture session storage"
-                  />
-                  <FormControlLabel
-                    control={
-                      <Switch
-                        checked={this.state.options.localStorage}
-                        onChange={(event, checked) => this.setState({ options: { ...this.state.options, localStorage: checked } } )}
-                      />
-                    }
-                    label="Capture local storage"
+                    label="Capture local &amp; session storage"
                   />
                   <FormControlLabel
                     control={
@@ -744,7 +739,7 @@ class Javascript extends Component {
                         onChange={(event, checked) => this.setState({ options: { ...this.state.options, bypassCors: checked } } )}
                       />
                     }
-                    label="Bypass CORS - redirects page"
+                    label="Bypass CORS (redirects page)"
                   />
                   <FormControlLabel
                     control={
@@ -755,24 +750,18 @@ class Javascript extends Component {
                     }
                     label="Base64 encode suspicious keywords"
                   />
-                  <FormControlLabel
-                    control={
-                      <Switch
-                        checked={this.state.options.minify}
-                        onChange={(event, checked) => this.setState({ options: { ...this.state.options, minify: checked } } )}
-                      />
-                    }
-                    label="Minify outputted javascript"
-                  />
-                  <FormControlLabel
-                    control={
-                      <Switch
-                        checked={this.state.options.obfuscate}
-                        onChange={(event, checked) => this.setState({ options: { ...this.state.options, obfuscate: checked } } )}
-                      />
-                    }
-                    label="Obfuscate outputted javascript"
-                  />
+                  <Divider inset />
+                <FormControl component="fieldset">
+                  <RadioGroup
+                    value={this.state.options.format}
+                    onChange={(event, value) => this.setState({ options: { ...this.state.options, format: value }})}
+                  >
+                    <FormControlLabel value="minified" control={<Radio />} label="Minified" />
+                    <FormControlLabel value="obfuscated" control={<Radio />} label="Obfuscated" />
+                    <FormControlLabel value="formatted" control={<Radio />} label="Formatted" />
+                    <FormControlLabel value="commented" control={<Radio />} label="Commented" />
+                  </RadioGroup>
+                </FormControl>
                 </FormGroup>
               </DialogContent>
               <DialogActions>

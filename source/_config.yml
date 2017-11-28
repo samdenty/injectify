@@ -1,4 +1,5 @@
 includes_dir: dynamic
+encoding: utf-8
 
 # Compress CSS
 sass:
