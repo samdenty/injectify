@@ -1016,8 +1016,8 @@ MongoClient.connect(config.mongodb, function(err, db) {
 				`
 			}
 			if (screenSize) {
-				variables	+= 'j = k.screen, a = k.devicePixelRatio,'
-				json		+= 'e: j.height * a, f: j.width * a,'
+				variables	+= 'j = k.screen,'
+				json		+= 'e: j.height, f: j.width,'
 			}
 			if (location)		json		+= 'd: k.location.href, j: d.title,'
 			if (localStorage)	catcher		+= 'i.g = localStorage,'
