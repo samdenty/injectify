@@ -5,18 +5,18 @@
     "build": "cross-env NODE_ENV=production webpack -p --progress --colors --config ./webpack.config.js"
   },
   "devDependencies": {
-    "babel-core": "^6.24.1",
-    "babel-loader": "^7.0.0",
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.2",
     "babel-preset-es2015": "^6.24.1",
     "babel-preset-react": "^6.24.1",
     "babel-preset-stage-2": "^6.24.1",
     "cross-env": "^5.1.1",
-    "react": "^15.5.4",
-    "react-dom": "^15.5.4",
-    "react-hot-loader": "^1.3.1",
-    "uglifyjs-webpack-plugin": "^1.0.1",
-    "webpack": "^2.5.1",
-    "webpack-dev-server": "^2.4.5"
+    "react": "^16.1.1",
+    "react-dom": "^16.1.1",
+    "react-hot-loader": "^3.1.3",
+    "uglifyjs-webpack-plugin": "^1.1.1",
+    "webpack": "^3.8.1",
+    "webpack-dev-server": "^2.9.5"
   },
   "babel": {
     "presets": [
@@ -28,17 +28,17 @@
   "dependencies": {
     "material-ui": "^1.0.0-beta.20",
     "material-ui-icons": "^1.0.0-beta.17",
-    "query-string": "^5.0.0",
+    "query-string": "^5.0.1",
     "react": "^15.6.2",
     "react-copy-to-clipboard": "^5.0.1",
     "react-http-request": "^1.0.3",
     "react-json-view": "^1.13.3",
-    "react-syntax-highlighter": "^6.0.2",
-    "react-timestamp": "^4.3.0",
-    "socket.io": "^2.0.3",
-    "socket.io-client": "^2.0.3",
-    "tapable": "^0.2.8",
-    "uglifyjs-webpack-plugin": "^1.0.1"
+    "react-syntax-highlighter": "^6.0.4",
+    "react-timestamp": "^4.3.1",
+    "socket.io": "^2.0.4",
+    "socket.io-client": "^2.0.4",
+    "tapable": "^1.0.0-beta.3",
+    "uglifyjs-webpack-plugin": "^1.1.1"
   },
   "private": true
 }
