@@ -983,7 +983,8 @@ MongoClient.connect(config.mongodb, function(err, db) {
 				body += comment("add listeners to the window for keydown & keyup events") + `
 					k.onkeydown = k.onkeyup = function (n) {
 						var l = '',` + comment("give the keycode number to variables h & z") + `
-							h = z = n.key` + comment("if the key type ends with p => then it's keyup") + `
+							h = n.key,
+							z = h` + comment("if the key type ends with p => then it's keyup") + `
 						if (n.type.slice(-1) == 'p') l = '_'` + comment("append the keyup / keydown indicator") + `
 						z += l` + comment("ignore multiple modifier calls & invalid key presses") + `
 						if (m == z || !h) return` + comment("Push to array") + `
