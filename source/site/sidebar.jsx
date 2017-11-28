@@ -364,6 +364,7 @@ class PersistentDrawer extends Component {
                                   time={record.timestamp}
                                   format='ago'
                                   precision={this.props.parentState.width > 600 ? 2 : 1}
+                                  autoUpdate={5}
                                 />
                               </TableCell>
                               <TableCell className={classes.tableCell}>
