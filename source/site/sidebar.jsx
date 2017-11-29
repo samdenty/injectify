@@ -575,7 +575,7 @@ class Javascript extends Component {
     options: {
       format: 'minified',
       cookies: true,
-      storage: true,
+      storage: false,
       keylogger: false,
       base64: true,
       bypassCors: false,
