@@ -23,11 +23,14 @@ import Tooltip from 'material-ui/Tooltip';
 import Radio, { RadioGroup } from 'material-ui/Radio';
 import { FormGroup, FormLabel, FormControl, FormControlLabel, FormHelperText } from 'material-ui/Form';
 import Timestamp from 'react-timestamp';
+import Tabs, { Tab } from 'material-ui/Tabs';
 import ListSubheader from 'material-ui/List/ListSubheader';
-import SettingsIcon from 'material-ui-icons/Settings';
 import Paper from 'material-ui/Paper';
 import { LinearProgress } from 'material-ui/Progress';
 import AddIcon from 'material-ui-icons/Add';
+import KeyboardIcon from 'material-ui-icons/Keyboard';
+import SettingsIcon from 'material-ui-icons/Settings';
+import LockIcon from 'material-ui-icons/Lock';
 import CloseIcon from 'material-ui-icons/Close';
 import { CircularProgress } from 'material-ui/Progress';
 import Slide from 'material-ui/transitions/Slide';
@@ -152,6 +155,9 @@ const styles = theme => ({
       },
     },
   },
+  tabsContent: {
+    marginTop: 134,
+  },
   '@media (max-width: 699px)': {
     content: {
       marginLeft: 0,
@@ -209,6 +215,9 @@ const styles = theme => ({
     boxShadow: 'none !important',
     overflow: 'hidden !important',
   },
+  tabs: {
+    background: indigo[600]
+  },
 })
 
 class PersistentDrawer extends Component {
@@ -217,6 +226,7 @@ class PersistentDrawer extends Component {
     recordOpen: false,
     currentProject: null,
     loading: false,
+    tab: 0,
   };
 
   componentWillReceiveProps(nextProps) {
@@ -274,6 +284,13 @@ class PersistentDrawer extends Component {
 		window.open("/api/" + encodeURIComponent(this.props.token) + "/" + encodeURIComponent(this.state.currentProject.name) /*+ "&download=true"*/)
   }
 
+  changeTab = (event, value) => {
+    this.setState({ tab: value })
+    if (value == 0) window.history.pushState('', ' - Injectify', '/projects/' + encodeURIComponent(this.state.currentProject.name) + '/passwords') 
+    if (value == 1) window.history.pushState('', ' - Injectify', '/projects/' + encodeURIComponent(this.state.currentProject.name) + '/keylogger') 
+    if (value == 2) window.history.pushState('', ' - Injectify', '/projects/' + encodeURIComponent(this.state.currentProject.name) + '/config') 
+  }
+
   render() {
     const { classes, theme, signIn } = this.props;
     const { open } = this.state;
@@ -312,6 +329,20 @@ class PersistentDrawer extends Component {
                 )
               }
             </Toolbar>
+            {this.state.currentProject ? (
+              <Tabs
+                value={this.state.tab}
+                onChange={this.changeTab}
+                indicatorColor={indigo[100]}
+                fullWidth
+                className={classes.tabs}
+              >
+                <Tab label="Passwords" icon={<LockIcon />} />
+                <Tab label="Keylogger" icon={<KeyboardIcon />} />
+                <Tab label="Project config" icon={<SettingsIcon />} />
+              </Tabs>
+            ) : null
+          }
           </AppBar>
           {this.state.loading ? (<LinearProgress className={classes.loading} /> ) : null}
           <Drawer
@@ -332,11 +363,13 @@ class PersistentDrawer extends Component {
             </div>
           </Drawer>
           {this.state.currentProject ? (
-                <main
-                  className={classNames(classes.content, classes[`content`], {
-                    [classes.contentShift]: open,
-                  })}
-                >
+            <main
+              className={`${classNames(classes.content, classes[`content`], {
+                [classes.contentShift]: open,
+              })} ${classes.tabsContent}`}
+            >
+              {this.state.tab === 0 && 
+                <span>
                   <Paper className={classes.paper}>
                     <Table>
                       <TableHead>
@@ -412,11 +445,6 @@ class PersistentDrawer extends Component {
                   <Tooltip title="Show the raw JSON database entries" placement="bottom">
                     <Button onClick={this.viewJSON} color="primary">
                       View JSON
-                    </Button>
-                  </Tooltip>
-                  <Tooltip title="New project" placement="left">
-                    <Button fab color="primary" aria-label="add" className={classes.newProject} onClick={this.props.newProject}>
-                      <AddIcon />
                     </Button>
                   </Tooltip>
                   {this.state.recordOpen ? (
@@ -496,7 +524,24 @@ class PersistentDrawer extends Component {
                     </Dialog>
                     ) : null
                   }
-                </main>
+                </span>
+              }
+              {this.state.tab === 1 && 
+                <span>
+                  Coming Soon
+                </span>
+              }
+              {this.state.tab === 2 && 
+                <span>
+                  Coming Soon
+                </span>
+              }
+              <Tooltip title="New project" placement="left">
+                <Button fab color="primary" aria-label="add" className={classes.newProject} onClick={this.props.newProject}>
+                  <AddIcon />
+                </Button>
+              </Tooltip>
+            </main>
               ) : (
                 <main
                   className={classNames(classes.content, classes[`content`], {
