@@ -215,7 +215,7 @@ class Injectify extends Component {
 						</div>
 					) : (
 						<div>
-							Please login to continue
+							This software is still in development! Please login to continue
 						</div>
 					)}
 				</PersistentDrawer>

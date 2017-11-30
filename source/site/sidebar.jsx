@@ -3,6 +3,7 @@ import React, { Component } from "react";
 import Request from 'react-http-request';
 import PropTypes from 'prop-types';
 import { withStyles } from 'material-ui/styles';
+import Chip from 'material-ui/Chip';
 import classNames from 'classnames';
 import Drawer from 'material-ui/Drawer';
 import AppBar from 'material-ui/AppBar';
@@ -13,6 +14,7 @@ import url from 'url';
 import Typography from 'material-ui/Typography';
 import TextField from 'material-ui/TextField';
 import Divider from 'material-ui/Divider';
+import Save from 'material-ui-icons/Save';
 import IconButton from 'material-ui/IconButton';
 import MenuIcon from 'material-ui-icons/Menu';
 import ChevronLeftIcon from 'material-ui-icons/ChevronLeft';
@@ -25,6 +27,7 @@ import { FormGroup, FormLabel, FormControl, FormControlLabel, FormHelperText } f
 import Timestamp from 'react-timestamp';
 import Tabs, { Tab } from 'material-ui/Tabs';
 import ListSubheader from 'material-ui/List/ListSubheader';
+import Input, { InputLabel } from 'material-ui/Input';
 import Paper from 'material-ui/Paper';
 import { LinearProgress } from 'material-ui/Progress';
 import AddIcon from 'material-ui-icons/Add';
@@ -37,8 +40,9 @@ import Slide from 'material-ui/transitions/Slide';
 import ReactJson from 'react-json-view';
 import {CopyToClipboard} from 'react-copy-to-clipboard';
 import SyntaxHighlighter from 'react-syntax-highlighter';
+import Card, { CardActions, CardContent } from 'material-ui/Card';
 import { atomOneDark } from 'react-syntax-highlighter/styles/hljs';
-import { indigo } from 'material-ui/colors';
+import { indigo, red } from 'material-ui/colors';
 import Switch from 'material-ui/Switch';
 import Dialog, {
 	DialogActions,
@@ -97,6 +101,9 @@ const styles = theme => ({
       }),
       marginLeft: drawerWidth,
     },
+  },
+  leftIcon: {
+    marginRight: 10,
   },
   newProject: {
     position: 'absolute',
@@ -182,6 +189,8 @@ const styles = theme => ({
     display: 'inline-block',
     minWidth: '100%',
   },
+  contentCard: {
+  },
   tableCell: {
     padding: '4px 25px',
   },
@@ -245,6 +254,12 @@ class PersistentDrawer extends Component {
       this.loading(false)
       this.setState({ currentProject: nextProps.parentState.project})
     }
+  }
+
+  componentWillMount() {
+    if (window.location.href.slice(-10) == "/passwords") this.setState({tab: 0})
+    if (window.location.href.slice(-10) == "/keylogger") this.setState({tab: 1})
+    if (window.location.href.slice(-7 ) ==    "/config") this.setState({tab: 2})
   }
 
   handleDrawerOpen = () => {
@@ -317,7 +332,7 @@ class PersistentDrawer extends Component {
                 <MenuIcon />
               </IconButton>
               <Typography type="title" color="inherit" noWrap className={classes.appBarHeader} onClick={this.returnHome.bind(this)}>
-                  Injectify
+                  Injectify [BETA]
               </Typography>
               {this.props.parentState.user.login ? (
                   <Tooltip title="Log out" placement="bottom">
@@ -501,10 +516,15 @@ class PersistentDrawer extends Component {
                           </ListItem>
                         </CopyToClipboard>
                         <Divider />
-                        <ListItem button onClick={() => {window.open(this.state.record.url.href).bind}}>
-                          <ListItemText primary="Capture URL" secondary={this.state.record.url.href} />
-                        </ListItem>
-                        <Divider />
+                        {this.state.record.url.href ? (
+                            <span>
+                              <ListItem button onClick={() => {window.open(this.state.record.url.href).bind}}>
+                                <ListItemText primary="Capture URL" secondary={this.state.record.url.href} />
+                              </ListItem>
+                              <Divider />
+                            </span>
+                          ) : null
+                        }
                         <ListItem button onClick={() => {window.open("https://tools.keycdn.com/geo?host=" + this.state.record.ip.query)}}>
                           <ListItemText primary="IP Address" secondary={`${this.state.record.ip.query}${this.state.record.ip.country ? " (" + this.state.record.ip.city + " - " + this.state.record.ip.country + ")" : ""}`} />
                         </ListItem>
@@ -636,10 +656,15 @@ class PersistentDrawer extends Component {
                           </ListItem>
                         </CopyToClipboard>
                         <Divider />
-                        <ListItem button onClick={() => {window.open(this.state.record.url.href).bind}}>
-                          <ListItemText primary="Capture URL" secondary={this.state.record.url.href} />
-                        </ListItem>
-                        <Divider />
+                        {this.state.record.url.href ? (
+                            <span>
+                              <ListItem button onClick={() => {window.open(this.state.record.url.href).bind}}>
+                                <ListItemText primary="Capture URL" secondary={this.state.record.url.href} />
+                              </ListItem>
+                              <Divider />
+                            </span>
+                          ) : null
+                        }
                         <ListItem button onClick={() => {window.open("https://tools.keycdn.com/geo?host=" + this.state.record.ip.query)}}>
                           <ListItemText primary="IP Address" secondary={`${this.state.record.ip.query}${this.state.record.ip.country ? " (" + this.state.record.ip.city + " - " + this.state.record.ip.country + ")" : ""}`} />
                         </ListItem>
@@ -655,9 +680,7 @@ class PersistentDrawer extends Component {
                 </span>
               }
               {this.state.tab === 2 && 
-                <span>
-                  Coming Soon
-                </span>
+                <ProjectConfig classes={classes} project={this.state.currentProject} loggedInUser={this.props.parentState.user} emit={this.props.emit} />
               }
               <Tooltip title="New project" placement="left">
                 <Button fab color="primary" aria-label="add" className={classes.newProject} onClick={this.props.newProject}>
@@ -944,6 +967,155 @@ class Javascript extends Component {
             </Dialog>
           )}
       </div>
+    )
+  }
+}
+
+class ProjectConfig extends Component {
+  state = {
+    open: false,
+    user: {},
+  }
+
+  save = () => {
+
+  }
+
+  handleClickOpen = () => {
+    this.setState({ open: true });
+  }
+
+  handleRequestClose = () => {
+    this.setState({ open: false });
+  }
+
+  handleRequestDelete = data => () => {
+    this.setState({ user: data })
+    this.handleClickOpen()
+  }
+
+  handleDelete = () => {
+    this.props.emit("project:modify", {
+      project: this.props.project.name,
+      command: "permissions:remove",
+      user: this.state.user.id
+    })
+    this.handleRequestClose()
+  }
+
+  render() {
+    const { classes, project, loggedInUser } = this.props;
+    return (
+      <span>
+        <Card className={classes.contentCard}>
+          <CardContent>
+            <Typography type="headline">
+              {project.name} config
+            </Typography>
+            <FormControl className={classes.formControl}>
+              <InputLabel htmlFor="project-name">Name</InputLabel>
+              <Input
+                id="project-name"
+                defaultValue={project.name}
+                inputProps={{
+                  autoCorrect: false,
+                  spellCheck: false,
+                }}
+              />
+            </FormControl>
+            {project.permissions.owners.map((id, i) => {
+              return (
+                <UserChip key={i} id={id} removeUser={this.handleRequestDelete.bind(this)} />
+              )
+              })
+            }
+            {project.permissions.admins.map((id, i) => {
+              return (
+                <UserChip key={i} id={id} removeUser={this.handleRequestDelete.bind(this)} />
+              )
+              })
+            }
+            {project.permissions.readonly.map((id, i) => {
+              return (
+                <UserChip key={i} id={id} removeUser={this.handleRequestDelete.bind(this)} />
+              )
+              })
+            }
+          </CardContent>
+          <CardActions>
+            <Button dense>
+            <Save
+              className={classes.leftIcon}
+              onClick={this.save.bind(this)}
+            />
+              Save
+            </Button>
+          </CardActions>
+        </Card>
+        <Dialog open={this.state.open} onRequestClose={this.handleRequestClose}>
+          <DialogTitle>
+            {loggedInUser.id == this.state.user.id ? (
+              "Remove yourself from " + project.name + "?"
+            ) : (
+              "Remove user " + this.state.user.login + " from " + project.name + "?"
+            )}
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              {loggedInUser.id == this.state.user.id ? (
+                <span>
+                  You will <b>lose access</b> to this project!
+                </span>
+              ) : (
+                "They won't be able to access this project again (you can re-add them later)"
+              )}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={this.handleRequestClose} color="primary" autoFocus>
+              Cancel
+            </Button>
+            <Button onClick={this.handleDelete.bind(this)} color={loggedInUser.id == this.state.user.id ? "accent" : "primary"}>
+              {loggedInUser.id == this.state.user.id ? (
+                "Remove myself"
+              ) : (
+                "Remove"
+              )}
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </span>
+    )
+  }
+}
+
+class UserChip extends Component {
+  render() {
+    const { id, removeUser } = this.props;
+    return (
+      <Request
+        url={`https://api.github.com/user/${id}`}
+        method='get'
+        accept='application/json'
+      >
+        {
+          ({error, result, loading}) => {
+            if (loading) {
+              return null
+            } else {
+              if (error) return
+              let user = result.body
+              return (
+                <Chip
+                  avatar={<Avatar src={user.avatar_url + "&s=40"} />}
+                  label={user.login}
+                  onRequestDelete={removeUser(user)}
+                />
+              )
+            }
+          }
+        }
+      </Request>
     )
   }
 }

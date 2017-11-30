@@ -329,7 +329,15 @@ MongoClient.connect(config.mongodb, function(err, db) {
 						]
 					}).then(doc => {
 						if(doc !== null) {
-							resolve(doc)
+							let myPermissionLevel = 3
+							if (doc.permissions.owners.includes(user.id))
+								myPermissionLevel = 1
+							else if (doc.permissions.admins.includes(user.id))
+								myPermissionLevel = 2
+							resolve({
+								doc: doc,
+								myPermissionLevel: myPermissionLevel
+							})
 						} else {
 							reject({
 								title: "Access denied",
@@ -471,8 +479,8 @@ MongoClient.connect(config.mongodb, function(err, db) {
 			if (project.name && globalToken) {
 				getUser(globalToken).then(user => {
 					getProject(project.name, user).then(thisProject => {
-						socket.emit('project:read', thisProject)
-						prevState = JSON.stringify(thisProject)
+						socket.emit('project:read', thisProject.doc)
+						prevState = JSON.stringify(thisProject.doc)
 						database(user).then(doc => {
 							if (doc.payment.account_type.toLowerCase() != "free") {
 								if ((doc.payment.account_type.toLowerCase() == "elite")) {
@@ -484,9 +492,9 @@ MongoClient.connect(config.mongodb, function(err, db) {
 								getProject(project.name, user).then(thisProject => {
 									refresh = setInterval(() => {
 										getProject(project.name, user).then(thisProject => {
-											if (JSON.stringify(thisProject) == prevState) return
-											socket.emit('project:read', thisProject)
-											prevState = JSON.stringify(thisProject)
+											if (JSON.stringify(thisProject.doc) == prevState) return
+											socket.emit('project:read', thisProject.doc)
+											prevState = JSON.stringify(thisProject.doc)
 										}).catch(e => {
 											socket.emit('err', {
 												title	: e.title,
@@ -522,6 +530,79 @@ MongoClient.connect(config.mongodb, function(err, db) {
 					message	: "You need to be authenticated first!"
 				})
 			}
+		})
+
+		socket.on('project:modify', data => {
+			let command = data.command,
+				project = data.project;
+			var removeFromProject = (requestingUser, targetUser, targetProject) => {
+				return new Promise((resolve, reject) => {
+					let theirPermissionLevel,
+						theirPermissionName
+					if (targetProject.doc.permissions.owners.includes(targetUser)) {
+						theirPermissionLevel = 1
+						theirPermissionName  = "permissions.owners"
+					} else if (targetProject.doc.permissions.admins.includes(targetUser)) {
+						theirPermissionLevel = 2
+						theirPermissionName  = "permissions.admins"
+					} else if (targetProject.doc.permissions.readonly.includes(targetUser)) {
+						theirPermissionLevel = 3
+						theirPermissionName  = "permissions.readonly"
+					}
+					if (targetProject.myPermissionLevel <= theirPermissionLevel) {
+						db.collection('projects', (err, projects) => {
+							if (err) throw err
+							projects.updateOne({
+								name: targetProject.doc.name
+							},
+							{
+								$pull: {
+									[theirPermissionName]: targetUser
+								}
+							})
+						})
+						resolve({
+							title: "Removed user",
+							message: "Successfully removed user from project"
+						})
+					} else {
+						reject({
+							title: "Insufficient permissions",
+							message: "You don't have permission to remove user"
+						})
+					}
+				})
+			}
+			if (command && project) {
+				getUser(globalToken).then(user => {
+					getProject(project, user).then(thisProject => {
+						if (command == "permissions:remove" && data.user) {
+							removeFromProject(user, data.user, thisProject).then(response => {
+								socket.emit('notify', response)
+							}).catch(e => {
+								socket.emit('err', {
+									title	: e.title,
+									message	: e.message
+								})
+							})
+						}
+						if (command == "permissions:add") {
+
+						}
+					}).catch(e => {
+						socket.emit('err', {
+							title	: e.title,
+							message	: e.message
+						})
+					})
+				}).catch(e => {
+					socket.emit('err', {
+						title	: e.title,
+						message	: e.message
+					})
+				})
+			}
+
 		})
 
 		socket.on('project:close', project => {
@@ -1165,6 +1246,12 @@ MongoClient.connect(config.mongodb, function(err, db) {
 		})
 		// Proxy through to webpack-dev-server if in development mode
 		app.use('/projects/*', (req, res) => {
+			if (req.originalUrl.includes(".hot-update.js")) {
+				let hotUpdate = req.originalUrl.split("/")
+					hotUpdate = hotUpdate[hotUpdate.length - 1]
+				request("http://localhost:8080/" + hotUpdate).pipe(res)
+				return
+			}
 			request("http://localhost:8080" + req.originalUrl.substring(9), (error, response) => {
 				if (error) throw error
 				if (response.statusCode == 404) {
