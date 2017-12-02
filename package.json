@@ -9,7 +9,7 @@
     "test": "npm run install-all && cd source/site && webpack -p --progress --colors --config ./webpack.config.js && cd .. && jekyll build",
     "build": "cd source/site && npm run build && cd .. && bundler install --quiet && cross-env NODE_ENV=production jekyll build",
     "pull": "git stash && git pull && npm run post-pull",
-    "post-pull": "npm run install-all && npm run build && cd source && rm Gemfile.lock; cd server && pm2 reload server.config.js"
+    "post-pull": "pm2 stop injectify-server && npm run install-all && npm run build && cd source && rm Gemfile.lock; cd server && pm2 reload server.config.js"
   },
   "repository": {
     "type": "git",
