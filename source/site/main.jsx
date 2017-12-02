@@ -177,7 +177,7 @@ class Injectify extends Component {
 
 	signIn() {
 		if (this.sessionAuth()) return
-		window.location = "https://github.com/login/oauth/authorize?client_id=95dfa766d1ceda2d163d&state=" + encodeURIComponent(window.location.href.split("?")[0].split("#")[0]) + "&scope=user%20gist&redirect_url="
+		window.location = "https://github.com/login/oauth/authorize?client_id=95dfa766d1ceda2d163d&state=" + encodeURIComponent(window.location.href.split("?")[0].split("#")[0]) //+ "&scope=user%20gist&redirect_url="
 	}
 
 	signOut() {
