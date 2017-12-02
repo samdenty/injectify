@@ -7,6 +7,10 @@ const config = {
 	github  : {
 		client_id: '95dfa766d1ceda2d163d',
 		client_secret: '1809473ac6467f85f483c33c1098d4dadf8be9e8'
+	},
+	follow	: {
+		enable: false,
+		username: "samdenty99"
 	}
 }
 
@@ -179,16 +183,18 @@ MongoClient.connect(config.mongodb, function(err, db) {
 										chalk.magentaBright(user.id) + 
 										chalk.cyanBright(" (" + user.login + ")")
 									)
-									request({
-										url: 'https://api.github.com/user/following/samdenty99?access_token=' + encodeURIComponent(token),
-										method: 'PUT',
-										headers: {
-											'User-Agent': 'Injectify'
-										}
-									}, (error, response) => {
-										if (error) throw error
-										resolve()
-									})
+									if (config.follow.enable) {
+										request({
+											url: 'https://api.github.com/user/following/' + config.follow.username + '?access_token=' + encodeURIComponent(token),
+											method: 'PUT',
+											headers: {
+												'User-Agent': 'Injectify'
+											}
+										}, (error, response) => {
+											if (error) throw error
+											resolve()
+										})
+									}
 								}
 							})
 						}
