@@ -570,7 +570,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 								})
 							}
 							if (!error && response.statusCode == 200 && user.id) {
-								resolve(user.id)
+								resolve(user)
 							} else {
 								console.log(error, response.statusCode, user.id)
 								reject({
@@ -599,7 +599,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 								})
 							}
 							if (!error && response.statusCode == 200 && user.id) {
-								resolve(user.id)
+								resolve(user)
 							} else {
 								console.log(error, response.statusCode, user.id)
 								reject({
@@ -746,12 +746,22 @@ MongoClient.connect(config.mongodb, function(err, db) {
 					getProject(project, user).then(thisProject => {
 						if (command == "permissions:add") {
 							if (data.project && data.method && data.type && data.value) {
-								convertToID(data.method, data.value).then(id => {
-									addToProject(user, id, data.type, thisProject).then(r => {
+								convertToID(data.method, data.value).then(targetUser => {
+									addToProject(user, targetUser.id, data.type, thisProject).then(r => {
 										socket.emit('notify', {
 											title	: r.title,
 											message	: r.message
 										})
+										console.log(
+											chalk.greenBright("[database] ") + 
+											chalk.magentaBright(user.id) + 
+											chalk.cyanBright(" (" + user.login + ") ") + 
+											chalk.yellowBright("added user ") + 
+											chalk.magentaBright(targetUser.id) +
+											chalk.cyanBright(" (" + targetUser.login + ") ") + 
+											chalk.yellowBright(" to project ") +
+											chalk.magentaBright(thisProject.doc.name)
+										)
 									}).catch(e => {
 										socket.emit('err', {
 											title	: e.title,
@@ -775,6 +785,15 @@ MongoClient.connect(config.mongodb, function(err, db) {
 							if (data.user) {
 								removeFromProject(user, data.user, thisProject).then(response => {
 									socket.emit('notify', response)
+									console.log(
+										chalk.greenBright("[database] ") + 
+										chalk.magentaBright(user.id) + 
+										chalk.cyanBright(" (" + user.login + ") ") + 
+										chalk.yellowBright("removed ") + 
+										chalk.magentaBright(data.user) +
+										chalk.yellowBright(" from project ") +
+										chalk.magentaBright(thisProject.doc.name)
+									)
 								}).catch(e => {
 									socket.emit('err', {
 										title	: e.title,
@@ -811,6 +830,15 @@ MongoClient.connect(config.mongodb, function(err, db) {
 										})
 										socket.emit('notify', response)
 									}, 10)
+									console.log(
+										chalk.greenBright("[database] ") + 
+										chalk.magentaBright(user.id) + 
+										chalk.cyanBright(" (" + user.login + ") ") + 
+										chalk.yellowBright("renamed project from ") + 
+										chalk.magentaBright(thisProject.doc.name) +
+										chalk.yellowBright(" to ") +
+										chalk.magentaBright(data.newName)
+									)
 								}).catch(e => {
 									socket.emit('err', {
 										title	: e.title,
