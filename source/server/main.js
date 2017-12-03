@@ -495,11 +495,11 @@ MongoClient.connect(config.mongodb, function(err, db) {
 						socket.emit('project:read', thisProject.doc)
 						prevState = JSON.stringify(thisProject.doc)
 						database(user).then(doc => {
-							if (doc.payment.account_type.toLowerCase() != "free") {
+							//if (doc.payment.account_type.toLowerCase() != "free") {
 								if ((doc.payment.account_type.toLowerCase() == "elite")) {
-									let timeout = 500
+									let timeout = 100
 								} else {
-									let timeout = 10000
+									let timeout = 900
 								}
 								clearInterval(refresh)
 								getProject(project.name, user).then(thisProject => {
@@ -521,7 +521,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 										message	: e.message
 									})
 								})
-							}
+							//}
 						})
 					}).catch(e => {
 						socket.emit('err', {
