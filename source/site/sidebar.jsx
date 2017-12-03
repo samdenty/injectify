@@ -236,17 +236,18 @@ const styles = theme => ({
     minWidth: 170,
   },
   chipTransparent: {
-    color: 'transparent',
+    color: 'rgba(0, 0, 0, 0.1)',
     opacity: '0.7'
   },
   chipLabel: {
     justifyContent: 'center',
     flexGrow: 1,
-    transition: 'all 0.4s ease'
+    transition: 'all 0.2s ease'
   },
   myChip: {
     background: '#5d6ccc !important',
     color: 'rgba(255, 255, 255, 0.95) !important',
+    transition: 'none !important',
   },
   row: {
     display: 'flex',

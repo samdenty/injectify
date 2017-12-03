@@ -562,7 +562,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 						theirPermissionLevel = 3
 						theirPermissionName  = "permissions.readonly"
 					}
-					if (targetProject.myPermissionLevel <= theirPermissionLevel) {
+					if (targetProject.myPermissionLevel !== 3 && targetProject.myPermissionLevel <= theirPermissionLevel) {
 						db.collection('projects', (err, projects) => {
 							if (err) throw err
 							projects.updateOne({
