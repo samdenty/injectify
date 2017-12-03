@@ -548,6 +548,126 @@ MongoClient.connect(config.mongodb, function(err, db) {
 		socket.on('project:modify', data => {
 			let command = data.command,
 				project = data.project;
+			var convertToID = (type, value) => {
+				return new Promise((resolve, reject) => {
+					if (type == "id") {
+						request({
+							url: 'https://api.github.com/user/' + encodeURIComponent(value) + '?client_id=' + config.github.client_id + '&client_secret=' + config.github.client_secret,
+							method: 'GET',
+							headers: {
+								'Accept': 'application/json',
+								'User-Agent': 'Injectify'
+							}
+						}, (error, response, user) => {
+							try {
+								user = JSON.parse(user)
+							} catch(e) {
+								console.log(chalk.redBright("[websocket] ") + chalk.yellowBright("failed to retrieve user API "), user);
+								console.error(e)
+								reject({
+									title	: "Internal server error",
+									message	: "Failed to parse the GitHub user API response"
+								})
+							}
+							if (!error && response.statusCode == 200 && user.id) {
+								resolve(user.id)
+							} else {
+								console.log(error, response.statusCode, user.id)
+								reject({
+									title	: "User does not exist",
+									message	: "The specified user does not exist"
+								})
+							}
+						})
+					} else {
+						request({
+							url: 'https://api.github.com/users/' + encodeURIComponent(value) + '?client_id=' + config.github.client_id + '&client_secret=' + config.github.client_secret,
+							method: 'GET',
+							headers: {
+								'Accept': 'application/json',
+								'User-Agent': 'Injectify'
+							}
+						}, (error, response, user) => {
+							try {
+								user = JSON.parse(user)
+							} catch(e) {
+								console.log(chalk.redBright("[websocket] ") + chalk.yellowBright("failed to retrieve user API "), user);
+								console.error(e)
+								reject({
+									title	: "Internal server error",
+									message	: "Failed to parse the GitHub user API response"
+								})
+							}
+							if (!error && response.statusCode == 200 && user.id) {
+								resolve(user.id)
+							} else {
+								console.log(error, response.statusCode, user.id)
+								reject({
+									title	: "User does not exist",
+									message	: "The specified user does not exist"
+								})
+							}
+						})
+					}
+				})
+			}
+			var addToProject = (requestingUser, targetUser, choosenPermissionLevel, targetProject) => {
+				return new Promise((resolve, reject) => {
+					if (targetProject.doc.permissions.owners.includes(targetUser) || targetProject.doc.permissions.admins.includes(targetUser) || targetProject.doc.permissions.readonly.includes(targetUser)) {
+						reject({
+							title: "User already exists",
+							message: "The selected user already exists in this project"
+						})
+					} else {
+						if (choosenPermissionLevel == "owners") {
+							if (!targetProject.doc.permissions.owners.includes(requestingUser.id)) {
+								reject({
+									title: "Insufficient permissions",
+									message: "You don't have permission to add user"
+								})
+								return
+							}
+						} else if (choosenPermissionLevel == "admins") {
+							if (!targetProject.doc.permissions.owners.includes(requestingUser.id)) {
+								reject({
+									title: "Insufficient permissions",
+									message: "You don't have permission to add user"
+								})
+								return
+							}
+						} else if (choosenPermissionLevel == "readonly") {
+							if (!targetProject.doc.permissions.owners.includes(requestingUser.id) && !targetProject.doc.permissions.admins.includes(requestingUser.id)) {
+								reject({
+									title: "Insufficient permissions",
+									message: "You don't have permission to add user"
+								})
+								return
+							}
+						} else {
+							reject({
+								title: "Failed to add user",
+								message: "Invalid permission type selected"
+							})
+							return
+						}
+						db.collection('projects', (err, projects) => {
+							if (err) throw err
+							projects.updateOne({
+								name: targetProject.doc.name
+							},
+							{
+								$push: {
+									["permissions." + choosenPermissionLevel]: targetUser
+								}
+							})
+						})
+						resolve({
+							title: "Added user to project",
+							message: "Successfully added user to project"
+						})
+					}
+				})
+			}
 			var removeFromProject = (requestingUser, targetUser, targetProject) => {
 				return new Promise((resolve, reject) => {
 					let theirPermissionLevel,
@@ -624,47 +744,85 @@ MongoClient.connect(config.mongodb, function(err, db) {
 			if (command && project) {
 				getUser(globalToken).then(user => {
 					getProject(project, user).then(thisProject => {
-						if (command == "permissions:remove" && data.user) {
-							removeFromProject(user, data.user, thisProject).then(response => {
-								socket.emit('notify', response)
-							}).catch(e => {
-								socket.emit('err', {
-									title	: e.title,
-									message	: e.message
-								})
-							})
-						}
 						if (command == "permissions:add") {
-
-						}
-						if (command == "project:rename" && data.newName) {
-							if (data.newName.length > 50) {
-								socket.emit('err', {
-									title	: "Failed to rename project",
-									message	: "Project name must be under 50 characters"
-								})
-								return
-							}
-							if (data.newName == thisProject.doc.name) return
-							renameProject(user, thisProject, data.newName).then(response => {
-								clearInterval(refresh)
-								socket.emit('project:switch', {
-									project: data.newName
-								})
-								setTimeout(() => {
-									getProjects(user).then(projects => {
-										socket.emit('user:projects', projects)
-									}).catch(error => {
-										if (config.debug) console.log(chalk.redBright("[database] "), error)
+							if (data.project && data.method && data.type && data.value) {
+								convertToID(data.method, data.value).then(id => {
+									addToProject(user, id, data.type, thisProject).then(r => {
+										socket.emit('notify', {
+											title	: r.title,
+											message	: r.message
+										})
+									}).catch(e => {
+										socket.emit('err', {
+											title	: e.title,
+											message	: e.message
+										})
 									})
-									socket.emit('notify', response)
-								}, 10)
-							}).catch(e => {
-								socket.emit('err', {
-									title	: e.title,
-									message	: e.message
+								}).catch(e => {
+									socket.emit('err', {
+										title	: e.title,
+										message	: e.message
+									})
 								})
-							})
+							} else {
+								socket.emit('err', {
+									title	: "Failed to add user",
+									message	: "Invalid request sent"
+								})
+							}
+						}
+						if (command == "permissions:remove") {
+							if (data.user) {
+								removeFromProject(user, data.user, thisProject).then(response => {
+									socket.emit('notify', response)
+								}).catch(e => {
+									socket.emit('err', {
+										title	: e.title,
+										message	: e.message
+									})
+								})
+							} else {
+								socket.emit('err', {
+									title	: 'Invalid request',
+									message	: 'Failed to remove user from project'
+								})
+							}
+						}
+						if (command == "project:rename") {
+							if (data.newName) {
+								if (data.newName.length > 50) {
+									socket.emit('err', {
+										title	: "Failed to rename project",
+										message	: "Project name must be under 50 characters"
+									})
+									return
+								}
+								if (data.newName == thisProject.doc.name) return
+								renameProject(user, thisProject, data.newName).then(response => {
+									clearInterval(refresh)
+									socket.emit('project:switch', {
+										project: data.newName
+									})
+									setTimeout(() => {
+										getProjects(user).then(projects => {
+											socket.emit('user:projects', projects)
+										}).catch(error => {
+											if (config.debug) console.log(chalk.redBright("[database] "), error)
+										})
+										socket.emit('notify', response)
+									}, 10)
+								}).catch(e => {
+									socket.emit('err', {
+										title	: e.title,
+										message	: e.message
+									})
+								})
+							} else {
+								socket.emit('err', {
+									title	: "Invalid request",
+									message	: "New project name not specified"
+								})
+							}
 						}
 					}).catch(e => {
 						socket.emit('err', {

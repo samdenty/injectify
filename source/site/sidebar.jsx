@@ -253,6 +253,8 @@ const styles = theme => ({
     display: 'flex',
     justifyContent: 'center',
     flexWrap: 'wrap',
+    background: 'rgba(0, 0, 0, 0.07)',
+    padding: '8px 0',
   },
   title: {
     color: 'rgb(57, 72, 171)',
@@ -271,12 +273,21 @@ const styles = theme => ({
     margin: 10,
   },
   permissionGroup: {
-    marginBottom: '1em',
+    marginBottom: 0,
     marginTop: '1em',
     fontWeight: 500,
+    display: 'flex',
+    paddingBottom: 9,
+    lineHeight: '32px',
+  },
+  permissionsHeader: {
+    flexGrow: 1,
   },
   permissionDivider: {
     margin: '0.5em 0'
+  },
+  noneOfType: {
+    background: 'none',
   },
 })
 
@@ -1047,7 +1058,12 @@ class ProjectConfig extends Component {
   state = {
     open: false,
     user: {},
+    dialog: 'remove',
     inputChanged: false,
+    addUser: {
+      method: 'username'
+    },
+    tab: 0,
   }
 
   componentDidMount() {
@@ -1102,20 +1118,61 @@ class ProjectConfig extends Component {
   }
 
   handleRequestDelete = data => () => {
-    this.setState({ user: data })
+    this.setState({
+      user: data,
+      dialog: 'remove',
+    })
     this.handleClickOpen()
   }
 
-  handleDelete = () => {
-    let { loading } = this.props
+  handleRequestAddUser = type => () => {
+    this.setState({
+      dialog: 'add-user',
+      addUser: {
+        ...this.state.addUser,
+        project: this.props.project.name,
+        type: type,
+      },
+    })
+    this.handleClickOpen()
+  }
 
-    this.props.emit("project:modify", {
+  handleAddUser = () => {
+    let { loading, emit }         = this.props,
+        { method, type, project } = this.state.addUser,
+        value                     = this.addUserName.value
+    
+    emit("project:modify", {
+      command: 'permissions:add',
+      project: project,
+      method: method,
+      type: type,
+      value: value
+    })
+
+    this.handleRequestClose()
+    loading(true)
+  }
+
+  handleMethodChange = (event, value) => {
+    this.setState({
+      addUser: {
+        ...this.state.addUser,
+        method: value
+      }
+    })
+  }
+
+  handleDelete = () => {
+    let { loading, emit } = this.props
+    loading(true)
+
+    emit("project:modify", {
       project: this.props.project.name,
       command: "permissions:remove",
       user: this.state.user.id
     })
     this.handleRequestClose()
-    loading(true)
   }
 
   render() {
@@ -1158,7 +1215,14 @@ class ProjectConfig extends Component {
             <Divider light className={classes.permissionDivider} />
 
             <Typography type="subheading" gutterBottom className={classes.permissionGroup}>
-              Owners:
+              <span className={classes.permissionsHeader}>
+                Owners:
+              </span>
+              {project.permissions.owners.includes(this.props.loggedInUser.id) ? (
+                <Button raised dense onClick={this.handleRequestAddUser("owners")}>
+                  Add owner
+                </Button>
+              ) : null}
             </Typography>
             {project.permissions.owners.length > 0 ? (
               <div className={classes.row}>
@@ -1169,15 +1233,25 @@ class ProjectConfig extends Component {
                 })}
               </div>
             ) : (
-              <Typography type="body1">
-                No owners added
-              </Typography>
+              <div className={classes.row}>
+                <Chip
+                  label="No owners added"
+                  className={classes.chip + " " + classes.noneOfType}
+                />
+              </div>
             )}
             <Divider light className={classes.permissionDivider} />
 
 
             <Typography type="subheading" gutterBottom className={classes.permissionGroup}>
-              Admins:
+              <span className={classes.permissionsHeader}>
+                Admins:
+              </span>
+              {project.permissions.owners.includes(this.props.loggedInUser.id) ? (
+                <Button raised dense onClick={this.handleRequestAddUser("admins")} >
+                  Add admin
+                </Button>
+              ) : null}
             </Typography>
             {project.permissions.admins.length > 0 ? (
               <div className={classes.row}>
@@ -1188,15 +1262,25 @@ class ProjectConfig extends Component {
                 })}
               </div>
             ) : (
-              <Typography type="body1">
-                No admins added
-              </Typography>
+              <div className={classes.row}>
+                <Chip
+                  label="No admins added"
+                  className={classes.noneOfType}
+                />
+              </div>
             )}
             <Divider light className={classes.permissionDivider} />
 
 
             <Typography type="subheading" gutterBottom className={classes.permissionGroup}>
-              View-only access:
+              <span className={classes.permissionsHeader}>
+                View-only access:
+              </span>
+              {project.permissions.owners.includes(this.props.loggedInUser.id) || project.permissions.admins.includes(this.props.loggedInUser.id) ? (
+                <Button raised dense onClick={this.handleRequestAddUser("readonly")} >
+                  Add user
+                </Button>
+              ) : null}
             </Typography>
             {project.permissions.readonly.length > 0 ? (
               <div className={classes.row}>
@@ -1207,47 +1291,102 @@ class ProjectConfig extends Component {
                 })}
               </div>
             ) : (
-              <Typography type="body1">
-                No view-only users added
-              </Typography>
+              <div className={classes.row}>
+                <Chip
+                  label="No view-only users added"
+                  className={classes.noneOfType}
+                />
+              </div>
             )}
-
           </CardContent>
-          <CardActions>
-
-          </CardActions>
         </Card>
         <Dialog open={this.state.open} onRequestClose={this.handleRequestClose}>
-          <DialogTitle>
-            {loggedInUser.id == this.state.user.id ? (
-              "Remove yourself from " + project.name + "?"
-            ) : (
-              "Remove user " + this.state.user.login + " from " + project.name + "?"
-            )}
-          </DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              {loggedInUser.id == this.state.user.id ? (
-                <span>
-                  You will <b>lose access</b> to this project!
-                </span>
-              ) : (
-                "They won't be able to access this project again (you can re-add them later)"
-              )}
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={this.handleRequestClose} color="primary" autoFocus>
-              Cancel
-            </Button>
-            <Button onClick={this.handleDelete.bind(this)} color={loggedInUser.id == this.state.user.id ? "accent" : "primary"}>
-              {loggedInUser.id == this.state.user.id ? (
-                "Remove myself"
-              ) : (
-                "Remove"
-              )}
-            </Button>
-          </DialogActions>
+          {this.state.dialog == "remove" ? (
+            <div>
+              <DialogTitle>
+                {loggedInUser.id == this.state.user.id ? (
+                  "Remove yourself from " + project.name + "?"
+                ) : (
+                  "Remove user " + this.state.user.login + " from " + project.name + "?"
+                )}
+              </DialogTitle>
+              <DialogContent>
+                <DialogContentText>
+                  {loggedInUser.id == this.state.user.id ? (
+                    <span>
+                      You will <b>lose access</b> to this project!
+                    </span>
+                  ) : (
+                    "They won't be able to access this project again (you can re-add them later)"
+                  )}
+                </DialogContentText>
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={this.handleRequestClose} color="primary" autoFocus>
+                  Cancel
+                </Button>
+                <Button onClick={this.handleDelete.bind(this)} color={loggedInUser.id == this.state.user.id ? "accent" : "primary"}>
+                  {loggedInUser.id == this.state.user.id ? (
+                    "Remove myself"
+                  ) : (
+                    "Remove"
+                  )}
+                </Button>
+              </DialogActions>
+            </div>
+          ) : (
+            <div>
+              <DialogTitle>
+                Add user to project
+              </DialogTitle>
+              <DialogContent>
+                {this.state.addUser.method == "id" ? (
+                  <div>
+                    <DialogContentText>
+                      Please enter a GitHub user ID to add to this project
+                    </DialogContentText>
+                    <TextField
+                      autoFocus
+                      margin="dense"
+                      inputRef={(input) => { this.addUserName = input; }}
+                      onKeyPress={(e) => { e.key === 'Enter' && this.handleAddUser() }}
+                      label="GitHub user ID"
+                      fullWidth
+                    />
+                  </div>
+                ) : (
+                  <div>
+                  <DialogContentText>
+                    Please enter a GitHub username to add to this project
+                  </DialogContentText>
+                  <TextField
+                    autoFocus
+                    margin="dense"
+                    inputRef={(input) => { this.addUserName = input; }}
+                    onKeyPress={(e) => { e.key === 'Enter' && this.handleAddUser() }}
+                    label="GitHub username"
+                    fullWidth
+                  />
+                </div>
+                )}
+                <RadioGroup
+                  value={this.state.addUser.method}
+                  onChange={this.handleMethodChange}
+                >
+                  <FormControlLabel value="username" control={<Radio />} label="Github Username" />
+                  <FormControlLabel value="id" control={<Radio />} label="User ID" />
+                </RadioGroup>
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={this.handleRequestClose} color="primary">
+                  Cancel
+                </Button>
+                <Button onClick={this.handleAddUser} color="primary">
+                  Add
+                </Button>
+              </DialogActions>
+            </div>
+          )}
         </Dialog>
       </span>
     )
