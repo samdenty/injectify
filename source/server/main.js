@@ -789,7 +789,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 										chalk.greenBright("[database] ") + 
 										chalk.magentaBright(user.id) + 
 										chalk.cyanBright(" (" + user.login + ") ") + 
-										chalk.yellowBright("removed ") + 
+										chalk.yellowBright("removed user ") + 
 										chalk.magentaBright(data.user) +
 										chalk.yellowBright(" from project ") +
 										chalk.magentaBright(thisProject.doc.name)

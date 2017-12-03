@@ -748,7 +748,7 @@ class PersistentDrawer extends Component {
                 </span>
               }
               {this.state.tab === 2 && 
-                <ProjectConfig classes={classes} project={this.state.currentProject} loggedInUser={this.props.parentState.user} emit={this.props.emit} loading={this.loading} socket={this.props.socket} loading={this.loading} />
+                <ProjectConfig classes={classes} project={this.state.currentProject} loggedInUser={this.props.parentState.user} emit={this.props.emit} loading={this.loading} socket={this.props.socket} loading={this.loading} token={this.props.token} />
               }
               <Tooltip title="New project" placement="left">
                 <Button fab color="primary" aria-label="add" className={classes.newProject} onClick={this.props.newProject}>
@@ -1176,7 +1176,7 @@ class ProjectConfig extends Component {
   }
 
   render() {
-    const { classes, project, loggedInUser } = this.props;
+    const { classes, project, loggedInUser, token } = this.props;
     return (
       <span>
         <Card className={classes.contentCard}>
@@ -1228,7 +1228,7 @@ class ProjectConfig extends Component {
               <div className={classes.row}>
                 {project.permissions.owners.map((id, i) => {
                   return (
-                   <UserChip key={i} id={id} type="owners" removeUser={this.handleRequestDelete.bind(this)} classes={classes} user={this.props.loggedInUser} permissions={project.permissions} />
+                   <UserChip key={i} id={id} type="owners" removeUser={this.handleRequestDelete.bind(this)} classes={classes} user={this.props.loggedInUser} permissions={project.permissions} token={token} />
                   )
                 })}
               </div>
@@ -1257,7 +1257,7 @@ class ProjectConfig extends Component {
               <div className={classes.row}>
                 {project.permissions.admins.map((id, i) => {
                   return (
-                   <UserChip key={i} id={id} type="admins" removeUser={this.handleRequestDelete.bind(this)} classes={classes} user={this.props.loggedInUser} permissions={project.permissions} />
+                   <UserChip key={i} id={id} type="admins" removeUser={this.handleRequestDelete.bind(this)} classes={classes} user={this.props.loggedInUser} permissions={project.permissions} token={token} />
                   )
                 })}
               </div>
@@ -1286,7 +1286,7 @@ class ProjectConfig extends Component {
               <div className={classes.row}>
                 {project.permissions.readonly.map((id, i) => {
                   return (
-                   <UserChip key={i} id={id} type="readonly" removeUser={this.handleRequestDelete.bind(this)} classes={classes} user={this.props.loggedInUser} permissions={project.permissions} />
+                   <UserChip key={i} id={id} type="readonly" removeUser={this.handleRequestDelete.bind(this)} classes={classes} user={this.props.loggedInUser} permissions={project.permissions} token={token} />
                   )
                 })}
               </div>
@@ -1395,10 +1395,10 @@ class ProjectConfig extends Component {
 
 class UserChip extends Component {
   render() {
-    const { id, removeUser, classes, user, permissions, type } = this.props;
+    const { id, removeUser, classes, user, permissions, type, token } = this.props;
     return (
       <Request
-        url={`https://api.github.com/user/${id}`}
+        url={`https://api.github.com/user/${id}?access-token=` + encodeURIComponent(token)}
         method='get'
         accept='application/json'
       >
