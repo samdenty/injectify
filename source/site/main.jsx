@@ -244,6 +244,11 @@ class Injectify extends Component {
 							type="text"
 							fullWidth
 							onKeyPress={this.handleKeyPress}
+							inputProps={{
+								autoCorrect: false,
+								spellCheck: false,
+								maxLength: 50,
+							}}
 						/>
 					</DialogContent>
 					<DialogActions>

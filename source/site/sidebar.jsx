@@ -712,7 +712,7 @@ class PersistentDrawer extends Component {
                 </span>
               }
               {this.state.tab === 2 && 
-                <ProjectConfig classes={classes} project={this.state.currentProject} loggedInUser={this.props.parentState.user} emit={this.props.emit} loading={this.loading} />
+                <ProjectConfig classes={classes} project={this.state.currentProject} loggedInUser={this.props.parentState.user} emit={this.props.emit} loading={this.loading} socket={this.props.socket} />
               }
               <Tooltip title="New project" placement="left">
                 <Button fab color="primary" aria-label="add" className={classes.newProject} onClick={this.props.newProject}>
@@ -779,7 +779,11 @@ class Project extends Component {
 			name: this.props.record
     })
     this.props.p.loading(true)
-    window.history.pushState('', this.props.record + ' - Injectify', '/projects/' + encodeURIComponent(this.props.record))
+    let newUrl = '/projects/' + encodeURIComponent(this.props.record)
+    if (window.location.href.slice(-10) == "/passwords") newUrl += "/passwords"
+    if (window.location.href.slice(-10) == "/keylogger") newUrl += "/keylogger"
+    if (window.location.href.slice(-7 ) ==    "/config") newUrl += "/config"
+    window.history.pushState('', this.props.record + ' - Injectify', newUrl)
 	}
 
 	render() {
@@ -1021,6 +1025,16 @@ class ProjectConfig extends Component {
     inputChanged: false,
   }
 
+  componentDidMount() {
+    let { socket } = this.props
+    socket.on(`project:read`, (data) => {
+      this.newName.value = data.name
+      this.setState({
+        inputChanged: false,
+      })
+    })
+  }
+
   save = () => {
     if (this.props.project.name == this.newName.value) return
     this.props.loading(true)
@@ -1093,6 +1107,7 @@ class ProjectConfig extends Component {
                   inputProps={{
                     autoCorrect: false,
                     spellCheck: false,
+                    maxLength: 50,
                   }}
                   onChange={this.handleChange('project-name')}
                   onKeyPress={this.handleKeypress}
