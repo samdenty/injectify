@@ -1168,7 +1168,7 @@ class ProjectConfig extends Component {
               <div className={classes.row}>
                 {project.permissions.admins.map((id, i) => {
                   return (
-                   <UserChip key={i} id={id} removeUser={this.handleRequestDelete.bind(this)} classes={classes} />
+                   <UserChip key={i} id={id} removeUser={this.handleRequestDelete.bind(this)} classes={classes} myID={this.props.loggedInUser.id} />
                   )
                 })}
               </div>
@@ -1187,7 +1187,7 @@ class ProjectConfig extends Component {
               <div className={classes.row}>
                 {project.permissions.readonly.map((id, i) => {
                   return (
-                   <UserChip key={i} id={id} removeUser={this.handleRequestDelete.bind(this)} classes={classes} />
+                   <UserChip key={i} id={id} removeUser={this.handleRequestDelete.bind(this)} classes={classes} myID={this.props.loggedInUser.id} />
                   )
                 })}
               </div>
