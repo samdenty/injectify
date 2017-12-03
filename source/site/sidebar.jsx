@@ -240,9 +240,10 @@ const styles = theme => ({
     flexWrap: 'wrap',
   },
   title: {
-    marginBottom: 16,
-    fontSize: 14,
     color: 'rgb(57, 72, 171)',
+    fontSize: '1.3em',
+    marginBottom: 26,
+    fontWeight: 400,
   },
   changeName: {
     display: 'flex',
@@ -252,7 +253,15 @@ const styles = theme => ({
   },
   changeNameButton: {
     margin: 10,
-  }
+  },
+  permissionGroup: {
+    marginBottom: '1em',
+    marginTop: '1em',
+    fontWeight: 500,
+  },
+  permissionDivider: {
+    margin: '0.5em 0'
+  },
 })
 
 class PersistentDrawer extends Component {
@@ -1028,6 +1037,7 @@ class ProjectConfig extends Component {
   componentDidMount() {
     let { socket } = this.props
     socket.on(`project:read`, (data) => {
+      if (!this.newName || !this.newName.value) return
       this.newName.value = data.name
       this.setState({
         inputChanged: false,
@@ -1095,7 +1105,7 @@ class ProjectConfig extends Component {
       <span>
         <Card className={classes.contentCard}>
           <CardContent>
-            <Typography type="body1" className={classes.title}>
+            <Typography type="headline" className={classes.title}>
               Project configuration
             </Typography>
             <div className={classes.changeName}>
@@ -1125,7 +1135,10 @@ class ProjectConfig extends Component {
                 Save
               </Button>
             </div>
-            <Typography type="title" gutterBottom>
+
+            <Divider light className={classes.permissionDivider} />
+
+            <Typography type="subheading" gutterBottom className={classes.permissionGroup}>
               Owners:
             </Typography>
             {project.permissions.owners.length > 0 ? (
@@ -1137,42 +1150,49 @@ class ProjectConfig extends Component {
                 })}
               </div>
             ) : (
-              <span>
-                none
-              </span>
+              <Typography type="body1">
+                No owners added
+              </Typography>
             )}
-            <Divider light />
+            <Divider light className={classes.permissionDivider} />
 
 
-            {/* <Typography type="title" gutterBottom>
+            <Typography type="subheading" gutterBottom className={classes.permissionGroup}>
               Admins:
             </Typography>
             {project.permissions.admins.length > 0 ? (
-              project.permissions.admins.map((id, i) => {
-                return (
-                  <UserChip key={i} id={id} removeUser={this.handleRequestDelete.bind(this)} />
-                )
-              })
+              <div className={classes.row}>
+                {project.permissions.admins.map((id, i) => {
+                  return (
+                   <UserChip key={i} id={id} removeUser={this.handleRequestDelete.bind(this)} classes={classes} />
+                  )
+                })}
+              </div>
             ) : (
-              <span>
-                none
-              </span>
+              <Typography type="body1">
+                No admins added
+              </Typography>
             )}
-            <Divider light />
-            <Typography type="title" gutterBottom>
+            <Divider light className={classes.permissionDivider} />
+
+
+            <Typography type="subheading" gutterBottom className={classes.permissionGroup}>
               View-only access:
             </Typography>
             {project.permissions.readonly.length > 0 ? (
-              project.permissions.readonly.map((id, i) => {
-                return (
-                  <UserChip key={i} id={id} removeUser={this.handleRequestDelete.bind(this)} />
-                )
-              })
+              <div className={classes.row}>
+                {project.permissions.readonly.map((id, i) => {
+                  return (
+                   <UserChip key={i} id={id} removeUser={this.handleRequestDelete.bind(this)} classes={classes} />
+                  )
+                })}
+              </div>
             ) : (
-              <span>
-                none
-              </span>
-            )} */}
+              <Typography type="body1">
+                No view-only users added
+              </Typography>
+            )}
+
           </CardContent>
           <CardActions>
 
