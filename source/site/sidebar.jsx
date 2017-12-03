@@ -234,6 +234,10 @@ const styles = theme => ({
   chip: {
     margin: 5,
   },
+  myChip: {
+    background: '#5d6ccc !important',
+    color: 'rgba(255, 255, 255, 0.95) !important',
+  },
   row: {
     display: 'flex',
     justifyContent: 'center',
@@ -1145,7 +1149,7 @@ class ProjectConfig extends Component {
               <div className={classes.row}>
                 {project.permissions.owners.map((id, i) => {
                   return (
-                   <UserChip key={i} id={id} removeUser={this.handleRequestDelete.bind(this)} classes={classes} />
+                   <UserChip key={i} id={id} removeUser={this.handleRequestDelete.bind(this)} classes={classes} myID={this.props.loggedInUser.id} />
                   )
                 })}
               </div>
@@ -1237,7 +1241,7 @@ class ProjectConfig extends Component {
 
 class UserChip extends Component {
   render() {
-    const { id, removeUser, classes } = this.props;
+    const { id, removeUser, classes, myID } = this.props;
     return (
       <Request
         url={`https://api.github.com/user/${id}`}
@@ -1256,7 +1260,7 @@ class UserChip extends Component {
                   avatar={<Avatar src={user.avatar_url + "&s=40"} />}
                   label={user.login}
                   onRequestDelete={removeUser(user)}
-                  className={classes.chip}
+                  className={`${classes.chip} ${id == myID ? classes.myChip : ''} `}
                 />
               )
             }
