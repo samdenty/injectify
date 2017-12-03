@@ -445,6 +445,13 @@ MongoClient.connect(config.mongodb, function(err, db) {
 
 		socket.on('project:create', project => {
 			if (project.name && globalToken) {
+				if (project.name.length > 50) {
+					socket.emit('err', {
+						title	: "Failed to create project",
+						message	: "Project name must be under 50 characters"
+					})
+					return
+				}
 				getUser(globalToken).then(user => {
 					newProject(project.name, user).then(data => {
 						socket.emit('notify', {
@@ -579,6 +586,41 @@ MongoClient.connect(config.mongodb, function(err, db) {
 					}
 				})
 			}
+			var renameProject = (requestingUser, targetProject, newName) => {
+				return new Promise((resolve, reject) => {
+					if (targetProject.doc.permissions.owners.includes(requestingUser.id)) {
+						db.collection('projects', (err, projects) => {
+							if (err) throw err
+							projects.findOne({name: newName}).then(doc => {
+								if(doc == null) {
+									projects.updateOne({
+										name: targetProject.doc.name
+									},
+									{
+										$set: {
+											name: newName
+										}
+									})
+									resolve({
+										title: "Renamed project",
+										message: "Successfully renamed project to " + newName
+									})
+								} else {
+									reject({
+										title: "Failed to rename project",
+										message: "The selected name " + newName + " is already taken"
+									})
+								}
+							})
+						})
+					} else {
+						reject({
+							title: "Insufficient permissions",
+							message: "You need to be an owner to rename this project"
+						})
+					}
+				})
+			}
 			if (command && project) {
 				getUser(globalToken).then(user => {
 					getProject(project, user).then(thisProject => {
@@ -595,6 +637,35 @@ MongoClient.connect(config.mongodb, function(err, db) {
 						if (command == "permissions:add") {
 
 						}
+						if (command == "project:rename" && data.newName) {
+							if (data.newName.length > 50) {
+								socket.emit('err', {
+									title	: "Failed to rename project",
+									message	: "Project name must be under 50 characters"
+								})
+								return
+							}
+							if (data.newName == thisProject.doc.name) return
+							renameProject(user, thisProject, data.newName).then(response => {
+								clearInterval(refresh)
+								socket.emit('project:switch', {
+									project: data.newName
+								})
+								setTimeout(() => {
+									getProjects(user).then(projects => {
+										socket.emit('user:projects', projects)
+									}).catch(error => {
+										if (config.debug) console.log(chalk.redBright("[database] "), error)
+									})
+									socket.emit('notify', response)
+								}, 10)
+							}).catch(e => {
+								socket.emit('err', {
+									title	: e.title,
+									message	: e.message
+								})
+							})
+						}
 					}).catch(e => {
 						socket.emit('err', {
 							title	: e.title,
@@ -608,7 +679,6 @@ MongoClient.connect(config.mongodb, function(err, db) {
 					})
 				})
 			}
-
 		})
 
 		socket.on('project:close', project => {

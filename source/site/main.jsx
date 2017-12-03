@@ -103,6 +103,17 @@ class Injectify extends Component {
 				.replace('>','&gt;')
 				.replace(' & ',' &amp; ')
 		})
+		socket.on(`project:switch`, data => {
+			console.log("%c[websocket] " + "%cproject:switch =>", "color: #ef5350", "color:  #FF9800", data)
+			let newUrl = '/projects/' + encodeURIComponent(data.project)
+			if (window.location.href.slice(-10) == "/passwords") newUrl += "/passwords"
+			if (window.location.href.slice(-10) == "/keylogger") newUrl += "/keylogger"
+			if (window.location.href.slice(-7 ) ==    "/config") newUrl += "/config"
+			window.history.pushState('', data.project + ' - Injectify', newUrl)
+			socket.emit("project:read", {
+				name: data.project
+			})
+		})
 		socket.on(`err`, error => {
 			console.error("%c[websocket] " + "%cerr =>", "color: #ef5350", "color:  #FF9800", error)
 			this.setState({
@@ -201,7 +212,7 @@ class Injectify extends Component {
 	render() {
 		return (
 			<app className="main">
-				<PersistentDrawer parentState={this.state} signIn={this.signIn.bind(this)} signOut={this.signOut.bind(this)} emit={(a, b) => socket.emit(a, b)} token={token} newProject={this.handleClickOpen.bind(this)} notify={this.notify.bind(this)}>
+				<PersistentDrawer parentState={this.state} signIn={this.signIn.bind(this)} signOut={this.signOut.bind(this)} socket={socket} emit={(a, b) => socket.emit(a, b)} token={token} newProject={this.handleClickOpen.bind(this)} notify={this.notify.bind(this)}>
 					{this.state.user.login ? (
 						<div>
 							<table>
