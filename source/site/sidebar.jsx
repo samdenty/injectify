@@ -1398,7 +1398,7 @@ class UserChip extends Component {
     const { id, removeUser, classes, user, permissions, type, token } = this.props;
     return (
       <Request
-        url={`https://api.github.com/user/${id}?access-token=` + encodeURIComponent(token)}
+        url={`https://api.github.com/user/${id}?access_token=` + encodeURIComponent(token)}
         method='get'
         accept='application/json'
       >
