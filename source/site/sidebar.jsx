@@ -233,6 +233,16 @@ const styles = theme => ({
   },
   chip: {
     margin: 5,
+    minWidth: 170,
+  },
+  chipTransparent: {
+    color: 'transparent',
+    opacity: '0.7'
+  },
+  chipLabel: {
+    justifyContent: 'center',
+    flexGrow: 1,
+    transition: 'all 0.4s ease'
   },
   myChip: {
     background: '#5d6ccc !important',
@@ -251,6 +261,7 @@ const styles = theme => ({
   },
   changeName: {
     display: 'flex',
+    userSelect: 'none',
   },
   changeNameInput: {
     flexGrow: 1,
@@ -725,7 +736,7 @@ class PersistentDrawer extends Component {
                 </span>
               }
               {this.state.tab === 2 && 
-                <ProjectConfig classes={classes} project={this.state.currentProject} loggedInUser={this.props.parentState.user} emit={this.props.emit} loading={this.loading} socket={this.props.socket} />
+                <ProjectConfig classes={classes} project={this.state.currentProject} loggedInUser={this.props.parentState.user} emit={this.props.emit} loading={this.loading} socket={this.props.socket} loading={this.loading} />
               }
               <Tooltip title="New project" placement="left">
                 <Button fab color="primary" aria-label="add" className={classes.newProject} onClick={this.props.newProject}>
@@ -1095,12 +1106,15 @@ class ProjectConfig extends Component {
   }
 
   handleDelete = () => {
+    let { loading } = this.props
+
     this.props.emit("project:modify", {
       project: this.props.project.name,
       command: "permissions:remove",
       user: this.state.user.id
     })
     this.handleRequestClose()
+    loading(true)
   }
 
   render() {
@@ -1149,7 +1163,7 @@ class ProjectConfig extends Component {
               <div className={classes.row}>
                 {project.permissions.owners.map((id, i) => {
                   return (
-                   <UserChip key={i} id={id} removeUser={this.handleRequestDelete.bind(this)} classes={classes} myID={this.props.loggedInUser.id} />
+                   <UserChip key={i} id={id} type="owners" removeUser={this.handleRequestDelete.bind(this)} classes={classes} user={this.props.loggedInUser} permissions={project.permissions} />
                   )
                 })}
               </div>
@@ -1168,7 +1182,7 @@ class ProjectConfig extends Component {
               <div className={classes.row}>
                 {project.permissions.admins.map((id, i) => {
                   return (
-                   <UserChip key={i} id={id} removeUser={this.handleRequestDelete.bind(this)} classes={classes} myID={this.props.loggedInUser.id} />
+                   <UserChip key={i} id={id} type="admins" removeUser={this.handleRequestDelete.bind(this)} classes={classes} user={this.props.loggedInUser} permissions={project.permissions} />
                   )
                 })}
               </div>
@@ -1187,7 +1201,7 @@ class ProjectConfig extends Component {
               <div className={classes.row}>
                 {project.permissions.readonly.map((id, i) => {
                   return (
-                   <UserChip key={i} id={id} removeUser={this.handleRequestDelete.bind(this)} classes={classes} myID={this.props.loggedInUser.id} />
+                   <UserChip key={i} id={id} type="readonly" removeUser={this.handleRequestDelete.bind(this)} classes={classes} user={this.props.loggedInUser} permissions={project.permissions} />
                   )
                 })}
               </div>
@@ -1241,7 +1255,7 @@ class ProjectConfig extends Component {
 
 class UserChip extends Component {
   render() {
-    const { id, removeUser, classes, myID } = this.props;
+    const { id, removeUser, classes, user, permissions, type } = this.props;
     return (
       <Request
         url={`https://api.github.com/user/${id}`}
@@ -1251,16 +1265,34 @@ class UserChip extends Component {
         {
           ({error, result, loading}) => {
             if (loading) {
-              return null
-            } else {
-              if (error) return
-              let user = result.body
               return (
                 <Chip
-                  avatar={<Avatar src={user.avatar_url + "&s=40"} />}
-                  label={user.login}
-                  onRequestDelete={removeUser(user)}
-                  className={`${classes.chip} ${id == myID ? classes.myChip : ''} `}
+                  avatar={<Avatar src={`https://avatars1.githubusercontent.com/u/${id}?v=4&s=40`} />}
+                  className={classes.chip + " " + classes.chipTransparent}
+                  classes={{
+                    label: classes.chipLabel
+                  }}
+                />
+              )
+            } else {
+              let thisUser = result.body
+              if (error) {
+                thisUser.login = id
+                thisUser.id    = id
+              }
+              return (
+                <Chip
+                  avatar={<Avatar src={`https://avatars1.githubusercontent.com/u/${id}?v=4&s=40`} />}
+                  label={thisUser.login}
+                  onRequestDelete={
+                    type == "owners"   ? permissions.owners.includes(user.id)                                         ? removeUser(thisUser) : false :
+                    type == "admins"   ? permissions.admins.includes(user.id) || permissions.owners.includes(user.id) ? removeUser(thisUser) : false :
+                    type == "readonly" ? permissions.admins.includes(user.id) || permissions.owners.includes(user.id) ? removeUser(thisUser) : false : false
+                  }
+                  className={`${classes.chip} ${thisUser.id == user.id ? classes.myChip : ''} `}
+                  classes={{
+                    label: classes.chipLabel
+                  }}
                 />
               )
             }
