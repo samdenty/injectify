@@ -30,6 +30,7 @@
     "material-ui-icons": "^1.0.0-beta.17",
     "query-string": "^5.0.1",
     "react": "^15.6.2",
+    "react-contenteditable": "^2.0.5",
     "react-copy-to-clipboard": "^5.0.1",
     "react-http-request": "^1.0.3",
     "react-json-view": "^1.13.3",

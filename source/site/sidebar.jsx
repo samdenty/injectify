@@ -13,7 +13,9 @@ import { MenuItem } from 'material-ui/Menu';
 import url from 'url';
 import Typography from 'material-ui/Typography';
 import TextField from 'material-ui/TextField';
+import Checkbox from 'material-ui/Checkbox';
 import Divider from 'material-ui/Divider';
+import ContentEditable from 'react-contenteditable';
 import Save from 'material-ui-icons/Save';
 import IconButton from 'material-ui/IconButton';
 import MenuIcon from 'material-ui-icons/Menu';
@@ -190,6 +192,7 @@ const styles = theme => ({
     minWidth: '100%',
   },
   contentCard: {
+    marginBottom: 30,
   },
   tableCell: {
     padding: '4px 25px',
@@ -288,6 +291,9 @@ const styles = theme => ({
   },
   noneOfType: {
     background: 'none',
+  },
+  contentEditable: {
+    outline: 0,
   },
 })
 
@@ -1300,6 +1306,7 @@ class ProjectConfig extends Component {
             )}
           </CardContent>
         </Card>
+        <DomainFiltering classes={classes} filter={project.config.filter} write={!project.permissions.readonly.includes(loggedInUser.id)} />
         <Dialog open={this.state.open} onRequestClose={this.handleRequestClose}>
           {this.state.dialog == "remove" ? (
             <div>
@@ -1439,6 +1446,141 @@ class UserChip extends Component {
           }
         }
       </Request>
+    )
+  }
+}
+
+class DomainFiltering extends Component {
+  state = {
+    allChecked: false,
+    filter: JSON.parse(JSON.stringify(this.props.filter)),
+    filterChanged: false,
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (JSON.stringify(nextProps.filter) !== JSON.stringify(this.props.filter) && JSON.stringify(this.props.filter) == JSON.stringify(this.state.filter)) {
+      // Domains have been updated, but no local changes
+      this.setState({
+        filter: nextProps.filter
+      })
+    }
+  }
+
+  checkFilterChanged = () => {
+    console.log(this.state.filter, this.props.filter)
+    if (JSON.stringify(this.state.filter) == JSON.stringify(this.props.filter)) {
+      console.log(true)
+      this.setState({
+        filterChanged: false,
+      })
+    } else {
+      console.log(false)
+      this.setState({
+        filterChanged: true,
+      })
+    }
+  }
+
+  handleCheck = (index, checked) => {
+    let newState = this.state.filter
+    newState.domains[index].enabled = checked
+    this.setState({
+      filter: newState
+    })
+    this.checkFilterChanged()
+  }
+
+  handleCheckAll = () => {
+    let newState = this.state.filter
+    newState.domains.forEach(domain => {
+      if (this.state.allChecked) {
+        domain.enabled = false
+      } else {
+        domain.enabled = true
+      }
+    })
+    this.setState({
+      allChecked: !this.state.allChecked,
+      filter: newState,
+    })
+    this.checkFilterChanged()
+  }
+
+  handleChange = (index, event) => {
+    let newState = this.state.filter
+    newState.domains[index].match = event.target.value
+    this.setState({
+      filter: newState
+    })
+    this.checkFilterChanged()
+  }
+
+  save = () => {
+
+  }
+
+  render() {
+    let { classes, write } = this.props
+    let { filter }  = this.state
+    return (
+      <Card className={classes.contentCard}>
+        <CardContent>
+          <Typography type="headline" className={classes.title}>
+            Domain {filter.type}
+          </Typography>
+          <Table className={classes.table}>
+            <TableHead>
+              <TableRow>
+                <TableCell padding="checkbox" width={1}>
+                    <Checkbox
+                      checked={this.state.allChecked}
+                      onChange={this.handleCheckAll}
+                      disabled={!write}
+                    />
+                </TableCell>
+                <TableCell>
+                  Domain
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {filter.domains && filter.domains.map((domain, i) => {
+                return (
+                  <TableRow key={i}>
+                    <TableCell padding="checkbox">
+                    <Checkbox
+                      checked={domain.enabled}
+                      onChange={(event, checked) => this.handleCheck(i, checked)}
+                      disabled={!write}
+                    />
+                    </TableCell>
+                    <TableCell>
+                      <ContentEditable
+                        html={domain.match}
+                        className={classes.contentEditable}
+                        spellCheck={false}
+                        onChange={(event) => this.handleChange(i, event)}
+                      />
+                    </TableCell>
+                  </TableRow>
+                )
+              })}
+            </TableBody>
+          </Table>
+        </CardContent>
+        {write && 
+          <CardActions>
+            <Button
+              dense
+              onClick={this.save.bind(this)}
+              disabled={!this.state.filterChanged}
+            >
+             <Save className={classes.leftIcon} />
+              Save
+            </Button>
+          </CardActions>
+        }
+      </Card>
     )
   }
 }
