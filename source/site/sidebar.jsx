@@ -8,7 +8,7 @@ import classNames from 'classnames';
 import Drawer from 'material-ui/Drawer';
 import AppBar from 'material-ui/AppBar';
 import Toolbar from 'material-ui/Toolbar';
-import List, { ListItem, ListItemIcon, ListItemText } from 'material-ui/List';
+import List, { ListItem, ListItemAvatar, ListItemIcon, ListItemText } from 'material-ui/List';
 import { MenuItem } from 'material-ui/Menu';
 import url from 'url';
 import Typography from 'material-ui/Typography';
@@ -145,6 +145,13 @@ const styles = theme => ({
     height: 35,
     marginLeft: 8,
   },
+  switchUser: {
+    minWidth: 300,
+  },
+  activeUser: {
+    backgroundColor: 'rgba(64, 80, 181, 0.4) !important',
+    userSelect: 'none',
+  },
   menuButton: {
     marginLeft: 12,
     marginRight: 20,
@@ -279,6 +286,17 @@ const styles = theme => ({
     background: 'rgba(0, 0, 0, 0.07)',
     padding: '8px 0',
   },
+  hoverDarken: {
+    backgroundColor: 'transparent',
+    color: '#525358',
+    transition: 'background-color 0.2s ease',
+    '&:hover': {
+      backgroundColor: 'rgba(47, 48, 51, 0.08)',
+    },
+    '&:active': {
+      backgroundColor: 'rgba(47, 48, 51, 0.3)',
+    },
+  },
   title: {
     color: 'rgb(57, 72, 171)',
     fontSize: '1.3em',
@@ -324,7 +342,9 @@ class PersistentDrawer extends Component {
     currentProject: null,
     loading: false,
     tab: 0,
-  };
+    switchUserOpen: false,
+    accounts: []
+  }
 
   componentWillReceiveProps(nextProps) {
     if (nextProps.parentState.user.login !== this.props.parentState.user.login && this.props.parentState.width >= 700) {
@@ -334,6 +354,11 @@ class PersistentDrawer extends Component {
         this.setState({ open: false })
       }
     }
+
+    if (nextProps.token !== this.props.token) {
+      this.readAccounts()
+    }
+
     if (nextProps.parentState.project !== this.props.parentState.project) {
       this.loading(false)
       this.setState({ currentProject: nextProps.parentState.project})
@@ -347,13 +372,15 @@ class PersistentDrawer extends Component {
   }
 
   componentDidMount() {
-    let { socket } = this.props
+    let { socket, token, parentState } = this.props
 
     socket.on(`err`, error => {
 			this.setState({
         loading: false,
       })
-		})
+    })
+    
+    this.readAccounts()
   }
 
   handleDrawerOpen = () => {
@@ -388,9 +415,62 @@ class PersistentDrawer extends Component {
     })
   }
 
-  signOut = () => {
-    this.returnHome()
-    this.props.signOut()
+  signOut = (index) => {
+    let accounts = this.state.accounts
+    accounts.splice(index, 1)
+    this.setState({
+      accounts: accounts,
+    })
+
+    this.saveAccounts()
+  }
+
+  readAccounts = () => {
+    let accounts
+
+    try {
+      accounts = JSON.parse(localStorage.getItem('accounts'))
+      if (!accounts) throw "a bomb"
+    } catch(e) {
+      accounts = [
+        {
+          token: token,
+          user : parentState.user,
+        }
+      ]
+    }
+
+    this.setState({
+      accounts: accounts
+    })
+  }
+
+  saveAccounts = () => {
+    localStorage.setItem("accounts", JSON.stringify(this.state.accounts))
+    if(this.state.accounts.length == 0) {
+      this.returnHome()
+      this.props.signOut()
+    }
+  }
+
+  switchUser = () => {
+    this.setState({
+      switchUserOpen: true,
+    })
+  }
+
+  addUser = () => {
+    if (this.state.accounts.length) {
+
+    } else {
+      this.props.signIn()
+    }
+  }
+
+  handleSwitchUserClose = () => {
+    this.setState({
+      switchUserOpen: false,
+    })
   }
 
 	viewJSON = () => {
@@ -405,7 +485,7 @@ class PersistentDrawer extends Component {
   }
 
   render() {
-    const { classes, theme, signIn } = this.props;
+    const { classes, theme, signIn, parentState } = this.props;
     const { open } = this.state;
 
     return (
@@ -428,13 +508,11 @@ class PersistentDrawer extends Component {
               <Typography type="title" color="inherit" noWrap className={classes.appBarHeader} onClick={this.returnHome.bind(this)}>
                   Injectify [BETA]
               </Typography>
-              {this.props.parentState.user.login ? (
-                  <Tooltip title="Log out" placement="bottom">
-                    <Button color="contrast" onClick={this.signOut} className="signed-in">
-                      {this.props.parentState.user.login}
-                      <Avatar src={`${this.props.parentState.user.avatar_url}&s=40`} className={classes.avatar}/>
-                    </Button>
-                  </Tooltip>
+              {parentState.user.login ? (
+                  <Button color="contrast" onClick={this.switchUser} className="signed-in">
+                    {parentState.user.login}
+                    <Avatar src={`${this.props.parentState.user.avatar_url}&s=40`} className={classes.avatar}/>
+                  </Button>
                 ) : (
                   <Button color="contrast" onClick={signIn} autoFocus>
                     Login with GitHub
@@ -472,7 +550,7 @@ class PersistentDrawer extends Component {
                   {theme.direction === 'rtl' ? <ChevronRightIcon /> : <ChevronLeftIcon />}
                 </IconButton>
               </div>
-              <ProjectList p={this.props} projects={this.props.parentState.projects} projectData={this.props.parentState.project} emit={this.props.emit} classes={classes} token={this.props.token} loading={this.loading.bind(this)} closeDrawer={this.handleDrawerClose.bind(this)}/>
+              <ProjectList p={this.props} projects={parentState.projects} projectData={parentState.project} emit={this.props.emit} classes={classes} token={this.props.token} loading={this.loading.bind(this)} closeDrawer={this.handleDrawerClose.bind(this)}/>
             </div>
           </Drawer>
           {this.state.currentProject ? (
@@ -798,6 +876,45 @@ class PersistentDrawer extends Component {
             )
           }
         </div>
+        <Dialog open={this.state.switchUserOpen} onRequestClose={this.handleSwitchUserClose} classes={{ paper:classes.switchUser }}>
+          <DialogTitle>
+            Switch accounts
+          </DialogTitle>
+          <div>
+            <List>
+              {this.state.accounts.map((account, i) => (
+                <ListItem
+                  button={account.user.id !== parentState.user.id}
+                  key={i}
+                  className={account.user.id == parentState.user.id && classes.activeUser}
+                >
+                  <ListItemAvatar>
+                    <Avatar
+                      src={`https://avatars3.githubusercontent.com/u/${account.user.id}?v=4&s=70`} />
+                  </ListItemAvatar>
+                  <ListItemText primary={account.user.login} />
+                  <ListItemAvatar>
+                    <Avatar className={classes.hoverDarken}>
+                      <CloseIcon onClick={() => this.signOut(i)} />
+                    </Avatar>
+                  </ListItemAvatar>
+                </ListItem>
+              ))}
+              {this.state.accounts.length !== 0 && <Divider />}
+              <ListItem
+                button
+                onClick={this.addUser.bind(this)}
+              >
+                <ListItemAvatar>
+                  <Avatar>
+                    <AddIcon />
+                  </Avatar>
+                </ListItemAvatar>
+                <ListItemText primary="add account" />
+              </ListItem>
+            </List>
+          </div>
+        </Dialog>
       </div>
     )
   }
@@ -1630,10 +1747,12 @@ class DomainFiltering extends Component {
                 <TableCell>
                   Domain
                 </TableCell>
-                <TableCell width={1}>
-                  <DeleteSweep
-                    onClick={() => this.handleDelete(-1)} />
-                </TableCell>
+                {write && 
+                  <TableCell width={1}>
+                    <DeleteSweep
+                      onClick={() => this.handleDelete(-1)} />
+                  </TableCell>
+                }
               </TableRow>
             </TableHead>
             <TableBody>
@@ -1655,11 +1774,13 @@ class DomainFiltering extends Component {
                         onChange={(event) => this.handleChange(i, event)}
                       />
                     </TableCell>
-                    <TableCell>
-                      <DeleteIcon
-                        color="#757575"
-                        onClick={() => this.handleDelete(i)} />
-                    </TableCell>
+                    {write && 
+                      <TableCell>
+                        <DeleteIcon
+                          color="#757575"
+                          onClick={() => this.handleDelete(i)} />
+                      </TableCell>
+                    }
                   </TableRow>
                 )
               })}

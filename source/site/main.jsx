@@ -66,6 +66,46 @@ class Injectify extends Component {
 			this.setState(data)
 			if (data.success && data.token) {
 				localStorage.setItem("token", data.token)
+				let accounts = localStorage.getItem("accounts")
+				if (!accounts) {
+					accounts = [
+						{
+							token: data.token,
+							user : {
+								login: data.user.login,
+								id: data.user.id,
+							}
+						}
+					]
+				} else {
+					try {
+						accounts = JSON.parse(accounts)
+					} catch(e) {
+						accounts = [
+							{
+								token: data.token,
+								user : {
+									login: data.user.login,
+									id	 : data.user.id,
+								}
+							}
+						]
+					}
+					let shouldAdd = true
+					accounts.forEach((account) => {
+						if (account.token == data.token) shouldAdd = false
+					})
+					if (shouldAdd) {
+						accounts.push({
+							token: data.token,
+							user : {
+								login: data.user.login,
+								id: data.user.id,
+							}
+						})
+					}
+				}
+				localStorage.setItem("accounts", JSON.stringify(accounts))
 				token = data.token
 				this.setState({
 					agreeOpen: true
