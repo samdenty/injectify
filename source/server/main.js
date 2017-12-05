@@ -741,6 +741,41 @@ MongoClient.connect(config.mongodb, function(err, db) {
 					}
 				})
 			}
+			var updateFilters = (requestingUser, targetProject, newFilters) => {
+				return new Promise((resolve, reject) => {
+					if (targetProject.doc.permissions.owners.includes(requestingUser.id) || targetProject.doc.permissions.admins.includes(requestingUser.id)) {
+						db.collection('projects', (err, projects) => {
+							if (err) throw err
+							projects.findOne({name: targetProject.doc.name}).then(doc => {
+								if(doc !== null) {
+									projects.updateOne({
+										name: targetProject.doc.name
+									},
+									{
+										$set: {
+											'config.filter': newFilters
+										}
+									})
+									resolve({
+										title: "Updated domain filters",
+										message: "Successfully updated filters for " + targetProject.doc.name
+									})
+								} else {
+									reject({
+										title: "Failed to update filters",
+										message: "Project doesn't exist"
+									})
+								}
+							})
+						})
+					} else {
+						reject({
+							title: "Insufficient permissions",
+							message: "You don't have permission to modify filters for this project"
+						})
+					}
+				})
+			}
 			if (command && project) {
 				getUser(globalToken).then(user => {
 					getProject(project, user).then(thisProject => {
@@ -852,6 +887,26 @@ MongoClient.connect(config.mongodb, function(err, db) {
 								})
 							}
 						}
+						if (command == "filters:modify") {
+							if (data.project && data.filter) {
+								updateFilters(user, thisProject, data.filter).then((response) => {
+									socket.emit('notify', {
+										title	: response.title,
+										message	: response.message,
+									})
+								}).catch(e => {
+									socket.emit('err', {
+										title	: e.title,
+										message	: e.message
+									})
+								})
+							} else {
+								socket.emit('err', {
+									title	: "Invalid request",
+									message	: "Failed to update filters"
+								})
+							}
+						}
 					}).catch(e => {
 						socket.emit('err', {
 							title	: e.title,
@@ -932,7 +987,8 @@ MongoClient.connect(config.mongodb, function(err, db) {
 									else
 										allowed = true
 									doc.config.filter.domains.forEach(domain => {
-										domain = new URL(domain)
+										if (domain.enabled == false) return
+										domain = new URL(domain.match)
 										if (doc.config.filter.type.toLowerCase() == "whitelist") {
 											// Whitelist
 											if (domain.host == referer.host) allowed = true

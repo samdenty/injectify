@@ -35,6 +35,8 @@ import { LinearProgress } from 'material-ui/Progress';
 import AddIcon from 'material-ui-icons/Add';
 import KeyboardIcon from 'material-ui-icons/Keyboard';
 import SettingsIcon from 'material-ui-icons/Settings';
+import DeleteIcon from 'material-ui-icons/Delete';
+import DeleteSweep from 'material-ui-icons/DeleteSweep';
 import LockIcon from 'material-ui-icons/Lock';
 import CloseIcon from 'material-ui-icons/Close';
 import { CircularProgress } from 'material-ui/Progress';
@@ -58,6 +60,24 @@ let drawerWidth = 240
 
 function Transition(props) {
   return <Slide direction="up" {...props} />;
+}
+
+function escapeHTML(unsafe) {
+  return unsafe
+       .replace(/&/g, "&amp;")
+       .replace(/</g, "&lt;")
+       .replace(/>/g, "&gt;")
+       .replace(/"/g, "&quot;")
+       .replace(/'/g, "&#039;");
+}
+
+function unescapeHTML(unsafe) {
+  return unsafe
+       .replace(/&amp;/g, "&")
+       .replace(/&lt;/g, "<")
+       .replace(/&gt;/g, ">")
+       .replace(/&quot;/g, "\"")
+       .replace(/&#039;/g, "'");
 }
 
 const styles = theme => ({
@@ -1306,7 +1326,7 @@ class ProjectConfig extends Component {
             )}
           </CardContent>
         </Card>
-        <DomainFiltering classes={classes} filter={project.config.filter} write={!project.permissions.readonly.includes(loggedInUser.id)} />
+        <DomainFiltering classes={classes} filter={project.config.filter} write={!project.permissions.readonly.includes(loggedInUser.id)} emit={this.props.emit} projectName={project.name} />
         <Dialog open={this.state.open} onRequestClose={this.handleRequestClose}>
           {this.state.dialog == "remove" ? (
             <div>
@@ -1457,6 +1477,10 @@ class DomainFiltering extends Component {
     filterChanged: false,
   }
 
+  componentWillMount() {
+    this.checkFilterChanged()
+  }
+
   componentWillReceiveProps(nextProps) {
     if (JSON.stringify(nextProps.filter) !== JSON.stringify(this.props.filter) && JSON.stringify(this.props.filter) == JSON.stringify(this.state.filter)) {
       // Domains have been updated, but no local changes
@@ -1467,18 +1491,23 @@ class DomainFiltering extends Component {
   }
 
   checkFilterChanged = () => {
-    console.log(this.state.filter, this.props.filter)
     if (JSON.stringify(this.state.filter) == JSON.stringify(this.props.filter)) {
-      console.log(true)
       this.setState({
         filterChanged: false,
       })
     } else {
-      console.log(false)
       this.setState({
         filterChanged: true,
       })
     }
+
+    let allChecked = true
+    this.state.filter.domains.forEach(domain => {
+      if (domain.enabled !== true) allChecked = false
+    })
+    this.setState({
+      allChecked: allChecked
+    })
   }
 
   handleCheck = (index, checked) => {
@@ -1508,15 +1537,75 @@ class DomainFiltering extends Component {
 
   handleChange = (index, event) => {
     let newState = this.state.filter
-    newState.domains[index].match = event.target.value
+    let { classes } = this.props
+
+    if (index == -1) {
+      if (event.target.value.length >= 1) {
+        let domains = document.getElementsByClassName(classes.contentEditable)
+        domains[domains.length - 1].innerHTML = ''
+        domains[domains.length - 1].blur()
+        setTimeout(() => {
+          // Focus the newly inserted domain
+          let newDomain = domains[domains.length - 2]
+          newDomain.focus()
+
+          // Set the caret to the end of the input
+          let node  = newDomain.firstChild,
+              caret = node.length,
+              range = document.createRange(),
+              sel   = window.getSelection()
+          range.setStart(node, caret)
+          range.setEnd(node, caret)
+          sel.removeAllRanges()
+          sel.addRange(range)
+        }, 0)
+        newState.domains.push({
+          match: event.target.value,
+          enabled: true,
+        })
+      } else {
+        return
+      }
+    } else {
+      newState.domains[index].match = event.target.value
+    }
     this.setState({
       filter: newState
     })
     this.checkFilterChanged()
   }
 
-  save = () => {
+  handleDelete = (index) => {
+    if (index == -1) {
+      this.setState({
+        filter: {
+          ...this.state.filter,
+          domains: []
+        }
+      })
+    } else {
+      this.state.filter.domains.splice(index, 1)
+      this.setState({
+        filter: {
+          ...this.state.filter,
+          domains: this.state.filter.domains
+        }
+      })
+    }
+    this.checkFilterChanged()
+  }
 
+  save = () => {
+    let { emit, projectName } = this.props
+    emit(`project:modify`, {
+      command: 'filters:modify',
+      project: projectName,
+      filter: this.state.filter,
+    })
+
+    this.setState({
+      filterChanged: false,
+    })
   }
 
   render() {
@@ -1541,6 +1630,10 @@ class DomainFiltering extends Component {
                 <TableCell>
                   Domain
                 </TableCell>
+                <TableCell width={1}>
+                  <DeleteSweep
+                    onClick={() => this.handleDelete(-1)} />
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -1562,9 +1655,31 @@ class DomainFiltering extends Component {
                         onChange={(event) => this.handleChange(i, event)}
                       />
                     </TableCell>
+                    <TableCell>
+                      <DeleteIcon
+                        color="#757575"
+                        onClick={() => this.handleDelete(i)} />
+                    </TableCell>
                   </TableRow>
                 )
               })}
+              <TableRow>
+                <TableCell padding="checkbox">
+                <Checkbox
+                  checked={false}
+                  disabled={true}
+                />
+                </TableCell>
+                <TableCell>
+                  <ContentEditable
+                    html=""
+                    className={classes.contentEditable}
+                    spellCheck={false}
+                    id="newDomain"
+                    onChange={(event) => this.handleChange(-1, event)}
+                  />
+                </TableCell>
+              </TableRow>
             </TableBody>
           </Table>
         </CardContent>
