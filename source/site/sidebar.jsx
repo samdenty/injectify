@@ -426,7 +426,8 @@ class PersistentDrawer extends Component {
   }
 
   readAccounts = () => {
-    let accounts
+    let accounts,
+        { token, parentState } = this.props
 
     try {
       accounts = JSON.parse(localStorage.getItem('accounts'))
