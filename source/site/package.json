@@ -26,6 +26,7 @@
     ]
   },
   "dependencies": {
+    "copy-webpack-plugin": "^4.2.3",
     "material-ui": "^1.0.0-beta.20",
     "material-ui-icons": "^1.0.0-beta.17",
     "query-string": "^5.0.1",
@@ -34,6 +35,7 @@
     "react-copy-to-clipboard": "^5.0.1",
     "react-http-request": "^1.0.3",
     "react-json-view": "^1.13.3",
+    "react-monaco-editor": "^0.12.0",
     "react-syntax-highlighter": "^6.0.4",
     "react-timestamp": "^4.3.1",
     "socket.io": "^2.0.4",

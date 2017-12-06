@@ -36,7 +36,8 @@
     "request": "^2.83.0",
     "reverse-string": "0.0.6",
     "socket.io": "^2.0.4",
-    "uglify-js": "^3.2.0",
+    "sockjs": "^0.3.19",
+    "uglify-es": "^3.2.1",
     "unicode-escape": "^0.1.0",
     "user-agent-parser": "^0.6.0"
   },

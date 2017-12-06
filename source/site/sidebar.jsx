@@ -2,6 +2,7 @@ import ReactDOM, { render } from 'react-dom'
 import React, { Component } from "react";
 import Request from 'react-http-request';
 import PropTypes from 'prop-types';
+import MonacoEditor from 'react-monaco-editor';
 import { withStyles } from 'material-ui/styles';
 import Chip from 'material-ui/Chip';
 import classNames from 'classnames';
@@ -19,6 +20,7 @@ import ContentEditable from 'react-contenteditable';
 import Save from 'material-ui-icons/Save';
 import IconButton from 'material-ui/IconButton';
 import MenuIcon from 'material-ui-icons/Menu';
+import CodeIcon from 'material-ui-icons/Code';
 import ChevronLeftIcon from 'material-ui-icons/ChevronLeft';
 import ChevronRightIcon from 'material-ui-icons/ChevronRight';
 import Button from 'material-ui/Button';
@@ -368,7 +370,8 @@ class PersistentDrawer extends Component {
   componentWillMount() {
     if (window.location.href.slice(-10) == "/passwords") this.setState({tab: 0})
     if (window.location.href.slice(-10) == "/keylogger") this.setState({tab: 1})
-    if (window.location.href.slice(-7 ) ==    "/config") this.setState({tab: 2})
+    if (window.location.href.slice(-7 ) ==    "/inject") this.setState({tab: 2})
+    if (window.location.href.slice(-7 ) ==    "/config") this.setState({tab: 3})
   }
 
   componentDidMount() {
@@ -385,10 +388,12 @@ class PersistentDrawer extends Component {
 
   handleDrawerOpen = () => {
     this.setState({ open: true })
+    this.remountMonaco()
   }
 
   handleDrawerClose = () => {
     this.setState({ open: false })
+    this.remountMonaco()
   }
 
   handleRecordOpen = (record) => {
@@ -396,11 +401,11 @@ class PersistentDrawer extends Component {
       recordOpen: true,
       record: record
     })
-  };
+  }
 
   handleRecordClose = () => {
     this.setState({ recordOpen: false });
-  };
+  }
 
   returnHome = () => {
     this.setState({ currentProject: null })
@@ -482,7 +487,19 @@ class PersistentDrawer extends Component {
     this.setState({ tab: value })
     if (value == 0) window.history.pushState('', ' - Injectify', '/projects/' + encodeURIComponent(this.state.currentProject.name) + '/passwords') 
     if (value == 1) window.history.pushState('', ' - Injectify', '/projects/' + encodeURIComponent(this.state.currentProject.name) + '/keylogger') 
-    if (value == 2) window.history.pushState('', ' - Injectify', '/projects/' + encodeURIComponent(this.state.currentProject.name) + '/config') 
+    if (value == 2) window.history.pushState('', ' - Injectify', '/projects/' + encodeURIComponent(this.state.currentProject.name) + '/inject') 
+    if (value == 3) window.history.pushState('', ' - Injectify', '/projects/' + encodeURIComponent(this.state.currentProject.name) + '/config') 
+  }
+
+  remountMonaco() {
+    this.setState({
+      hideMonaco: true,
+    })
+    setTimeout(() => {
+      this.setState({
+        hideMonaco: false,
+      })
+    }, 300)
   }
 
   render() {
@@ -531,6 +548,7 @@ class PersistentDrawer extends Component {
               >
                 <Tab label="Passwords" icon={<LockIcon />} disabled={this.state.loading} />
                 <Tab label="Keylogger" icon={<KeyboardIcon />} disabled={this.state.loading} />
+                <Tab label="Inject" icon={<CodeIcon />} disabled={this.state.loading} />
                 <Tab label="Project config" icon={<SettingsIcon />} disabled={this.state.loading} />
               </Tabs>
             ) : null
@@ -559,6 +577,7 @@ class PersistentDrawer extends Component {
               className={`${classNames(classes.content, classes[`content`], {
                 [classes.contentShift]: open,
               })} ${classes.tabsContent}`}
+              ref={main => {this.main = main}}
             >
               {this.state.tab === 0 && 
                 <span>
@@ -852,7 +871,10 @@ class PersistentDrawer extends Component {
                   }
                 </span>
               }
-              {this.state.tab === 2 && 
+              {this.state.tab === 2 && !this.state.hideMonaco &&
+                <Inject classes={classes} w={this.main ? this.main.offsetWidth : null} h={this.main ? this.main.offsetHeight : null} remount={this.remountMonaco.bind(this)} />
+              }
+              {this.state.tab === 3 && 
                 <ProjectConfig classes={classes} project={this.state.currentProject} loggedInUser={this.props.parentState.user} emit={this.props.emit} loading={this.loading} socket={this.props.socket} loading={this.loading} token={this.props.token} />
               }
               <Tooltip title="New project" placement="left">
@@ -962,6 +984,7 @@ class Project extends Component {
     let newUrl = '/projects/' + encodeURIComponent(this.props.record)
     if (window.location.href.slice(-10) == "/passwords") newUrl += "/passwords"
     if (window.location.href.slice(-10) == "/keylogger") newUrl += "/keylogger"
+    if (window.location.href.slice(-7 ) ==    "/inject") newUrl += "/inject"
     if (window.location.href.slice(-7 ) ==    "/config") newUrl += "/config"
     window.history.pushState('', this.props.record + ' - Injectify', newUrl)
 	}
@@ -1195,6 +1218,47 @@ class Javascript extends Component {
           )}
       </div>
     )
+  }
+}
+
+class Inject extends Component {
+  state = {
+    code: '// type your code...',
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.w !== this.props.w || nextProps.h !== this.props.h) {
+      this.props.remount()
+    }
+  }
+
+  editorDidMount = (editor, monaco) => {
+    editor.focus()
+  }
+
+  onChange = (newValue, e) => {
+    this.setState({
+      code: newValue
+    })
+  }
+
+  render() {
+    const code = this.state.code
+    const { classes, main } = this.props
+    const options = {
+      selectOnLineNumbers: true
+    }
+    return (
+      <MonacoEditor
+        language="javascript"
+        theme="vs-dark"
+        value={code}
+        width='100%'
+        options={options}
+        onChange={this.onChange}
+        editorDidMount={this.editorDidMount}
+      />
+    );
   }
 }
 

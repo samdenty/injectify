@@ -1,5 +1,6 @@
 const path = require("path")
 const webpack = require("webpack")
+const CopyWebpackPlugin = require('copy-webpack-plugin')
 const UglifyJSPlugin = require('uglifyjs-webpack-plugin')
 
 module.exports = {
@@ -18,7 +19,13 @@ module.exports = {
 	plugins: [
 		new webpack.DefinePlugin({
 			'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development')
-		})
+		}),
+		new CopyWebpackPlugin([
+			{
+				from: 'node_modules/monaco-editor/min/vs',
+				to: 'vs',
+			}
+		])
 		//new UglifyJSPlugin()
 	],
 	resolve: {
