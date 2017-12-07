@@ -1767,7 +1767,13 @@ MongoClient.connect(config.mongodb, function(err, db) {
 		})
 	} else {
 		app.use('/projects/*', (req, res) => {
-			res.sendFile(path.join(__dirname, '../../output/site/index.html'))
+			if (req.originalUrl.includes("/vs/")) {
+				let vs = req.originalUrl.split('/vs/')
+					vs = vs[vs.length - 1]
+				res.sendFile(path.join(__dirname, '../../output/site/vs/' + vs))
+			} else {
+				res.sendFile(path.join(__dirname, '../../output/site/index.html'))	
+			}
 		})
 		app.use(express.static(path.join(__dirname, '../../output/site')))
 	}
