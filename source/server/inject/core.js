@@ -133,7 +133,7 @@ injectify.listen('*', (data, topic) => {
 		}
 		eval(data)
 	} catch(e) {
-		if (JSON.stringify(e) == "{}") e = e.stack
-		injectify.send('e', e)
+		//if (JSON.stringify(e) == "{}") e = e.stack
+		injectify.send('e', e.stack)
 	}
 })

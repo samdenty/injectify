@@ -1,0 +1,6 @@
+name: crash
+description: >
+  Crashes the target's browser
+author: samdenty99
+minify: true
+params: >
