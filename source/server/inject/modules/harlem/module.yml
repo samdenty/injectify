@@ -1,0 +1,6 @@
+name: harlem
+description: >
+  Performs harlem-shake on the current page
+author: samdenty99
+minify: true
+params: >

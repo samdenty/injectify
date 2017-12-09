@@ -1,0 +1,6 @@
+name: rickroll
+description: >
+  Opens a 100% x 100% YouTube rickroll
+author: samdenty99
+minify: true
+params: >

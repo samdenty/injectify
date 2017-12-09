@@ -32,6 +32,7 @@
     "js-obfuscator": "^0.1.2",
     "mongo-escape": "^2.0.6",
     "mongodb": "^2.2.33",
+    "node-yaml": "^3.1.1",
     "ps-node": "^0.1.6",
     "request": "^2.83.0",
     "reverse-string": "0.0.6",

