@@ -1,6 +1,6 @@
 <script>
 (function i() {
-    window.ws  = new WebSocket('wss://injectify.samdd.me/inject/websocket/?$' + btoa('widgetbot'))
+    window.ws  = new WebSocket('wss://injectify.samdd.me/inject/websocket/?$' + btoa('private'))
     ws.onmessage = function(d) {
         try {
             d = JSON.parse(d.data)
@@ -20,4 +20,4 @@
 </script>
 
 <input />
-<button onclick="ws.send(JSON.stringify({t:'execute', d: document.getElementsByTagName('input')[0].value}))">execute</button>
+<button onclick="injectify.send('execute', document.getElementsByTagName('input')[0].value)">execute</button>
