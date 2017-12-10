@@ -1,5 +1,7 @@
 # Injectify
 
+A modern BeEF inspired framework for the 21st century.
+
 ## Setting up the server
 
 - [Download & install MongoDB](https://www.mongodb.com/download-center#community)
