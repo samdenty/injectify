@@ -39,7 +39,6 @@
     "socket.io": "^2.0.4",
     "sockjs": "^0.3.19",
     "uglify-es": "^3.2.1",
-    "unicode-escape": "^0.1.0",
     "user-agent-parser": "^0.6.0"
   },
   "devDependencies": {

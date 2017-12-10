@@ -10,3 +10,4 @@ logs/*
 .pm2/*
 package-lock.json
 bundle.js
+source/server/server.config.js
