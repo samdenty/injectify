@@ -2008,8 +2008,12 @@ MongoClient.connect(config.mongodb, function (err, db) {
     app.use('/projects/*', (req, res) => {
       if (req.originalUrl.includes('/vs/')) {
         let vs = req.originalUrl.split('/vs/')
-        vs = vs[vs.length - 1]
-        res.sendFile(path.join(__dirname, '../../output/site/vs/' + vs))
+        vs = '../../output/site/vs/' + path.normalize(vs[vs.length - 1])
+        if (fs.existsSync(vs)) {
+          res.sendFile(path.join(__dirname, vs))
+        } else {
+          res.status(404).send('Not found')
+        }
       } else {
         res.sendFile(path.join(__dirname, '../../output/site/index.html'))
       }

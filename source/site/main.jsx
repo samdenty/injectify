@@ -19,14 +19,13 @@ import Button from 'material-ui/Button'
 import IconButton from 'material-ui/IconButton'
 import Tooltip from 'material-ui/Tooltip'
 import PersistentDrawer from "./sidebar.jsx"
-
-import { MuiThemeProvider, createMuiTheme } from 'material-ui/styles';
+import { MuiThemeProvider, createMuiTheme } from 'material-ui/styles'
 
 const theme = createMuiTheme({
   palette: {
-    type: 'dark', // Switching the dark mode on is a single property value change.
+    //type: 'dark',
   },
-});
+})
 
 const development = process.env.NODE_ENV == 'development' ? true : false
 let socket = io(window.location.origin),
@@ -262,7 +261,7 @@ class Injectify extends Component {
 
 	render() {
 		return (
-			<MuiThemeProvider /*theme={theme}*/>
+			<MuiThemeProvider theme={theme}>
 				<app className="main">
 					<PersistentDrawer parentState={this.state} signIn={this.signIn.bind(this)} signOut={this.signOut.bind(this)} socket={socket} emit={(a, b) => socket.emit(a, b)} token={token} newProject={this.handleClickOpen.bind(this)} notify={this.notify.bind(this)}>
 						{this.state.user.login ? (

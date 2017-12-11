@@ -263,6 +263,9 @@ const styles = theme => ({
   tabs: {
     background: indigo[600]
   },
+  darkTabs: {
+    background: '#1E1E1E',
+  },
   chip: {
     margin: 5,
     minWidth: 170,
@@ -391,12 +394,16 @@ class PersistentDrawer extends Component {
 
   handleDrawerOpen = () => {
     this.setState({ open: true })
-    this.remountMonaco()
+    setTimeout(() => {
+      this.inject && this.inject.updateDimensions()
+    }, 400)
   }
 
   handleDrawerClose = () => {
     this.setState({ open: false })
-    this.remountMonaco()
+    setTimeout(() => {
+      this.inject && this.inject.updateDimensions()
+    }, 400)
   }
 
   handleRecordOpen = (record, index) => {
@@ -523,17 +530,6 @@ class PersistentDrawer extends Component {
     if (value == 3) window.history.pushState('', ' - Injectify', '/projects/' + encodeURIComponent(this.state.currentProject.name) + '/config') 
   }
 
-  remountMonaco() {
-    this.setState({
-      hideMonaco: true,
-    })
-    setTimeout(() => {
-      this.setState({
-        hideMonaco: false,
-      })
-    }, 300)
-  }
-
   render() {
     const { classes, theme, signIn, parentState } = this.props;
     const { open } = this.state;
@@ -608,7 +604,7 @@ class PersistentDrawer extends Component {
             <main
               className={`${classNames(classes.content, classes[`content`], {
                 [classes.contentShift]: open,
-              })} ${classes.tabsContent}`}
+              })} ${classes.tabsContent} ${this.state.tab === 2 && classes.darkTabs}`}
               ref={main => {this.main = main}}
             >
               {this.state.tab === 0 && 
@@ -952,7 +948,7 @@ class PersistentDrawer extends Component {
                 </span>
               }
               {this.state.tab === 2 && !this.state.hideMonaco &&
-                <Inject classes={classes} w={this.main ? this.main.offsetWidth : null} h={this.main ? this.main.offsetHeight : null} remount={this.remountMonaco.bind(this)} emit={this.props.emit} project={this.state.currentProject.name} />
+                <Inject classes={classes} w={this.main ? this.main.offsetWidth : null} h={this.main ? this.main.offsetHeight : null} emit={this.props.emit} project={this.state.currentProject.name} ref={instance => { this.inject = instance }} />
               }
               {this.state.tab === 3 && 
                 <ProjectConfig classes={classes} project={this.state.currentProject} loggedInUser={this.props.parentState.user} emit={this.props.emit} loading={this.loading} socket={this.props.socket} loading={this.loading} token={this.props.token} />
@@ -1306,22 +1302,30 @@ class Inject extends Component {
     code: '// type your code...',
   }
 
+  constructor(props){
+    super(props);
+    this.updateDimensions = this.updateDimensions.bind(this)
+  }
+
   componentDidMount() {
     let { emit, project } = this.props
-    console.log('emitting')
     emit('inject:clients', {
       project: project
     })
   }
 
-  componentWillReceiveProps(nextProps) {
-    if (nextProps.w !== this.props.w || nextProps.h !== this.props.h) {
-      this.props.remount()
-    }
+  componentWillUnmount() {
+    window.removeEventListener("resize", this.updateDimensions)
+  }
+
+  updateDimensions = () => {
+    this.editor.layout()
   }
 
   editorDidMount = (editor, monaco) => {
+    this.editor = editor
     editor.focus()
+    window.addEventListener("resize", this.updateDimensions)
   }
 
   onChange = (newValue, e) => {
