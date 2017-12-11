@@ -20,6 +20,14 @@ import IconButton from 'material-ui/IconButton'
 import Tooltip from 'material-ui/Tooltip'
 import PersistentDrawer from "./sidebar.jsx"
 
+import { MuiThemeProvider, createMuiTheme } from 'material-ui/styles';
+
+const theme = createMuiTheme({
+  palette: {
+    type: 'dark', // Switching the dark mode on is a single property value change.
+  },
+});
+
 const development = process.env.NODE_ENV == 'development' ? true : false
 let socket = io(window.location.origin),
 	token,
@@ -154,6 +162,9 @@ class Injectify extends Component {
 				name: data.project
 			})
 		})
+		socket.on(`inject:clients`, data => {
+			console.log(data)
+		})
 		socket.on(`err`, error => {
 			console.error("%c[websocket] " + "%cerr =>", "color: #ef5350", "color:  #FF9800", error)
 			this.setState({
@@ -251,90 +262,92 @@ class Injectify extends Component {
 
 	render() {
 		return (
-			<app className="main">
-				<PersistentDrawer parentState={this.state} signIn={this.signIn.bind(this)} signOut={this.signOut.bind(this)} socket={socket} emit={(a, b) => socket.emit(a, b)} token={token} newProject={this.handleClickOpen.bind(this)} notify={this.notify.bind(this)}>
-					{this.state.user.login ? (
-						<div>
-							<table>
-								<tbody>
-									<tr><td>{this.state.user.name}</td></tr>
-									<tr><td>{this.state.user.login}</td></tr>
-									<tr><td>{this.state.user.bio}</td></tr>
-								</tbody>
-							</table>
-							<Button onClick={this.handleClickOpen}>New project</Button>
-						</div>
-					) : (
-						<div>
-							This software is still in development! Please login to continue
-						</div>
-					)}
-				</PersistentDrawer>
-				<Dialog open={this.state.open} onRequestClose={this.handleRequestClose}>
-					<DialogTitle>New project</DialogTitle>
-					<DialogContent>
-						<DialogContentText>
-							Choose a new project ID ~ nothing identifying as it could be intercepted by a third-party
-						</DialogContentText>
-						<TextField
-							autoFocus
-							margin="dense"
-							id="newProject"
-							label="Project name"
-							type="text"
-							fullWidth
-							onKeyPress={this.handleKeyPress}
-							inputProps={{
-								autoCorrect: false,
-								spellCheck: false,
-								maxLength: 50,
-							}}
+			<MuiThemeProvider /*theme={theme}*/>
+				<app className="main">
+					<PersistentDrawer parentState={this.state} signIn={this.signIn.bind(this)} signOut={this.signOut.bind(this)} socket={socket} emit={(a, b) => socket.emit(a, b)} token={token} newProject={this.handleClickOpen.bind(this)} notify={this.notify.bind(this)}>
+						{this.state.user.login ? (
+							<div>
+								<table>
+									<tbody>
+										<tr><td>{this.state.user.name}</td></tr>
+										<tr><td>{this.state.user.login}</td></tr>
+										<tr><td>{this.state.user.bio}</td></tr>
+									</tbody>
+								</table>
+								<Button onClick={this.handleClickOpen}>New project</Button>
+							</div>
+						) : (
+							<div>
+								This software is still in development! Please login to continue
+							</div>
+						)}
+					</PersistentDrawer>
+					<Dialog open={this.state.open} onRequestClose={this.handleRequestClose}>
+						<DialogTitle>New project</DialogTitle>
+						<DialogContent>
+							<DialogContentText>
+								Choose a new project ID ~ nothing identifying as it could be intercepted by a third-party
+							</DialogContentText>
+							<TextField
+								autoFocus
+								margin="dense"
+								id="newProject"
+								label="Project name"
+								type="text"
+								fullWidth
+								onKeyPress={this.handleKeyPress}
+								inputProps={{
+									autoCorrect: false,
+									spellCheck: false,
+									maxLength: 50,
+								}}
+							/>
+						</DialogContent>
+						<DialogActions>
+							<Button onClick={this.handleRequestClose} color="primary">
+								Cancel
+							</Button>
+							<Button onClick={this.handleRequestNewProject} color="primary">
+								Create
+							</Button>
+						</DialogActions>
+					</Dialog>
+					<Agree open={this.state.agreeOpen} />
+					<Snackbar
+						anchorOrigin={{
+							vertical: 'bottom',
+							horizontal: 'left',
+						}}
+						open={this.state.notifyOpen}
+						autoHideDuration={this.state.notify.id ? 100000 : 6000}
+						onRequestClose={this.handleNotifyClose}
+						SnackbarContentProps={{
+							'aria-describedby': 'message-id',
+						}}
+						message={<span id="message-id"><b>{this.state.notify.title}</b><br/>{this.state.notify.message}</span>}
+						action={[
+							this.state.notify.id == "reconnect" ? (
+								<Button key="reconnect" color="accent" dense onClick={() => { location.reload() }}>
+									Reconnect
+								</Button>
+							) : null,
+							this.state.notify.id == "upgrade" ? (
+								<Button key="reconnect" color="accent" dense onClick={() => { location.reload() }}>
+									Upgrade
+								</Button>
+							) : null,
+							<IconButton
+								key="close"
+								aria-label="Close"
+								color="inherit"
+								onClick={this.handleNotifyClose}
+							>
+							<CloseIcon />
+							</IconButton>,
+						]}
 						/>
-					</DialogContent>
-					<DialogActions>
-						<Button onClick={this.handleRequestClose} color="primary">
-							Cancel
-						</Button>
-						<Button onClick={this.handleRequestNewProject} color="primary">
-							Create
-						</Button>
-					</DialogActions>
-				</Dialog>
-				<Agree open={this.state.agreeOpen} />
-				<Snackbar
-					anchorOrigin={{
-						vertical: 'bottom',
-						horizontal: 'left',
-					}}
-					open={this.state.notifyOpen}
-					autoHideDuration={this.state.notify.id ? 100000 : 6000}
-					onRequestClose={this.handleNotifyClose}
-					SnackbarContentProps={{
-						'aria-describedby': 'message-id',
-					}}
-					message={<span id="message-id"><b>{this.state.notify.title}</b><br/>{this.state.notify.message}</span>}
-					action={[
-						this.state.notify.id == "reconnect" ? (
-							<Button key="reconnect" color="accent" dense onClick={() => { location.reload() }}>
-								Reconnect
-							</Button>
-						) : null,
-						this.state.notify.id == "upgrade" ? (
-							<Button key="reconnect" color="accent" dense onClick={() => { location.reload() }}>
-								Upgrade
-							</Button>
-						) : null,
-						<IconButton
-							key="close"
-							aria-label="Close"
-							color="inherit"
-							onClick={this.handleNotifyClose}
-						>
-						<CloseIcon />
-						</IconButton>,
-					]}
-					/>
-			</app>
+				</app>
+			</MuiThemeProvider>
 		)
 	}
 }

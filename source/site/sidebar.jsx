@@ -952,7 +952,7 @@ class PersistentDrawer extends Component {
                 </span>
               }
               {this.state.tab === 2 && !this.state.hideMonaco &&
-                <Inject classes={classes} w={this.main ? this.main.offsetWidth : null} h={this.main ? this.main.offsetHeight : null} remount={this.remountMonaco.bind(this)} />
+                <Inject classes={classes} w={this.main ? this.main.offsetWidth : null} h={this.main ? this.main.offsetHeight : null} remount={this.remountMonaco.bind(this)} emit={this.props.emit} project={this.state.currentProject.name} />
               }
               {this.state.tab === 3 && 
                 <ProjectConfig classes={classes} project={this.state.currentProject} loggedInUser={this.props.parentState.user} emit={this.props.emit} loading={this.loading} socket={this.props.socket} loading={this.loading} token={this.props.token} />
@@ -1304,6 +1304,14 @@ class Javascript extends Component {
 class Inject extends Component {
   state = {
     code: '// type your code...',
+  }
+
+  componentDidMount() {
+    let { emit, project } = this.props
+    console.log('emitting')
+    emit('inject:clients', {
+      project: project
+    })
   }
 
   componentWillReceiveProps(nextProps) {

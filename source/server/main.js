@@ -58,9 +58,9 @@ MongoClient.connect(config.mongodb, function (err, db) {
     }
   }
   io.on('connection', socket => {
-    let globalToken,
-      refresh,
-      prevState
+    let globalToken
+    let refresh
+    let prevState
     var getToken = code => {
       return new Promise((resolve, reject) => {
         if (!code) {
@@ -321,7 +321,7 @@ MongoClient.connect(config.mongodb, function (err, db) {
             if (projectsWithAccess.length > 0) {
               resolve(projectsWithAccess)
             } else {
-              reject('no projects saved for user' + user.id)
+              reject('no projects saved for user ' + user.id)
             }
           })
         })
@@ -942,10 +942,47 @@ MongoClient.connect(config.mongodb, function (err, db) {
       }
     })
 
+    socket.on('inject:clients', data => {
+      let { project } = data
+      if (project && globalToken) {
+        getUser(globalToken).then(user => {
+          getProject(project, user).then(thisProject => {
+            socket.emit('inject:clients', inject.clients[thisProject.doc['_id']])
+          }).catch(e => {
+            console.log(e)
+            socket.emit('err', {
+              title: e.title,
+              message: e.message
+            })
+          })
+        }).catch(error => {
+          // Failed to authenticate user with token
+          console.log(chalk.redBright('[project:read] '), error.message)
+          socket.emit('err', {
+            title: error.title.toString(),
+            message: error.message.toString()
+          })
+        })
+      } else {
+        socket.emit('err', {
+          title: 'Access denied',
+          message: 'You need to be authenticated first!'
+        })
+      }
+    })
+
     socket.on('project:close', project => {
       clearInterval(refresh)
     })
+
+    socket.on('disconnect', data => {
+      clearInterval(refresh)
+    })
   })
+
+  // setInterval(() => {
+  //   console.log(inject.clients)
+  // }, 1000)
 
   injectServer.on('connection', socket => {
     let checkIfValid = socket => {
@@ -970,7 +1007,10 @@ MongoClient.connect(config.mongodb, function (err, db) {
               reject('websocket connection to nonexistent project, terminating')
             } else {
               resolve({
-                project: doc.name,
+                project: {
+                  name: doc.name,
+                  id: doc['_id']
+                },
                 id: +new Date(),
                 debug: debug
               })
@@ -988,18 +1028,32 @@ MongoClient.connect(config.mongodb, function (err, db) {
       )
     }
     checkIfValid(socket).then(data => {
-      let { debug } = data
+      let { debug, project } = data
       if (config.debug) {
         console.log(
-        chalk.greenBright('[inject] ') +
-        chalk.yellowBright('new websocket connection for project ') +
-        chalk.magentaBright(data.project)
-      )
+          chalk.greenBright('[inject] ') +
+          chalk.yellowBright('new websocket connection for project ') +
+          chalk.magentaBright(project.name)
+        )
       }
-      inject.clients.push({
+      // Create an array with the project's document ID (could use project name instead of ID)
+      if (!inject.clients[project.id]) inject.clients[project.id] = []
+      inject.clients[project.id].push({
         id: data.id,
-        project: data.project,
-        socket: socket
+        browser: {
+          'user-agent': parseAgent(socket.headers['user-agent'])
+        },
+        socket: {
+          address: socket.address,
+          headers: socket.headers,
+          id: socket.id,
+          pathname: socket.pathname,
+          prefix: socket.prefix,
+          protocol: socket.protocol,
+          remoteAddress: socket.remoteAddress,
+          remotePort: socket.remotePort,
+          url: socket.url
+        }
       })
       if (debug) {
         send('core', inject.debugCore)
@@ -1062,7 +1116,7 @@ MongoClient.connect(config.mongodb, function (err, db) {
         })
       })
       socket.on('close', function () {
-        inject.clients = inject.clients.filter(client => client.id !== data.id)
+        inject.clients[project.id] = inject.clients[project.id].filter(client => client.id !== data.id)
       })
     }).catch(error => {
       if (config.debug) {
