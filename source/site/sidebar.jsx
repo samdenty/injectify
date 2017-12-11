@@ -265,6 +265,8 @@ const styles = theme => ({
   },
   darkTabs: {
     background: '#1E1E1E',
+    overflow: 'hidden',
+    padding: '24px 0',
   },
   chip: {
     margin: 5,
