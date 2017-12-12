@@ -1384,12 +1384,16 @@ class Inject extends Component {
         <div className="inject-list-container">
           <ListSubheader className="inject-list-header">
             <ComputerIcon />
-            Online clients ({this.state.clients.length})
+            Online clients ({this.state.clients ? this.state.clients.length : '0'})
           </ListSubheader>
+          {console.log(this.state.clients)}
           <List className={classes.injectList}>
-            {this.state.clients.map((client, i) => {
+            {this.state.clients && this.state.clients.map((client, i) => {
               return (
                 <ListItem key={i} button dense>
+                  <ListItemIcon>
+                    <img src={client.images.country} />
+                  </ListItemIcon>
                   <ListItemText primary={client.id} />
                 </ListItem>
               )

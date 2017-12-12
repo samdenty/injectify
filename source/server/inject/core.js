@@ -27,6 +27,8 @@ window.injectify = class injectify {
 	 * @param {Object} data Message data
 	 */
 	static send(topic, data) {
+		// If the websocket is dead, return
+		if (ws.readyState == 0) return
 		try {
 			ws.send(JSON.stringify({
 				t: topic,
@@ -137,3 +139,11 @@ injectify.listen('*', (data, topic) => {
 		injectify.send('e', e.stack)
 	}
 })
+
+/**
+ * Ping the server every 5 seconds to sustain the connection
+ */
+clearInterval(window.ping)
+window.ping = setInterval(function () {
+	injectify.send('ping')
+}, 5000)

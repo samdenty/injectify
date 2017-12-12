@@ -26,6 +26,7 @@
     "atob": "^2.0.3",
     "btoa": "^1.1.2",
     "chalk": "^2.3.0",
+    "country-emoji": "^1.2.0",
     "ejs": "^2.5.7",
     "express": "^4.16.2",
     "js-beautify": "^1.7.4",
@@ -38,6 +39,7 @@
     "reverse-string": "0.0.6",
     "socket.io": "^2.0.4",
     "sockjs": "^0.3.19",
+    "twemoji": "^2.5.0",
     "uglify-es": "^3.2.1",
     "user-agent-parser": "^0.6.0",
     "watchjs": "0.0.0"
