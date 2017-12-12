@@ -94,3 +94,42 @@ pre {
 		user-select: none;
 	}
 }
+.inject-list-container {
+	width: 300px;
+	z-index: 1;
+	box-shadow: -10px 0 5px 10px #191919;
+	background: #2f323c;
+	.inject-list-header {
+		color: #fefeff;
+		box-shadow: -24px 3px 8px #2f323c;
+		svg {
+			vertical-align: middle;
+			margin-right: 10px;
+			fill: #aaeaad;
+		}
+	}
+	h3 {
+		color: #cecfe0
+	}
+	::-webkit-scrollbar {
+		background: #2f323c;
+	}
+	
+	::-webkit-scrollbar-thumb {
+		background-color: #4d525c;
+		border: 2px solid #2f323c;
+		border-top: 4px solid #2f323c;
+		border-bottom: 4px solid #2f323c;
+		&:hover {
+			background-color: #616770;
+		}
+		&:active {
+			background-color: #1E1E1E;
+		}
+	}
+}
+.react-monaco-editor-container {
+	overflow: hidden;
+	margin-top: 24px;
+	height: calc(100% - 24px) !important;
+}

@@ -22,6 +22,9 @@ const reverse = require('reverse-string')
 const parseAgent = require('user-agent-parser')
 const me = require('mongo-escape').escape
 const injector = require('./inject.js')
+const WatchJS = require('watchjs')
+const watch = WatchJS.watch
+const unwatch = WatchJS.unwatch
 
 const inject = {
   core: UglifyJS.minify(fs.readFileSync('./inject/core.js', 'utf8')).code,
@@ -61,6 +64,7 @@ MongoClient.connect(config.mongodb, function (err, db) {
     let globalToken
     let refresh
     let prevState
+    let injectWatcher
     var getToken = code => {
       return new Promise((resolve, reject) => {
         if (!code) {
@@ -358,6 +362,9 @@ MongoClient.connect(config.mongodb, function (err, db) {
         })
       })
     }
+    var injectUpdate = () => {
+      socket.emit('inject:clients', inject.clients[injectWatcher])
+    }
 
     socket.on('auth:github', data => {
       if (data.code) {
@@ -421,6 +428,7 @@ MongoClient.connect(config.mongodb, function (err, db) {
       globalToken = ''
       prevState = ''
       refresh = ''
+      if (injectWatcher) unwatch(inject.clients, injectWatcher, injectUpdate)
     })
 
     socket.on('auth:github/token', token => {
@@ -947,6 +955,9 @@ MongoClient.connect(config.mongodb, function (err, db) {
       if (project && globalToken) {
         getUser(globalToken).then(user => {
           getProject(project, user).then(thisProject => {
+            if (injectWatcher) unwatch(inject.clients, injectWatcher, injectUpdate)
+            injectWatcher = thisProject.doc['_id']
+            watch(inject.clients, injectWatcher, injectUpdate)
             socket.emit('inject:clients', inject.clients[thisProject.doc['_id']])
           }).catch(e => {
             console.log(e)
@@ -971,12 +982,17 @@ MongoClient.connect(config.mongodb, function (err, db) {
       }
     })
 
-    socket.on('project:close', project => {
+    socket.on('project:close', data => {
       clearInterval(refresh)
+    })
+
+    socket.on('inject:close', data => {
+      if (injectWatcher) unwatch(inject.clients, injectWatcher, injectUpdate)
     })
 
     socket.on('disconnect', data => {
       clearInterval(refresh)
+      if (injectWatcher) unwatch(inject.clients, injectWatcher, injectUpdate)
     })
   })
 

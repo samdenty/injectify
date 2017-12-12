@@ -161,9 +161,6 @@ class Injectify extends Component {
 				name: data.project
 			})
 		})
-		socket.on(`inject:clients`, data => {
-			console.log(data)
-		})
 		socket.on(`err`, error => {
 			console.error("%c[websocket] " + "%cerr =>", "color: #ef5350", "color:  #FF9800", error)
 			this.setState({

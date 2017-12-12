@@ -37,6 +37,7 @@ import { LinearProgress } from 'material-ui/Progress';
 import AddIcon from 'material-ui-icons/Add';
 import KeyboardIcon from 'material-ui-icons/Keyboard';
 import SettingsIcon from 'material-ui-icons/Settings';
+import ComputerIcon from 'material-ui-icons/Computer';
 import DeleteIcon from 'material-ui-icons/Delete';
 import DeleteSweep from 'material-ui-icons/DeleteSweep';
 import LockIcon from 'material-ui-icons/Lock';
@@ -263,10 +264,20 @@ const styles = theme => ({
   tabs: {
     background: indigo[600]
   },
-  darkTabs: {
+  injectMain: {
     background: '#1E1E1E',
     overflow: 'hidden',
-    padding: '24px 0',
+    padding: '0',
+    height: 'calc(100% - 135px)',
+  },
+  injectContainer: {
+    display: 'flex',
+    width: '100%',
+    height: '100%',
+  },
+  injectList: {
+    overflowY: 'scroll',
+    height: 'calc(100% - 65px)',
   },
   chip: {
     margin: 5,
@@ -353,6 +364,9 @@ class PersistentDrawer extends Component {
     accounts: [],
     spoof: {
       open: false,
+    },
+    inject: {
+      clients: []
     }
   }
 
@@ -390,6 +404,14 @@ class PersistentDrawer extends Component {
         loading: false,
       })
     })
+
+    socket.on(`inject:clients`, data => {
+			this.setState({
+        inject: {
+          clients: data
+        }
+      })
+		})
     
     this.readAccounts()
   }
@@ -606,7 +628,7 @@ class PersistentDrawer extends Component {
             <main
               className={`${classNames(classes.content, classes[`content`], {
                 [classes.contentShift]: open,
-              })} ${classes.tabsContent} ${this.state.tab === 2 && classes.darkTabs}`}
+              })} ${classes.tabsContent} ${this.state.tab === 2 && classes.injectMain}`}
               ref={main => {this.main = main}}
             >
               {this.state.tab === 0 && 
@@ -950,7 +972,7 @@ class PersistentDrawer extends Component {
                 </span>
               }
               {this.state.tab === 2 && !this.state.hideMonaco &&
-                <Inject classes={classes} w={this.main ? this.main.offsetWidth : null} h={this.main ? this.main.offsetHeight : null} emit={this.props.emit} project={this.state.currentProject.name} ref={instance => { this.inject = instance }} />
+                <Inject classes={classes} w={this.main ? this.main.offsetWidth : null} h={this.main ? this.main.offsetHeight : null} socket={this.props.socket} project={this.state.currentProject.name} ref={instance => { this.inject = instance }} clients={this.state.inject.clients} />
               }
               {this.state.tab === 3 && 
                 <ProjectConfig classes={classes} project={this.state.currentProject} loggedInUser={this.props.parentState.user} emit={this.props.emit} loading={this.loading} socket={this.props.socket} loading={this.loading} token={this.props.token} />
@@ -1052,9 +1074,7 @@ class ProjectList extends Component {
 class Project extends Component {
 	handleClickOpen = (a) => {
     if(this.props.p.p.parentState.width <= 700) this.props.p.closeDrawer()
-    this.props.p.emit("project:close", {
-			name: this.props.record
-		})
+    this.props.p.emit("project:close")
 		this.props.p.emit("project:read", {
 			name: this.props.record
     })
@@ -1302,6 +1322,7 @@ class Javascript extends Component {
 class Inject extends Component {
   state = {
     code: '// type your code...',
+    clients: []
   }
 
   constructor(props){
@@ -1310,13 +1331,29 @@ class Inject extends Component {
   }
 
   componentDidMount() {
-    let { emit, project } = this.props
-    emit('inject:clients', {
+    let { socket, project } = this.props
+    socket.emit('inject:clients', {
       project: project
     })
   }
 
+  componentWillReceiveProps(nextProps) {
+    let { socket } = this.props
+    if (nextProps.project !== this.props.project) {
+      socket.emit('inject:clients', {
+        project: nextProps.project
+      })
+    }
+    if (nextProps.clients !== this.state.clients) {
+      this.setState({
+        clients: nextProps.clients
+      })
+    }
+  }
+
   componentWillUnmount() {
+    let { socket } = this.props
+    socket.emit('inject:close')
     window.removeEventListener("resize", this.updateDimensions)
   }
 
@@ -1343,16 +1380,32 @@ class Inject extends Component {
       selectOnLineNumbers: true
     }
     return (
-      <MonacoEditor
-        language="javascript"
-        theme="vs-dark"
-        value={code}
-        width='100%'
-        options={options}
-        onChange={this.onChange}
-        editorDidMount={this.editorDidMount}
-      />
-    );
+      <div className={classes.injectContainer}>
+        <div className="inject-list-container">
+          <ListSubheader className="inject-list-header">
+            <ComputerIcon />
+            Online clients ({this.state.clients.length})
+          </ListSubheader>
+          <List className={classes.injectList}>
+            {this.state.clients.map((client, i) => {
+              return (
+                <ListItem key={i} button dense>
+                  <ListItemText primary={client.id} />
+                </ListItem>
+              )
+            })}
+          </List>
+        </div>
+        <MonacoEditor
+          language="javascript"
+          theme="vs-dark"
+          value={code}
+          options={options}
+          onChange={this.onChange}
+          editorDidMount={this.editorDidMount}
+        />
+      </div>
+    )
   }
 }
 
