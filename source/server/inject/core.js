@@ -30,11 +30,7 @@ var injectify = window['injectify'] = /** @class */ (function () {
      * @param {string} topic Message topic
      * @param {Object} data Message data
      */
-    Injectify.send = function (topic) {
-        var data = [];
-        for (var _i = 1; _i < arguments.length; _i++) {
-            data[_i - 1] = arguments[_i];
-        }
+    Injectify.send = function (topic, data) {
         // If the websocket is dead, return
         if (ws.readyState == 0)
             return;
@@ -53,11 +49,7 @@ var injectify = window['injectify'] = /** @class */ (function () {
      * @param {(Object|string)} message Data to be logged
      * @param {boolean} local Whether to log it in the local console
      */
-    Injectify.log = function (message) {
-        var local = [];
-        for (var _i = 1; _i < arguments.length; _i++) {
-            local[_i - 1] = arguments[_i];
-        }
+    Injectify.log = function (message, local) {
         this.send('r', message);
         if (local)
             console.log(message);

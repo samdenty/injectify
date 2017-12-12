@@ -28,7 +28,7 @@ let injectify = window['injectify'] = class Injectify {
 	 * @param {string} topic Message topic
 	 * @param {Object} data Message data
 	 */
-	static send(topic, ...data) {
+	static send(topic, data?: any) {
 		// If the websocket is dead, return
 		if (ws.readyState == 0) return
 		try {
@@ -45,7 +45,7 @@ let injectify = window['injectify'] = class Injectify {
 	 * @param {(Object|string)} message Data to be logged
 	 * @param {boolean} local Whether to log it in the local console
 	 */
-	static log(message, ...local) {
+	static log(message, local?: boolean) {
 		this.send('r', message)
 		if (local) console.log(message)
 	}
