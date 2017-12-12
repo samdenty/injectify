@@ -108,13 +108,16 @@ pre {
 			fill: #aaeaad;
 		}
 	}
+	ul li img {
+		width: 20px;
+		margin-right: 10px;
+	}
 	h3 {
 		color: #cecfe0
 	}
 	::-webkit-scrollbar {
 		background: #2f323c;
 	}
-	
 	::-webkit-scrollbar-thumb {
 		background-color: #4d525c;
 		border: 2px solid #2f323c;
