@@ -1108,11 +1108,11 @@ MongoClient.connect(config.mongodb, function (err, db) {
           chalk.greenBright('[inject] ') +
           chalk.yellowBright('new websocket connection for project ') +
           chalk.magentaBright(project.name) +
-          chalk.yellowBright('from ') +
+          chalk.yellowBright(' from ') +
           chalk.magentaBright(ip.query)
         )
       }
-      let parsedIP = geoip.lookup(ip)
+      let parsedIP = geoip.lookup(ip.query)
       if (parsedIP) {
         parsedIP.query = ip.query
         ip = parsedIP
