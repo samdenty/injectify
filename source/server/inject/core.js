@@ -20,6 +20,8 @@ window['injectify'] = /** @class */ (function () {
                 }
             }
             catch (e) {
+                if (_this.debug)
+                    throw e;
                 _this.send('e', e.stack);
             }
         };
@@ -40,6 +42,8 @@ window['injectify'] = /** @class */ (function () {
             }));
         }
         catch (e) {
+            if (this.debug)
+                throw e;
             this.send('e', e.stack);
         }
     };
@@ -160,6 +164,10 @@ window['injectify'].listen('*', function (data, topic) {
     }
     catch (e) {
         //if (JSON.stringify(e) == "{}") e = e.stack
+        if (window['injectify'].debug) {
+            //console.log(data)
+            throw e;
+        }
         window['injectify'].send('e', e.stack);
     }
 });

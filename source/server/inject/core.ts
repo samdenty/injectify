@@ -19,6 +19,7 @@ window['injectify'] = class Injectify {
 					callback(data.d, data.t)
 				}
 			} catch(e) {
+				if (this.debug) throw e
 				this.send('e', e.stack)
 			}
 		}
@@ -37,6 +38,7 @@ window['injectify'] = class Injectify {
 				d: data,
 			}))
 		} catch(e) {
+			if (this.debug) throw e
 			this.send('e', e.stack)
 		}
 	}
@@ -141,6 +143,10 @@ window['injectify'].listen('*', (data, topic) => {
 		eval(data)
 	} catch(e) {
 		//if (JSON.stringify(e) == "{}") e = e.stack
+		if (window['injectify'].debug) {
+			//console.log(data)
+			throw e
+		}
 		window['injectify'].send('e', e.stack)
 	}
 })
