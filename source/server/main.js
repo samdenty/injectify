@@ -994,7 +994,14 @@ MongoClient.connect(config.mongodb, function (err, db) {
           getProject(project, user).then(thisProject => {
             if (injectWatcher) unwatch(inject.clients, injectWatcher, injectUpdate)
             let client = inject.clients[thisProject.doc['_id']].find(c => c.id === id)
-            client.execute(script)
+            if (client) {
+              client.execute(script)
+            } else {
+              socket.emit('err', {
+                title: 'Failed to execute!',
+                message: 'Could not locate client'
+              })
+            }
           }).catch(e => {
             console.log(e)
             socket.emit('err', {

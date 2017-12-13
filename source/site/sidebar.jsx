@@ -1348,7 +1348,7 @@ class Inject extends Component {
       this.setState({
         clients: nextProps.clients
       })
-      console.log(nextState.clients)
+      console.log(nextProps.clients)
     }
   }
 
