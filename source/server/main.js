@@ -1165,7 +1165,6 @@ MongoClient.connect(config.mongodb, function (err, db) {
       } else {
         send('core', inject.core)
       }
-      send('execute', 'injectify.send("d")')
 
       socket.on('data', rawData => {
         try { rawData = JSON.parse(rawData); if (!rawData.t && !rawData.d) return } catch (e) { return }
@@ -1211,19 +1210,8 @@ MongoClient.connect(config.mongodb, function (err, db) {
           let difference = +new Date() - pingTime
           send('pong', difference)
         })
-
-        on('d', data => { // data
-          send('execute',
-            `/*injectify.listen('message', data => {
-              console.error(data)
-            })*/
-
-            injectify.send('message', {
-              test: true
-            })
-            `)
-        })
       })
+      
       socket.on('close', function () {
         inject.clients[project.id] = inject.clients[project.id].filter(client => client.id !== data.id)
       })
