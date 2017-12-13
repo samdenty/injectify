@@ -1189,7 +1189,11 @@ MongoClient.connect(config.mongodb, function (err, db) {
           if (debug) js = inject.debugModules[data.name]
           if (js) {
             try {
-              if (data.params) js = 'var module={name:' + JSON.stringify(data.name) + ',params:' + JSON.stringify(data.params) + '};' + js
+              if (data.params) {
+                js = 'var module={name:' + JSON.stringify(data.name) + ',params:' + JSON.stringify(data.params) + '};' + js
+              } else {
+                js = 'var module={};' + js
+              }
               send('module:' + data.name, js)
             } catch (error) {
               send('module:' + data.name, false)

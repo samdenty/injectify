@@ -1,9 +1,17 @@
-var embed = document.createElement('embed')
+/**
+ * Create an iframe (instead of an embed)
+ * - <embed> tag plays up in IE
+ * - difficulties when dynamically changing the src attribute
+ */
+var embed = document.createElement('iframe')
+var id = +new Date
 /**
  * Make the embed 100% of the viewport
  */
 embed.style = 'width: 100vw; height: 100vh;'
-embed.src = module.params
+if (module.params) embed.src = module.params
+embed.id = id
+embed.frameBorder = 0
 
 /**
  * Allow the embed to go fullscreen
@@ -29,3 +37,4 @@ width: 100% !important;
 height: 100% !important;
 overflow: hidden !important;
 rickrolled: true !important;`
+module.return = document.getElementById(id)

