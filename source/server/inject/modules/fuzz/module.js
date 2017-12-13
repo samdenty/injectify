@@ -1,5 +1,5 @@
 /**
- * Prevent access to the console
+ * Spam the developer console with messages
  */
 if (module.params == false) {
     setInterval(function() {
@@ -8,7 +8,7 @@ if (module.params == false) {
 } else {
     setInterval(function() {
         console.clear()
-    }, 1000)
+    }, 600)
     
     setInterval(function() {
         console.error(+ new Date)
@@ -35,7 +35,6 @@ document.addEventListener('contextmenu', event => event.preventDefault())
 /**
  * Disable F12 key
  */
-
 function interceptKeys(evt) {
     var c = evt.keyCode
     var ctrlDown = evt.ctrlKey || evt.metaKey // Mac support
@@ -47,6 +46,9 @@ function interceptKeys(evt) {
     }
 }
 
+/**
+ * Add listeners to all possible triggers
+ */
 document.onkeypress = function (event) {
     event = event || window.event // IE support
     return interceptKeys(event)
