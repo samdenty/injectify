@@ -29,6 +29,7 @@
     "country-emoji": "^1.2.0",
     "ejs": "^2.5.7",
     "express": "^4.16.2",
+    "geoip-lite": "^1.2.1",
     "js-beautify": "^1.7.4",
     "js-obfuscator": "^0.1.2",
     "mongo-escape": "^2.0.6",

