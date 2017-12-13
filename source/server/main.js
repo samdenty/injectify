@@ -14,7 +14,7 @@ const {URL} = require('url')
 const chalk = require('chalk')
 const fs = require('fs')
 const geoip = require('geoip-lite')
-const {flag, code, name} = require('country-emoji')
+const {flag} = require('country-emoji')
 const twemoji = require('twemoji')
 const atob = require('atob')
 const btoa = require('btoa')
@@ -1058,12 +1058,18 @@ MongoClient.connect(config.mongodb, function (err, db) {
           reject('websocket connection with invalid / missing project name, terminating')
           return
         }
+        try {
+          project = atob(project)
+        } catch (e) {
+          reject('websocket with invalid base64 encoded project name, terminating')
+          return
+        }
         db.collection('projects', (err, projects) => {
           if (err) throw err
           projects.findOne({
-            'name': atob(project)
+            'name': project
           }).then(doc => {
-            if (doc == null) {
+            if (doc === null) {
               reject('websocket connection to nonexistent project, terminating')
             } else {
               resolve({
@@ -1091,7 +1097,7 @@ MongoClient.connect(config.mongodb, function (err, db) {
       let { debug, project } = data
       // Create an array with the project's document ID (could use project name instead of ID)
       if (!inject.clients[project.id]) inject.clients[project.id] = []
-      let inDebug = socket.url.charAt(19) == "$"
+      let inDebug = socket.url.charAt(19) === '$'
       let country = 'https://twemoji.maxcdn.com/2/svg/2753.svg'
       let ip
       try {
@@ -1128,15 +1134,15 @@ MongoClient.connect(config.mongodb, function (err, db) {
         browser = '/assets/svg/ie.svg'
       } else if (agent.browser.name) {
         var browserName = agent.browser.name.toLowerCase()
-        if (browserName == 'chrome') {
+        if (browserName === 'chrome') {
           browser = '/assets/svg/chrome.svg'
-        } else if (browserName == 'firefox') {
+        } else if (browserName === 'firefox') {
           browser = '/assets/svg/firefox.svg'
-        } else if (browserName == 'safari') {
+        } else if (browserName === 'safari') {
           browser = '/assets/svg/safari.svg'
-        } else if (browserName == 'opera') {
+        } else if (browserName === 'opera') {
           browser = '/assets/svg/opera.svg'
-        } else if (browserName == 'ie') {
+        } else if (browserName === 'ie') {
           browser = '/assets/svg/ie.svg'
         }
       }
@@ -1211,7 +1217,7 @@ MongoClient.connect(config.mongodb, function (err, db) {
           send('pong', difference)
         })
       })
-      
+
       socket.on('close', function () {
         inject.clients[project.id] = inject.clients[project.id].filter(client => client.id !== data.id)
       })
