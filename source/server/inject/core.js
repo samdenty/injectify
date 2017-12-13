@@ -2,7 +2,7 @@
  * Injectify core API
  * @class
  */
-var injectify = window['injectify'] = /** @class */ (function () {
+window['injectify'] = /** @class */ (function () {
     function Injectify() {
     }
     /**
@@ -89,7 +89,7 @@ var injectify = window['injectify'] = /** @class */ (function () {
             params: params
         });
     };
-    Object.defineProperty(Injectify, "test", {
+    Object.defineProperty(Injectify, "present", {
         /**
          * Check that the Injectify core is active
          */
@@ -132,12 +132,16 @@ var injectify = window['injectify'] = /** @class */ (function () {
     });
     return Injectify;
 }());
-if (injectify.debug)
-    console.warn('⚡️ Injectify core.js loaded! --> https://github.com/samdenty99/injectify', injectify.info);
+/**
+ * Debug helpers
+ */
+if (window['injectify'].debug) {
+    console.warn('⚡️ Injectify core.js loaded! --> https://github.com/samdenty99/injectify', window['injectify'].info);
+}
 /**
  * Replace the basic websocket handler with a feature-rich one
  */
-injectify.listen('*', function (data, topic) {
+window['injectify'].listen('*', function (data, topic) {
     try {
         if (topic == 'error') {
             console.error(data);
@@ -156,7 +160,7 @@ injectify.listen('*', function (data, topic) {
     }
     catch (e) {
         //if (JSON.stringify(e) == "{}") e = e.stack
-        injectify.send('e', e.stack);
+        window['injectify'].send('e', e.stack);
     }
 });
 /**
@@ -164,5 +168,5 @@ injectify.listen('*', function (data, topic) {
  */
 clearInterval(window['ping']);
 window['ping'] = setInterval(function () {
-    injectify.ping();
+    window['injectify'].ping();
 }, 5000);

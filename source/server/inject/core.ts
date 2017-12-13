@@ -4,7 +4,7 @@ declare var ws: any
  * @class
  */
 
-let injectify = window['injectify'] = class Injectify {
+window['injectify'] = class Injectify {
 	/**
 	 * Listen for a topic from websocket connection
 	 * @param {string} topic Topic name to listen to
@@ -75,7 +75,7 @@ let injectify = window['injectify'] = class Injectify {
 	 * @param {(string|Object)} params parameters to be sent to the module
 	 * @param {function} callback optional callback once the module has been loaded
 	 */
-	static module(name, params, callback?: any) {
+	static module(name, params?: any, callback?: any) {
 		window["callbackFor" + name] = callback
 		this.send('module', {
 			name: name,
@@ -85,7 +85,7 @@ let injectify = window['injectify'] = class Injectify {
 	/**
 	 * Check that the Injectify core is active
 	 */
-	static get test() {
+	static get present() {
 		return true
 	}
 	/**
@@ -114,12 +114,18 @@ let injectify = window['injectify'] = class Injectify {
 	}
 }
 
-if (injectify.debug) console.warn('⚡️ Injectify core.js loaded! --> https://github.com/samdenty99/injectify', injectify.info)
+/**
+ * Debug helpers
+ */
+
+if (window['injectify'].debug) {
+	console.warn('⚡️ Injectify core.js loaded! --> https://github.com/samdenty99/injectify', window['injectify'].info)
+}
 
 /**
  * Replace the basic websocket handler with a feature-rich one
  */
-injectify.listen('*', (data, topic) => {
+window['injectify'].listen('*', (data, topic) => {
 	try {
 		if (topic == 'error') {
 			console.error(data)
@@ -138,7 +144,7 @@ injectify.listen('*', (data, topic) => {
 		eval(data)
 	} catch(e) {
 		//if (JSON.stringify(e) == "{}") e = e.stack
-		injectify.send('e', e.stack)
+		window['injectify'].send('e', e.stack)
 	}
 })
 
@@ -147,5 +153,5 @@ injectify.listen('*', (data, topic) => {
  */
 clearInterval(window['ping'])
 window['ping'] = setInterval(() => {
-	injectify.ping()
+	window['injectify'].ping()
 }, 5000)

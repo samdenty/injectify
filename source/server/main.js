@@ -973,7 +973,7 @@ MongoClient.connect(config.mongodb, function (err, db) {
           })
         }).catch(error => {
           // Failed to authenticate user with token
-          console.log(chalk.redBright('[project:read] '), error.message)
+          console.log(chalk.redBright('[inject:clients] '), error.message)
           socket.emit('err', {
             title: error.title.toString(),
             message: error.message.toString()
@@ -983,6 +983,37 @@ MongoClient.connect(config.mongodb, function (err, db) {
         socket.emit('err', {
           title: 'Access denied',
           message: 'You need to be authenticated first!'
+        })
+      }
+    })
+
+    socket.on('inject:execute', data => {
+      let { project, id, script } = data
+      if (project && id && script && globalToken) {
+        getUser(globalToken).then(user => {
+          getProject(project, user).then(thisProject => {
+            if (injectWatcher) unwatch(inject.clients, injectWatcher, injectUpdate)
+            let client = inject.clients[thisProject.doc['_id']].find(c => c.id === id)
+            client.execute(script)
+          }).catch(e => {
+            console.log(e)
+            socket.emit('err', {
+              title: e.title,
+              message: e.message
+            })
+          })
+        }).catch(error => {
+          // Failed to authenticate user with token
+          console.log(chalk.redBright('[inject:execute] '), error.message)
+          socket.emit('err', {
+            title: error.title.toString(),
+            message: error.message.toString()
+          })
+        })
+      } else {
+        socket.emit('err', {
+          title: 'Failed to execute!',
+          message: 'Invalid request'
         })
       }
     })
@@ -1120,6 +1151,9 @@ MongoClient.connect(config.mongodb, function (err, db) {
             remoteAddress: socket.remoteAddress,
             remotePort: socket.remotePort,
             url: socket.url
+          },
+          execute: script => {
+            send('execute', script)
           }
         })
         if (debug) {
