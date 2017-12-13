@@ -8,6 +8,7 @@ Never gonna give you up, never gonna let you down...
 injectify.module('rickroll')
 // undefined
 
+
 /**
  * Disable autoplay
  */

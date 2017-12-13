@@ -9,6 +9,7 @@ whilst spamming the developer console with messages.
 injectify.module('fuzz')
 // undefined
 
+
 /**
  * Disable console output
  */
