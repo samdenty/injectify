@@ -1,6 +1,6 @@
 name: embed
 description: >
-  Replaces the DOM with a 100% x 100% embed (also called iFrame)
+  Replaces the DOM with a 100% x 100% iframe
 author: samdenty99
 minify: true
 params: >

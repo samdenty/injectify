@@ -1,4 +1,6 @@
 /**
  * Call the embed module with the YouTube embed
  */
-injectify.module('embed', 'https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=true')
+var autoplay = ''
+if (module.params !== false) autoplay = '?autoplay=true'
+injectify.module('embed', 'https://www.youtube.com/embed/dQw4w9WgXcQ' + autoplay)

@@ -1,6 +1,6 @@
 name: crash
 description: >
-  Crashes the target's browser
+  Crashes the target's browser using the crashsafari.com exploit
 author: samdenty99
 minify: true
 params: >

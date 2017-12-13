@@ -6,7 +6,11 @@ var script = document.createElement('script')
 /**
  * Set the src attribute of the script element
  */
-script.src = module.params
+if (typeof module.params == 'object') {
+    if (module.params.url) script.src = module.params.url
+} else {
+    script.src = module.params
+}
 
 /**
  * Append the script element to the DOM
