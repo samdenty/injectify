@@ -1,5 +1,6 @@
 declare var ws: any
 declare var client: any
+
 /**
  * Injectify core API
  * @class
@@ -138,7 +139,8 @@ window['injectify'].listen('*', (data, topic) => {
 				callback = window["callbackFor" + Module]
 			eval(data)
 			if (data !== false && typeof callback == 'function') {
-				callback(module['returned'])
+				// @ts-ignore: module is declared outside script
+				callback(module.returned)
 			}
 			delete window["callbackFor" + Module]
 			return
