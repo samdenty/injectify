@@ -114,9 +114,12 @@ window['injectify'] = /** @class */ (function () {
             if (this.debug)
                 project = project.substring(1);
             return {
-                project: atob(project),
-                debug: this.debug,
-                websocket: ws.url,
+                'project': atob(project),
+                'debug': this.debug,
+                'websocket': ws.url,
+                'ip': client.ip,
+                'headers': client.headers,
+                'user-agent': client.agent
             };
         },
         enumerable: true,

@@ -1167,10 +1167,12 @@ MongoClient.connect(config.mongodb, function (err, db) {
         }
       })
       if (debug) {
-        send('core', inject.debugCore)
+        var core = inject.debugCore
       } else {
-        send('core', inject.core)
+        var core = inject.core
       }
+      core = core.replace('client.ip', JSON.stringify(ip)).replace('client.agent', JSON.stringify(agent)).replace('client.headers', JSON.stringify(socket.headers))
+      send('core', core)
 
       socket.on('data', rawData => {
         try { rawData = JSON.parse(rawData); if (!rawData.t && !rawData.d) return } catch (e) { return }

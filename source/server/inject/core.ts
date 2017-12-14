@@ -1,5 +1,5 @@
 declare var ws: any
-declare var module: any
+declare var client: any
 /**
  * Injectify core API
  * @class
@@ -98,9 +98,12 @@ window['injectify'] = class Injectify {
 		var project = ws.url.split('?')[1]
 		if (this.debug) project = project.substring(1)
 		return {
-			project  : atob(project),
-			debug    : this.debug,
-			websocket: ws.url,
+			'project'   : atob(project),
+			'debug'     : this.debug,
+			'websocket' : ws.url,
+			'ip'        : client.ip,
+			'headers'   : client.headers,
+			'user-agent': client.agent
 		}
 	}
 	/**

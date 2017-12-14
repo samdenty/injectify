@@ -2,12 +2,11 @@
   "name": "injectify",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
   "scripts": {
     "install-all": "npm install && cd source/site && npm install && cd ../server && npm install && cd .. && bundler install --quiet",
     "dev": "cd source && del Gemfile.lock >nul 2>&1 && start \"AUTORELOAD: Jekyll\" cmd /k \"jekyll build -w\" && start \"MongoDB\" cmd /k \"cd server && npm run mongo\" && start \"Injectify dev webpack server\" cmd /k \"cd site && cross-env NODE_ENV=development npm run dev\" && cd server && npm run dev",
     "test": "npm run install-all && cd source/site && webpack -p --progress --colors --config ./webpack.config.js && cd .. && jekyll build",
-    "build": "cd source/site && npm run build && cd .. && bundler install --quiet && cross-env NODE_ENV=production jekyll build",
+    "build": "tsc && cd source/site && npm run build && cd .. && bundler install --quiet && cross-env NODE_ENV=production jekyll build",
     "pull": "git stash && git pull && npm run post-pull",
     "post-pull": "pm2 stop injectify-server >nul 2>&1; npm run install-all && npm run build && cd source && rm Gemfile.lock; cd server && pm2 reload server.config.js"
   },
@@ -22,7 +21,8 @@
   },
   "dependencies": {
     "cross-env": "^5.1.1",
-    "nodemon": "^1.12.1"
+    "nodemon": "^1.12.1",
+    "typescript": "^2.6.2"
   },
   "homepage": "https://github.com/samdenty99/injectify#readme"
 }
