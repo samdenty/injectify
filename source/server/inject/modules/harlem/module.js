@@ -135,3 +135,5 @@
         }
     }
 })()
+
+module.return(true)

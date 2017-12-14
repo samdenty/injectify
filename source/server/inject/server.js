@@ -40,8 +40,15 @@ exports.loadModules = callback => {
       let unminified = js
       let minified = UglifyJS.minify(js).code
       if (minified && yml.minify !== false) js = minified
-      modules[yml.name] = js
-      debugModules[yml.name] = unminified
+      if (typeof yml.name == 'object') {
+        for (var index in yml.name) {
+          modules[yml.name[index]] = js
+          debugModules[yml.name[index]] = unminified
+        }
+      } else {
+        modules[yml.name] = js
+        debugModules[yml.name] = unminified
+      }
       moduleCount++
       if (files.length - 1 === index) callback(modules, debugModules, moduleCount)
     })

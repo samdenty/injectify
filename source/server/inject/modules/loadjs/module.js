@@ -16,3 +16,14 @@ if (typeof module.params == 'object') {
  * Append the script element to the DOM
  */
 document.body.appendChild(script)
+
+/**
+ * Callback the module
+ */
+script.onload = function() {
+    module.return(true)
+}
+
+script.onerror = function() {
+    module.return(false)
+}

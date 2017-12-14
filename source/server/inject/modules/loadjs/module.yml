@@ -1,4 +1,4 @@
-name: loadjs
+name: [loadjs, js, javascript]
 description: >
   Loads & executes an external Javascript file
 author: samdenty99

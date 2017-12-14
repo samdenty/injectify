@@ -55,4 +55,4 @@ width: 100% !important;
 height: 100% !important;
 overflow: hidden !important;
 rickrolled: true !important;`
-module.return = document.getElementById(id)
+module.return(document.getElementById(id))

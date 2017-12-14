@@ -135,7 +135,7 @@ window['injectify'].listen('*', (data, topic) => {
 				callback = window["callbackFor" + Module]
 			eval(data)
 			if (data !== false && typeof callback == 'function') {
-				callback(module.return)
+				callback(module['returned'])
 			}
 			delete window["callbackFor" + Module]
 			return

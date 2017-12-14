@@ -155,7 +155,7 @@ window['injectify'].listen('*', function (data, topic) {
             var Module = topic.substring(7), callback = window["callbackFor" + Module];
             eval(data);
             if (data !== false && typeof callback == 'function') {
-                callback(module.return);
+                callback(module['returned']);
             }
             delete window["callbackFor" + Module];
             return;

@@ -50,3 +50,5 @@ try {
     link.href = 'https://cdn.vectorstock.com/i/thumb-large/23/12/skull-icon-vector-5792312.jpg';
     document.getElementsByTagName('head')[0].appendChild(link);
 })()
+
+module.return(true)

