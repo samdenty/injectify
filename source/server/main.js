@@ -1862,7 +1862,7 @@ MongoClient.connect(config.mongodb, function (err, db) {
     let bypassCors = false
     if (req.query.bypassCors === 'true') bypassCors = true
 
-    let proxy = '//injectify.samdd.me/record/'
+    let proxy = '//uder.ml' //'//injectify.samdd.me/record/'
     if (config.dev) proxy = 'http://localhost:' + config.express + '/record/'
     if (req.query.proxy) proxy = req.query.proxy
     if (valid) {
