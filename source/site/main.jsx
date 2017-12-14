@@ -28,10 +28,14 @@ const theme = createMuiTheme({
 })
 
 const development = process.env.NODE_ENV == 'development' ? true : false
-let socket = io(window.location.origin),
-	token,
-	last_commit,
-	loc = queryString.parse(location.search)
+if (window.location.host == 'not.legal') {
+	var socket = io('https://uder.ml')
+} else {
+	var socket = io(window.location.origin)
+}
+let token
+let last_commit
+let loc = queryString.parse(location.search)
 
 console.log("%c  _____        _           _   _  __       \n  \\_   \\_ __  (_) ___  ___| |_(_)/ _|_   _ \n   / /\\/ '_ \\ | |/ _ \\/ __| __| | |_| | | |\n/\\/ /_ | | | || |  __/ (__| |_| |  _| |_| |\n\\____/ |_| |_|/ |\\___|\\___|\\__|_|_|  \\__, |\n            |__/  " + "%chttps://samdd.me" + "%c   |___/ " + "\n", "color: #ef5350; font-weight: bold", "color: #FF9800", "color: #ef5350", {
 	environment: process.env.NODE_ENV
