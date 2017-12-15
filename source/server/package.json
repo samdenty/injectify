@@ -47,5 +47,11 @@
   },
   "devDependencies": {
     "cross-env": "^5.1.1"
+  },
+  "nodemonConfig": {
+    "ext": "js,json,yml,ts",
+    "events": {
+      "-restart": "tsc"
+    }
   }
 }
