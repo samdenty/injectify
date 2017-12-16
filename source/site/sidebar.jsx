@@ -359,7 +359,6 @@ class PersistentDrawer extends Component {
     recordOpen: false,
     currentProject: null,
     loading: false,
-    tab: 0,
     switchUserOpen: false,
     accounts: [],
     spoof: {
@@ -411,7 +410,7 @@ class PersistentDrawer extends Component {
           clients: data
         }
       })
-		})
+    })
     
     this.readAccounts()
   }
@@ -455,16 +454,6 @@ class PersistentDrawer extends Component {
     })
   }
 
-  signOut = (index) => {
-    let accounts = this.state.accounts
-    accounts.splice(index, 1)
-    this.setState({
-      accounts: accounts,
-    })
-
-    this.saveAccounts()
-  }
-
   readAccounts = () => {
     let accounts,
         { token, parentState } = this.props
@@ -494,12 +483,6 @@ class PersistentDrawer extends Component {
     }
   }
 
-  switchUser = () => {
-    this.setState({
-      switchUserOpen: true,
-    })
-  }
-
   addUser = () => {
     if (this.state.accounts.length) {
 
@@ -508,10 +491,26 @@ class PersistentDrawer extends Component {
     }
   }
 
+  switchUser = () => {
+    this.setState({
+      switchUserOpen: true,
+    })
+  }
+
   handleSwitchUserClose = () => {
     this.setState({
       switchUserOpen: false,
     })
+  }
+
+  signOut = (index) => {
+    let accounts = this.state.accounts
+    accounts.splice(index, 1)
+    this.setState({
+      accounts: accounts,
+    })
+
+    this.saveAccounts()
   }
 
 	viewJSON = () => {
@@ -535,28 +534,31 @@ class PersistentDrawer extends Component {
         modalOpen: false,
       }
     })
-    // setTimeout(() => {
-    //   this.setState({
-    //     spoof: {
-    //       ...this.state.spoof,
-    //       modalOpen: false,
-    //       open: false,
-    //     }
-    //   })
-    // }, 100)
   }
 
   changeTab = (event, value) => {
-    this.setState({ tab: value })
-    if (value == 0) window.history.pushState('', ' - Injectify', '/projects/' + encodeURIComponent(this.state.currentProject.name) + '/passwords') 
-    if (value == 1) window.history.pushState('', ' - Injectify', '/projects/' + encodeURIComponent(this.state.currentProject.name) + '/keylogger') 
-    if (value == 2) window.history.pushState('', ' - Injectify', '/projects/' + encodeURIComponent(this.state.currentProject.name) + '/inject') 
-    if (value == 3) window.history.pushState('', ' - Injectify', '/projects/' + encodeURIComponent(this.state.currentProject.name) + '/config') 
+    let { socket, setTab } = this.props
+    let type = 'passwords'
+    if (value == 1) type = 'keylogger'
+    if (value == 2) type = 'inject'
+    if (value == 3) type = 'config'
+
+    if (type == 'config') {
+      setTab(value)
+    } else {
+      this.loading(true)
+      socket.emit(`project:read`, {
+        name: this.state.currentProject.name,
+        type: type,
+      })
+    }
+    window.history.pushState('', ' - Injectify', '/projects/' + encodeURIComponent(this.state.currentProject.name) + '/' + type)
   }
 
   render() {
-    const { classes, theme, signIn, parentState } = this.props;
-    const { open } = this.state;
+    const { classes, theme, signIn, parentState } = this.props
+    const { open } = this.state
+    const { tab } = parentState
 
     return (
       <div className={classes.root}>
@@ -592,7 +594,7 @@ class PersistentDrawer extends Component {
             </Toolbar>
             {this.state.currentProject ? (
               <Tabs
-                value={this.state.tab}
+                value={tab}
                 onChange={this.changeTab}
                 indicatorColor={indigo[100]}
                 fullWidth
@@ -628,10 +630,10 @@ class PersistentDrawer extends Component {
             <main
               className={`${classNames(classes.content, classes[`content`], {
                 [classes.contentShift]: open,
-              })} ${classes.tabsContent} ${this.state.tab === 2 && classes.injectMain}`}
+              })} ${classes.tabsContent} ${tab === 2 && classes.injectMain}`}
               ref={main => {this.main = main}}
             >
-              {this.state.tab === 0 && 
+              {tab === 0 &&
                 <span>
                   <Paper className={classes.paper}>
                     <Table>
@@ -652,7 +654,7 @@ class PersistentDrawer extends Component {
                         </TableRow>
                       </TableHead>
                       <TableBody>
-                        {this.state.currentProject.passwords.map((record, i) => {
+                        {this.state.currentProject.passwords && this.state.currentProject.passwords.map((record, i) => {
                           return (
                             <TableRow key={i}>
                               <TableCell className={classes.tableCell}>
@@ -841,7 +843,7 @@ class PersistentDrawer extends Component {
                   }
                 </span>
               }
-              {this.state.tab === 1 && 
+              {tab === 1 &&
                 <span>
                   <Paper className={classes.paper}>
                     <Table>
@@ -862,7 +864,7 @@ class PersistentDrawer extends Component {
                         </TableRow>
                       </TableHead>
                       <TableBody>
-                        {this.state.currentProject.keylogger.map((record, i) => {
+                        {this.state.currentProject.keylogger && this.state.currentProject.keylogger.map((record, i) => {
                           return (
                             <TableRow key={i}>
                               <TableCell className={classes.tableCell}>
@@ -971,10 +973,10 @@ class PersistentDrawer extends Component {
                   }
                 </span>
               }
-              {this.state.tab === 2 && !this.state.hideMonaco &&
+              {tab === 2 && !this.state.hideMonaco &&
                 <Inject classes={classes} w={this.main ? this.main.offsetWidth : null} h={this.main ? this.main.offsetHeight : null} socket={this.props.socket} project={this.state.currentProject.name} ref={instance => { this.inject = instance }} clients={this.state.inject.clients} />
               }
-              {this.state.tab === 3 && 
+              {tab === 3 && 
                 <ProjectConfig classes={classes} project={this.state.currentProject} loggedInUser={this.props.parentState.user} emit={this.props.emit} loading={this.loading} socket={this.props.socket} loading={this.loading} token={this.props.token} />
               }
               <Tooltip title="New project" placement="left">
@@ -1073,18 +1075,29 @@ class ProjectList extends Component {
 
 class Project extends Component {
 	handleClickOpen = (a) => {
-    if(this.props.p.p.parentState.width <= 700) this.props.p.closeDrawer()
-    this.props.p.emit("project:close")
-		this.props.p.emit("project:read", {
-			name: this.props.record
+    let { record } = this.props
+    let { projectData, closeDrawer, emit, loading } = this.props.p
+    let { parentState } = this.props.p.p
+
+    let type = 'passwords'
+    if (window.location.href.slice(-10) == "/keylogger") type = "keylogger"
+    if (window.location.href.slice(-7) == "/inject") type = "inject"
+    if (window.location.href.slice(-7) == "/config") type = "config"
+
+    if (parentState.width <= 700) closeDrawer()
+    emit("project:close")
+    if (type !== 'config' && projectData && projectData.name !== record) {
+      emit("project:read", {
+        name: this.props.record,
+        type: 'overview'
+      })
+    }
+		emit("project:read", {
+      name: this.props.record,
+      type: type
     })
-    this.props.p.loading(true)
-    let newUrl = '/projects/' + encodeURIComponent(this.props.record)
-    if (window.location.href.slice(-10) == "/passwords") newUrl += "/passwords"
-    if (window.location.href.slice(-10) == "/keylogger") newUrl += "/keylogger"
-    if (window.location.href.slice(-7 ) ==    "/inject") newUrl += "/inject"
-    if (window.location.href.slice(-7 ) ==    "/config") newUrl += "/config"
-    window.history.pushState('', this.props.record + ' - Injectify', newUrl)
+    loading(true)
+    window.history.pushState('', record + ' - Injectify', '/projects/' + encodeURIComponent(record) + '/' + type)
 	}
 
 	render() {
@@ -1434,41 +1447,50 @@ class ProjectConfig extends Component {
     addUser: {
       method: 'username'
     },
+    newName: '',
     tab: 0,
   }
 
   componentDidMount() {
-    let { socket } = this.props
+    let { socket, project } = this.props
     socket.on(`project:read`, (data) => {
-      if (!this.newName || !this.newName.value) return
-      this.newName.value = data.name
       this.setState({
+        newName: data.name,
         inputChanged: false,
       })
     })
+    this.setState({ newName: project.name })
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.project.name == this.props.project.name) {
+      return
+    } else {
+      this.setState({ newName: nextProps.project.name })
+    }
+    if (this.state.newName !== nextProps.project.name) {
+      this.setState({ inputChanged: true })
+    } else {
+      this.setState({ inputChanged: false })
+    }
   }
 
   save = () => {
-    if (this.props.project.name == this.newName.value) return
+    if (this.props.project.name == this.state.newName) return
     this.props.loading(true)
     this.props.emit("project:modify", {
       project: this.props.project.name,
       command: "project:rename",
-      newName: this.newName.value
+      newName: this.state.newName
     })
   }
 
   handleChange = prop => event => {
     let newName = event.target.value
+    this.setState({
+      newName: newName
+    })
     if (newName !== this.props.project.name)
-      this.setState({ inputChanged: true })
-    else
-      this.setState({ inputChanged: false })
-  }
-
-  componentWillReceiveProps(nextProps) {
-    if (nextProps.project.name == this.props.project.name) return
-    if (this.newName.value !== nextProps.project.name)
       this.setState({ inputChanged: true })
     else
       this.setState({ inputChanged: false })
@@ -1509,9 +1531,9 @@ class ProjectConfig extends Component {
   }
 
   handleAddUser = () => {
-    let { loading, emit }         = this.props,
-        { method, type, project } = this.state.addUser,
-        value                     = this.addUserName.value
+    let { loading, emit } = this.props
+    let { method, type, project } = this.state.addUser
+    let value = this.addUserName.value
     
     emit("project:modify", {
       command: 'permissions:add',
@@ -1560,7 +1582,7 @@ class ProjectConfig extends Component {
                 <InputLabel htmlFor="project-name">Name</InputLabel>
                 <Input
                   id="project-name"
-                  defaultValue={project.name}
+                  value={this.state.newName}
                   inputProps={{
                     autoCorrect: false,
                     spellCheck: false,

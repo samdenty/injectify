@@ -1,5 +1,9 @@
 ## Examples
 ```js
+injectify.ping(time => {
+    console.log('Received pong in ' + time + 'ms')
+})
+
 injectify.listen('pong', time => {
     console.log('Received pong in ' + time + 'ms')
 })

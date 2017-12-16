@@ -43,6 +43,7 @@ console.log("%c  _____        _           _   _  __       \n  \\_   \\_ __  (_) 
 
 class Injectify extends Component {
 	state = {
+		tab: 0,
 		user: {},
 		open: false,
 		acceptOpen: false,
@@ -127,18 +128,18 @@ class Injectify extends Component {
 				let type = 'passwords'
 				if (window.location.href.slice(-10) == "/keylogger") type = 'keylogger'
 				if (window.location.href.slice(-7 ) == "/inject") type = 'inject'
-				if (window.location.href.slice(-7 ) == "/config") type = ''
+				if (window.location.href.slice(-7 ) == "/config") type = 'config'
 				if (project) {
-					socket.emit("project:read", {
-						name: decodeURIComponent(project),
-						type: 'overview'
-					})
-					if (type) {
+					if (type !== 'config') {
 						socket.emit("project:read", {
 							name: decodeURIComponent(project),
-							type: type
+							type: 'overview'
 						})
 					}
+					socket.emit("project:read", {
+						name: decodeURIComponent(project),
+						type: type
+					})
 				}
 			}
 			console.log("%c[websocket] " + "%cauth:github =>", "color: #ef5350", "color:  #FF9800", data)
@@ -153,27 +154,46 @@ class Injectify extends Component {
 				projects: data
 			})
 		})
-		socket.on(`project:read`, project => {
-			console.log("%c[websocket] " + "%cproject:read =>", "color: #ef5350", "color:  #FF9800", project)
+		socket.on(`project:read`, collection => {
+			console.log("%c[websocket] " + "%cproject:read =>", "color: #ef5350", "color:  #FF9800", collection)
+			if (collection.type == 'overview' || collection.type == 'config') {
+				this.setState({
+					project: collection.doc
+				})
+				document.getElementsByTagName('title')[0].innerHTML =
+					collection.doc.name +
+					' - Injectify'
+					.replace('<','&lt;')
+					.replace('>','&gt;')
+					.replace(' & ',' &amp; ')
+			} else {
+				this.setState({
+					project: {
+						...this.state.project,
+						[collection.type]: collection.doc
+					}
+				})
+			}
+			let tab = 0
+			if (collection.type == 'keylogger') tab = 1
+			if (collection.type == 'inject') tab = 2
+			if (collection.type == 'config') tab = 3
 			this.setState({
-				project: project
+				tab: tab
 			})
-			document.getElementsByTagName('title')[0].innerHTML =
-				project.name +
-				' - Injectify'
-				.replace('<','&lt;')
-				.replace('>','&gt;')
-				.replace(' & ',' &amp; ')
 		})
 		socket.on(`project:switch`, data => {
 			console.log("%c[websocket] " + "%cproject:switch =>", "color: #ef5350", "color:  #FF9800", data)
-			let newUrl = '/projects/' + encodeURIComponent(data.project)
-			if (window.location.href.slice(-10) == "/passwords") newUrl += "/passwords"
-			if (window.location.href.slice(-10) == "/keylogger") newUrl += "/keylogger"
-			if (window.location.href.slice(-7 ) ==    "/config") newUrl += "/config"
-			window.history.pushState('', data.project + ' - Injectify', newUrl)
+			let type = ''
+			if (window.location.href.slice(-10) == "/passwords") type += "passwords"
+			if (window.location.href.slice(-10) == "/keylogger") type += "keylogger"
+			if (window.location.href.slice(-7 ) ==    "/config") type += "config"
+
+			window.history.pushState('', data.project + ' - Injectify', '/projects/' + encodeURIComponent(data.project) + '/' + type)
+			if (!type) type = 'overview'
 			socket.emit("project:read", {
-				name: data.project
+				name: data.project,
+				type: type
 			})
 		})
 		socket.on(`err`, error => {
@@ -275,7 +295,18 @@ class Injectify extends Component {
 		return (
 			<MuiThemeProvider theme={theme}>
 				<app className="main">
-					<PersistentDrawer parentState={this.state} signIn={this.signIn.bind(this)} signOut={this.signOut.bind(this)} socket={socket} emit={(a, b) => socket.emit(a, b)} token={token} newProject={this.handleClickOpen.bind(this)} notify={this.notify.bind(this)}>
+					<PersistentDrawer
+					  parentState={this.state}
+					  signIn={this.signIn.bind(this)}
+					  signOut={this.signOut.bind(this)}
+					  socket={socket}
+					  emit={(a, b) => socket.emit(a, b)}
+					  token={token}
+					  newProject={this.handleClickOpen.bind(this)}
+					  notify={this.notify.bind(this)}
+					  ref={instance => { this.main = instance }}
+					  setTab={tab => this.setState({ tab: tab })}
+					>
 						{this.state.user.login ? (
 							<div>
 								<table>
