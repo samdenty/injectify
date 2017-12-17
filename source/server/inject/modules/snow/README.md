@@ -7,4 +7,11 @@ Makes the page snow!
 ```js
 injectify.module('snow')
 // undefined
+
+
+/**
+ * Prevent user from clicking on page 
+ */
+injectify.module('snow', true)
+// undefined
 ```

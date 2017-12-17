@@ -1,6 +1,9 @@
 /**
  * https://codepen.io/loktar00/pen/CHpGo
  */
+var blocking = ''
+if (module.params == true) blocking = 'pointer-events:none'
+
 (function() {
     var requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame ||
         function(callback) {
@@ -12,7 +15,7 @@
 /**
  * Load some custom CSS with the style module
  */
-injectify.module('style', 'canvas{position:absolute;top:0;left:0;pointer-events:none}')
+injectify.module('style', 'canvas{position:absolute;top:0;left:0;z-index:' + +new Date + ';' + blocking + '}')
 
 /**
  * Create a canvas element
@@ -27,7 +30,7 @@ var mX = -100
 var mY = -100
 
 canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+canvas.height = document.body.scrollHeight;
 
 function snow() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -117,12 +120,12 @@ function init() {
 
 canvas.addEventListener("mousemove", function(e) {
     mX = e.clientX,
-        mY = e.clientY
+    mY = e.clientY
 });
 
 window.addEventListener("resize", function() {
     canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    canvas.height = document.body.scrollHeight;
 })
 
 init();
