@@ -5,6 +5,7 @@ module.exports = {
       client_secret: 'MY_APP_SECRET'
     },
     debug: true,
+    verbose: true,
     mongodb: 'mongodb://localhost:19000/injectify',
     express: 3000,
     dev: process.env.NODE_ENV.toUpperCase() === 'DEVELOPMENT',

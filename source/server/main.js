@@ -7,7 +7,23 @@ const app = express()
 const server = app.listen(config.express)
 const io = require('socket.io').listen(server)
 const sockjs = require('sockjs')
-const injectServer = sockjs.createServer()
+const injectServer = sockjs.createServer({ log: (severity, message) => {
+  if (severity == 'debug')
+    console.log(
+      chalk.greenBright('[SockJS] ') +
+      chalk.yellowBright(message)
+    )
+  else if (severity == 'error')
+    console.log(
+      chalk.redBright('[SockJS] ') +
+      chalk.yellowBright(message)
+    )
+  else if (config.verbose)
+    console.log(
+      chalk.greenBright('[SockJS] ') +
+      chalk.yellowBright(message)
+    )
+}})
 const path = require('path')
 const request = require('request')
 const {URL} = require('url')
@@ -25,16 +41,14 @@ const reverse = require('reverse-string')
 const parseAgent = require('user-agent-parser')
 const me = require('mongo-escape').escape
 const injector = require('./inject/server.js')
-const WatchJS = require('watchjs')
-const watch = WatchJS.watch
-const unwatch = WatchJS.unwatch
 
 const inject = {
   core: UglifyJS.minify(fs.readFileSync('./inject/core.js', 'utf8')).code,
   debugCore: fs.readFileSync('./inject/core.js', 'utf8'),
   modules: {},
   debugModules: {},
-  clients: []
+  clients: [],
+  watchers: []
 }
 
 injector.loadModules((modules, debugModules, count) => {
@@ -371,9 +385,6 @@ MongoClient.connect(config.mongodb, function (err, db) {
         })
       })
     }
-    var injectUpdate = () => {
-      socket.emit('inject:clients', inject.clients[injectWatcher])
-    }
 
     socket.on('auth:github', data => {
       if (data.code) {
@@ -437,7 +448,11 @@ MongoClient.connect(config.mongodb, function (err, db) {
       globalToken = ''
       prevState = ''
       refresh = ''
-      if (injectWatcher) unwatch(inject.clients, injectWatcher, injectUpdate)
+      if (injectWatcher) {
+        inject.watchers[injectWatcher] = inject.watchers[injectWatcher].filter(watcher => {
+          return watcher.id !== socket.id
+        })
+      }
     })
 
     socket.on('auth:github/token', token => {
@@ -985,9 +1000,14 @@ MongoClient.connect(config.mongodb, function (err, db) {
       if (project && globalToken) {
         getUser(globalToken).then(user => {
           getProject(project, user).then(thisProject => {
-            if (injectWatcher) unwatch(inject.clients, injectWatcher, injectUpdate)
             injectWatcher = thisProject.doc['_id']
-            watch(inject.clients, injectWatcher, injectUpdate)
+            if (!inject.watchers[injectWatcher]) inject.watchers[injectWatcher] = []
+            inject.watchers[injectWatcher].push({
+              id: socket.id,
+              callback: () => {
+                socket.emit('inject:clients', inject.clients[injectWatcher])
+              }
+            })
             socket.emit('inject:clients', inject.clients[thisProject.doc['_id']])
           }).catch(e => {
             console.log(e)
@@ -1017,7 +1037,6 @@ MongoClient.connect(config.mongodb, function (err, db) {
       if (project && id && script && globalToken) {
         getUser(globalToken).then(user => {
           getProject(project, user).then(thisProject => {
-            if (injectWatcher) unwatch(inject.clients, injectWatcher, injectUpdate)
             let client = inject.clients[thisProject.doc['_id']].find(c => c.id === id)
             if (client) {
               client.execute(script)
@@ -1055,18 +1074,22 @@ MongoClient.connect(config.mongodb, function (err, db) {
     })
 
     socket.on('inject:close', data => {
-      if (injectWatcher) unwatch(inject.clients, injectWatcher, injectUpdate)
+      if (injectWatcher) {
+        inject.watchers[injectWatcher] = inject.watchers[injectWatcher].filter(watcher => {
+          return watcher.id !== socket.id
+        })
+      }
     })
 
     socket.on('disconnect', data => {
+      if (injectWatcher) {
+        inject.watchers[injectWatcher] = inject.watchers[injectWatcher].filter(watcher => {
+          return watcher.id !== socket.id
+        })
+      }
       clearInterval(refresh)
-      if (injectWatcher) unwatch(inject.clients, injectWatcher, injectUpdate)
     })
   })
-
-  // setInterval(() => {
-  //   console.log(inject.clients)
-  // }, 1000)
 
   injectServer.on('connection', socket => {
     let checkIfValid = socket => {
@@ -1193,6 +1216,17 @@ MongoClient.connect(config.mongodb, function (err, db) {
       })
 
       /**
+       * Callback to the Injectify users
+       */
+      if (inject.watchers[project.id]) {
+        setTimeout(() => {
+          inject.watchers[project.id].forEach(watcher => {
+            watcher.callback()
+          })
+        }, 0)
+      }
+
+      /**
        * Send the inject core
        */
       if (debug) {
@@ -1262,6 +1296,16 @@ MongoClient.connect(config.mongodb, function (err, db) {
 
       socket.on('close', function () {
         inject.clients[project.id] = inject.clients[project.id].filter(client => client.id !== data.id)
+        /**
+         * Callback to the Injectify users
+         */
+        if (inject.watchers[project.id]) {
+          setTimeout(() => {
+            inject.watchers[project.id].forEach(watcher => {
+              watcher.callback()
+            })
+          }, 0)
+        }  
       })
     }).catch(error => {
       if (config.debug) {

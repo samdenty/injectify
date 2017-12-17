@@ -42,8 +42,7 @@
     "sockjs": "^0.3.19",
     "twemoji": "^2.5.0",
     "uglify-es": "^3.2.1",
-    "user-agent-parser": "^0.6.0",
-    "watchjs": "0.0.0"
+    "user-agent-parser": "^0.6.0"
   },
   "devDependencies": {
     "cross-env": "^5.1.1"
