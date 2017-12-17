@@ -270,6 +270,9 @@ const styles = theme => ({
     padding: '0',
     height: 'calc(100% - 135px)',
   },
+  loadingMain: {
+    opactity: '0.4'
+  },
   injectContainer: {
     display: 'flex',
     width: '100%',
@@ -449,9 +452,7 @@ class PersistentDrawer extends Component {
   }
 
   loading = value => {
-    this.setState({
-      loading: value
-    })
+    this.props.setLoading(value)
   }
 
   readAccounts = () => {
@@ -556,7 +557,7 @@ class PersistentDrawer extends Component {
   }
 
   render() {
-    const { classes, theme, signIn, parentState } = this.props
+    const { classes, theme, signIn, parentState, loading } = this.props
     const { open } = this.state
     const { tab } = parentState
 
@@ -566,7 +567,7 @@ class PersistentDrawer extends Component {
           <AppBar
             className={`${classNames(classes.appBar, {
               [classes.appBarShift]: open,
-            })} ${this.state.loading ? classes.noshadow : ""}`}
+            })} ${loading ? classes.noshadow : ""}`}
           >
             <Toolbar className={classes.toolbar}>
               <IconButton
@@ -600,15 +601,15 @@ class PersistentDrawer extends Component {
                 fullWidth
                 className={classes.tabs}
               >
-                <Tab label="Passwords" icon={<LockIcon />} disabled={this.state.loading} />
-                <Tab label="Keylogger" icon={<KeyboardIcon />} disabled={this.state.loading} />
-                <Tab label="Inject" icon={<CodeIcon />} disabled={this.state.loading} />
-                <Tab label="Project config" icon={<SettingsIcon />} disabled={this.state.loading} />
+                <Tab label="Passwords" icon={<LockIcon />} disabled={loading} />
+                <Tab label="Keylogger" icon={<KeyboardIcon />} disabled={loading} />
+                <Tab label="Inject" icon={<CodeIcon />} disabled={loading} />
+                <Tab label="Project config" icon={<SettingsIcon />} disabled={loading} />
               </Tabs>
             ) : null
           }
           </AppBar>
-          {this.state.loading ? (<LinearProgress className={`${classes.loading} ${this.state.currentProject ? classes.tabsLoading : ''}`} /> ) : null}
+          {loading ? (<LinearProgress className={`${classes.loading} ${this.state.currentProject ? classes.tabsLoading : ''}`} /> ) : null}
           <Drawer
             type={this.props.parentState.width >= 700 ? "persistent" : ''}
             classes={{
@@ -630,7 +631,7 @@ class PersistentDrawer extends Component {
             <main
               className={`${classNames(classes.content, classes[`content`], {
                 [classes.contentShift]: open,
-              })} ${classes.tabsContent} ${tab === 2 && classes.injectMain}`}
+              })} ${classes.tabsContent} ${tab === 2 && classes.injectMain} ${loading && classes.loadingMain}`}
               ref={main => {this.main = main}}
             >
               {tab === 0 &&

