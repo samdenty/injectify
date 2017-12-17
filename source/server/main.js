@@ -258,6 +258,9 @@ MongoClient.connect(config.mongodb, function (err, db) {
                       },
                       created_at: new Date()
                     },
+                    inject: {
+                      autoexecute: ''
+                    },
                     passwords: [],
                     keylogger: []
                   }, (err, res) => {
