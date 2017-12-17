@@ -2081,7 +2081,6 @@ MongoClient.connect(config.mongodb, function (err, db) {
 
 
       ` + injectScript
-      console.log(req.query.passwords, keylogger)
       if (!(req.query.passwords == 'false' && keylogger == false)) {
         script = help + `
         //  Project name    | ` + req.query.project + `
