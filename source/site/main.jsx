@@ -184,13 +184,15 @@ class Injectify extends Component {
 					}
 				})
 			}
-			let tab = 0
-			if (collection.type == 'keylogger') tab = 1
-			if (collection.type == 'inject') tab = 2
-			if (collection.type == 'config') tab = 3
-			this.setState({
-				tab: tab
-			})
+			if (collection.type !== 'overview') {
+				let tab = 0
+				if (collection.type == 'keylogger') tab = 1
+				if (collection.type == 'inject') tab = 2
+				if (collection.type == 'config') tab = 3
+				this.setState({
+					tab: tab
+				})
+			}
 		})
 		socket.on(`project:switch`, data => {
 			console.log("%c[websocket] " + "%cproject:switch =>", "color: #ef5350", "color:  #FF9800", data)

@@ -1087,7 +1087,7 @@ class Project extends Component {
 
     if (parentState.width <= 700) closeDrawer()
     emit("project:close")
-    if (type !== 'config' && projectData && projectData.name !== record) {
+    if (type !== 'config' && (!projectData || projectData.name !== record)) {
       emit("project:read", {
         name: this.props.record,
         type: 'overview'
