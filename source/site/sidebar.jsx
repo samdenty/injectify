@@ -1453,12 +1453,6 @@ class ProjectConfig extends Component {
 
   componentDidMount() {
     let { socket, project } = this.props
-    socket.on(`project:read`, (data) => {
-      this.setState({
-        newName: data.name,
-        inputChanged: false,
-      })
-    })
     this.setState({ newName: project.name })
   }
 

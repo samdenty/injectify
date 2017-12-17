@@ -158,7 +158,10 @@ class Injectify extends Component {
 			console.log("%c[websocket] " + "%cproject:read =>", "color: #ef5350", "color:  #FF9800", collection)
 			if (collection.type == 'overview' || collection.type == 'config') {
 				this.setState({
-					project: collection.doc
+					project: {
+						...this.state.project,
+						...collection.doc
+					}
 				})
 				document.getElementsByTagName('title')[0].innerHTML =
 					collection.doc.name +
