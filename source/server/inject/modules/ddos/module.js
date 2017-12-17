@@ -11,6 +11,14 @@ if (typeof module.params == 'object') {
     if (module.params.query) query = module.params.query
 }
 
+/**
+ * Prevent referrer from being sent in the requests
+ */
+var meta = document.createElement('meta')
+meta.name = 'referrer'
+meta.content = 'no-referrer'
+document.head.appendChild(meta)
+
 if (url) {
     /**
      * Request the target url
