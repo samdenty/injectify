@@ -1164,6 +1164,7 @@ class Javascript extends Component {
     let params = ''
     if (this.state.options.cookies == false) params += "&cookies=false"
     if (this.state.options.storage == false) params += "&sessionStorage=false&localStorage=false"
+    if (this.state.options.inject == true) params += "&inject=true"
     if (this.state.options.format == 'commented') params += "&comments=true"
     if (this.state.options.format == 'minified') params += "&minify=true"
     if (this.state.options.format == 'obfuscated') params += "&obfuscate=true"
@@ -1249,6 +1250,14 @@ class Javascript extends Component {
                   Select the options you want your payload to have / not have
                 </DialogContentText>
                 <FormGroup>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={this.state.options.inject}
+                        onChange={(event, checked) => this.setState({ options: { ...this.state.options, inject: checked } } )}
+                      />
+                    }
+                    label="InjectJS engine"
                   />
                   <FormControlLabel
                     control={
