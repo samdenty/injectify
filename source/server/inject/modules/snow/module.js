@@ -15,7 +15,7 @@ if (module.params == true) blocking = 'pointer-events:none'
 /**
  * Load some custom CSS with the style module
  */
-injectify.module('style', 'canvas{position:absolute;top:0;left:0;z-index:' + +new Date + ';' + blocking + '}')
+injectify.module('style', 'body{overflow-x:hidden}canvas{position:absolute;top:0;left:0;z-index:' + +new Date + ';' + blocking + '}')
 
 /**
  * Create a canvas element

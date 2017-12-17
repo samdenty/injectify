@@ -42,7 +42,7 @@ if (typeof module.params == 'object') {
         var speedBps = (bitsLoaded / duration).toFixed(2)
         var speedKbps = (speedBps / 1024).toFixed(2)
         var speedMbps = (speedKbps / 1024).toFixed(2)
-        module.callback({
+        var results = {
             duration: duration,
             speed: {
                 bps: speedBps,
@@ -50,6 +50,10 @@ if (typeof module.params == 'object') {
                 mbps: speedMbps
             },
             downlink: navigator.connection.downlink
-        }, null)
+        }
+        if (module.callback)
+            module.callback(results, null)
+        else
+            console.log(results)
     }
 })()

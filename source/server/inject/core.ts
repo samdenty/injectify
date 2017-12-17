@@ -199,6 +199,8 @@ window['injectify'].listener((data, topic) => {
 
 			eval(data)
 
+			if (window['injectify'].debug) console.warn('📦 Executed module "' + module.name + '"', module)
+
 			if (!module.config.async && data !== false && typeof module.callback == 'function') {
 				module.callback(module.returned)
 			}
