@@ -1218,9 +1218,9 @@ MongoClient.connect(config.mongodb, function (err, db) {
           if (js) {
             try {
               if (data.params) {
-                js = 'var module={name:' + JSON.stringify(data.name) + ',params:' + JSON.stringify(data.params) + ',return:function(d){this.returned=d}};' + js
+                js = 'module.params=' + JSON.stringify(data.params) + ';module.return=function(d){this.returned=d};' + js
               } else {
-                js = 'var module={return:function(d){this.returned=d}};' + js
+                js = 'module.return=function(d){this.returned=d};' + js
               }
               send('module:' + data.name, js)
             } catch (error) {

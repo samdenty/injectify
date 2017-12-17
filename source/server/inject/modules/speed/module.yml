@@ -1,0 +1,6 @@
+name: [speed, speedtest]
+description: >
+  Performs an internet connection speedtest
+author: samdenty99
+minify: true
+params: >
