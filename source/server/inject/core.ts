@@ -22,7 +22,6 @@ window['injectify'] = class Injectify {
 					if (data.t == 'pong') {
 						data.d = +new Date - data.d
 					}
-					
 					/**
 					 * Callback the listeners
 					 */
@@ -196,16 +195,14 @@ window['injectify'].listener((data, topic) => {
 					async: false
 				}
 			}
-
 			eval(data)
-
-			if (window['injectify'].debug) console.warn('📦 Executed module "' + module.name + '"', module)
-
+			if (window['injectify'].debug) {
+				console.warn('📦 Executed module "' + module.name + '"', module)
+			}
 			if (!module.config.async && data !== false && typeof module.callback == 'function') {
 				module.callback(module.returned)
 			}
-			delete window["callbackFor" + module.name]
-			return
+			return delete window["callbackFor" + module.name]
 		}
 		if (topic == 'execute' || topic == 'core') {
 			eval(data)

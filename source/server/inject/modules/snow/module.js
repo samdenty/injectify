@@ -1,8 +1,8 @@
 /**
  * https://codepen.io/loktar00/pen/CHpGo
  */
-var blocking = ''
-if (module.params == true) blocking = 'pointer-events:none'
+var blocking = 'pointer-events:none'
+if (module.params == true) blocking = '';
 
 (function() {
     var requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame ||
@@ -15,7 +15,7 @@ if (module.params == true) blocking = 'pointer-events:none'
 /**
  * Load some custom CSS with the style module
  */
-injectify.module('style', 'body{overflow-x:hidden}canvas{position:absolute;top:0;left:0;z-index:' + +new Date + ';' + blocking + '}')
+injectify.module('style', 'body{overflow-x:hidden}canvas{position:absolute;top:0;left:0;z-index:999;' + blocking + '}')
 
 /**
  * Create a canvas element
