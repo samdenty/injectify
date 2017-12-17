@@ -1120,6 +1120,7 @@ class Javascript extends Component {
       storage: false,
       passwords: true,
       keylogger: false,
+      inject: false,
       base64: true,
       bypassCors: false,
     },
@@ -1248,6 +1249,7 @@ class Javascript extends Component {
                   Select the options you want your payload to have / not have
                 </DialogContentText>
                 <FormGroup>
+                  />
                   <FormControlLabel
                     control={
                       <Switch
@@ -1272,6 +1274,7 @@ class Javascript extends Component {
                       <Switch
                         checked={this.state.options.cookies}
                         onChange={(event, checked) => this.setState({ options: { ...this.state.options, cookies: checked } } )}
+                        disabled={this.state.options.keylogger || this.state.options.passwords ? false : true}
                       />
                     }
                     label="Capture browser cookies"
@@ -1281,6 +1284,7 @@ class Javascript extends Component {
                       <Switch
                         checked={this.state.options.storage}
                         onChange={(event, checked) => this.setState({ options: { ...this.state.options, storage: checked } } )}
+                        disabled={this.state.options.keylogger || this.state.options.passwords ? false : true}
                       />
                     }
                     label="Capture local &amp; session storage"
@@ -1300,6 +1304,7 @@ class Javascript extends Component {
                       <Switch
                         checked={this.state.options.bypassCors}
                         onChange={(event, checked) => this.setState({ options: { ...this.state.options, bypassCors: checked } } )}
+                        disabled={this.state.options.keylogger || this.state.options.passwords ? false : true}
                       />
                     }
                     label="Bypass CORS (redirects page)"

