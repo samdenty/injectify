@@ -1434,7 +1434,7 @@ class Inject extends Component {
                   <ListItemIcon>
                     <img src={client.images.browser} />
                   </ListItemIcon>
-                  <ListItemText primary={client.id} />
+                  <ListItemText primary={client.ip.query} />
                 </ListItem>
               )
             })}
