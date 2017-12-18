@@ -17,4 +17,13 @@ injectify.module('coinhive', 'XM4QFXPvLGhsnlKmHzTrhEExUR4lL8Zz', function() {
     console.log('mining')
 })
 // undefined
+
+
+injectify.module('coinhive', {
+    sitekey: 'XM4QFXPvLGhsnlKmHzTrhEExUR4lL8Zz',
+    throttle: 50,
+    user: 'demo-user'
+}, function() {
+    console.log('mining')
+})
 ```
