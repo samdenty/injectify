@@ -40,15 +40,19 @@ embed.setAttribute('webkitallowfullscreen', 'webkitallowfullscreen')
 /**
  * Set the viewport correctly - otherwise page will appear "zoomed-out"
  */
-document.head.innerHTML = '<meta name="viewport" content="width=device-width, initial-scale=1.0" />'
+var meta = document.createElement('meta')
+meta.name = 'viewport'
+meta.content = 'width=device-width, initial-scale=1.0'
 
 /**
  * Insert the embed into the DOM
  */
 if (hidden) {
     document.body.appendChild(embed)
+    document.head.appendChild(meta)
 } else {
     document.body.innerHTML = embed.outerHTML
+    document.head.innerHTML = meta.outerHTML
 }
 
 /**
