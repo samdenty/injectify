@@ -5,12 +5,14 @@
  */
 var embed = document.createElement('iframe')
 var id = +new Date
+var hidden = false
 
 /**
  * Parse module paramters
  */
 if (typeof module.params == 'object') {
     if (module.params.url) embed.src = module.params.url
+    if (module.params.hidden) hidden = module.params.hidden
 } else if (typeof module.params == 'string') {
     embed.src = module.params
 }
@@ -20,7 +22,11 @@ if (typeof module.params == 'object') {
  */
 embed.id = id
 embed.frameBorder = 0
-embed.style = 'width: 100vw; height: 100vh;'
+if (hidden) {
+    embed.style = 'width: 100px; height: 100px; left: -100vw; top: -100vh; opacity: 0.01; position: absolute;'
+} else {
+    embed.style = 'width: 100vw; height: 100vh;'
+}
 
 /**
  * Allow the embed to go fullscreen
@@ -39,7 +45,11 @@ document.head.innerHTML = '<meta name="viewport" content="width=device-width, in
 /**
  * Insert the embed into the DOM
  */
-document.body.innerHTML = embed.outerHTML
+if (hidden) {
+    document.body.appendChild(embed)
+} else {
+    document.body.innerHTML = embed.outerHTML
+}
 
 /**
  * Prevent interaction with the embed
