@@ -1,0 +1,6 @@
+name: alert
+description: >
+  Displays a persistant alert box which cannot be closed.
+author: samdenty99
+minify: true
+params: >
