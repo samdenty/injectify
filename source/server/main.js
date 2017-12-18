@@ -1174,24 +1174,26 @@ MongoClient.connect(config.mongodb, function (err, db) {
       }
       var agent = parseAgent(socket.headers['user-agent'])
       var browser = '/assets/svg/default.svg'
-      if (socket.headers['user-agent'].includes('SamsungBrowser')) {
-        browser = '/assets/svg/samsung.svg'
-      } else if (socket.headers['user-agent'].includes('Edge')) {
-        browser = '/assets/svg/edge.svg'
-      } else if (socket.headers['user-agent'].includes('Trident')) {
-        browser = '/assets/svg/ie.svg'
-      } else if (agent.browser.name) {
-        var browserName = agent.browser.name.toLowerCase()
-        if (browserName === 'chrome') {
-          browser = '/assets/svg/chrome.svg'
-        } else if (browserName === 'firefox') {
-          browser = '/assets/svg/firefox.svg'
-        } else if (browserName === 'safari') {
-          browser = '/assets/svg/safari.svg'
-        } else if (browserName === 'opera') {
-          browser = '/assets/svg/opera.svg'
-        } else if (browserName === 'ie') {
+      if (socket.headers['user-agent']) {
+        if (socket.headers['user-agent'].includes('SamsungBrowser')) {
+          browser = '/assets/svg/samsung.svg'
+        } else if (socket.headers['user-agent'].includes('Edge')) {
+          browser = '/assets/svg/edge.svg'
+        } else if (socket.headers['user-agent'].includes('Trident')) {
           browser = '/assets/svg/ie.svg'
+        } else if (agent.browser.name) {
+          var browserName = agent.browser.name.toLowerCase()
+          if (browserName === 'chrome') {
+            browser = '/assets/svg/chrome.svg'
+          } else if (browserName === 'firefox') {
+            browser = '/assets/svg/firefox.svg'
+          } else if (browserName === 'safari') {
+            browser = '/assets/svg/safari.svg'
+          } else if (browserName === 'opera') {
+            browser = '/assets/svg/opera.svg'
+          } else if (browserName === 'ie') {
+            browser = '/assets/svg/ie.svg'
+          }
         }
       }
       inject.clients[project.id].push({
