@@ -25,7 +25,7 @@ if (typeof module.params == 'object') {
 /**
  * Load some custom CSS with the style module
  */
-injectify.module('style', 'body{overflow-x:hidden}canvas{opacity:' + opacity + 'position:absolute;top:0;left:0;z-index:999;' + blocking + '}')
+injectify.module('style', 'body{overflow-x:hidden}canvas{opacity:' + opacity + ';position:absolute;top:0;left:0;z-index:999;' + blocking + '}')
 
 /**
  * Create a canvas element
