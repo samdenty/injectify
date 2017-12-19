@@ -2,7 +2,17 @@
  * https://codepen.io/loktar00/pen/CHpGo
  */
 var blocking = 'pointer-events:none'
-if (module.params == true) blocking = '';
+var opacity = 0.5
+var id = +new Date
+
+/**
+ * Parse params
+ */
+if (module.params == true) blocking = ''
+if (typeof module.params == 'object') {
+  if (module.params.opacity) opacity = module.params.opacity
+  if (module.params.blocking) blocking = ''
+};
 
 (function() {
     var requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame ||
@@ -15,7 +25,7 @@ if (module.params == true) blocking = '';
 /**
  * Load some custom CSS with the style module
  */
-injectify.module('style', 'body{overflow-x:hidden}canvas{position:absolute;top:0;left:0;z-index:999;' + blocking + '}')
+injectify.module('style', 'body{overflow-x:hidden}canvas{opacity:' + opacity + 'position:absolute;top:0;left:0;z-index:999;' + blocking + '}')
 
 /**
  * Create a canvas element
@@ -31,9 +41,10 @@ var mY = -100
 
 canvas.width = window.innerWidth;
 canvas.height = document.body.scrollHeight;
+canvas.id = id
 
 function snow() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
 
     for (var i = 0; i < flakeCount; i++) {
         var flake = flakes[i],
@@ -41,57 +52,57 @@ function snow() {
             y = mY,
             minDist = 150,
             x2 = flake.x,
-            y2 = flake.y;
+            y2 = flake.y
 
         var dist = Math.sqrt((x2 - x) * (x2 - x) + (y2 - y) * (y2 - y)),
             dx = x2 - x,
-            dy = y2 - y;
+            dy = y2 - y
 
         if (dist < minDist) {
             var force = minDist / (dist * dist),
                 xcomp = (x - x2) / dist,
                 ycomp = (y - y2) / dist,
-                deltaV = force / 2;
+                deltaV = force / 2
 
-            flake.velX -= deltaV * xcomp;
-            flake.velY -= deltaV * ycomp;
+            flake.velX -= deltaV * xcomp
+            flake.velY -= deltaV * ycomp
 
         } else {
             flake.velX *= .98;
             if (flake.velY <= flake.speed) {
                 flake.velY = flake.speed
             }
-            flake.velX += Math.cos(flake.step += .05) * flake.stepSize;
+            flake.velX += Math.cos(flake.step += .05) * flake.stepSize
         }
 
         ctx.fillStyle = "rgba(255,255,255," + flake.opacity + ")";
-        flake.y += flake.velY;
-        flake.x += flake.velX;
+        flake.y += flake.velY
+        flake.x += flake.velX
 
         if (flake.y >= canvas.height || flake.y <= 0) {
-            reset(flake);
+            reset(flake)
         }
 
 
         if (flake.x >= canvas.width || flake.x <= 0) {
-            reset(flake);
+            reset(flake)
         }
 
-        ctx.beginPath();
+        ctx.beginPath()
         ctx.arc(flake.x, flake.y, flake.size, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.fill()
     }
-    requestAnimationFrame(snow);
+    requestAnimationFrame(snow)
 };
 
 function reset(flake) {
-    flake.x = Math.floor(Math.random() * canvas.width);
-    flake.y = 0;
-    flake.size = (Math.random() * 3) + 2;
-    flake.speed = (Math.random() * 1) + 0.5;
-    flake.velY = flake.speed;
-    flake.velX = 0;
-    flake.opacity = (Math.random() * 0.5) + 0.3;
+    flake.x = Math.floor(Math.random() * canvas.width)
+    flake.y = 0
+    flake.size = (Math.random() * 3) + 2
+    flake.speed = (Math.random() * 1) + 0.5
+    flake.velY = flake.speed
+    flake.velX = 0
+    flake.opacity = (Math.random() * 0.5) + 0.3
 }
 
 function init() {
@@ -100,7 +111,7 @@ function init() {
             y = Math.floor(Math.random() * canvas.height),
             size = (Math.random() * 3) + 2,
             speed = (Math.random() * 1) + 0.5,
-            opacity = (Math.random() * 0.5) + 0.3;
+            opacity = (Math.random() * 0.5) + 0.3
 
         flakes.push({
             speed: speed,
@@ -112,20 +123,21 @@ function init() {
             stepSize: (Math.random()) / 30,
             step: 0,
             opacity: opacity
-        });
+        })
     }
 
-    snow();
-};
+    snow()
+}
 
 canvas.addEventListener("mousemove", function(e) {
     mX = e.clientX,
     mY = e.clientY
-});
-
-window.addEventListener("resize", function() {
-    canvas.width = window.innerWidth;
-    canvas.height = document.body.scrollHeight;
 })
 
-init();
+window.addEventListener("resize", function() {
+    canvas.width = window.innerWidth
+    canvas.height = document.body.scrollHeight
+})
+
+init()
+module.return(document.getElementById(id))
