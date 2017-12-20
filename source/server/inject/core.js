@@ -167,7 +167,8 @@ window['injectify'] = /** @class */ (function () {
                 'websocket': ws.url,
                 'ip': client.ip,
                 'headers': client.headers,
-                'user-agent': client.agent
+                'user-agent': client.agent,
+                'connectTime': client.connectTime
             };
         },
         enumerable: true,

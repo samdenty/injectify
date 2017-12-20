@@ -1,5 +1,8 @@
 module.exports = {
   injectify: {
+    superusers: [
+      13242392
+    ],
     github: {
       client_id: 'MY_APP_ID',
       client_secret: 'MY_APP_SECRET'

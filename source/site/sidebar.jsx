@@ -408,11 +408,36 @@ class PersistentDrawer extends Component {
     })
 
     socket.on(`inject:clients`, data => {
-			this.setState({
-        inject: {
-          clients: data
-        }
-      })
+      let { event, client, clients } = data
+      
+      if (event == 'connect') {
+        this.setState({ 
+          inject: {
+            ...this.state.inject,
+            clients: this.state.inject.clients.concat(client)
+          }
+        })
+      }
+
+      if (event == 'disconnect') {
+        let clients = this.state.inject.clients
+        this.setState({ 
+          inject: {
+            ...this.state.inject,
+            clients: this.state.inject.clients.filter(c => c.id !== client.id)
+          }
+        })
+      }
+
+      if (event == 'list') {
+        this.setState({ 
+          inject: {
+            ...this.state.inject,
+            clients: clients
+          }
+        })
+      }
+      console.log("%c[websocket] " + "%cinject:clients =>", "color: #ef5350", "color:  #FF9800", data)
     })
     
     this.readAccounts()
@@ -1376,7 +1401,6 @@ class Inject extends Component {
       this.setState({
         clients: nextProps.clients
       })
-      console.log(nextProps.clients)
     }
   }
 
