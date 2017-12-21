@@ -1116,15 +1116,17 @@ MongoClient.connect(config.mongodb, (err, client) => {
     let checkIfValid = socket => {
       return new Promise((resolve, reject) => {
         let project = socket.url.split('?')
+        if (!project) {
+          reject('websocket connection with invalid / missing project name, terminating')
+          return
+        }
         let debug = false
-        try {
-          project = project[project.length - 1]
-          if (project.charAt(0) === '$') {
-            project = project.substring(1)
-            debug = true
-          }
-          if (!project) throw 'project'
-        } catch(e) {
+        project = project[project.length - 1]
+        if (project.charAt(0) === '$') {
+          project = project.substring(1)
+          debug = true
+        }
+        if (!project) {
           reject('websocket connection with invalid / missing project name, terminating')
           return
         }
@@ -1342,7 +1344,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
         }  
       })
     }).catch(error => {
-      if (config.debug) {
+      if (config.verbose) {
         console.log(
         chalk.redBright('[inject] ') +
         chalk.yellowBright(error)
