@@ -1002,6 +1002,11 @@ MongoClient.connect(config.mongodb, (err, client) => {
       if (project && globalToken) {
         getUser(globalToken).then(user => {
           getProject(project, user).then(thisProject => {
+            if (injectWatcher) {
+              inject.watchers[injectWatcher] = inject.watchers[injectWatcher].filter(watcher => {
+                return watcher.id !== socket.id
+              })
+            }
             injectWatcher = thisProject.doc['_id']
             if (!inject.watchers[injectWatcher]) inject.watchers[injectWatcher] = []
             inject.watchers[injectWatcher].push({
@@ -1009,13 +1014,15 @@ MongoClient.connect(config.mongodb, (err, client) => {
               callback: (event, client) => {
                 socket.emit('inject:clients', {
                   event: event,
-                  client: client
+                  client: client,
+                  project: project
                 })
               }
             })
             socket.emit('inject:clients', {
               event: 'list',
-              clients: inject.clients[thisProject.doc['_id']]
+              clients: inject.clients[thisProject.doc['_id']],
+              project: project
             })
           }).catch(e => {
             console.log(e)

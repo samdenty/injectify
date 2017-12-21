@@ -409,25 +409,26 @@ class PersistentDrawer extends Component {
     })
 
     socket.on(`inject:clients`, data => {
-      let { event, client, clients } = data
-      
-      if (event == 'connect') {
-        this.setState({ 
-          inject: {
-            ...this.state.inject,
-            clients: this.state.inject.clients.concat(client)
-          }
-        })
-      }
+      let { event, client, clients, project } = data
+      if (project === this.state.currentProject.name) {
+        if (event == 'connect') {
+          this.setState({ 
+            inject: {
+              ...this.state.inject,
+              clients: this.state.inject.clients.concat(client)
+            }
+          })
+        }
 
-      if (event == 'disconnect') {
-        let clients = this.state.inject.clients
-        this.setState({ 
-          inject: {
-            ...this.state.inject,
-            clients: this.state.inject.clients.filter(c => c.id !== client.id)
-          }
-        })
+        if (event == 'disconnect') {
+          let clients = this.state.inject.clients
+          this.setState({ 
+            inject: {
+              ...this.state.inject,
+              clients: this.state.inject.clients.filter(c => c.id !== client.id)
+            }
+          })
+        }
       }
 
       if (event == 'list') {
@@ -1436,6 +1437,11 @@ class Inject extends Component {
     if (nextProps.project !== this.props.project) {
       socket.emit('inject:clients', {
         project: nextProps.project
+      })
+      this.setState({
+        count: [
+          []
+        ]
       })
     }
     if (nextProps.clients !== this.state.clients) {
