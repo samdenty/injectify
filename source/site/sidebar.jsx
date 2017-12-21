@@ -1376,7 +1376,9 @@ class Javascript extends Component {
 
 class Inject extends Component {
   state = {
-    code: '// type your code...',
+    code: localStorage.getItem('injectScript') ?
+      localStorage.getItem('injectScript') :
+`// type your code`,
     clients: [],
     count: [
       [
@@ -1397,6 +1399,7 @@ class Inject extends Component {
       project: project
     })
     this.refreshGraph()
+    this.saveToStorage(true)
   }
 
   refreshGraph = () => {
@@ -1429,6 +1432,19 @@ class Inject extends Component {
         ]
       })
       setTimeout(this.refreshGraph, 1000)
+    }
+  }
+  
+  saveToStorage = (refresh) => {
+    if (this._mounted) {
+      if (this.oldCode !== this.state.code) {
+        localStorage.setItem('injectScript', this.state.code)
+      }
+      this.oldCode = this.state.code
+      if (refresh)
+        setTimeout(() => {
+          this.saveToStorage(true)
+        }, 1000)
     }
   }
 
