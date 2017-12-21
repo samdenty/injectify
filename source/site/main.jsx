@@ -21,12 +21,6 @@ import Tooltip from 'material-ui/Tooltip'
 import PersistentDrawer from "./sidebar.jsx"
 import { MuiThemeProvider, createMuiTheme } from 'material-ui/styles'
 
-const theme = createMuiTheme({
-  palette: {
-    //type: 'dark',
-  },
-})
-
 const development = process.env.NODE_ENV == 'development' ? true : false
 if (window.location.host == 'not.legal') {
 	var socket = io('https://uder.ml')
@@ -52,6 +46,7 @@ class Injectify extends Component {
 		notify: false,
 		notifyOpen: false,
 		loading: false,
+		darkMode: true,
 	}
 
 	constructor(props) {
@@ -311,8 +306,12 @@ class Injectify extends Component {
 
 	render() {
 		return (
-			<MuiThemeProvider theme={theme}>
-				<app className="main">
+			<MuiThemeProvider theme={createMuiTheme({
+				palette: {
+				  type: this.state.darkMode ? 'dark' : 'light',
+				},
+			  })}>
+				<app className={`main${this.state.darkMode && ' dark'}`}>
 					<PersistentDrawer
 					  parentState={this.state}
 					  signIn={this.signIn.bind(this)}

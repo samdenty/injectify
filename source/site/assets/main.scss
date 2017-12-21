@@ -30,6 +30,51 @@ $drawer: 240px;
 	::-webkit-scrollbar-corner {
 		background-color: transparent
 	}
+	app.dark {
+		main {
+			::-webkit-scrollbar {
+				background: #303030;
+			}
+			::-webkit-scrollbar-thumb {
+				background-color: #696767;
+				border: 2px solid #303030;
+				border-top: 4px solid #303030;
+				border-bottom: 4px solid #303030;
+				&:hover {
+					background-color: #7d7b7b;
+				}
+				&:active {
+					background-color: #5a5a5a;
+				}
+			}
+		}
+		::-webkit-scrollbar {
+			background: #424242;
+		}
+		
+		::-webkit-scrollbar-thumb {
+			background-color: #696767;
+			border: 2px solid #424242;
+			border-top: 4px solid #424242;
+			border-bottom: 4px solid #424242;
+			&:hover {
+				background-color: #7d7b7b;
+			}
+			&:active {
+				background-color: #5a5a5a;
+			}
+		}
+		
+		::-webkit-scrollbar-button {
+			display: none;
+			width: 0;
+			height: 0
+		}
+		
+		::-webkit-scrollbar-corner {
+			background-color: transparent
+		}
+	}
 }
 
 html,
@@ -43,6 +88,37 @@ body {
 	-webkit-tap-highlight-color: transparent
 }
 app {
+	height: 100%;
+	width: 100%;
+	display: block;
+	&.dark {
+		background-color: #303030;
+		button {
+			>span {
+				&:nth-child(1) {
+					color: #fff
+				}
+			}
+		}
+		li {
+			div {
+				h3 {
+					color: rgba(255, 255, 255, 0.6);
+				}
+			}
+			&.active {
+				background-color: rgba(255, 255, 255, 0.15);
+				&:hover {
+					background-color: rgba(255, 255, 255, 0.2);
+				}
+				div {
+					h3 {
+						color: #f1f1f1
+					}
+				}
+			}
+		}
+	}
 	header {
 		button {
 			&.signed-in {
@@ -51,7 +127,7 @@ app {
 				max-height: 64px;
 				border-radius: 0;
 			}
-		}
+		} 
 	}
 	li.active {
 		background: rgba(64, 80, 181, 0.25);
