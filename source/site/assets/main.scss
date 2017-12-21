@@ -101,7 +101,6 @@ pre {
 	background: #2f323c;
 	.inject-list-header {
 		color: #fefeff;
-		box-shadow: -24px 3px 8px #2f323c;
 		svg {
 			vertical-align: middle;
 			margin-right: 10px;
@@ -109,6 +108,9 @@ pre {
 		}
 	}
 	div:nth-child(2) {
+		box-shadow: -24px 3px 8px #2f323c;
+		z-index: 1;
+		position: sticky;
 		svg {
 			padding-left: 7px;
 			.domain {
