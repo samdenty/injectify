@@ -1488,7 +1488,9 @@ class Inject extends Component {
       <div className={classes.injectContainer}>
         <div className="inject-list-container">
           <ListSubheader className="inject-list-header">
-            <ComputerIcon />
+            <Tooltip title="Execute on all clients" placement="right">
+              <ComputerIcon onClick={() => this.execute('*')}/>
+            </Tooltip>
             Online clients ({this.state.clients ? this.state.clients.length : 0})
           </ListSubheader>
           <LineChart

@@ -1045,14 +1045,20 @@ MongoClient.connect(config.mongodb, (err, client) => {
       if (project && id && script && globalToken) {
         getUser(globalToken).then(user => {
           getProject(project, user).then(thisProject => {
-            let client = inject.clients[thisProject.doc['_id']].find(c => c.id === id)
-            if (client) {
-              client.execute(script)
-            } else {
-              socket.emit('err', {
-                title: 'Failed to execute!',
-                message: 'Could not locate client'
+            if (id === '*') {
+              inject.clients[thisProject.doc['_id']].forEach(client => {
+                client.execute(script)
               })
+            } else {
+              let client = inject.clients[thisProject.doc['_id']].find(c => c.id === id)
+              if (client) {
+                client.execute(script)
+              } else {
+                socket.emit('err', {
+                  title: 'Failed to execute!',
+                  message: 'Could not locate client'
+                })
+              }
             }
           }).catch(e => {
             console.log(e)
