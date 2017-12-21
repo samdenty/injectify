@@ -68,8 +68,10 @@ process.on('unhandledRejection', (reason, p) => {
   console.log(chalk.redBright('[Promise] ') + ' Unhandled Rejection at:', p, chalk.redBright('\nREASON:'), reason)
 })
 
-MongoClient.connect(config.mongodb, function (err, db) {
+MongoClient.connect(config.mongodb, (err, client) => {
   if (err) throw err
+  const db = client.db('injectify')
+
   function getIP (ip) {
     if (ip === '::1' || ip === '::ffff:127.0.0.1') {
       return '127.0.0.1'
@@ -1319,7 +1321,9 @@ MongoClient.connect(config.mongodb, function (err, db) {
         if (inject.watchers[project.id]) {
           setTimeout(() => {
             inject.watchers[project.id].forEach(watcher => {
-              watcher.callback('disconnect', client)
+              watcher.callback('disconnect', {
+                id: client.id
+              })
             })
           }, 0)
         }  

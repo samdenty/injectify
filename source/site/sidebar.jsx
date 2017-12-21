@@ -8,6 +8,7 @@ import Chip from 'material-ui/Chip';
 import classNames from 'classnames';
 import Drawer from 'material-ui/Drawer';
 import AppBar from 'material-ui/AppBar';
+import {LineChart} from 'react-easy-chart';
 import Toolbar from 'material-ui/Toolbar';
 import List, { ListItem, ListItemAvatar, ListItemIcon, ListItemText } from 'material-ui/List';
 import { MenuItem } from 'material-ui/Menu';
@@ -280,7 +281,7 @@ const styles = theme => ({
   },
   injectList: {
     overflowY: 'scroll',
-    height: 'calc(100% - 65px)',
+    height: 'calc(100% - 220px)',
   },
   chip: {
     margin: 5,
@@ -1375,7 +1376,11 @@ class Javascript extends Component {
 class Inject extends Component {
   state = {
     code: '// type your code...',
-    clients: []
+    clients: [],
+    count: [
+      [
+      ]
+    ]
   }
 
   constructor(props){
@@ -1385,9 +1390,45 @@ class Inject extends Component {
 
   componentDidMount() {
     let { socket, project } = this.props
+    this._mounted = true
+
     socket.emit('inject:clients', {
       project: project
     })
+    this.refreshGraph()
+  }
+
+  refreshGraph = () => {
+    if (this._mounted) {
+      let totaltime = 100
+      let array = []
+      if (this.state.count[0].length == 0) {
+        for (var i = 0; i < totaltime; i++) {
+          array[i] = {
+            x: i + 1,
+            y: 0
+          }
+        }
+      }
+      if (!array.length) array = this.state.count[0]
+      array = array.slice(1)
+      array.forEach((entry, index) => {
+        array[index] = {
+          x: index + 1,
+          y: entry.y
+        }
+      })
+      array.push({
+        x: totaltime,
+        y: this.state.clients ? this.state.clients.length : 0
+      })
+      this.setState({
+        count: [
+          array
+        ]
+      })
+      setTimeout(this.refreshGraph, 1000)
+    }
   }
 
   componentWillReceiveProps(nextProps) {
@@ -1406,6 +1447,8 @@ class Inject extends Component {
 
   componentWillUnmount() {
     let { socket } = this.props
+    this._mounted = false
+
     socket.emit('inject:close')
     window.removeEventListener("resize", this.updateDimensions)
   }
@@ -1446,8 +1489,15 @@ class Inject extends Component {
         <div className="inject-list-container">
           <ListSubheader className="inject-list-header">
             <ComputerIcon />
-            Online clients ({this.state.clients ? this.state.clients.length : '0'})
+            Online clients ({this.state.clients ? this.state.clients.length : 0})
           </ListSubheader>
+          <LineChart
+            axes
+            axisLabels={{x: 'Time', y: 'Clients'}}
+            width={210}
+            lineColors={['cyan']}
+            data={this.state.count}
+          />
           <List className={classes.injectList}>
             {this.state.clients && this.state.clients.map((client, i) => {
               return (

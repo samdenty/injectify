@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "cross-env": "^5.1.1",
-    "nodemon": "^1.12.1",
+    "nodemon": "^1.14.0",
     "typescript": "^2.6.2"
   },
   "homepage": "https://github.com/samdenty99/injectify#readme"

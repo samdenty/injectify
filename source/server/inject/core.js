@@ -186,6 +186,17 @@ window['injectify'] = /** @class */ (function () {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(Injectify, "duration", {
+        /**
+         * Returns the amount of time connected to injectify server
+         */
+        get: function () {
+            var duration = (+new Date - this.info.connectTime) / 1000;
+            return Math.round(duration);
+        },
+        enumerable: true,
+        configurable: true
+    });
     /**
      * Error handler
      * @param {error} error The error to be handled

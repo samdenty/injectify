@@ -108,6 +108,21 @@ pre {
 			fill: #aaeaad;
 		}
 	}
+	div:nth-child(2) {
+		svg {
+			padding-left: 7px;
+			.domain {
+				stroke: rgba(128, 128, 128, 0.26)
+			}
+			circle {
+				fill: rgba(174, 182, 224, 0.57) !important
+			}
+			text {
+				fill: rgba(141, 159, 255, 0.54);
+				font-family: "Roboto", "Helvetica", "Arial", sans-serif !important
+			}
+		}
+	}
 	ul li img {
 		width: 20px;
 		margin-right: 10px;

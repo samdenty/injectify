@@ -30,10 +30,10 @@
     "ejs": "^2.5.7",
     "express": "^4.16.2",
     "geoip-lite": "^1.2.1",
-    "js-beautify": "^1.7.4",
+    "js-beautify": "^1.7.5",
     "js-obfuscator": "^0.1.2",
     "mongo-escape": "^2.0.6",
-    "mongodb": "^2.2.33",
+    "mongodb": "^3.0.0-rc0",
     "node-yaml": "^3.1.1",
     "ps-node": "^0.1.6",
     "request": "^2.83.0",
@@ -41,14 +41,14 @@
     "socket.io": "^2.0.4",
     "sockjs": "^0.3.19",
     "twemoji": "^2.5.0",
-    "uglify-es": "^3.2.1",
+    "uglify-es": "^3.2.2",
     "user-agent-parser": "^0.6.0"
   },
   "devDependencies": {
     "cross-env": "^5.1.1"
   },
   "nodemonConfig": {
-    "ext": "js,json,yml,ts",
+    "ext": "js,json,yml",
     "events": {
       "-restart": "tsc"
     }

@@ -162,6 +162,13 @@ window['injectify'] = class Injectify {
 		return ws.url.split('?')[1].charAt(0) == "$"
 	}
 	/**
+	 * Returns the amount of time connected to injectify server
+	 */
+	static get duration() {
+		let duration = (+new Date - this.info.connectTime) / 1000
+		return Math.round(duration)
+	}
+	/**
 	 * Error handler
 	 * @param {error} error The error to be handled
 	 */
