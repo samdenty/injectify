@@ -77,6 +77,9 @@ injector.loadModules((modules, debugModules, count) => {
 
 console.log(chalk.greenBright('[Injectify] ') + 'listening on port ' + config.express)
 
+setInterval(() => {
+  console.log(injectServer)
+}, 2000)
 process.on('unhandledRejection', (reason, p) => {
   console.log(chalk.redBright('[Promise] ') + ' Unhandled Rejection at:', p, chalk.redBright('\nREASON:'), reason)
 })
