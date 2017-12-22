@@ -611,13 +611,14 @@ class PersistentDrawer extends Component {
   }
 
   configPage = () => {
-    let { setTab } = this.props
+    let { setTab, parentState } = this.props
 
+    if (parentState.width <= 700) this.handleDrawerClose()
     this.setState({
       currentProject: undefined
     })
-    setTab(1)
 
+    setTab(1)
     window.history.pushState('', 'Configuration - Injectify', '/config')
   }
 
@@ -1120,7 +1121,7 @@ class ProjectList extends Component {
 			return (
         <div>
           <List>
-            <ListItem button onClick={this.props.configPage.bind(this)}>
+            <ListItem button onClick={configPage.bind(this)}>
               <ListItemIcon>
                 <SettingsIcon />
               </ListItemIcon>

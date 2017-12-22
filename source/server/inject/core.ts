@@ -203,14 +203,19 @@ window['injectify'].listener((data, topic) => {
 					async: false
 				}
 			}
-			eval(data)
-			if (window['injectify'].debug) {
-				console.warn('📦 Executed module "' + module.name + '"', module)
+
+			if (data !== false) {
+				eval(data)
+				if (window['injectify'].debug) {
+					console.warn('📦 Executed module "' + module.name + '"', module)
+				}
+				if (!module.config.async && data !== false && typeof module.callback == 'function') {
+					module.callback(module.returned)
+				}
+				return delete window["callbackFor" + module.name]
+			} else if (window['injectify'].debug) {
+				console.error('📦 Module "' + module.name + '" not installed on server', module)
 			}
-			if (!module.config.async && data !== false && typeof module.callback == 'function') {
-				module.callback(module.returned)
-			}
-			return delete window["callbackFor" + module.name]
 		}
 		if (topic == 'execute' || topic == 'core') {
 			eval(data)

@@ -1,0 +1,7 @@
+name: [interaction, interact, onclick, trigger]
+description: >
+  Hooks onto browser interaction methods (keyboard, clicks etc.) to circumvent browser popup blockers.
+author: samdenty99
+minify: true
+params: >
+  @param {object} options Module options
