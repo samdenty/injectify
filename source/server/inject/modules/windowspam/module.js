@@ -10,7 +10,7 @@ if (typeof module.params == 'object') {
 /**
  * Default to url
  */
-if (!url) url = 'http://crashsafari.com'
+if (!url) url = 'http://youareanidiot.org'
 
 /**
  * Upon user interaction => open a new window repeatedly

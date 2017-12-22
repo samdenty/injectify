@@ -22,7 +22,7 @@ var blocker = document.createElement('div')
 if (mouse) {
     blocker.style = 'height: 200vh !important; width: 200vw !important; position: fixed !important; top: 0 !important; left: 0 !important; z-index: 99999999 !important' 
     document.body.appendChild(blocker)
-    blocker.onclick = function() {
+    blocker.onclick = blocker.onmousedown = function() {
         document.body.removeChild(blocker)
         if (keyboard) {
             document.body.onkeydown = null
