@@ -212,18 +212,18 @@ pre {
 		color: #cecfe0
 	}
 	::-webkit-scrollbar {
-		background: #2f323c;
+		background: #2f323c !important;
 	}
 	::-webkit-scrollbar-thumb {
-		background-color: #4d525c;
-		border: 2px solid #2f323c;
-		border-top: 4px solid #2f323c;
-		border-bottom: 4px solid #2f323c;
+		background-color: #4d525c !important;
+		border: 2px solid #2f323c !important;
+		border-top: 4px solid #2f323c !important;
+		border-bottom: 4px solid #2f323c !important;
 		&:hover {
-			background-color: #616770;
+			background-color: #616770 !important;
 		}
 		&:active {
-			background-color: #1E1E1E;
+			background-color: #1E1E1E !important;
 		}
 	}
 }
