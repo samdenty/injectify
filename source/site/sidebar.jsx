@@ -61,6 +61,7 @@ import Dialog, {
 import Table, { TableBody, TableCell, TableHead, TableRow } from 'material-ui/Table';
 
 let drawerWidth = 240
+let dark = false
 
 function Transition(props) {
   return <Slide direction="up" {...props} />;
@@ -116,7 +117,11 @@ const styles = theme => ({
     position: 'absolute',
   },
   tabsLoading: {
-    top: 136
+    top: 136,
+    backgroundColor: dark ? indigo[600] : theme.palette.primary[100],
+  },
+  tabsLoadingBar: {
+    backgroundColor: dark ? indigo[100] : indigo[500]
   },
   '@media (min-width: 700px)': {
     appBarShift: {
@@ -135,9 +140,15 @@ const styles = theme => ({
     position: 'absolute',
     bottom: 15,
     right: 15,
+    backgroundColor: indigo[500],
+    '&:hover': {
+      backgroundColor: indigo[400],
+    }
   },
   toolbar: {
     minHeight: 64,
+    backgroundColor: indigo[500],
+    color: indigo[50]
   },
   appBarHeader: {
     flex: '1',
@@ -153,7 +164,7 @@ const styles = theme => ({
     minWidth: 300,
   },
   activeUser: {
-    backgroundColor: 'rgba(64, 80, 181, 0.4) !important',
+    backgroundColor: dark ? 'rgba(88, 105, 210, 0.66) !important' : 'rgba(64, 80, 181, 0.4) !important',
     userSelect: 'none',
   },
   menuButton: {
@@ -170,6 +181,7 @@ const styles = theme => ({
     position: 'relative',
     height: '100%',
     width: drawerWidth,
+    outline: 'none',
   },
   drawerHeader: {
     display: 'flex',
@@ -283,6 +295,9 @@ const styles = theme => ({
     overflowY: 'scroll',
     height: 'calc(100% - 220px)',
   },
+  listHeader: {
+    boxShadow: dark ? 'inset 0 115px 5px -70px #424242' : 'inset 0 115px 5px -70px #FFFFFF',
+  },
   chip: {
     margin: 5,
     minWidth: 170,
@@ -310,7 +325,7 @@ const styles = theme => ({
   },
   hoverDarken: {
     backgroundColor: 'transparent',
-    color: '#525358',
+    color: dark ? '#a0a0a0' : '#525358',
     transition: 'background-color 0.2s ease',
     '&:hover': {
       backgroundColor: 'rgba(47, 48, 51, 0.08)',
@@ -334,6 +349,12 @@ const styles = theme => ({
   },
   changeNameButton: {
     margin: 10,
+  },
+  darkButton: {
+    backgroundColor: 'rgba(0, 0, 0, 0.09)',
+    '&:hover': {
+      backgroundColor: 'rgba(0, 0, 0, 0.15)'    
+    },
   },
   permissionGroup: {
     marginBottom: 0,
@@ -382,6 +403,11 @@ class PersistentDrawer extends Component {
       }
     }
 
+    if (nextProps.parentState.dark !== dark) {
+      dark = nextProps.parentState.dark
+      this.props.remount()
+    }
+
     if (nextProps.token !== this.props.token) {
       this.readAccounts()
     }
@@ -410,7 +436,14 @@ class PersistentDrawer extends Component {
 
     socket.on(`inject:clients`, data => {
       let { event, client, clients, project } = data
-      if (project === this.state.currentProject.name) {
+      if (event == 'list') {
+        this.setState({ 
+          inject: {
+            ...this.state.inject,
+            clients: clients
+          }
+        })
+      } else if (this.state.currentProject && project === this.state.currentProject.name) {
         if (event == 'connect') {
           this.setState({ 
             inject: {
@@ -430,19 +463,14 @@ class PersistentDrawer extends Component {
           })
         }
       }
-
-      if (event == 'list') {
-        this.setState({ 
-          inject: {
-            ...this.state.inject,
-            clients: clients
-          }
-        })
-      }
       console.log("%c[websocket] " + "%cinject:clients =>", "color: #ef5350", "color:  #FF9800", data)
     })
     
     this.readAccounts()
+    dark = this.props.parentState.dark
+    if (window.location.pathname == '/config') {
+			this.configPage()
+		}
   }
 
   handleDrawerOpen = () => {
@@ -472,8 +500,11 @@ class PersistentDrawer extends Component {
   }
 
   returnHome = () => {
+    let { emit, setTab } = this.props
+
     this.setState({ currentProject: null })
-    this.props.emit("project:close")
+    setTab(0)
+    emit("project:close")
     window.history.pushState('', 'Injectify', '/')
     document.getElementsByTagName('title')[0].innerHTML = 'Injectify'
   }
@@ -512,11 +543,7 @@ class PersistentDrawer extends Component {
   }
 
   addUser = () => {
-    if (this.state.accounts.length) {
-
-    } else {
-      this.props.signIn()
-    }
+    this.props.signIn()
   }
 
   switchUser = () => {
@@ -580,11 +607,22 @@ class PersistentDrawer extends Component {
         type: type,
       })
     }
-    window.history.pushState('', ' - Injectify', '/projects/' + encodeURIComponent(this.state.currentProject.name) + '/' + type)
+    window.history.pushState('', this.state.currentProject.name + ' - Injectify', '/projects/' + encodeURIComponent(this.state.currentProject.name) + '/' + type)
+  }
+
+  configPage = () => {
+    let { setTab } = this.props
+
+    this.setState({
+      currentProject: undefined
+    })
+    setTab(1)
+
+    window.history.pushState('', 'Configuration - Injectify', '/config')
   }
 
   render() {
-    const { classes, theme, signIn, parentState, loading } = this.props
+    const { classes, theme, signIn, parentState, loading, darkMode } = this.props
     const { open } = this.state
     const { tab } = parentState
 
@@ -636,7 +674,7 @@ class PersistentDrawer extends Component {
             ) : null
           }
           </AppBar>
-          {loading ? (<LinearProgress className={`${classes.loading} ${this.state.currentProject ? classes.tabsLoading : ''}`} /> ) : null}
+          {loading ? (<LinearProgress classes={{ bar: classes.tabsLoadingBar }} className={`${classes.loading} ${this.state.currentProject ? classes.tabsLoading : ''}`} /> ) : null}
           <Drawer
             type={this.props.parentState.width >= 700 ? "persistent" : ''}
             classes={{
@@ -651,7 +689,7 @@ class PersistentDrawer extends Component {
                   {theme.direction === 'rtl' ? <ChevronRightIcon /> : <ChevronLeftIcon />}
                 </IconButton>
               </div>
-              <ProjectList p={this.props} projects={parentState.projects} projectData={parentState.project} emit={this.props.emit} classes={classes} token={this.props.token} loading={this.loading.bind(this)} closeDrawer={this.handleDrawerClose.bind(this)}/>
+              <ProjectList p={this.props} projects={parentState.projects} projectData={parentState.project} emit={this.props.emit} classes={classes} token={this.props.token} loading={this.loading.bind(this)} closeDrawer={this.handleDrawerClose.bind(this)} configPage={this.configPage.bind(this)}/>
             </div>
           </Drawer>
           {this.state.currentProject ? (
@@ -1019,7 +1057,9 @@ class PersistentDrawer extends Component {
                     [classes.contentShift]: open,
                   })}
                 >
-                  {this.props.children}
+                  {tab === 1 ?
+                    <Configuration classes={classes} dark={parentState.dark} darkMode={darkMode.bind(this)} />
+                  : this.props.children}
                   <Tooltip title="New project" placement="left">
                     <Button fab color="primary" aria-label="add" className={classes.newProject} onClick={this.props.newProject}>
                       <AddIcon />
@@ -1075,12 +1115,12 @@ class PersistentDrawer extends Component {
 
 class ProjectList extends Component {
 	render() {
-    const { classes, theme } = this.props;
+    const { classes, theme, configPage } = this.props;
 		if (this.props.projects && this.props.projects[0]) {
 			return (
         <div>
-          <List className={classes.list} subheader={<ListSubheader>My account</ListSubheader>}>
-            <ListItem button>
+          <List>
+            <ListItem button onClick={this.props.configPage.bind(this)}>
               <ListItemIcon>
                 <SettingsIcon />
               </ListItemIcon>
@@ -1088,7 +1128,7 @@ class ProjectList extends Component {
             </ListItem>
           </List>
           <Divider />
-          <List className={classes.list} subheader={<ListSubheader>My projects</ListSubheader>}>
+          <List subheader={<ListSubheader className={classes.listHeader}>My projects</ListSubheader>}>
             {this.props.projects.map((project, i) =>
               <Project raised color="primary" key={i} record={project.name} p={this.props} />
             )}
@@ -1444,7 +1484,7 @@ class Inject extends Component {
       if (refresh)
         setTimeout(() => {
           this.saveToStorage(true)
-        }, 1000)
+        }, 5000)
     }
   }
 
@@ -1719,7 +1759,7 @@ class ProjectConfig extends Component {
                 Owners:
               </span>
               {project.permissions.owners.includes(this.props.loggedInUser.id) ? (
-                <Button raised dense onClick={this.handleRequestAddUser("owners")}>
+                <Button raised dense onClick={this.handleRequestAddUser("owners")} className={classes.darkButton}>
                   Add owner
                 </Button>
               ) : null}
@@ -1748,7 +1788,7 @@ class ProjectConfig extends Component {
                 Admins:
               </span>
               {project.permissions.owners.includes(this.props.loggedInUser.id) ? (
-                <Button raised dense onClick={this.handleRequestAddUser("admins")} >
+                <Button raised dense onClick={this.handleRequestAddUser("admins")} className={classes.darkButton}>
                   Add admin
                 </Button>
               ) : null}
@@ -1777,7 +1817,7 @@ class ProjectConfig extends Component {
                 View-only access:
               </span>
               {project.permissions.owners.includes(this.props.loggedInUser.id) || project.permissions.admins.includes(this.props.loggedInUser.id) ? (
-                <Button raised dense onClick={this.handleRequestAddUser("readonly")} >
+                <Button raised dense onClick={this.handleRequestAddUser("readonly")} className={classes.darkButton}>
                   Add user
                 </Button>
               ) : null}
@@ -2174,6 +2214,45 @@ class DomainFiltering extends Component {
           </CardActions>
         }
       </Card>
+    )
+  }
+}
+
+class Configuration extends Component {
+  state = {
+    dark: this.props.dark
+  }
+
+  handleChange = name => event => {
+    this.setState({ [name]: event.target.checked })
+    if (name == 'dark') {
+      this.props.darkMode(event.target.checked)
+      localStorage.setItem('dark', event.target.checked)
+    }
+  }
+
+  render() {
+    let { classes } = this.props
+    return (
+      <span>
+        <Card className={classes.contentCard}>
+          <CardContent>
+            <Typography type="headline" className={classes.title}>
+              Configuration
+            </Typography>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={this.state.dark}
+                  onChange={this.handleChange('dark')}
+                  value="dark"
+                />
+              }
+              label="Dark theme"
+            />
+          </CardContent>
+        </Card>
+      </span>
     )
   }
 }

@@ -32,10 +32,10 @@ $drawer: 240px;
 	}
 	app.dark {
 		main {
-			::-webkit-scrollbar {
+			&::-webkit-scrollbar {
 				background: #303030;
 			}
-			::-webkit-scrollbar-thumb {
+			&::-webkit-scrollbar-thumb {
 				background-color: #696767;
 				border: 2px solid #303030;
 				border-top: 4px solid #303030;
@@ -93,6 +93,9 @@ app {
 	display: block;
 	&.dark {
 		background-color: #303030;
+		h1 {
+			color: #f1f1f1
+		}
 		button {
 			>span {
 				&:nth-child(1) {

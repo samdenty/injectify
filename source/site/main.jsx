@@ -8,6 +8,7 @@ import url from 'url'
 import { withStyles } from 'material-ui/styles'
 import Snackbar from 'material-ui/Snackbar';
 import CloseIcon from 'material-ui-icons/Close';
+import { grey, indigo } from 'material-ui/colors';
 import Dialog, {
 	DialogActions,
 	DialogContent,
@@ -45,8 +46,9 @@ class Injectify extends Component {
 		height: '0',
 		notify: false,
 		notifyOpen: false,
+		mounted: true,
 		loading: false,
-		darkMode: true,
+		dark: localStorage.getItem('dark') == 'false' ? false : true,
 	}
 
 	constructor(props) {
@@ -55,7 +57,7 @@ class Injectify extends Component {
 	}
 
 	componentDidMount() {
-		if (window.location.pathname !== '/') this.loading(true)
+		if (window.location.pathname.startsWith('/projects')) this.loading(true)
 		this.updateWindowDimensions()
 		window.addEventListener('resize', this.updateWindowDimensions)
 		if (loc.token) {
@@ -100,11 +102,19 @@ class Injectify extends Component {
 							}
 						]
 					}
-					let shouldAdd = true
-					accounts.forEach((account) => {
-						if (account.token == data.token) shouldAdd = false
+					let replaceIndex = false
+					accounts.forEach((account, i) => {
+						if (account.user.id == data.user.id) replaceIndex = i
 					})
-					if (shouldAdd) {
+					if (replaceIndex == false) {
+						accounts[replaceIndex] = {
+							token: data.token,
+							user : {
+								login: data.user.login,
+								id: data.user.id,
+							}
+						}
+					} else {
 						accounts.push({
 							token: data.token,
 							user : {
@@ -276,7 +286,6 @@ class Injectify extends Component {
 	}
 
 	signIn() {
-		if (this.sessionAuth()) return
 		window.location = "https://github.com/login/oauth/authorize?client_id=95dfa766d1ceda2d163d&state=" + encodeURIComponent(window.location.href.split("?")[0].split("#")[0]) //+ "&scope=user%20gist&redirect_url="
 	}
 
@@ -304,45 +313,56 @@ class Injectify extends Component {
 		})
 	}
 
+	darkMode = value => {
+		this.setState({
+			dark: value
+		})
+	}
+
 	render() {
 		return (
 			<MuiThemeProvider theme={createMuiTheme({
 				palette: {
-				  type: this.state.darkMode ? 'dark' : 'light',
+				  type: this.state.dark ? 'dark' : 'light',
+				  primary: this.state.dark ? grey : indigo
 				},
 			  })}>
-				<app className={`main${this.state.darkMode && ' dark'}`}>
-					<PersistentDrawer
-					  parentState={this.state}
-					  signIn={this.signIn.bind(this)}
-					  signOut={this.signOut.bind(this)}
-					  socket={socket}
-					  emit={(a, b) => socket.emit(a, b)}
-					  token={token}
-					  newProject={this.handleClickOpen.bind(this)}
-					  notify={this.notify.bind(this)}
-					  ref={instance => { this.main = instance }}
-					  setTab={tab => this.setState({ tab: tab })}
-					  setLoading={this.loading.bind(this)}
-					  loading={this.state.loading}
-					>
-						{this.state.user.login ? (
-							<div>
-								<table>
-									<tbody>
-										<tr><td>{this.state.user.name}</td></tr>
-										<tr><td>{this.state.user.login}</td></tr>
-										<tr><td>{this.state.user.bio}</td></tr>
-									</tbody>
-								</table>
-								<Button onClick={this.handleClickOpen}>New project</Button>
-							</div>
-						) : (
-							<div>
-								This software is still in development! Please login to continue
-							</div>
-						)}
-					</PersistentDrawer>
+				<app className={`main ${this.state.dark ? 'dark' : ''}`}>
+			  		{this.state.mounted ?
+						<PersistentDrawer
+						parentState={this.state}
+						signIn={this.signIn.bind(this)}
+						signOut={this.signOut.bind(this)}
+						socket={socket}
+						emit={(a, b) => socket.emit(a, b)}
+						token={token}
+						newProject={this.handleClickOpen.bind(this)}
+						notify={this.notify.bind(this)}
+						ref={instance => { this.main = instance }}
+						setTab={tab => this.setState({ tab: tab })}
+						setLoading={this.loading.bind(this)}
+						loading={this.state.loading}
+						darkMode={this.darkMode.bind(this)}
+						remount={() => { this.setState({ mounted: false }); setTimeout(() => this.setState({ mounted: true }), 0) }}
+						>
+							{this.state.user.login ? (
+								<div>
+									<table>
+										<tbody>
+											<tr><td>{this.state.user.name}</td></tr>
+											<tr><td>{this.state.user.login}</td></tr>
+											<tr><td>{this.state.user.bio}</td></tr>
+										</tbody>
+									</table>
+									<Button onClick={this.handleClickOpen}>New project</Button>
+								</div>
+							) : (
+								<div>
+									This software is still in development! Please login to continue
+								</div>
+							)}
+						</PersistentDrawer>
+					: ''}
 					<Dialog open={this.state.open} onRequestClose={this.handleRequestClose}>
 						<DialogTitle>New project</DialogTitle>
 						<DialogContent>
