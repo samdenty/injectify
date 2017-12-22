@@ -64,8 +64,8 @@ class Injectify extends Component {
 			localStorage.setItem("token", loc.token)
 			window.history.pushState("","", "./")
 		}
-		if (loc.code && loc.state) {
-			if (url.parse(loc.state).hostname && window.location.hostname !== url.parse(loc.state).hostname) {
+		if (loc.code) {
+			if (loc.state && url.parse(loc.state).hostname && window.location.hostname !== url.parse(loc.state).hostname) {
 				window.location = window.location.href.replace(window.location.origin, url.parse(loc.state).protocol + "//" + url.parse(loc.state).host)
 			} else {
 				socket.emit("auth:github", loc)
