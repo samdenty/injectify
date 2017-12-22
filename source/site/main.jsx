@@ -324,7 +324,7 @@ class Injectify extends Component {
 			<MuiThemeProvider theme={createMuiTheme({
 				palette: {
 				  type: this.state.dark ? 'dark' : 'light',
-				  primary: this.state.dark ? grey : indigo
+				  primary: this.state.dark ? grey : indigo,
 				},
 			  })}>
 				<app className={`main ${this.state.dark ? 'dark' : ''}`}>

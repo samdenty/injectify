@@ -232,3 +232,25 @@ pre {
 	margin-top: 24px;
 	height: calc(100% - 24px) !important;
 }
+.record {
+	.react-json-view {
+		overflow-x: scroll;
+	}
+	&.dark {
+		::-webkit-scrollbar {
+			background: #272822 !important;
+		}
+		::-webkit-scrollbar-thumb {
+			background-color: #676767 !important;
+			border: 2px solid #272822 !important;
+			border-top: 4px solid #272822 !important;
+			border-bottom: 4px solid #272822 !important;
+			&:hover {
+				background-color: #737373 !important;
+			}
+			&:active {
+				background-color: #5a5a5a !important;
+			}
+		}
+	}
+}

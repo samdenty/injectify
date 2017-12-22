@@ -173,6 +173,7 @@ const styles = theme => ({
   },
   recordContent: {
     paddingTop: 75,
+    backgroundColor: dark ? '#272822' : '',
   },
   hide: {
     display: 'none',
@@ -785,6 +786,7 @@ class PersistentDrawer extends Component {
                         open={this.state.recordOpen}
                         onRequestClose={this.handleRecordClose}
                         transition={Transition}
+                        className={`record ${dark ? 'dark' : ''}`}
                       >
                         <AppBar>
                           <Toolbar>
@@ -855,7 +857,11 @@ class PersistentDrawer extends Component {
                           <Divider />
                           <br />
                           <ListItem>
-                            <ReactJson src={this.state.record} />
+                            <ReactJson
+                              src={this.state.record}
+                              theme={dark ? 'monokai' : 'rjv-default'}
+                              enableClipboard={true}
+                              iconStyle="circle" />
                           </ListItem>
                         </List>
                       </Dialog>
@@ -992,6 +998,7 @@ class PersistentDrawer extends Component {
                       open={this.state.recordOpen}
                       onRequestClose={this.handleRecordClose}
                       transition={Transition}
+                      className={`record ${dark ? 'dark' : ''}`}
                     >
                       <AppBar>
                         <Toolbar>
@@ -1032,7 +1039,11 @@ class PersistentDrawer extends Component {
                         <Divider />
                         <br />
                         <ListItem>
-                          <ReactJson src={this.state.record} />
+                          <ReactJson
+                            src={this.state.record}
+                            theme={dark ? 'monokai' : 'rjv-default'}
+                            enableClipboard={true}
+                            iconStyle="circle" />
                         </ListItem>
                       </List>
                     </Dialog>
