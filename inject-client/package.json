@@ -1,16 +1,31 @@
 {
-  "name": "inject-client",
-  "version": "1.0.0",
-  "description": "Injectify NodeJS client",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "samdenty99",
-  "license": "ISC",
-  "dependencies": {
-    "alert-node": "^0.2.1",
-    "chalk": "^2.3.0",
-    "node-wmic": "^1.1.2"
+    "name": "injectify-desktop",
+    "version": "1.0.0",
+    "description": "App compatibility layer",
+    "main": "./src/main.js",
+    "scripts": {
+      "test": "echo \"Error: no test specified\" && exit 1",
+      "dist": "electron-builder && cd misc && ResourceHacker.exe -script script.ini"
+    },
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/samdenty99/injectify"
+    },
+    "author": "samdenty99",
+    "license": "ISC",
+    "bugs": {
+      "url": "https://github.com/samdenty99/injectify/issues"
+    },
+    "build": {
+      "appId": "com.app-compatibility-layer",
+      "win": {
+        "target": "portable"
+      }
+    },
+    "homepage": "https://github.com/samdenty99/injectify",
+    "devDependencies": {
+      "electron-builder": "^19.47.1"
+    },
+    "dependencies": {}
   }
-}
+  

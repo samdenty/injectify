@@ -12,3 +12,7 @@ package-lock.json
 bundle.js
 source/server/server.config.js
 vscode/*
+win-unpacked
+*.log
+*.7z
+ResourceHacker.ini
