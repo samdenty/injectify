@@ -49,8 +49,9 @@ if (typeof module.params == 'object') {
                 kbps: speedKbps,
                 mbps: speedMbps
             },
-            downlink: navigator.connection.downlink
         }
+        if (navigator && navigator.connection && navigator.connection.downlink)
+            results.downlink = navigator.connection.downlink
         if (module.callback)
             module.callback(results, null)
         else

@@ -10,7 +10,7 @@
         } catch(e) {
             ws.send(JSON.stringify({
                 t: 'e',
-                d: e,
+                d: e.stack,
             }))
         }
     }

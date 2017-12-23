@@ -221,11 +221,9 @@ window['injectify'].listener((data, topic) => {
 			eval(data)
 		}
 	} catch(e) {
-		//if (JSON.stringify(e) == "{}") e = e.stack
-		if (window['injectify'].debug) {
-			//console.log(data)
-			throw e
-		}
+		// if (window['injectify'].debug) {
+		// 	//throw e
+		// }
 		window['injectify'].error(e.stack)
 	}
 })

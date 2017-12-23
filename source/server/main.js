@@ -1185,7 +1185,9 @@ MongoClient.connect(config.mongodb, (err, client) => {
       // Create an array with the project's document ID (could use project name instead of ID)
       if (!inject.clients[project.id]) inject.clients[project.id] = []
       let inDebug = socket.url.charAt(19) === '$'
+      let browser = '/assets/svg/default.svg'
       let country = 'https://twemoji.maxcdn.com/2/svg/2753.svg'
+
       let ip
       try {
         ip = {
@@ -1196,6 +1198,13 @@ MongoClient.connect(config.mongodb, (err, client) => {
           query: getIP(socket.remoteAddress)
         }
       }
+      let parsedIP = geoip.lookup(ip.query)
+      if (parsedIP) {
+        parsedIP.query = ip.query
+        ip = parsedIP
+        country = 'https://twemoji.maxcdn.com/2/svg/' + twemoji.convert.toCodePoint(flag(ip.country)) + '.svg'
+      }
+
       if (config.debug) {
         console.log(
           chalk.greenBright('[inject] ') +
@@ -1205,15 +1214,71 @@ MongoClient.connect(config.mongodb, (err, client) => {
           chalk.magentaBright(ip.query)
         )
       }
-      let parsedIP = geoip.lookup(ip.query)
-      if (parsedIP) {
-        parsedIP.query = ip.query
-        ip = parsedIP
-        country = 'https://twemoji.maxcdn.com/2/svg/' + twemoji.convert.toCodePoint(flag(ip.country)) + '.svg'
+
+      let agent = parseAgent(socket.headers['user-agent'])
+      let os
+
+      /**
+       * Parse user-agent from the Injectify Electron application
+       */
+      if (socket.headers['user-agent'].startsWith('{')) {
+        try {
+          os = JSON.parse(socket.headers['user-agent'])
+        } catch(e) {
+          //
+        }
+        if (os) {
+          browser = '/assets/svg/desktop/default.svg'
+          try {
+            agent.browser.name = 'Chrome'
+            agent.engine.name = 'Electron'
+            agent.device.type = 'desktop'
+            if (os.versions) {
+              if (typeof os.versions.chrome === 'string') {
+                agent.browser.version = os.versions.chrome
+                agent.browser.major = os.versions.chrome.split('.')[0]
+              }
+              if (typeof os.versions.electron === 'string') {
+                agent.engine.version = os.versions.electron 
+              }
+            }
+            if (typeof os.vendor === 'string') {
+              agent.device.vendor = os.vendor
+            }
+            if (typeof os.model === 'string') {
+              agent.device.model = os.model
+            }
+            if (typeof os.type === 'string') {
+              if (os.type.startsWith('Windows')) {
+                browser = '/assets/svg/desktop/windows.svg'
+                os.type = 'Windows'
+                if (os.release) {
+                  if (parseInt(os.release.split('.')[0]) >= 6 && (!os.release.startsWith('6.0') || !os.release.startsWith('6.1'))) {
+                    browser = '/assets/svg/desktop/windows8.svg'
+                  }
+                }
+              }
+              agent.os.name = os.type
+            }
+            if (typeof os.release === 'string') {
+              agent.os.version = os.release
+            }
+            if (typeof os.arch === 'string') {
+              agent.cpu.architecture = os.arch
+            }
+            if (typeof os.cpus === 'object') {
+              agent.cpu.cpus = os.cpus
+            }
+          } catch(e) {
+            console.error(e)
+          }
+        }
       }
-      var agent = parseAgent(socket.headers['user-agent'])
-      var browser = '/assets/svg/default.svg'
-      if (socket.headers['user-agent']) {
+      
+      /**
+       * Define the correct path to the correct vendor icon
+       */
+      if (!os && socket.headers['user-agent']) {
         if (socket.headers['user-agent'].includes('SamsungBrowser')) {
           browser = '/assets/svg/samsung.svg'
         } else if (socket.headers['user-agent'].includes('Edge')) {
@@ -1928,7 +1993,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
                 } catch(e) {` + comment('On error send error back to server') + `
                     ws.send(JSON.stringify({
                         t: 'e',
-                        d: e,
+                        d: e.stack,
                     }))
                 }
             }
