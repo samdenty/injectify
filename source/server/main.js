@@ -1156,7 +1156,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
             'name': project
           }).then(doc => {
             if (doc === null) {
-              reject('websocket connection to nonexistent project, terminating')
+              reject(`websocket connection to nonexistent project "${project}", terminating`)
             } else {
               resolve({
                 project: {
@@ -1185,6 +1185,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
       // Create an array with the project's document ID (could use project name instead of ID)
       if (!inject.clients[project.id]) inject.clients[project.id] = []
       let inDebug = socket.url.charAt(19) === '$'
+      let platform = 'browser'
       let browser = '/assets/svg/default.svg'
       let country = 'https://twemoji.maxcdn.com/2/svg/2753.svg'
 
@@ -1221,25 +1222,37 @@ MongoClient.connect(config.mongodb, (err, client) => {
       /**
        * Parse user-agent from the Injectify Electron application
        */
-      if (socket.headers['user-agent'].startsWith('{')) {
+      if (socket.headers['user-agent'] && socket.headers['user-agent'].startsWith('{')) {
         try {
           os = JSON.parse(socket.headers['user-agent'])
         } catch(e) {
           //
         }
-        if (os) {
+        if (os && os.client && (os.client.type === 'electron' || os.client.type === 'node')) {
+          /**
+           * NodeJS & Electron clients
+           */
           browser = '/assets/svg/desktop/default.svg'
+          platform = os.client.type
           try {
-            agent.browser.name = 'Chrome'
-            agent.engine.name = 'Electron'
+            if (os.client.type === 'electron') {
+              agent.browser.name = 'Chrome'
+              agent.engine.name = 'Electron'
+            } else {
+              agent.browser.name = 'NodeJS'
+              agent.engine.name = 'ES6'
+            }
             agent.device.type = 'desktop'
             if (os.versions) {
-              if (typeof os.versions.chrome === 'string') {
-                agent.browser.version = os.versions.chrome
-                agent.browser.major = os.versions.chrome.split('.')[0]
+              let engine = os.client.type === 'electron' ? 'chrome' : 'node'
+              if (typeof os.versions[engine] === 'string') {
+                agent.browser.version = os.versions[engine]
+                agent.browser.major = os.versions[engine].split('.')[0]
               }
               if (typeof os.versions.electron === 'string') {
                 agent.engine.version = os.versions.electron 
+              } else {
+                agent.engine.version = os.versions[engine]
               }
             }
             if (typeof os.vendor === 'string') {
@@ -1272,6 +1285,8 @@ MongoClient.connect(config.mongodb, (err, client) => {
           } catch(e) {
             console.error(e)
           }
+        } else {
+          os = null
         }
       }
       
@@ -1346,6 +1361,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
              .replace('client.ip', JSON.stringify(ip))
              .replace('client.agent', JSON.stringify(agent))
              .replace('client.headers', JSON.stringify(socket.headers))
+             .replace('client.platform', JSON.stringify(platform))
       send('core', core)
 
       /**

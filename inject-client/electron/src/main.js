@@ -38,6 +38,16 @@ function createWindow () {
   win.on('hide', event => {
     win.setTitle('App compatibility layer')
   })
+
+  // Handle window.open's
+  win.on('new-window', (event, url) => {
+    console.log('new win')
+    event.preventDefault()
+    let popup = new BrowserWindow({show: false})
+    popup.once('ready-to-show', () => popup.show())
+    popup.loadURL(url)
+    event.newGuest = win
+  })
 }
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
@@ -45,6 +55,9 @@ app.on('ready', () => {
   session.defaultSession.webRequest.onBeforeSendHeaders((details, callback) => {
     let os = require('os')
     details.requestHeaders['User-Agent'] = JSON.stringify({
+      client: {
+        type: 'electron'
+      },
       release: os.release(),
       arch: os.arch(),
       type: os.type(),

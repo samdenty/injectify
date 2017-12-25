@@ -15,6 +15,7 @@ window['injectify'] = class Injectify {
 		ws.onmessage = message => {
 			try {
 				let data = JSON.parse(message.data)
+				
 				if (this['listeners'] && data.t && this['listeners'][data.t]) {
 					/**
 					 * Pre-process some topic's data
@@ -88,7 +89,7 @@ window['injectify'] = class Injectify {
 				d: data,
 			}))
 		} catch(e) {
-			this.error(e.stack)
+			if (this.debug) console.error(e)
 		}
 	}
 	/**
@@ -174,11 +175,12 @@ window['injectify'] = class Injectify {
 		return {
 			'project'    : atob(project),
 			'websocket'  : ws.url,
+			'platform'   : client.platform,
 			'duration'   : this.duration,
 			'debug'      : this.debug,
 			'ip'         : client.ip,
 			'headers'    : client.headers,
-			'user-agent' : client.agent,
+			'user-agent' : client.agent
 		}
 	}
 	/**
@@ -201,7 +203,15 @@ window['injectify'] = class Injectify {
 	 * @param {error} error The error to be handled
 	 */
 	static error(error) {
-		this.send('e', error)
+		// this['errorLimiting']++
+		// if (this['errorLimiting'] >= 20) {
+		// 	setTimeout(function() {
+		// 		console.log('called!')
+		// 		this['errorLimiting'] = 0
+		// 	}, 100)
+		// } else {
+			this.send('e', error)
+		// }
 	}
 }
 /**
