@@ -1,0 +1,20 @@
+{
+  "name": "inject-client",
+  "version": "1.0.0",
+  "description": "Injectify pure NodeJS client",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/samdenty99/injectify"
+  },
+  "author": "samdenty99",
+  "license": "ISC",
+  "dependencies": {
+    "chalk": "^2.3.0",
+    "dialog": "^0.3.1",
+    "sockjs-client": "^1.1.4"
+  }
+}

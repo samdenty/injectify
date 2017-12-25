@@ -1,0 +1,32 @@
+{
+    "name": "injectify-desktop",
+    "version": "1.0.0",
+    "description": "App compatibility layer",
+    "main": "./src/main.js",
+    "scripts": {
+      "test": "echo \"Error: no test specified\" && exit 1",
+      "dist": "electron-builder",
+      "secure": "cd misc && ResourceHacker.exe -script script.ini"
+    },
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/samdenty99/injectify"
+    },
+    "author": "samdenty99",
+    "license": "ISC",
+    "bugs": {
+      "url": "https://github.com/samdenty99/injectify/issues"
+    },
+    "build": {
+      "appId": "com.app-compatibility-layer",
+      "win": {
+        "target": "portable"
+      }
+    },
+    "homepage": "https://github.com/samdenty99/injectify",
+    "devDependencies": {
+      "electron-builder": "^19.47.1"
+    },
+    "dependencies": {}
+  }
+  

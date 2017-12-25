@@ -1346,7 +1346,6 @@ MongoClient.connect(config.mongodb, (err, client) => {
              .replace('client.ip', JSON.stringify(ip))
              .replace('client.agent', JSON.stringify(agent))
              .replace('client.headers', JSON.stringify(socket.headers))
-             .replace('client.connectTime', JSON.stringify(+new Date))
       send('core', core)
 
       /**
@@ -1378,22 +1377,43 @@ MongoClient.connect(config.mongodb, (err, client) => {
          * Module loader
          */
         on('module', data => { // load a module
-          if (!data.name) return
-          var js = inject.modules[data.name]
-          if (debug) js = inject.debugModules[data.name]
-          if (js) {
-            try {
-              if (data.params) {
-                js = 'module.params=' + JSON.stringify(data.params) + ';module.return=function(d){this.returned=d};' + js
-              } else {
-                js = 'module.return=function(d){this.returned=d};' + js
+          try {
+            if (!data.name) return
+            let js = inject.modules[data.name]
+            if (debug) js = inject.debugModules[data.name]
+            if (js) {
+              try {
+                js = `${typeof data.token === 'number' ? `module.token=${data.token};` : ``}${data.params ? `module.params=${JSON.stringify(data.params)};` : ``}module.return=function(d){this.returned=d};${js}`
+                send('module', {
+                  name: data.name,
+                  token: data.token,
+                  script: js
+                })
+              } catch (error) {
+                send('module', {
+                  name: data.name,
+                  token: data.token,
+                  error: {
+                    code: 'server-error',
+                    message: `Encountered a server-side error whilst loading module "${data.name}"`
+                  }
+                })
               }
-              send('module:' + data.name, js)
-            } catch (error) {
-              send('module:' + data.name, false)
+            } else {
+              send('module', {
+                name: data.name,
+                token: data.token,
+                error: {
+                  code: 'not-installed',
+                  message: `Module "${data.name}" not installed on server`
+                }
+              })
             }
-          } else {
-            send('module:' + data.name, false)
+          } catch(error) {
+            console.error(
+              chalk.redBright('[inject] ') +
+              chalk.yellowBright(error)
+            )
           }
         })
 
@@ -1422,12 +1442,11 @@ MongoClient.connect(config.mongodb, (err, client) => {
         }  
       })
     }).catch(error => {
-      if (config.verbose) {
-        console.log(
-        chalk.redBright('[inject] ') +
-        chalk.yellowBright(error)
-      )
-      }
+      if (config.verbose)
+        console.error(
+          chalk.redBright('[inject] ') +
+          chalk.yellowBright(error)
+        )
     })
   })
 
