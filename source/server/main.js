@@ -1357,11 +1357,14 @@ MongoClient.connect(config.mongodb, (err, client) => {
       } else {
         var core = inject.core
       }
+      let socketHeaders = socket.headers
+      delete socketHeaders['user-agent']
       core = core
              .replace('client.ip', JSON.stringify(ip))
              .replace('client.agent', JSON.stringify(agent))
-             .replace('client.headers', JSON.stringify(socket.headers))
+             .replace('client.headers', JSON.stringify(socketHeaders))
              .replace('client.platform', JSON.stringify(platform))
+             .replace('client.os', JSON.stringify(os))
       send('core', core)
 
       /**

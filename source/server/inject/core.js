@@ -196,6 +196,7 @@ window['injectify'] = /** @class */ (function () {
                 'platform': client.platform,
                 'duration': this.duration,
                 'debug': this.debug,
+                'os': client.os,
                 'ip': client.ip,
                 'headers': client.headers,
                 'user-agent': client.agent

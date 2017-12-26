@@ -77,7 +77,7 @@ if (injectify.info.platform === 'browser') {
     overflow: hidden !important;
     rickrolled: true !important;`
     module.return(document.getElementById(id))
-} else if (injectify.info.platform === 'electron') {
+} else {
     /**
      * Create a new window
      */
@@ -85,12 +85,6 @@ if (injectify.info.platform === 'browser') {
     /**
      * Hide the window
      */
-    if (hidden) popup.minimize()
-    module.return(false)
-} else if (injectify.info.platform === 'node') {
-    /**
-     * Open the url in the browser
-     */
-    if (!hidden) require("openurl").open(url)
+    if (injectify.info.platform === 'electron' && hidden) popup.minimize()
     module.return(false)
 }
