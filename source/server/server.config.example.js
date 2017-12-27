@@ -11,7 +11,7 @@ module.exports = {
     verbose: true,
     mongodb: 'mongodb://localhost:19000/injectify',
     express: 3000,
-    dev: process.env.NODE_ENV.toUpperCase() === 'DEVELOPMENT',
+    dev: process.env.NODE_ENV && process.env.NODE_ENV.toUpperCase() === 'DEVELOPMENT',
     follow: {
       enable: false,
       username: 'samdenty99'
