@@ -1,5 +1,5 @@
 # Injectify
-
+![Screenshot of the Injectify UI](https://samdd.me/images/projects/injectify.png)
 A modern BeEF inspired framework for the 21st century.
 
 ## Setting up the server
