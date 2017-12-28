@@ -596,7 +596,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
                         delete data.passwords
                         delete data.keylogger
                         delete data.inject
-                      } else {
+                      } else if (type) {
                         data = data[type]
                       }
                       if (JSON.stringify(data) === prevState) return
