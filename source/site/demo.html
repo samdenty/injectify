@@ -1,6 +1,8 @@
 <script>
 (function i() {
-    window.ws = new WebSocket('ws://' + location.host + '/i/websocket?$' + btoa('private'))
+    var ws = 'ws'
+    if (window.location.protocol == 'https:') ws += 's'
+    window.ws = new WebSocket(`${ws}://${location.host}/i/websocket?$${btoa('private')}`)
     ws.onmessage = function(d) {
         try {
             d = JSON.parse(d.data)
