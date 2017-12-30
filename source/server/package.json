@@ -26,6 +26,7 @@
     "atob": "^2.0.3",
     "btoa": "^1.1.2",
     "chalk": "^2.3.0",
+    "cookie-parser": "^1.4.3",
     "country-emoji": "^1.2.0",
     "ejs": "^2.5.7",
     "express": "^4.16.2",

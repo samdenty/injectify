@@ -227,10 +227,12 @@ pre {
 		}
 	}
 }
-.react-monaco-editor-container {
+.inject-editor-container {
 	overflow: hidden;
-	margin-top: 24px;
-	height: calc(100% - 24px) !important;
+	width: 100%;
+	height: 100%;
+	.react-monaco-editor-container {
+	}
 }
 .record {
 	.react-json-view {
@@ -254,3 +256,170 @@ pre {
 		}
 	}
 }
+
+.chrome-tabs {
+	box-sizing: border-box;
+	position: relative;
+	font-size: 10px;
+	height: 4.2em;
+	background: linear-gradient(#3949AB, #3949AB);
+	padding: 1em 1.2em 0.45em 1.2em;
+	box-shadow: 0 0.05em #282828;
+	overflow: hidden;
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+	* {
+	  box-sizing: inherit;
+	  font-family: inherit;
+	}
+	.chrome-tabs-bottom-bar {
+	  position: absolute;
+	  bottom: 0;
+	  height: 0.45em;
+	  left: 0;
+	  width: 100%;
+	  background: #1F1F1F;
+	  box-shadow: 0 -0.05em rgba(0, 0, 0, 0.5);
+	  z-index: 20;
+	}
+	.chrome-tabs-content {
+	  position: relative;
+	  width: 100%;
+	  height: 100%;
+	  overflow: hidden;
+	}
+	.chrome-tab {
+	  position: absolute;
+	  left: 0;
+	  height: 2.8em;
+	  width: 24em;
+	  border: 0;
+	  margin: 0;
+	  z-index: 1;
+	  user-select: none;
+	  cursor: default;
+	  * {
+		user-select: none;
+		cursor: default;
+	  }
+	  .chrome-tab-background {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		overflow: hidden;
+		pointer-events: none;
+		> svg {
+		  width: 100%;
+		  height: 100%;
+		  .chrome-tab-shadow {
+			fill: none;
+			stroke: rgba(0, 0, 0, 0.5);
+			stroke-width: 0.5px;
+		  }
+		  .chrome-tab-background {
+			fill: #373737;
+			transform: translateX(0.25px) translateY(0.25px);
+		  }
+		}
+	  }
+	  &.chrome-tab-current {
+		z-index: 999;
+		.chrome-tab-background > svg .chrome-tab-background {
+		  fill: #1F1F1F;
+		}
+	  }
+	  &.chrome-tab-just-added {
+		top: 10px;
+		animation: chrome-tab-just-added 120ms forwards ease-in-out;
+	  }
+	}
+	&.chrome-tabs-sorting .chrome-tab:not(.chrome-tab-currently-dragged), &:not(.chrome-tabs-sorting) .chrome-tab.chrome-tab-just-dragged {
+	  transition: transform 120ms ease-in-out;
+	}
+	.chrome-tab-favicon {
+	  position: relative;
+	  margin-left: 1.6em;
+	  height: 1.6em;
+	  width: 1.6em;
+	  background-size: 1.6em;
+	  margin-top: 0.6em;
+	  z-index: 3;
+	  display: inline-block;
+	  vertical-align: top;
+	  pointer-events: none;
+	}
+	.chrome-tab-title {
+	  -webkit-font-smoothing: antialiased;
+	  position: relative;
+	  display: inline-block;
+	  vertical-align: top;
+	  color: #fff;
+	  padding: 0 0.25em;
+	  overflow: hidden;
+	  text-overflow: ellipsis;
+	  white-space: nowrap;
+	  font-size: 1.2em;
+	  margin-top: 0.5em;
+	  margin-left: 0.4em;
+	  max-width: calc(100% - 5em);
+	  pointer-events: none;
+	}
+	.chrome-tab-close {
+	  position: absolute;
+	  width: 1.4em;
+	  height: 1.4em;
+	  border-radius: 50%;
+	  z-index: 2;
+	  right: 1.4em;
+	  top: 0.7em;
+	  &::before {
+		content: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'><path stroke='#cfcfcf' stroke-linecap='round' stroke-width='1.125' d='M4 4 L10 10 M10 4 L4 10'></path></svg>");
+		position: absolute;
+		display: block;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+	  }
+	  &:hover {
+		&::before {
+		  content: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'><path stroke='#fff' stroke-linecap='round' stroke-width='1.2' d='M4 4 L10 10 M10 4 L4 10'></path></svg>");
+		}
+		&:active {
+		  &::before {
+			content: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'><path stroke='#fff' stroke-linecap='round' stroke-width='1.2' d='M4 4 L10 10 M10 4 L4 10'></path></svg>");
+		  }
+		  background: #b74a3b;
+		}
+		background: #e25c4b;
+	  }
+	}
+  }
+  
+  @-moz-keyframes chrome-tab-just-added {
+	to {
+	  top: 0;
+	}
+  }
+  
+  
+  @-webkit-keyframes chrome-tab-just-added {
+	to {
+	  top: 0;
+	}
+  }
+  
+  
+  @-o-keyframes chrome-tab-just-added {
+	to {
+	  top: 0;
+	}
+  }
+  
+  
+  @keyframes chrome-tab-just-added {
+	to {
+	  top: 0;
+	}
+  }
