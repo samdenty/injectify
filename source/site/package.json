@@ -27,7 +27,6 @@
   },
   "dependencies": {
     "copy-webpack-plugin": "^4.2.3",
-    "draggabilly": "^2.1.1",
     "material-ui": "^1.0.0-beta.20",
     "material-ui-icons": "^1.0.0-beta.17",
     "query-string": "^5.0.1",

