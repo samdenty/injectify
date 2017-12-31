@@ -1,4 +1,5 @@
 ## Examples
+Simply go to [`injectify.samdd.me/demo`](https://injectify.samdd.me/demo.html), open up the DevTools console and begin testing your payloads.
 ```js
 injectify.ping(time => {
     console.log('Received pong in ' + time + 'ms')
