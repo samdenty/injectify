@@ -363,7 +363,7 @@ class Injectify extends Component {
 							)}
 						</PersistentDrawer>
 					: ''}
-					<Dialog open={this.state.open} onRequestClose={this.handleRequestClose}>
+					<Dialog open={this.state.open} onClose={this.handleRequestClose}>
 						<DialogTitle>New project</DialogTitle>
 						<DialogContent>
 							<DialogContentText>
@@ -401,7 +401,7 @@ class Injectify extends Component {
 						}}
 						open={this.state.notifyOpen}
 						autoHideDuration={this.state.notify.id ? 100000 : 6000}
-						onRequestClose={this.handleNotifyClose}
+						onClose={this.handleNotifyClose}
 						SnackbarContentProps={{
 							'aria-describedby': 'message-id',
 						}}

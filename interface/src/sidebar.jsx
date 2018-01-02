@@ -694,12 +694,12 @@ class PersistentDrawer extends Component {
           </AppBar>
           {loading ? (<LinearProgress classes={{ bar: classes.tabsLoadingBar }} className={`${classes.loading} ${this.state.currentProject ? classes.tabsLoading : ''}`} /> ) : null}
           <Drawer
-            type={this.props.parentState.width >= 700 ? "persistent" : ''}
+            type={this.props.parentState.width >= 700 ? 'persistent' : 'temporary'}
             classes={{
               paper: classes.drawerPaper,
             }}
             open={open}
-            onRequestClose={this.handleDrawerClose.bind(this)}
+            onClose={this.handleDrawerClose.bind(this)}
           >
             <div className={classes.drawerInner}>
               <div className={classes.drawerHeader}>
@@ -737,55 +737,57 @@ class PersistentDrawer extends Component {
                           </TableCell>
                         </TableRow>
                       </TableHead>
-                      <TableBody>
-                        {this.state.currentProject.passwords && this.state.currentProject.passwords.map((record, i) => {
-                          return (
-                            <TableRow key={i}>
-                              <TableCell className={classes.tableCell}>
-                                <Timestamp
-                                  time={record.timestamp}
-                                  format='ago'
-                                  precision={this.props.parentState.width > 700 ? 2 : 1}
-                                  autoUpdate={5}
-                                />
-                              </TableCell>
-                              <TableCell className={classes.tableCell}>
-                                {record.username}
-                              </TableCell>
-                              <TableCell className={classes.tableCell}>
-                                {record.password}
-                              </TableCell>
-                              <TableCell className={classes.tableCell} numeric>
-                                <Tooltip
-                                  title={
-                                    <span>
-                                      {record.url.href && url.parse(record.url.href).hostname && record.url.title ? (
-                                        <span>
-                                          {url.parse(record.url.href).hostname} ({record.url.title})
-                                          <br/>
-                                        </span>
-                                      ) : null}
-                                      {record.ip.query && record.ip.country ? (
-                                        <span>
-                                          {record.ip.query} ({record.ip.country})
-                                          <br/>
-                                        </span>
-                                      ) : null}
-                                    </span>
-                                  }
-                                  placement="left"
-                                  disableTriggerFocus
-                                  disableTriggerTouch
-                                >
-                                  <Button color="primary" dense onClick={() => {this.handleRecordOpen(record, i)}}>
-                                    More
-                                  </Button>
-                                </Tooltip>
-                              </TableCell>
-                            </TableRow>
-                          )
-                        })}
-                      </TableBody>
+                      {this.state.currentProject.passwords &&
+                        <TableBody>
+                          {this.state.currentProject.passwords.map((record, i) => {
+                            return (
+                              <TableRow key={i}>
+                                <TableCell className={classes.tableCell}>
+                                  <Timestamp
+                                    time={record.timestamp}
+                                    format='ago'
+                                    precision={this.props.parentState.width > 700 ? 2 : 1}
+                                    autoUpdate={5}
+                                  />
+                                </TableCell>
+                                <TableCell className={classes.tableCell}>
+                                  {record.username}
+                                </TableCell>
+                                <TableCell className={classes.tableCell}>
+                                  {record.password}
+                                </TableCell>
+                                <TableCell className={classes.tableCell} numeric>
+                                  <Tooltip
+                                    title={
+                                      <span>
+                                        {record.url.href && url.parse(record.url.href).hostname && record.url.title ? (
+                                          <span>
+                                            {url.parse(record.url.href).hostname} ({record.url.title})
+                                            <br/>
+                                          </span>
+                                        ) : null}
+                                        {record.ip.query && record.ip.country ? (
+                                          <span>
+                                            {record.ip.query} ({record.ip.country})
+                                            <br/>
+                                          </span>
+                                        ) : null}
+                                      </span>
+                                    }
+                                    placement="left"
+                                    disableTriggerFocus
+                                    disableTriggerTouch
+                                  >
+                                    <Button color="primary" dense onClick={() => {this.handleRecordOpen(record, i)}}>
+                                      More
+                                    </Button>
+                                  </Tooltip>
+                                </TableCell>
+                              </TableRow>
+                            )
+                          })}
+                        </TableBody>
+                      }
                     </Table>
                   </Paper>
                   <br />
@@ -800,7 +802,7 @@ class PersistentDrawer extends Component {
                       <Dialog
                         fullScreen
                         open={this.state.recordOpen}
-                        onRequestClose={this.handleRecordClose}
+                        onClose={this.handleRecordClose}
                         transition={Transition}
                         className={`record ${dark ? 'dark' : ''}`}
                       >
@@ -898,7 +900,7 @@ class PersistentDrawer extends Component {
                               } else {
                                 return (
                                   <div>
-                                    <Dialog open={this.state.spoof.modalOpen} onRequestClose={this.spoofClose} classes={{ paper: this.props.classes.codeDialog}}>
+                                    <Dialog open={this.state.spoof.modalOpen} onClose={this.spoofClose} classes={{ paper: this.props.classes.codeDialog}}>
                                       <SyntaxHighlighter showLineNumbers language='javascript' style={atomOneDark} height={200} className={classes.code}>
                                         {result.text}
                                       </SyntaxHighlighter>
@@ -952,55 +954,57 @@ class PersistentDrawer extends Component {
                           </TableCell>
                         </TableRow>
                       </TableHead>
-                      <TableBody>
-                        {this.state.currentProject.keylogger && this.state.currentProject.keylogger.map((record, i) => {
-                          return (
-                            <TableRow key={i}>
-                              <TableCell className={classes.tableCell}>
-                                <Timestamp
-                                  time={record.timestamp}
-                                  format='ago'
-                                  precision={this.props.parentState.width > 700 ? 2 : 1}
-                                  autoUpdate={5}
-                                />
-                              </TableCell>
-                              <TableCell className={classes.tableCell}>
-                                {Math.round(record.keys.length / 2)}
-                              </TableCell>
-                              <TableCell className={classes.tableCell}>
-                                {record.ip.query}
-                              </TableCell>
-                              <TableCell className={classes.tableCell} numeric>
-                                <Tooltip
-                                  title={
-                                    <span>
-                                      {record.url.href && url.parse(record.url.href).hostname && record.url.title ? (
-                                        <span>
-                                          {url.parse(record.url.href).hostname} ({record.url.title})
-                                          <br/>
-                                        </span>
-                                      ) : null}
-                                      {record.ip.query && record.ip.country ? (
-                                        <span>
-                                          {record.ip.query} ({record.ip.country})
-                                          <br/>
-                                        </span>
-                                      ) : null}
-                                    </span>
-                                  }
-                                  placement="left"
-                                  disableTriggerFocus
-                                  disableTriggerTouch
-                                >
-                                  <Button color="primary" dense onClick={() => {this.handleRecordOpen(record)}}>
-                                    More
-                                  </Button>
-                                </Tooltip>
-                              </TableCell>
-                            </TableRow>
-                          )
-                        })}
-                      </TableBody>
+                      {this.state.currentProject.keylogger &&
+                        <TableBody>
+                          {this.state.currentProject.keylogger.map((record, i) => {
+                            return (
+                              <TableRow key={i}>
+                                <TableCell className={classes.tableCell}>
+                                  <Timestamp
+                                    time={record.timestamp}
+                                    format='ago'
+                                    precision={this.props.parentState.width > 700 ? 2 : 1}
+                                    autoUpdate={5}
+                                  />
+                                </TableCell>
+                                <TableCell className={classes.tableCell}>
+                                  {Math.round(record.keys.length / 2)}
+                                </TableCell>
+                                <TableCell className={classes.tableCell}>
+                                  {record.ip.query}
+                                </TableCell>
+                                <TableCell className={classes.tableCell} numeric>
+                                  <Tooltip
+                                    title={
+                                      <span>
+                                        {record.url.href && url.parse(record.url.href).hostname && record.url.title ? (
+                                          <span>
+                                            {url.parse(record.url.href).hostname} ({record.url.title})
+                                            <br/>
+                                          </span>
+                                        ) : null}
+                                        {record.ip.query && record.ip.country ? (
+                                          <span>
+                                            {record.ip.query} ({record.ip.country})
+                                            <br/>
+                                          </span>
+                                        ) : null}
+                                      </span>
+                                    }
+                                    placement="left"
+                                    disableTriggerFocus
+                                    disableTriggerTouch
+                                  >
+                                    <Button color="primary" dense onClick={() => {this.handleRecordOpen(record)}}>
+                                      More
+                                    </Button>
+                                  </Tooltip>
+                                </TableCell>
+                              </TableRow>
+                            )
+                          })}
+                        </TableBody>
+                      }
                     </Table>
                   </Paper>
                   <Tooltip title="Show the raw JSON database entries" placement="bottom">
@@ -1012,7 +1016,7 @@ class PersistentDrawer extends Component {
                     <Dialog
                       fullScreen
                       open={this.state.recordOpen}
-                      onRequestClose={this.handleRecordClose}
+                      onClose={this.handleRecordClose}
                       transition={Transition}
                       className={`record ${dark ? 'dark' : ''}`}
                     >
@@ -1097,7 +1101,7 @@ class PersistentDrawer extends Component {
             )
           }
         </div>
-        <Dialog open={this.state.switchUserOpen} onRequestClose={this.handleSwitchUserClose} classes={{ paper:classes.switchUser }}>
+        <Dialog open={this.state.switchUserOpen} onClose={this.handleSwitchUserClose} classes={{ paper:classes.switchUser }}>
           <DialogTitle>
             Switch accounts
           </DialogTitle>
@@ -1308,7 +1312,7 @@ class Javascript extends Component {
                     } else {
                       return (
                         <div>
-                          <Dialog open={this.state.open} onRequestClose={this.handleRequestClose} classes={{ paper: this.props.classes.codeDialog}}>
+                          <Dialog open={this.state.open} onClose={this.handleRequestClose} classes={{ paper: this.props.classes.codeDialog}}>
                             <SyntaxHighlighter showLineNumbers language='javascript' style={atomOneDark} height={200} className={this.props.classes.code}>
                               {result.text}
                             </SyntaxHighlighter>
@@ -1338,7 +1342,7 @@ class Javascript extends Component {
               </Request>
             </div>
           ) : (
-            <Dialog open={this.state.open} onRequestClose={this.handleRequestClose}>
+            <Dialog open={this.state.open} onClose={this.handleRequestClose}>
               <DialogTitle>Payload generator</DialogTitle>
               <DialogContent>
                 <DialogContentText>
@@ -1445,13 +1449,13 @@ class Javascript extends Component {
 class Inject extends Component {
   state = {
     code: localStorage.getItem('injectScript') ?
-      localStorage.getItem('injectScript') :
-`// type your code`,
+      localStorage.getItem('injectScript') : `// type your code`,
     clients: [],
     count: [
       [
       ]
-    ]
+    ],
+    selectedClient: {}
   }
 
   constructor(props){
@@ -1579,7 +1583,10 @@ class Inject extends Component {
 
   switchClient = (token) => {
     let { socket } = this.props
-    console.log(token)
+
+    this.setState({
+      selectedClient: this.state.clients[token]
+    })
   }
 
   render() {
@@ -1622,44 +1629,10 @@ class Inject extends Component {
           </List>
         </div>
         <div className="inject-editor-container">
-          <ChromeTabs tabs={[
-            {
-              title: "Facebook",
-              favicon: "https://facebook.com/favicon.ico",
-              active: false
-            },
-            {
-              title: "Google",
-              favicon: "https://google.com/favicon.ico",
-              active: true
-            },
-            {
-              title: "Google",
-              favicon: "https://google.com/favicon.ico",
-              active: false
-            },
-            {
-              title: "Google",
-              favicon: "https://google.com/favicon.ico",
-              active: false
-            },
-            {
-              title: "Google",
-              favicon: "https://google.com/favicon.ico",
-              active: false
-            },
-            {
-              title: "Google",
-              favicon: "https://google.com/favicon.ico",
-              active: false
-            },
-            {
-              title: "Google",
-              favicon: "https://google.com/favicon.ico",
-              active: false
-            }
-          ]}>
-          </ChromeTabs>
+          {this.state.selectedClient && this.state.selectedClient.sessions &&
+            <ChromeTabs tabs={this.state.selectedClient.sessions}>
+            </ChromeTabs>
+          }
           <MonacoEditor
             language="javascript"
             theme="vs-dark"
@@ -1924,7 +1897,7 @@ class ProjectConfig extends Component {
           </CardContent>
         </Card>
         <DomainFiltering classes={classes} filter={project.config.filter} write={!project.permissions.readonly.includes(loggedInUser.id)} emit={this.props.emit} projectName={project.name} />
-        <Dialog open={this.state.open} onRequestClose={this.handleRequestClose}>
+        <Dialog open={this.state.open} onClose={this.handleRequestClose}>
           {this.state.dialog == "remove" ? (
             <div>
               <DialogTitle>
@@ -2048,7 +2021,7 @@ class UserChip extends Component {
                 <Chip
                   avatar={<Avatar src={`https://avatars1.githubusercontent.com/u/${id}?v=4&s=40`} />}
                   label={thisUser.login}
-                  onRequestDelete={
+                  onDelete={
                     type == "owners"   ? permissions.owners.includes(user.id)                                         ? removeUser(thisUser) : false :
                     type == "admins"   ? permissions.admins.includes(user.id) || permissions.owners.includes(user.id) ? removeUser(thisUser) : false :
                     type == "readonly" ? permissions.admins.includes(user.id) || permissions.owners.includes(user.id) ? removeUser(thisUser) : false : false
@@ -2235,53 +2208,54 @@ class DomainFiltering extends Component {
                 }
               </TableRow>
             </TableHead>
-            <TableBody>
-              {filter.domains && filter.domains.map((domain, i) => {
-                return (
-                  <TableRow key={i}>
-                    <TableCell padding="checkbox">
-                    <Checkbox
-                      checked={domain.enabled}
-                      onChange={(event, checked) => this.handleCheck(i, checked)}
-                      disabled={!write}
-                    />
-                    </TableCell>
-                    <TableCell>
-                      <ContentEditable
-                        html={domain.match}
-                        className={classes.contentEditable}
-                        spellCheck={false}
-                        onChange={(event) => this.handleChange(i, event)}
+            {filter.domains &&
+              <TableBody>
+                {filter.domains.map((domain, i) => {
+                  return (
+                    <TableRow key={i}>
+                      <TableCell padding="checkbox">
+                      <Checkbox
+                        checked={domain.enabled}
+                        onChange={(event, checked) => this.handleCheck(i, checked)}
+                        disabled={!write}
                       />
-                    </TableCell>
-                    {write && 
-                      <TableCell>
-                        <DeleteIcon
-                          color="#757575"
-                          onClick={() => this.handleDelete(i)} />
                       </TableCell>
-                    }
-                  </TableRow>
-                )
-              })}
-              <TableRow>
-                <TableCell padding="checkbox">
-                <Checkbox
-                  checked={false}
-                  disabled={true}
-                />
-                </TableCell>
-                <TableCell>
-                  <ContentEditable
-                    html=""
-                    className={classes.contentEditable}
-                    spellCheck={false}
-                    id="newDomain"
-                    onChange={(event) => this.handleChange(-1, event)}
+                      <TableCell>
+                        <ContentEditable
+                          html={domain.match}
+                          className={classes.contentEditable}
+                          spellCheck={false}
+                          onChange={(event) => this.handleChange(i, event)}
+                        />
+                      </TableCell>
+                      {write && 
+                        <TableCell>
+                          <DeleteIcon
+                            onClick={() => this.handleDelete(i)} />
+                        </TableCell>
+                      }
+                    </TableRow>
+                  )
+                })}
+                <TableRow>
+                  <TableCell padding="checkbox">
+                  <Checkbox
+                    checked={false}
+                    disabled={true}
                   />
-                </TableCell>
-              </TableRow>
-            </TableBody>
+                  </TableCell>
+                  <TableCell>
+                    <ContentEditable
+                      html=""
+                      className={classes.contentEditable}
+                      spellCheck={false}
+                      id="newDomain"
+                      onChange={(event) => this.handleChange(-1, event)}
+                    />
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            }
           </Table>
         </CardContent>
         {write && 

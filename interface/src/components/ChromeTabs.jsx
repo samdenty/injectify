@@ -26,15 +26,15 @@ class ChromeTabs extends Component {
               className="chrome-tabs-content"
               ref={measureRef} >
               {this.props.tabs && this.props.tabs.map((tab, i) => {
-                return (
+                return tab.window ? (
                   <ChromeTab
                     key={i}
                     order={i}
-                    title={tab.title}
-                    favicon={tab.favicon}
-                    active={tab.active}
+                    title={tab.window.title}
+                    favicon={tab.window.favicon}
+                    active={tab.window.active}
                     width={this.state.tabWidth} />
-                )
+                ) : ''
               })}
             </div>
           }

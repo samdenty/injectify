@@ -18,7 +18,7 @@ module.exports = {
     }
   },
   apps: [{
-    name: 'injectify-server',
+    name: 'injectify',
     script: './main.js',
     log_date_format: 'DD/MM/YY hh:mm',
     node_args: [
