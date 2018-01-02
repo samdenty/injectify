@@ -10,7 +10,9 @@
     "interface": "cd interface/src && npm run dev",
     "dev": "concurrently -n \"webpack,mongo\" -c \"bgGreen.bold,bgMagenta.bold\" \"npm run interface\" \"npm run mongo\"",
     "mongo": "mongod --dbpath=./database --port 19000 --bind_ip 0.0.0.0",
-    "pm2": "pm2 start server.config.js"
+    "pm2": "pm2 start server.config.js",
+    "install-all": "npm install && cd interface/src && npm install",
+    "pull": "pm2 stop injectify-server; git stash && git pull && npm run build && npm run pm2"
   },
   "repository": {
     "type": "git",
