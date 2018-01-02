@@ -584,7 +584,6 @@ MongoClient.connect(config.mongodb, (err, client) => {
     })
 
     socket.on('project:read', project => {
-      console.log('project:read')
       if (project.name && globalToken) {
         if (project.type === 'overview' || project.type === 'passwords' || project.type === 'keylogger' || project.type === 'inject' || project.type === 'config') {
           type = project.type
