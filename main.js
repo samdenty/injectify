@@ -1,6 +1,17 @@
 /* eslint-disable prefer-promise-reject-errors */
 
-const config = require('./server.config.js').injectify
+const fs = require('fs')
+
+/**
+ * Read configuration
+ */
+let config
+if (fs.existsSync('./server.config.js')) {
+  config = require('./server.config.js').injectify
+} else {
+  config = require('./server.config.example.js').injectify
+}
+
 const MongoClient = require('mongodb').MongoClient
 const express = require('express')
 const app = express()
@@ -28,7 +39,6 @@ const path = require('path')
 const request = require('request')
 const {URL} = require('url')
 const chalk = require('chalk')
-const fs = require('fs')
 const geoip = require('geoip-lite')
 const {flag} = require('country-emoji')
 const twemoji = require('twemoji')

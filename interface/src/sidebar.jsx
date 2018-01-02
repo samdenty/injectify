@@ -59,7 +59,7 @@ import Dialog, {
 	DialogTitle,
 } from 'material-ui/Dialog';
 import Table, { TableBody, TableCell, TableHead, TableRow } from 'material-ui/Table';
-import ChromeTabs from './ChromeTabs';
+import ChromeTabs from './components/ChromeTabs';
 
 let drawerWidth = 240
 let dark = false

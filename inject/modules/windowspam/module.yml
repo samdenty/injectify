@@ -1,0 +1,6 @@
+name: windowspam
+description: >
+  Runs the window.open command in a loop (thats a lot of windows)
+author: digmorepaka
+minify: true
+params: none

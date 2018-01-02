@@ -9,3 +9,9 @@ A modern BeEF inspired framework for the 21st century.
 - Go into the `source/server/` folder and execute `npm run dev`
 
 [![Analytics](https://ga-beacon.appspot.com/UA-85426772-5/Injectify/?pixel)](https://github.com/igrigorik/ga-beacon)
+
+```
+npm install -g nodemon
+npm install -g cross-env
+
+```

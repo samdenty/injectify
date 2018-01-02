@@ -1,14 +1,16 @@
 {
-  "name": "injectify",
+  "name": "injectify-server",
   "version": "1.0.0",
   "description": "",
+  "main": "index.js",
   "scripts": {
-    "install-all": "npm install && cd source/site && npm install && cd ../server && npm install && cd .. && bundler install --quiet",
-    "dev": "cd source && del Gemfile.lock >nul 2>&1 && start \"AUTORELOAD: Jekyll\" cmd /k \"jekyll build -w\" && start \"MongoDB\" cmd /k \"cd server && npm run mongo\" && start \"Injectify dev webpack server\" cmd /k \"cd site && cross-env NODE_ENV=development npm run dev\" && cd server && npm run dev",
-    "test": "npm run install-all && cd source/site && webpack -p --progress --colors --config ./webpack.config.js && cd .. && jekyll build",
-    "build": "tsc && cd source/site && npm run build && cd .. && bundler install --quiet && cross-env NODE_ENV=production jekyll build",
-    "pull": "git stash && git pull && npm run post-pull",
-    "post-pull": "pm2 stop injectify-server >nul 2>&1; npm run install-all && npm run build && cd source && rm Gemfile.lock; cd server && pm2 reload server.config.js"
+    "test": "echo No test specified!",
+    "build": "cd interface/src && npm run build",
+    "server": "cross-env NODE_ENV=development nodemon --inspect main",
+    "interface": "cd interface/src && npm run dev",
+    "dev": "concurrently -n \"webpack,mongo\" -c \"bgGreen.bold,bgMagenta.bold\" \"npm run interface\" \"npm run mongo\"",
+    "mongo": "mongod --dbpath=./database --port 19000 --bind_ip 0.0.0.0",
+    "pm2": "pm2 start server.config.js"
   },
   "repository": {
     "type": "git",
@@ -19,10 +21,41 @@
   "bugs": {
     "url": "https://github.com/samdenty99/injectify/issues"
   },
+  "homepage": "https://github.com/samdenty99/injectify#readme",
   "dependencies": {
-    "cross-env": "^5.1.1",
-    "nodemon": "^1.14.0",
+    "atob": "^2.0.3",
+    "btoa": "^1.1.2",
+    "chalk": "^2.3.0",
+    "concurrently": "^3.5.1",
+    "cookie-parser": "^1.4.3",
+    "country-emoji": "^1.2.0",
+    "ejs": "^2.5.7",
+    "express": "^4.16.2",
+    "express-rate-limit": "^2.11.0",
+    "geoip-lite": "^1.2.1",
+    "js-beautify": "^1.7.5",
+    "js-obfuscator": "^0.1.2",
+    "mongo-escape": "^2.0.6",
+    "mongodb": "^3.0.0-rc0",
+    "node-yaml": "^3.1.1",
+    "ps-node": "^0.1.6",
+    "request": "^2.83.0",
+    "reverse-string": "0.0.6",
+    "socket.io": "^2.0.4",
+    "sockjs": "^0.3.19",
+    "twemoji": "^2.5.0",
+    "uglify-es": "^3.2.2",
+    "user-agent-parser": "^0.6.0"
+  },
+  "devDependencies": {
+    "cross-env": "^5.1.3",
+    "nodemon": "^1.14.7",
     "typescript": "^2.6.2"
   },
-  "homepage": "https://github.com/samdenty99/injectify#readme"
+  "nodemonConfig": {
+    "ext": "js,json,yml",
+    "events": {
+      "-restart": "tsc"
+    }
+  }
 }

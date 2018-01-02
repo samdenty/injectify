@@ -1,16 +1,22 @@
-git/*
-node_modules
-output/*
-.git-metadata
-Gemfile.lock
-source/server/database/*
-.profile
-.bash*
-logs/*
-.pm2/*
+# Injectify files
+server.config.js
+database/*
+!database/README.md
+
+# Interface files
+interface/assets/css
+interface/vs
+
+# Global files
 package-lock.json
+node_modules
 bundle.js
-source/server/server.config.js
+
+# Linux home-directory files
+.bash*
+.pm2/*
+
+# Developer tool files & folders
 vscode/*
 win-unpacked
 *.log
