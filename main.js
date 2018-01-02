@@ -2605,8 +2605,8 @@ MongoClient.connect(config.mongodb, (err, client) => {
   })
 
   if (config.dev) {
-    app.use('/assets/main.css', (req, res) => {
-      res.sendFile(path.join(__dirname, '/../../output/site/assets/main.css'))
+    app.use('/assets/css/main.css', (req, res) => {
+      res.sendFile(path.join(__dirname, '/interface/assets/css/main.css'))
     })
     // Proxy through to webpack-dev-server if in development mode
     app.use('/projects/*', (req, res) => {
@@ -2640,19 +2640,19 @@ MongoClient.connect(config.mongodb, (err, client) => {
     app.use('/projects/*', (req, res) => {
       if (req.originalUrl.includes('/vs/')) {
         let vs = req.originalUrl.split('/vs/')
-        vs = '../../output/site/vs/' + path.normalize(vs[vs.length - 1])
+        vs = 'interface/vs/' + path.normalize(vs[vs.length - 1])
         if (fs.existsSync(vs)) {
           res.sendFile(path.join(__dirname, vs))
         } else {
           res.status(404).send('Not found')
         }
       } else {
-        res.sendFile(path.join(__dirname, '../../output/site/index.html'))
+        res.sendFile(path.join(__dirname, 'interface/index.html'))
       }
     })
     app.use('/config', (req, res) => {
-      res.sendFile(path.join(__dirname, '../output/site/index.html'))
+      res.sendFile(path.join(__dirname, 'interface/index.html'))
     })
-    app.use(express.static(path.join(__dirname, '../../output/site')))
+    app.use(express.static(path.join(__dirname, 'interface')))
   }
 })
