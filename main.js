@@ -1388,15 +1388,15 @@ MongoClient.connect(config.mongodb, (err, client) => {
         }
 
         /**
-         * Client ob
+         * Client object
          */
         var session = {
           'id': data.id,
           'debug': inDebug,
           'window': {
-            'title': '',
+            'title': authReq.headers.referer,
             'url': authReq.headers.referer,
-            'favicon': authReq.headers.referer ? 'https://plus.google.com/_/favicon?domain_url=' + encodeURIComponent(authReq.headers.referer) : '',
+            'favicon': `https://plus.google.com/_/favicon?domain_url=${encodeURIComponent(authReq.headers.referer)}`,
             'active': false,
           },
           'socket': {
