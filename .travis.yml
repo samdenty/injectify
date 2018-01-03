@@ -8,11 +8,11 @@ cache:
 before_install:
   - echo $PWD&&ls
   - chmod -R +x travis
-  - (cd travis && npm install && node status)
+  - (cd travis && npm install && node travis)
 after_success:
-  - (cd travis && node status success)
+  - (cd travis && node travis success)
 after_failure:
-  - (cd travis && node status failure)
+  - (cd travis && node travis failure)
 notifications:
   email:
     on_success: never

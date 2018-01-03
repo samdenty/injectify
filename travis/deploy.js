@@ -10,7 +10,7 @@ module.exports = () => {
     /**
      * Replace literal \n with newlines
      */
-    key = key.replace(/\\n/g, '\n')
+    key = key ? key.replace(/\\n/g, '\n') : undefined
 
     if (host && username && (key || pass)) {
         let config = {
