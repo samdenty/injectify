@@ -10,7 +10,13 @@ before_install:
   - chmod -R +x travis
   - (cd travis && npm install && node travis)
 after_success:
-  - (cd travis && node travis success)
+  - cd travis
+  - node travis success
+  - echo "-----BEGIN RSA PRIVATE KEY-----" > sshkey
+  - echo $sshkey >> sshkey
+  - echo "-----END RSA PRIVATE KEY-----" > sshkey
+  - chmod 400 sshkey
+  - ssh -i sshkey -t $sshuser@$sshhost "cd \"$sshdir\" && npm run pull"
 after_failure:
   - (cd travis && node travis failure)
 notifications:

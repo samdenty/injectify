@@ -386,6 +386,10 @@ sshpk@^1.7.0:
     jsbn "~0.1.0"
     tweetnacl "~0.14.0"
 
+std-pour@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/std-pour/-/std-pour-1.1.0.tgz#11029dd88dcece339616d2bf86c1c0fa888bea82"
+
 stream-shift@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/stream-shift/-/stream-shift-1.0.0.tgz#d5c752825e5367e786f78e18e445ea223a155952"

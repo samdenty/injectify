@@ -1,7 +1,6 @@
 const request = require('request')
 const moment = require('moment')
 const fs = require('fs')
-const deploy = require('./deploy')
 const chalk = require('chalk')
 
 /**
@@ -88,7 +87,4 @@ if (webhook) {
       console.log(chalk.greenBright('Sent message on discord'))
     }
   })
-  if (status === 'success') {
-    deploy()
-  }
 }
