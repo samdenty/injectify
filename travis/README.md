@@ -18,13 +18,14 @@ Injectify supports continuous integration via the use of TravisCI. This basicall
 ![Settings](https://i.imgur.com/aSN3dCn.png)
 6. Under `Environment Variables` add the following, **make sure `Display value in build log` is turned off**:
 
-| Name    | Value                                          |
-| ------- | ---------------------------------------------- |
-| sshhost | The IP address of your VPS                     |
-| sshuser | The user to login into your VPS                |
-| sshpass | (Optional) The password for the specified user |
+| Name    | Value                                                                                    |
+| ------- | ---------------------------------------------------------------------------------------- |
+| sshhost | The IP address of your VPS                                                               |
+| sshuser | The user to login into your VPS                                                          |
+| sshdir  | The root directory in which the Injectify is stored                                      |
+| sshpass | (Optional) The password for the specified user                                           |
 | sshkey  | (Optional) The **escaped SSH key** for the specified user,see below on how to escape it  |
-| webhook | (Optional) A [Discord](https://discordapp.com/) webhook URL  |
+| webhook | (Optional) A [Discord](https://discordapp.com/) webhook URL                              |
 
 ![Environment Variables](https://i.imgur.com/DgrUZtT.png)
 

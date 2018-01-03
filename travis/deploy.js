@@ -5,6 +5,7 @@ module.exports = () => {
     let host = process.env.sshhost
     let username = process.env.sshuser
     let password = process.env.sshpass
+    let dir = process.env.sshdir
     let key = process.env.sshkey
 
     /**
@@ -12,7 +13,7 @@ module.exports = () => {
      */
     key = key ? key.replace(/\\n/g, '\n') : undefined
 
-    if (host && username && (key || pass)) {
+    if (host && dir && username && (key || pass)) {
         let config = {
             user: username,
             host: host,
@@ -21,6 +22,6 @@ module.exports = () => {
         }
         if (!key) delete config.key
         if (!password) delete config.password
-        exec(`echo hi`, config).pipe(process.stdout)
+        exec(`cd "${dir}" && npm run pull`, config).pipe(process.stdout)
     }
 }
