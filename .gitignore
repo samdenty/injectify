@@ -8,8 +8,6 @@ interface/assets/css
 interface/vs
 
 # Global files
-package-lock.json
-yarn.lock
 node_modules
 bundle.js
 
