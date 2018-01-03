@@ -1,6 +1,8 @@
 const request = require('request')
 const moment = require('moment')
 const fs = require('fs')
+const deploy = require('./deploy')
+const chalk = require('chalk')
 
 /**
  * Get the webhook URL from Travis
@@ -79,5 +81,14 @@ if (webhook) {
         }
       ]
     }
+  }, error => {
+    if (error) {
+      console.error(chalk.redBright('Failed to send message on discord using the webhook ') + chalk.magentaBright(webhook), error)
+    } else {
+      console.log(chalk.greenBright('Sent message on discord'))
+    }
   })
+  if (status === 'success') {
+    deploy()
+  }
 }

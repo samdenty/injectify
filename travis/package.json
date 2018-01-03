@@ -1,12 +1,14 @@
 {
   "name": "injectify-travis",
   "version": "1.0.0",
-  "main": "deploy.js",
+  "main": "travis.js",
   "repository": "https://github.com/samdenty99/injectify",
   "author": "samdenty99",
   "license": "MIT",
   "dependencies": {
+    "chalk": "^2.3.0",
     "moment": "^2.20.1",
-    "request": "^2.83.0"
+    "request": "^2.83.0",
+    "ssh-exec": "^2.0.0"
   }
 }
