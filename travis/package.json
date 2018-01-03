@@ -1,0 +1,12 @@
+{
+  "name": "injectify-travis",
+  "version": "1.0.0",
+  "main": "deploy.js",
+  "repository": "https://github.com/samdenty99/injectify",
+  "author": "samdenty99",
+  "license": "MIT",
+  "dependencies": {
+    "moment": "^2.20.1",
+    "request": "^2.83.0"
+  }
+}

@@ -7,6 +7,9 @@ module.exports = {
       client_id: 'MY_APP_ID',
       client_secret: 'MY_APP_SECRET'
     },
+    discord: {
+      webhook: 'INSERT_WEBHOOK_URL'
+    },
     debug: true,
     verbose: true,
     mongodb: 'mongodb://localhost:19000/injectify',
