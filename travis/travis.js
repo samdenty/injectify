@@ -69,10 +69,10 @@ if (webhook) {
         {
           author:{
             name: state.message,
-            url: `https://travis-ci.com/${process.env.TRAVIS_REPO_SLUG}/builds/${process.env.TRAVIS_BUILD_ID}`,
+            url: `https://travis-ci.org/${process.env.TRAVIS_REPO_SLUG}/builds/${process.env.TRAVIS_BUILD_ID}`,
             icon_url: state.mascot
           },
-          description: `[Log for #${process.env.TRAVIS_BUILD_NUMBER}](https://travis-ci.com/${process.env.TRAVIS_REPO_SLUG}/builds/${process.env.TRAVIS_BUILD_ID})`,
+          description: `[Log for #${process.env.TRAVIS_BUILD_NUMBER}](https://travis-ci.org/${process.env.TRAVIS_REPO_SLUG}/builds/${process.env.TRAVIS_BUILD_ID})`,
           color: state.color,
           footer: {  
             text: `Job ID ${process.env.TRAVIS_JOB_ID}`

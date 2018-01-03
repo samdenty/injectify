@@ -23,10 +23,13 @@ Injectify supports continuous integration via the use of TravisCI. This basicall
 | sshhost | The IP address of your VPS                     |
 | sshuser | The user to login into your VPS                |
 | sshpass | (Optional) The password for the specified user |
-| sshkey  | (Optional) The SSH key for the specified user  |
+| sshkey  | (Optional) The **escaped SSH key** for the specified user,see below on how to escape it  |
 | webhook | (Optional) A [Discord](https://discordapp.com/) webhook URL  |
 
 ![Environment Variables](https://i.imgur.com/DgrUZtT.png)
+
+## Escaping the SSH key
+Replace all new lines with `\n` (literally) and surround it in double quotes.
 
 ## Discord integration
 If you specify the webhook URL, you'll get build status messages on your Discord server. Refer to [Intro to webhooks](https://support.discordapp.com/hc/en-us/articles/228383668-Intro-to-Webhooks) for help on how to create a webhook.
