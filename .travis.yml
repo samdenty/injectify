@@ -16,7 +16,7 @@ after_success:
   - echo $sshkey >> sshkey
   - echo "-----END RSA PRIVATE KEY-----" > sshkey
   - chmod 400 sshkey
-  - ssh -i sshkey -t $sshuser@$sshhost "cd \"$sshdir\" && npm run pull"
+  - ssh -o "StrictHostKeyChecking no" -i sshkey -t $sshuser@$sshhost "cd \"$sshdir\" && npm run pull"
 after_failure:
   - (cd travis && node travis failure)
 notifications:
