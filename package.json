@@ -4,17 +4,17 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "npm run install-all && npm run build",
-    "build": "cd interface/src && npm run build",
+    "test": "yarn run install-all && yarn run build",
+    "build": "cd interface/src && yarn run build",
     "server": "cross-env NODE_ENV=development nodemon --inspect main",
     "serve": "cross-env NODE_ENV=production nodemon --inspect main",
-    "interface": "cd interface/src && npm run dev",
-    "dev": "concurrently -n \"webpack,mongo\" -c \"bgGreen.bold,bgMagenta.bold\" \"npm run interface\" \"npm run mongo\"",
+    "interface": "cd interface/src && yarn run dev",
+    "dev": "concurrently -n \"webpack,mongo\" -c \"bgGreen.bold,bgMagenta.bold\" \"yarn run interface\" \"yarn run mongo\"",
     "mongo": "mongod --dbpath=./database --port 19000 --bind_ip 0.0.0.0",
     "pm2": "pm2 start server.config.js",
-    "install-all": "npm install --unsafe-perm && cd interface/src && npm install --unsafe-perm",
-    "pull": "git stash && git pull && npm run post-pull",
-    "post-pull": "pm2 stop injectify &> /dev/null; npm run install-all && npm run build && npm run pm2"
+    "install-all": "yarn --unsafe-perm && cd interface/src && yarn --unsafe-perm",
+    "pull": "git stash && git pull && yarn run post-pull",
+    "post-pull": "pm2 stop injectify &> /dev/null; yarn run install-all && yarn run build && yarn run pm2"
   },
   "repository": {
     "type": "git",
