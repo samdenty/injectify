@@ -21,14 +21,16 @@ Injectify supports continuous integration via the use of TravisCI. This basicall
 | Name    | Value                                                                                    |
 | ------- | ---------------------------------------------------------------------------------------- |
 | sshhost | The IP address of your VPS                                                               |
-| sshdir  | The root directory in which the Injectify is stored                                      |
 | sshuser | The user to login into your VPS                                                          |
+| sshkey  | The root directory in which the Injectify is stored                                      |
+| sshdir  | (Optional) The root directory in which the Injectify is stored                           |
+| sshcmd  | (Optional) A custom bash script to run instead of the default                            |
 | webhook | (Optional) A [Discord](https://discordapp.com/) webhook URL                              |
 
-![Environment Variables](https://i.imgur.com/G8L6T2v.png)
+![Environment Variables](https://i.imgur.com/DgrUZtT.png)
 
 ## Adding the SSH key
-Follow the [official guide](https://docs.travis-ci.com/user/encrypting-files/) on how to install the command-line tool and add an encrypted file. Make sure you replace `$encrypted_642a931f3ecb_key` in `.travis.yml` with your generated variable
+Extract the BASE64 encoded private key, replacing all newlines with `#` and set it as the `sshkey` environment variable
 
 ## Discord integration
 If you specify the webhook URL, you'll get build status messages on your Discord server. Refer to [Intro to webhooks](https://support.discordapp.com/hc/en-us/articles/228383668-Intro-to-Webhooks) for help on how to create a webhook.
