@@ -14,7 +14,7 @@
     "pm2": "pm2 start server.config.js",
     "install-all": "npm install --unsafe-perm && cd interface/src && npm install --unsafe-perm",
     "pull": "git stash && git pull && npm run post-pull",
-    "post-pull": "pm2 stop injectify &> /dev/null; && npm run install-all && npm run build && npm run pm2"
+    "post-pull": "pm2 stop injectify &> /dev/null; npm run install-all && npm run build && npm run pm2"
   },
   "repository": {
     "type": "git",

