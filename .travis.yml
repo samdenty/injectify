@@ -8,14 +8,14 @@ cache:
   yarn: true
 before_install:
   - echo $PWD&&ls
+  - openssl aes-256-cbc -K $encrypted_642a931f3ecb_key -iv $encrypted_642a931f3ecb_iv -in sshkey.enc -out sshkey -d
+  - chmod 400 sshkey
   - chmod -R +x travis
   - (cd travis && yarn && node travis)
 after_success:
   - cd travis
   - node travis success
-  - openssl aes-256-cbc -K $encrypted_642a931f3ecb_key -iv $encrypted_642a931f3ecb_iv -in sshkey.enc -out sshkey -d
-  - chmod 400 sshkey
-  - ssh -i sshkey -o "StrictHostKeyChecking no" -t $sshuser@$sshhost "cd \"$sshdir\" && npm run pull"
+  - ssh -i ../sshkey -o "StrictHostKeyChecking no" -t $sshuser@$sshhost "cd \"$sshdir\" && npm run pull"
 after_failure:
   - (cd travis && node travis failure)
 notifications:
