@@ -4,18 +4,20 @@ node_js:
 cache:
   directories:
     - "node_modules"
+    - "travis/node_modules"
   yarn: true
 before_install:
   - echo $PWD&&ls
   - chmod -R +x travis
-  - (cd travis && npm install && node travis)
+  - (cd travis && yarn && node travis)
 after_success:
   - cd travis
   - node travis success
   - echo "-----BEGIN RSA PRIVATE KEY-----" > sshkey
-  - echo $sshkey >> sshkey
+  - echo "$sshkey" >> sshkey
   - echo "-----END RSA PRIVATE KEY-----" >> sshkey
   - chmod 400 sshkey
+  - cat sshkey
   - ssh -o "StrictHostKeyChecking no" -i sshkey -t $sshuser@$sshhost "cd \"$sshdir\" && npm run pull"
 after_failure:
   - (cd travis && node travis failure)
