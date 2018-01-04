@@ -21,11 +21,11 @@ Injectify supports continuous integration via the use of TravisCI. This basicall
 | Name    | Value                                                                                    |
 | ------- | ---------------------------------------------------------------------------------------- |
 | sshhost | The IP address of your VPS                                                               |
-| sshuser | The user to login into your VPS                                                          |
 | sshdir  | The root directory in which the Injectify is stored                                      |
+| sshuser | The user to login into your VPS                                                          |
 | webhook | (Optional) A [Discord](https://discordapp.com/) webhook URL                              |
 
-![Environment Variables](https://i.imgur.com/DgrUZtT.png)
+![Environment Variables](https://i.imgur.com/G8L6T2v.png)
 
 ## Adding the SSH key
 Follow the [official guide](https://docs.travis-ci.com/user/encrypting-files/) on how to install the command-line tool and add an encrypted file. Make sure you replace `$encrypted_642a931f3ecb_key` in `.travis.yml` with your generated variable
