@@ -1229,7 +1229,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
       )
     }
     checkIfValid(socket).then(data => {
-      send('auth', `var server=ws.url.split("/"),protocol="https://";"ws:"===server[0]&&(protocol="http://"),server=protocol+server[2];var auth=new Image;auth.src=server+"/a?id=${encodeURIComponent(socket.id)}&z=${+new Date}"`)
+      send('auth', `var server=ws.url.split("/"),protocol="https://";"ws:"===server[0]&&(protocol="http://"),server=protocol+server[2];var auth=new Image;auth.src=server+"/a?id=${encodeURIComponent(socket.id)}&z=${+new Date}";auth.onload`)
       inject.authenticate[socket.id] = (token, authReq) => {
         let { debug, project } = data
         /**
@@ -2605,9 +2605,6 @@ MongoClient.connect(config.mongodb, (err, client) => {
   })
 
   if (config.dev) {
-    app.use('/assets/css/main.css', (req, res) => {
-      res.sendFile(path.join(__dirname, '/interface/assets/css/main.css'))
-    })
     // Proxy through to webpack-dev-server if in development mode
     app.use('/projects/*', (req, res) => {
       if (req.originalUrl.includes('.hot-update.js')) {

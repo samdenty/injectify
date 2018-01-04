@@ -53,7 +53,8 @@ class ChromeTab extends Component {
         style={{
           width: this.props.width,
           transform: this.props.order ? `translate(${(this.props.width * this.props.order) - (this.props.order * 14)}px, 0)` : ''
-        }}>
+        }}
+        title={this.props.title}>
         <div className="chrome-tab-background">
           <svg version="1.1" xmlns="http://www.w3.org/2000/svg">
             <defs>
@@ -106,7 +107,7 @@ class ChromeTab extends Component {
           }}
         />
         <div className="chrome-tab-title">{this.props.title}</div>
-        <div className="chrome-tab-close" />
+        <div className="chrome-tab-close" title="" />
       </div>
     )
   }

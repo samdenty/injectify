@@ -1,5 +1,4 @@
 $drawer: 240px;
-
 @media (min-width: 620px) {
 	::-webkit-scrollbar {
 		width: 15px;
@@ -184,6 +183,7 @@ pre {
 			fill: #aaeaad;
 		}
 	}
+	// Online clients graph
 	> div:nth-child(2) {
 		box-shadow: -24px 3px 8px #2f323c;
 		z-index: 1;
@@ -202,9 +202,24 @@ pre {
 			}
 		}
 	}
-	ul li img {
-		width: 20px;
-		margin-right: 10px;
+	ul {
+		li {
+			&.active {
+				background-color: rgba(77, 97, 206, 0.7);
+				&:hover {
+					background-color: rgba(95, 118, 241, 0.7);
+				}
+				div {
+					h3 {
+						color: #f1f1f1
+					}
+				}
+			}
+			img {
+				width: 20px;
+				margin-right: 10px;
+			}
+		}
 	}
 	h3 {
 		color: #cecfe0

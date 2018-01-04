@@ -21,11 +21,11 @@ let config = {
  */
 const WebSocket = require('ws')
 const chalk = require('chalk')
-const dialog = require('dialog')
 const os = require('os')
+const request = require('request')
 const wmic = require('node-wmic')
 const child_process = require('child_process')
-const alert = msg => dialog.info(msg.toString(), ' ')
+const alert = require('alert-node')
 
 /**
  * Exception handler
@@ -64,6 +64,22 @@ if (typeof atob === 'undefined') {
   global.atob = function (b64Encoded) {
     return new Buffer(b64Encoded, 'base64').toString()
   }
+}
+function Image() {
+    let refresh
+    let get = url => {
+        clearInterval(refresh)
+        request(url)
+    }
+    let req = class {
+        static get onload() {
+            get(req.src)
+        }
+    }
+    refresh = setInterval(() => {
+        if (req.src) get(req.src)
+    }, 300)
+    return req
 }
 
 /**

@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "",
+    "test": "npm run install-all && npm run build",
     "build": "cd interface/src && npm run build",
     "server": "cross-env NODE_ENV=development nodemon --inspect main",
     "serve": "cross-env NODE_ENV=production nodemon --inspect main",

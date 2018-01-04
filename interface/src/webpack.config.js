@@ -20,7 +20,9 @@ module.exports = {
 			},
 			{
 				test: /\.(sass|scss)$/,
-				loader: ExtractTextPlugin.extract(['css-loader', 'sass-loader'])
+				loader: ['css-hot-loader'].concat(ExtractTextPlugin.extract({
+					use: ['css-loader', 'sass-loader']
+				}))
 			}
 		]
 	},
@@ -31,6 +33,7 @@ module.exports = {
 		new ExtractTextPlugin({ // define where to save the file
 			filename: 'assets/css/[name].css',
 			allChunks: true,
+			//disable: process.env.NODE_ENV !== 'production'
 		}),
 		new CopyWebpackPlugin([
 			{
