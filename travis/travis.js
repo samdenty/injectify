@@ -74,7 +74,7 @@ if (webhook) {
           description: `[Log for #${process.env.TRAVIS_BUILD_NUMBER}](https://travis-ci.org/${process.env.TRAVIS_REPO_SLUG}/builds/${process.env.TRAVIS_BUILD_ID})`,
           color: state.color,
           footer: {  
-            text: `Job ID ${process.env.TRAVIS_JOB_ID}`
+            text: `${process.env.TRAVIS_REPO_SLUG}:${process.env.TRAVIS_BRANCH} | Job ID ${process.env.TRAVIS_JOB_ID}`
           },
           timestamp: moment().format()
         }

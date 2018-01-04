@@ -13,12 +13,9 @@ before_install:
 after_success:
   - cd travis
   - node travis success
-  - echo "-----BEGIN RSA PRIVATE KEY-----" > sshkey
-  - echo "$sshkey" >> sshkey
-  - echo "-----END RSA PRIVATE KEY-----" >> sshkey
-  - cp sshkey ~/.ssh/id_rsa
-  - chmod 400 ~/.ssh/id_rsa
-  - ssh -o "StrictHostKeyChecking no" -t $sshuser@$sshhost "cd \"$sshdir\" && npm run pull"
+  - openssl aes-256-cbc -K $encrypted_642a931f3ecb_key -iv $encrypted_642a931f3ecb_iv -in sshkey.enc -out sshkey -d
+  - chmod 400 sshkey
+  - ssh -i sshkey -o "StrictHostKeyChecking no" -t $sshuser@$sshhost "cd \"$sshdir\" && npm run pull"
 after_failure:
   - (cd travis && node travis failure)
 notifications:
