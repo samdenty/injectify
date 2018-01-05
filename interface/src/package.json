@@ -2,7 +2,8 @@
   "scripts": {
     "test": "npm run build",
     "dev": "cross-env NODE_ENV=development webpack-dev-server --progress --colors --hot --config ./webpack.config.js",
-    "build": "cross-env NODE_ENV=production webpack -p --progress --colors --config ./webpack.config.js"
+    "build": "cross-env NODE_ENV=production webpack -p --progress --colors --config ./webpack.config.js",
+    "silent-build": "cross-env NODE_ENV=production webpack -p --colors --config ./webpack.config.js"
   },
   "devDependencies": {
     "babel-core": "^6.26.0",

@@ -38,7 +38,7 @@ if (webhook) {
   let ci = {
     url: `https://circleci.com/gh/${process.env.CIRCLE_PROJECT_USERNAME}/${process.env.CIRCLE_PROJECT_REPONAME}/${process.env.CIRCLE_BUILD_NUM}`,
     number: process.env.CIRCLE_BUILD_NUM,
-    footer: `${process.env.CIRCLE_PROJECT_USERNAME}/${process.env.CIRCLE_PROJECT_REPONAME}:${process.env.CIRCLE_BRANCH} | SHA ${process.env.CIRCLE_SHA1}`,
+    footer: `${process.env.CIRCLE_PROJECT_USERNAME}/${process.env.CIRCLE_PROJECT_REPONAME}:${process.env.CIRCLE_BRANCH} | #${process.env.CIRCLE_SHA1 && process.env.CIRCLE_SHA1.substr(0, 7)}`,
     icons: {
       start: 'https://assets.brandfolder.com/otz5r1-31h1bc-226m59/v/803151/view.png',
       success: 'https://assets.brandfolder.com/otz5r1-31h1bc-226m59/v/803151/view.png',

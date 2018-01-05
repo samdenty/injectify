@@ -4,8 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "yarn run install-all && yarn run build",
+    "test": "yarn run install-all && yarn run silent-build",
     "build": "cd interface/src && yarn run build",
+    "silent-build": "cd interface/src && yarn run silent-build",
     "server": "cross-env NODE_ENV=development nodemon --inspect main",
     "serve": "cross-env NODE_ENV=production nodemon --inspect main",
     "interface": "cd interface/src && yarn run dev",
