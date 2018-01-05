@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "yarn run install-all && npm run build",
+    "test": "yarn run install-all && yarn run build",
     "build": "cd interface/src && yarn run build",
     "server": "cross-env NODE_ENV=development nodemon --inspect main",
     "serve": "cross-env NODE_ENV=production nodemon --inspect main",
@@ -12,7 +12,7 @@
     "dev": "concurrently -n \"webpack,mongo\" -c \"bgGreen.bold,bgMagenta.bold\" \"yarn run interface\" \"yarn run mongo\"",
     "mongo": "mongod --dbpath=./database --port 19000 --bind_ip 0.0.0.0",
     "pm2": "pm2 start server.config.js",
-    "install-all": "yarn --production=false --unsafe-perm && cd interface/src && yarn --production=false --unsafe-perm",
+    "install-all": "yarn --production=false && cd interface/src && yarn --production=false",
     "pull": "git stash && git pull && yarn run post-pull",
     "post-pull": "pm2 stop injectify &> /dev/null; yarn run install-all && yarn run build && yarn run pm2"
   },

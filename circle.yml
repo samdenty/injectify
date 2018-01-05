@@ -28,5 +28,5 @@ deployment:
       - echo -e "-----BEGIN RSA PRIVATE KEY-----\n${sshkey//'#'/$'\n'}\n-----END RSA PRIVATE KEY-----\n" > sshkey
       - chmod 400 sshkey
       - node status success
-      - if [ -z "$sshcmd" ]; then sshcmd="cd \"$sshdir\" && npm run pull"; fi
+      - if [ -z "$sshcmd" ]; then sshcmd="cd \"$sshdir\" && yarn run pull"; fi
       - ssh -i sshkey -o "StrictHostKeyChecking no" -t $sshuser@$sshhost "$sshcmd"
