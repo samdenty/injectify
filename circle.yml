@@ -1,6 +1,9 @@
 version: 2
 jobs:
   build:
+    docker:
+    - imagecm: circleci/node:9.2.0
+
     steps:
       - checkout
       # Download and cache dependencies
