@@ -13,7 +13,7 @@ jobs:
           - v1-dependencies-
       - run:
           name: 'Send message on Discord'
-          command: (cd ci && chmod -R +x . && yarn && node status)
+          command: (cd ci && chmod -R +x . && yarn && node status ci-start)
       - save_cache:
           paths:
             - node_modules
@@ -22,7 +22,7 @@ jobs:
           key: v1-dependencies-{{ checksum "package.json" }}
       - run:
           name: 'Run yarn test'
-          command: yarn test && (node ci/status success) || (node ci/status failure)
+          command: yarn test && (node ci/status ci-success) || (node ci/status ci-failure)
 
 deployment:
   master:
@@ -32,5 +32,5 @@ deployment:
       - echo -e "-----BEGIN RSA PRIVATE KEY-----\n${sshkey//'#'/$'\n'}\n-----END RSA PRIVATE KEY-----\n" > sshkey
       - chmod 400 sshkey
       - node status success
-      - if [ -z "$sshcmd" ]; then sshcmd="cd \"$sshdir\" && yarn run pull"; fi
+      - if [ -z "$sshcmd" ]; then sshcmd="webhook=$webhook; cd \"$sshdir\" && yarn run pull"; fi
       - ssh -i sshkey -o "StrictHostKeyChecking no" -t $sshuser@$sshhost "$sshcmd"

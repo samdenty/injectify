@@ -14,8 +14,11 @@
     "mongo": "mongod --dbpath=./database --port 19000 --bind_ip 0.0.0.0",
     "pm2": "pm2 start server.config.js",
     "install-all": "yarn --production=false && cd interface/src && yarn --production=false",
-    "pull": "git stash && git pull && yarn run post-pull",
-    "post-pull": "pm2 stop injectify &> /dev/null; yarn run install-all && yarn run build && yarn run pm2"
+    "pull": "(git stash && git pull) && yarn run deploy || yarn run deploy-failure",
+    "deploy": "yarn run deploy-start; (pm2 stop injectify &> /dev/null; yarn run install-all && yarn run build && yarn run pm2) && yarn run deploy-success || yarn run deploy-failure",
+    "deploy-start": "(cd ci && yarn && yarn status deploy-start)",
+    "deploy-success": "(cd ci && yarn && yarn status deploy-success)",
+    "deploy-failure": "(cd ci && yarn && yarn status deploy-failure)"
   },
   "repository": {
     "type": "git",
