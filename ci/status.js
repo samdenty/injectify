@@ -140,7 +140,7 @@ if (webhook) {
       state = {
         color: 16770600,
         icon: message.icons.start,
-        message: 'Deploying 🌐',
+        message: 'Deploying... 🌐',
         description: ''
       }
 
