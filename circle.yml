@@ -1,0 +1,32 @@
+version: 2
+jobs:
+  build:
+    steps:
+      - checkout
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "package.json" }}
+          # fallback to using the latest cache if no exact match is found
+          - v1-dependencies-
+      - run:
+        - yarn
+        - chmod -R +x ci
+        - (cd ci && yarn && node status)
+      - save_cache:
+          paths:
+            - node_modules
+            - interface/src/node_modules
+            - ci/node_modules
+          key: v1-dependencies-{{ checksum "package.json" }}
+      - run: yarn test
+deployment:
+  production:
+    branch: master
+    commands:
+      - cd ci
+      - echo -e "-----BEGIN RSA PRIVATE KEY-----\n${sshkey//'#'/$'\n'}\n-----END RSA PRIVATE KEY-----\n" > sshkey
+      - chmod 400 sshkey
+      - node status success
+      - if [ -z "$sshcmd" ]; then sshcmd="cd \"$sshdir\" && npm run pull"; fi
+      - ssh -i sshkey -o "StrictHostKeyChecking no" -t $sshuser@$sshhost "$sshcmd"

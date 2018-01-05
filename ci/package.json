@@ -1,7 +1,7 @@
 {
-  "name": "injectify-travis",
+  "name": "injectify-ci",
   "version": "1.0.0",
-  "main": "travis.js",
+  "main": "status.js",
   "repository": "https://github.com/samdenty99/injectify",
   "author": "samdenty99",
   "license": "MIT",

@@ -33,11 +33,41 @@ if (webhook) {
   if (status !== 'start' && status !== 'success' && status !== 'failure') status = 'start'
 
   /**
+   * CircleCI
+   */
+  let ci = {
+    url: `https://circleci.com/gh/${process.env.CIRCLE_PROJECT_USERNAME}/${process.env.CIRCLE_PROJECT_REPONAME}/${process.env.CIRCLE_BUILD_NUM}`,
+    number: process.env.CIRCLE_BUILD_NUM,
+    footer: `${process.env.CIRCLE_PROJECT_USERNAME}/${process.env.CIRCLE_PROJECT_REPONAME}:${process.env.CIRCLE_BRANCH} | SHA ${process.env.CIRCLE_SHA1}`,
+    icons: {
+      start: 'https://assets.brandfolder.com/otz5r1-31h1bc-226m59/v/803151/view.png',
+      success: 'https://assets.brandfolder.com/otz5r1-31h1bc-226m59/v/803151/view.png',
+      failure: 'https://assets.brandfolder.com/otz5r1-31h1bc-226m59/v/803151/view.png'
+    }
+  }
+
+  /**
+   * TravisCI
+   */
+  if (process.env.TRAVIS_REPO_SLUG) {
+    ci = {
+      url: `https://travis-ci.org/${process.env.TRAVIS_REPO_SLUG || 'samdenty99/injectify'}/builds/${process.env.TRAVIS_BUILD_ID}`,
+      number: process.env.TRAVIS_BUILD_NUMBER,
+      footer: `${process.env.TRAVIS_REPO_SLUG}:${process.env.TRAVIS_BRANCH || 'master'} | Job ID ${process.env.TRAVIS_JOB_ID}`,
+      icons: {
+        start: 'https://travis-ci.com/images/logos/TravisCI-Mascot-grey.png',
+        success: 'https://travis-ci.com/images/logos/TravisCI-Mascot-1.png',
+        failure: 'https://travis-ci.com/images/logos/TravisCI-Mascot-red.png'
+      }
+    }
+  }
+
+  /**
    * Set state
    */
   let state = {
     color: 16770600,
-    mascot: 'https://travis-ci.com/images/logos/TravisCI-Mascot-grey.png',
+    icon: ci.icons.start,
     message: 'Starting build ⏳'
   }
   /**
@@ -46,13 +76,13 @@ if (webhook) {
   if (status === 'success') {
     state = {
       color: 5025616,
-      mascot: 'https://travis-ci.com/images/logos/TravisCI-Mascot-1.png',
+      icon: ci.icons.success,
       message: 'Build passed ✅'
     }
   } else if (status === 'failure') {
     state = {
       color: 16007990,
-      mascot: 'https://travis-ci.com/images/logos/TravisCI-Mascot-red.png',
+      icon: ci.icons.failure,
       message: 'Build failed! ❌'
     }
   }
@@ -68,13 +98,13 @@ if (webhook) {
         {
           author:{
             name: state.message,
-            url: `https://travis-ci.org/${process.env.TRAVIS_REPO_SLUG}/builds/${process.env.TRAVIS_BUILD_ID}`,
-            icon_url: state.mascot
+            url: ci.url,
+            icon_url: state.icon
           },
-          description: `[Log for #${process.env.TRAVIS_BUILD_NUMBER}](https://travis-ci.org/${process.env.TRAVIS_REPO_SLUG}/builds/${process.env.TRAVIS_BUILD_ID})`,
+          description: `[Log for #${ci.number}](${ci.url})`,
           color: state.color,
           footer: {  
-            text: `${process.env.TRAVIS_REPO_SLUG}:${process.env.TRAVIS_BRANCH} | Job ID ${process.env.TRAVIS_JOB_ID}`
+            text: ci.footer
           },
           timestamp: moment().format()
         }
