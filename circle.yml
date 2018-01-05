@@ -11,14 +11,18 @@ jobs:
           - v1-dependencies-{{ checksum "package.json" }}
           # fallback to using the latest cache if no exact match is found
           - v1-dependencies-
-      - run: (cd ci && chmod -R +x . && yarn && node status)
+      - run:
+          name: 'Send build starting message on Discord'
+          command: (cd ci && chmod -R +x . && yarn && node status)
       - save_cache:
           paths:
             - node_modules
             - interface/src/node_modules
             - ci/node_modules
           key: v1-dependencies-{{ checksum "package.json" }}
-      - run: yarn test
+      - run:
+          name: 'Run yarn test'
+          command: yarn test && (node ci/status success) || (node ci/status failure)
 deployment:
   production:
     branch: master
