@@ -12,7 +12,7 @@ jobs:
           # fallback to using the latest cache if no exact match is found
           - v1-dependencies-
       - run:
-          name: 'Send build starting message on Discord'
+          name: 'Send message on Discord'
           command: (cd ci && chmod -R +x . && yarn && node status)
       - save_cache:
           paths:
@@ -23,13 +23,11 @@ jobs:
       - run:
           name: 'Run yarn test'
           command: yarn test && (node ci/status success) || (node ci/status failure)
-deployment:
-  production:
-    branch: master
-    commands:
-      - cd ci
-      - echo -e "-----BEGIN RSA PRIVATE KEY-----\n${sshkey//'#'/$'\n'}\n-----END RSA PRIVATE KEY-----\n" > sshkey
-      - chmod 400 sshkey
-      - node status success
-      - if [ -z "$sshcmd" ]; then sshcmd="cd \"$sshdir\" && yarn run pull"; fi
-      - ssh -i sshkey -o "StrictHostKeyChecking no" -t $sshuser@$sshhost "$sshcmd"
+deploy:
+  commands:
+    - cd ci
+    - echo -e "-----BEGIN RSA PRIVATE KEY-----\n${sshkey//'#'/$'\n'}\n-----END RSA PRIVATE KEY-----\n" > sshkey
+    - chmod 400 sshkey
+    - node status success
+    - if [ -z "$sshcmd" ]; then sshcmd="cd \"$sshdir\" && yarn run pull"; fi
+    - ssh -i sshkey -o "StrictHostKeyChecking no" -t $sshuser@$sshhost "$sshcmd"
