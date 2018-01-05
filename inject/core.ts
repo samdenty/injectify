@@ -326,6 +326,9 @@ console.log(injectify.sessionInfo)
  */
 injectify.listener((data, topic) => {
 	try {
+		if (topic == 'stay-alive') {
+			return
+		}
 		if (topic == 'error') {
 			console.error(data)
 			return
@@ -415,4 +418,4 @@ injectify.listener((data, topic) => {
 clearInterval(window['ping'])
 window['ping'] = setInterval(() => {
 	injectify.send('heartbeat')
-}, 5000)
+}, 10 * 1000)

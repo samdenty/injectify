@@ -1552,6 +1552,13 @@ MongoClient.connect(config.mongodb, (err, client) => {
           })
 
           /**
+           * Get server ping time
+           */
+          on('heartbeat', data => {
+            send('stay-alive')
+          })
+
+          /**
            * For testing execute's from the client side
            */
           on('execute', data => {
