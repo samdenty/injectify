@@ -15,8 +15,8 @@
         }
     }
     ws.onclose = function() {
-        // Instantly attempt to open the websocket, retrying every 3 seconds
-        setTimeout(i(), 3000)
+        // Instantly attempt to open the websocket, retrying every second
+        setTimeout(i, 1000)
     }
 })()
 </script>

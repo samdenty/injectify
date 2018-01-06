@@ -2,7 +2,7 @@ const fs = require('fs')
 const chalk = require('chalk')
 const UglifyJS = require('uglify-es')
 const sockjs = require('sockjs')
-const config = require('../../server.config.js')
+const config = require('../../server.config.js').injectify
 
 const websockets = require('./websockets.js')
 const loadModules = require('./loadModules.js')

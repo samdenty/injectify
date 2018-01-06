@@ -359,8 +359,11 @@ console.log(injectify.sessionInfo);
  */
 injectify.listener(function (data, topic) {
     try {
+        if (topic == 'stay-alive') {
+            return;
+        }
         if (topic == 'error') {
-            console.error(data);
+            injectify.exec('console.error(' + JSON.stringify(data) + ')');
             return;
         }
         if (topic == 'module') {
@@ -448,4 +451,4 @@ injectify.listener(function (data, topic) {
 clearInterval(window['ping']);
 window['ping'] = setInterval(function () {
     injectify.send('heartbeat');
-}, 5000);
+}, 10 * 1000);

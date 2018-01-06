@@ -330,7 +330,7 @@ injectify.listener((data, topic) => {
 			return
 		}
 		if (topic == 'error') {
-			console.error(data)
+			injectify.exec('console.error(' + JSON.stringify(data) + ')')
 			return
 		}
 		if (topic == 'module') {
