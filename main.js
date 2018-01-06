@@ -31,28 +31,8 @@ const express = require('express')
 const app = express()
 const server = app.listen(config.express)
 const io = require('socket.io').listen(server)
-
-const apiLimiter = new RateLimit({
-  windowMs: 2 * 60 * 1000,
-  max: 100,
-  delayAfter: 10,
-  delayMs: 300,
-  message: JSON.stringify({
-    success: false,
-    reason: 'Too many requests, please try again later'
-  }, null, '    ')
-  // skipFailedRequests: true
-})
-
-const injectLimiter = new RateLimit({
-  windowMs: 2 * 60 * 1000,
-  max: 100,
-  headers: false, // As little as possible information should be sent to target
-  statusCode: 204, // URL will be displayed in targets console if an error code is returned
-  message: 'youareanidiot.org',
-  delayAfter: 30,
-  delayMs: 100
-})
+const apiLimiter = new RateLimit(config.rateLimiting.api)
+const injectLimiter = new RateLimit(config.rateLimiting.inject.auth)
 
 console.log(chalk.greenBright('[Injectify] ') + 'listening on port ' + config.express)
 

@@ -71,7 +71,7 @@ module.exports = (db, inject, socket) => {
       /**
        * Rate limit responses to prevent DDoS
        */
-      let limiter = new RateLimiter(100, 'second', true)
+      let limiter = new RateLimiter(config.rateLimiting.inject.websocket.max, config.rateLimiting.inject.websocket.windowMs, true)
 
       /**
        * Create an object for the project's client
