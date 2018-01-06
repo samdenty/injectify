@@ -17,7 +17,7 @@ bundle.js
 .pm2/*
 
 # Developer tool files & folders
-vscode/*
+.vscode/*
 win-unpacked
 *.log
 *.7z
