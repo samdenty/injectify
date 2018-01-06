@@ -38,31 +38,12 @@
 
 ![Screenshot of the Injectify UI](https://samdd.me/images/projects/injectify.png)
 A modern BeEF inspired framework for the 21st century.
-
-## Getting started
-1. Clone this repo
-2. [Download & install MongoDB](https://www.mongodb.com/download-center#community)
->
-> If using Windows, make sure `C:\Program Files\MongoDB\Server\3.4\bin\mongod.exe` is in your path environment variable
-3. [Create a new GitHub application](https://github.com/settings/applications/new)<br><br>
-![GitHub Applications page](https://i.imgur.com/oiuiMhR.png)
-4. Copy `server.config.example.js` to `server.config.js` and replace the GitHub client ID and secret.<br><br>
-![GitHub client ID & secret](https://i.imgur.com/JId0Wyk.png)
-![server.config.js](https://i.imgur.com/cRcES59.png)
-5. Making sure NodeJS and NPM are installed, and run the following in a terminal:
-```bash
-# install Yarn package manager
-sudo npm i -g yarn
-
-# make sure you're in the root of the Injectify repo
-yarn run install-all
-
-# this will start the MongoDB database & the webpack dev server
-yarn run dev
-
-# MAKE SURE to run this in a new terminal in the Injectify directory
-yarn run server
-```
-6. Injectify is now available over at [`http://localhost:3000`](http://localhost:3000)
+- Getting started
+  - [[Installing]]
+- Development
+  - [[Setting up the dev-server|Development-server]]
+- Builds and deployment
+  - [[CircleCI|Builds-and-deployment:-CircleCI]]
+  - [[TravisCI|Builds-and-deployment:-TravisCI]]
 
 [![Analytics](https://ga-beacon.appspot.com/UA-85426772-5/Injectify/?pixel)](https://github.com/igrigorik/ga-beacon)
