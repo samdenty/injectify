@@ -38,12 +38,13 @@
 
 ![Screenshot of the Injectify UI](https://samdd.me/images/projects/injectify.png)
 A modern BeEF inspired framework for the 21st century.
+
 - Getting started
-  - [[Installing]]
+  - [Installing](https://github.com/samdenty99/injectify/wiki/Installing)
 - Development
-  - [[Setting up the dev-server|Development-server]]
+  - [Setting up the dev-server](https://github.com/samdenty99/injectify/wiki/Development-server)
 - Builds and deployment
-  - [[CircleCI|Builds-and-deployment:-CircleCI]]
-  - [[TravisCI|Builds-and-deployment:-TravisCI]]
+  - [CircleCI](https://github.com/samdenty99/injectify/wiki/Builds-and-deployment%3A-CircleCI)
+  - [TravisCI](https://github.com/samdenty99/injectify/wiki/Builds-and-deployment%3A-TravisCI)
 
 [![Analytics](https://ga-beacon.appspot.com/UA-85426772-5/Injectify/?pixel)](https://github.com/igrigorik/ga-beacon)
