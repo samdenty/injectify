@@ -2,7 +2,7 @@
 Injectify supports continuous integration via the use of CircleCi or TravisCI. This basically means every time you create a commit to the Injectify repo (whether it be at [samdenty99/injectify](https://github.com/samdenty99/injectify) or forked on your own account), [CircleCI](https://circleci.com/) or [TravisCI](https://travis-ci.org/) will automatically:
 
 1. Clone the Injectify repo
-2. Verify `npm run test` runs without error
+2. Verify `yarn run test` runs without error
 3. If without error, it will automatically deploy over SSH to your VPS
 4. (Optionally) Send Discord webhook messages throught the different stages
 

