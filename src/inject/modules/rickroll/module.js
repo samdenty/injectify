@@ -1,5 +1,3 @@
-import { inject } from "./C:/Users/samde/AppData/Local/Microsoft/TypeScript/2.6/node_modules/@types/async";
-
 /**
  * Call the embed module with the YouTube embed
  */
