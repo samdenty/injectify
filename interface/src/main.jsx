@@ -53,6 +53,21 @@ class Injectify extends Component {
 		mounted: true,
 		loading: false,
 		dark: localStorage.getItem('dark') == 'false' ? false : true,
+		server: {
+			github: {
+				/**
+				 * No need to replace, server will replace it from server.config.js
+				 */
+				client_id: '95dfa766d1ceda2d163d'
+			},
+			discord: {
+				/**
+				 * No need to replace, server will replace it from server.config.js
+				 */
+				server: 335836376031428618,
+				channel: 377173106940182529
+			}
+		}
 	}
 
 	constructor(props) {
@@ -77,6 +92,28 @@ class Injectify extends Component {
 			}
 		}
 		this.sessionAuth()
+
+		socket.on(`server:info`, server => {
+			let { github, discord } = server
+			this.setState({
+				server: server
+			})
+			/**
+			 * Append widgetbot widget
+			 */
+			if (discord && discord.server && discord.channel) {
+				let crate = document.createElement('script')
+				crate.setAttribute('src', 'https://crate.widgetbot.io/js')
+				crate.setAttribute('server', `${discord.server}/${discord.channel}`)
+				crate.setAttribute('options', discord.options ? discord.options.toString() : '0002')
+				if (discord.beta) crate.setAttribute('beta', '')
+				crate.setAttribute('discord', '')
+				crate.setAttribute('notoast', '')
+				crate.setAttribute('defer', '')
+				crate.setAttribute('quiet', '')
+				document.body.appendChild(crate)
+			}
+		})
 
 		socket.on(`auth:github`, data => {
 			this.setState(data)
@@ -282,7 +319,7 @@ class Injectify extends Component {
 	}
 
 	signIn() {
-		window.location = "https://github.com/login/oauth/authorize?client_id=95dfa766d1ceda2d163d&state=" + encodeURIComponent(window.location.href.split("?")[0].split("#")[0]) //+ "&scope=user%20gist&redirect_url="
+		window.location = `https://github.com/login/oauth/authorize?client_id=${encodeURIComponent(this.state.server.github.client_id)}&state=${encodeURIComponent(window.location.href.split("?")[0].split("#")[0])}` // ${/*&scope=user%20gist&redirect_url=*/}
 	}
 
 	signOut() {

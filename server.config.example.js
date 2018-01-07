@@ -99,7 +99,19 @@ module.exports = {
      * Discord notifications
      */
     discord: {
-      webhook: 'INSERT_WEBHOOK_URL'
+      webhook: 'INSERT_WEBHOOK_URL',
+      /**
+       * WidgetBot discord widgets
+       * 
+       * Sign up at https://widgetbot.io, invite it to your server, make
+       * sure you enable the appropriate channel and replace the below values
+       */
+      widgetbot: {
+        server: '335836376031428618',
+        channel: '377173106940182529',
+        options: '0002',
+        beta: false
+      }
     },
 
     /**

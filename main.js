@@ -50,7 +50,8 @@ MongoClient.connect(config.mongodb, (err, client) => {
     let injectWatcher
     let state = {
       previous: '',
-      page: ''
+      page: '',
+      refresh: null
     }
     var getToken = code => {
       return new Promise((resolve, reject) => {
@@ -357,6 +358,16 @@ MongoClient.connect(config.mongodb, (err, client) => {
       })
     }
 
+    /**
+     * Send server info to client
+     */
+    socket.emit('server:info', {
+      github: {
+        client_id: config.github.client_id
+      },
+      discord: config.discord && config.discord.widgetbot
+    })
+
     socket.on('auth:github', data => {
       if (data.code) {
         // Convert the code into a user-token
@@ -378,11 +389,11 @@ MongoClient.connect(config.mongodb, (err, client) => {
             })
             if (config.debug) {
               console.log(
-              chalk.greenBright('[GitHub] ') +
-              chalk.yellowBright('authenticated user ') +
-              chalk.magentaBright(user.id) +
-              chalk.cyanBright(' (' + user.login + ')')
-            )
+                chalk.greenBright('[GitHub] ') +
+                chalk.yellowBright('authenticated user ') +
+                chalk.magentaBright(user.id) +
+                chalk.cyanBright(' (' + user.login + ')')
+              )
             }
             // Add the user to the database if they don't exist
             login(user, token, 'manual').then(() => {
@@ -521,6 +532,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
         if (project && page && pages.includes(page)) {
           state.page = page
           state.project = project
+          clearTimeout(state.refresh)
           getUser(globalToken).then(user => {
             /**
              * Fetch the user from the database
@@ -557,7 +569,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
                   /**
                    * Check
                    */
-                  setTimeout(check, 1000)
+                  state.refresh = setTimeout(check, 1000)
                 }).catch(e => {
                   // User doesn't have permission access the project
                   socket.emit('err', {
@@ -899,6 +911,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
                 renameProject(user, thisProject, data.newName).then(response => {
                   state.project = ''
                   state.page = ''
+                  clearTimeout(state.refresh)
                   socket.emit('project:switch', {
                     project: data.newName
                   })
@@ -1074,6 +1087,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
     socket.on('project:close', data => {
       state.project = ''
       state.page = ''
+      clearTimeout(state.refresh)
     })
 
     socket.on('inject:close', data => {

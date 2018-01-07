@@ -1087,7 +1087,7 @@ class PersistentDrawer extends Component {
               {tab === 4 && 
                 <ProjectConfig classes={classes} project={this.state.currentProject} loggedInUser={this.props.parentState.user} emit={this.props.emit} loading={this.loading} socket={this.props.socket} loading={this.loading} token={this.props.token} />
               }
-              <Tooltip title="New project" placement="left">
+              <Tooltip title="New project" placement="top">
                 <Button fab color="primary" aria-label="add" className={classes.newProject} onClick={this.props.newProject}>
                   <AddIcon />
                 </Button>
@@ -1102,7 +1102,7 @@ class PersistentDrawer extends Component {
                   {tab === 1 ?
                     <Configuration classes={classes} dark={parentState.dark} darkMode={darkMode.bind(this)} />
                   : this.props.children}
-                  <Tooltip title="New project" placement="left">
+                  <Tooltip title="New project" placement="top">
                     <Button fab color="primary" aria-label="add" className={classes.newProject} onClick={this.props.newProject}>
                       <AddIcon />
                     </Button>
