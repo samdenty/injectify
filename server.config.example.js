@@ -75,7 +75,7 @@ module.exports = {
          */
         websocket: {
           windowMs: 2 * 1000,
-          max: 40
+          max: 30
         }
       }
     },

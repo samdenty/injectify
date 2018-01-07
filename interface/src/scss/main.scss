@@ -99,6 +99,11 @@ app {
 					color: #fff
 				}
 			}
+			&:disabled {
+				>span {
+					opacity: 0.3;
+				}
+			}
 		}
 		li {
 			div {

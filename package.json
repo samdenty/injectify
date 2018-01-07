@@ -2,7 +2,7 @@
   "name": "injectify-server",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "main.js",
   "scripts": {
     "test": "yarn run install-all && yarn run silent-build",
     "build": "cd interface/src && yarn run build",

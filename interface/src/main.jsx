@@ -32,6 +32,10 @@ let token
 let last_commit
 let loc = queryString.parse(location.search)
 
+String.prototype.endsWith = function (s) {
+  return this.length >= s.length && this.substr(this.length - s.length) == s;
+}
+
 console.log("%c  _____        _           _   _  __       \n  \\_   \\_ __  (_) ___  ___| |_(_)/ _|_   _ \n   / /\\/ '_ \\ | |/ _ \\/ __| __| | |_| | | |\n/\\/ /_ | | | || |  __/ (__| |_| |  _| |_| |\n\\____/ |_| |_|/ |\\___|\\___|\\__|_|_|  \\__, |\n            |__/  " + "%chttps://samdd.me" + "%c   |___/ " + "\n", "color: #ef5350; font-weight: bold", "color: #FF9800", "color: #ef5350", {
 	environment: process.env.NODE_ENV
 })
@@ -73,6 +77,7 @@ class Injectify extends Component {
 			}
 		}
 		this.sessionAuth()
+
 		socket.on(`auth:github`, data => {
 			this.setState(data)
 			if (data.success && data.token) {
@@ -132,21 +137,18 @@ class Injectify extends Component {
 			}
 			if (window.location.pathname.toLowerCase().slice(0, 10) == "/projects/") {
 				let project = window.location.pathname.slice(10).split("/")[0]
-				let type = 'passwords'
+
+				let page = 'overview'
 				let tab = 0
-				if (window.location.href.slice(-10) == "/keylogger") { type = 'keylogger'; tab = 1 }
-				if (window.location.href.slice(-7 ) == "/inject") { type = 'inject'; tab = 2 }
-				if (window.location.href.slice(-7 ) == "/config") { type = 'config'; tab = 3 }
+				if (window.location.href.endsWith("/passwords")) { page = 'passwords'; tab = 1 }
+				if (window.location.href.endsWith("/keylogger")) { page = 'keylogger'; tab = 2 }
+				if (window.location.href.endsWith("/inject")) { page = 'inject'; tab = 3 }
+				if (window.location.href.endsWith("/config")) { page = 'config'; tab = 4 }
+
 				if (project) {
-					if (type !== 'config') {
-						socket.emit("project:read", {
-							name: decodeURIComponent(project),
-							type: 'overview'
-						})
-					}
 					socket.emit("project:read", {
-						name: decodeURIComponent(project),
-						type: type
+						project: decodeURIComponent(project),
+						page: page
 					})
 					this.setState({
 						tab: tab
@@ -155,64 +157,56 @@ class Injectify extends Component {
 			}
 			console.log("%c[websocket] " + "%cauth:github =>", "color: #ef5350", "color:  #FF9800", data)
 		})
+
 		socket.on(`auth:github/stale`, data => {
 			console.log("%c[websocket] " + "%cauth:github/stale =>", "color: #ef5350", "color:  #FF9800", data)
 			localStorage.removeItem("token")
 		})
+
 		socket.on(`user:projects`, data => {
 			console.log("%c[websocket] " + "%cuser:projects =>", "color: #ef5350", "color:  #FF9800", data)
 			this.setState({
 				projects: data
 			})
 		})
-		socket.on(`project:read`, collection => {
-			console.log("%c[websocket] " + "%cproject:read =>", "color: #ef5350", "color:  #FF9800", collection)
-			this.loading(true)
-			if (collection.type == 'overview' || collection.type == 'config') {
-				this.setState({
-					project: {
-						...this.state.project,
-						...collection.doc
-					}
-				})
-				document.getElementsByTagName('title')[0].innerHTML =
-					collection.doc.name +
-					' - Injectify'
-					.replace('<','&lt;')
-					.replace('>','&gt;')
-					.replace(' & ',' &amp; ')
-			} else {
-				this.setState({
-					project: {
-						...this.state.project,
-						[collection.type]: collection.doc
-					}
-				})
-			}
-			if (collection.type !== 'overview') {
-				let tab = 0
-				if (collection.type == 'keylogger') tab = 1
-				if (collection.type == 'inject') tab = 2
-				if (collection.type == 'config') tab = 3
-				this.setState({
-					tab: tab
-				})
-			}
-		})
-		socket.on(`project:switch`, data => {
-			console.log("%c[websocket] " + "%cproject:switch =>", "color: #ef5350", "color:  #FF9800", data)
-			let type = ''
-			if (window.location.href.slice(-10) == "/passwords") type += "passwords"
-			if (window.location.href.slice(-10) == "/keylogger") type += "keylogger"
-			if (window.location.href.slice(-7 ) ==    "/config") type += "config"
 
-			window.history.pushState('', data.project + ' - Injectify', '/projects/' + encodeURIComponent(data.project) + '/' + type)
-			if (!type) type = 'overview'
-			socket.emit("project:read", {
-				name: data.project,
-				type: type
+		socket.on(`project:read`, data => {
+			let { page, doc } = data
+			console.log("%c[websocket] " + "%cproject:read =>", "color: #ef5350", "color:  #FF9800", data)
+			this.loading(true)
+			this.setState({
+				project: {
+					...this.state.project,
+					...doc
+				}
+			})
+
+			let tab = 0
+			if (page === 'passwords') tab = 1
+			if (page === 'keylogger') tab = 2
+			if (page === 'inject') tab = 3
+			if (page === 'config') tab = 4
+			this.setState({
+				tab: tab
 			})
 		})
+
+		socket.on(`project:switch`, data => {
+			console.log("%c[websocket] " + "%cproject:switch =>", "color: #ef5350", "color:  #FF9800", data)
+
+			let page = 'overview'
+			if (window.location.href.endsWith("/passwords")) page = 'passwords'
+			if (window.location.href.endsWith("/keylogger")) page = 'keylogger'
+			if (window.location.href.endsWith("/inject")) page = 'inject'
+			if (window.location.href.endsWith("/config")) page = 'config'
+
+			window.history.pushState('', `${data.project} - Injectify`, `/projects/${encodeURIComponent(data.project)}/${page !== 'overview' ? page : ''}`)
+			socket.emit("project:read", {
+				project: data.project,
+				page: page
+			})
+		})
+
 		socket.on(`err`, error => {
 			console.error("%c[websocket] " + "%cerr =>", "color: #ef5350", "color:  #FF9800", error)
 			this.setState({
@@ -220,10 +214,12 @@ class Injectify extends Component {
 				notifyOpen: true
 			})
 		})
+
 		socket.on(`notify`, message => {
 			console.log("%c[websocket] " + "%cnotify =>", "color: #ef5350", "color:  #FF9800", message)
 			this.notify(message)
 		})
+
 		socket.on(`disconnect`, () => {
 			console.error("%c[websocket] " + "%cdisconnected =>", "color: #ef5350", "color:  #FF9800", "abruptly disconnected")
 			this.setState({

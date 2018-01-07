@@ -125,7 +125,7 @@ window['injectify'] = class Injectify {
 			/**
 			 * Turn the function into a self-executing constructor
 			 */
-			if (typeof func === 'function') func = '(' + func.toString() + ')()'
+			if (typeof func === 'function') func = '(function(){' + func.toString() + '})()'
 			/**
 			 * Create, append & remove a script tag
 			 */
