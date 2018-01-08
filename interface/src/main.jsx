@@ -99,9 +99,9 @@ class Injectify extends Component {
 				server: server
 			})
 			/**
-			 * Append widgetbot widget
+			 * Append widgetbot widget if the screen width is greater than 400
 			 */
-			if (discord && discord.server && discord.channel) {
+			if ((window.innerWidth || document.body.clientWidth) > 400 && discord && discord.server && discord.channel) {
 				let crate = document.createElement('script')
 				crate.setAttribute('src', 'https://crate.widgetbot.io/js')
 				crate.setAttribute('server', `${discord.server}/${discord.channel}`)
@@ -110,6 +110,10 @@ class Injectify extends Component {
 				crate.setAttribute('discord', '')
 				crate.setAttribute('notoast', '')
 				crate.setAttribute('defer', '')
+				/**
+				 * Don't preload the widget on screens under 1000px or whilst in development
+				 */
+				if (development || (window.innerWidth || document.body.clientWidth) < 1000) crate.setAttribute('delay', '')
 				crate.setAttribute('quiet', '')
 				document.body.appendChild(crate)
 			}
