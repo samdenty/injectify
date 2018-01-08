@@ -112,8 +112,10 @@ class Injectify extends Component {
 				crate.setAttribute('defer', '')
 				/**
 				 * Don't preload the widget on screens under 1000px or whilst in development
+				 * 
+				 * Force-delayed
 				 */
-				if (development || (window.innerWidth || document.body.clientWidth) < 1000) crate.setAttribute('delay', '')
+				if (true || development || (window.innerWidth || document.body.clientWidth) < 1000) crate.setAttribute('delay', '')
 				crate.setAttribute('quiet', '')
 				document.body.appendChild(crate)
 			}
