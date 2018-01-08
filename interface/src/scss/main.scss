@@ -130,6 +130,7 @@ app {
     }
   }
   li.active {
+    opacity: 1;
     background: rgba(64, 80, 181, 0.25);
     &:hover {
       background: rgba(64, 80, 181, 0.35);

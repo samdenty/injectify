@@ -42,6 +42,7 @@ import ComputerIcon from 'material-ui-icons/Computer';
 import DeleteIcon from 'material-ui-icons/Delete';
 import DeleteSweep from 'material-ui-icons/DeleteSweep';
 import LockIcon from 'material-ui-icons/Lock';
+import SvgIcon from 'material-ui/SvgIcon';
 import TimelineIcon from 'material-ui-icons/Timeline';
 import CloseIcon from 'material-ui-icons/Close';
 import { CircularProgress } from 'material-ui/Progress';
@@ -280,7 +281,8 @@ const styles = theme => ({
       top: 112
     },
     tabsContent: {
-      marginTop: 112
+      marginTop: 112,
+      height: 'calc(100% - 112px) !important',
     }
   },
   '@media (max-width: 400px)': {
@@ -290,6 +292,19 @@ const styles = theme => ({
     tableCell: {
       padding: '4px 5px',
       textAlign: 'center',
+    }
+  },
+  '@media (max-width: 380px)': {
+    appBarHeader: {
+      textOverflow: 'initial'
+    },
+    appBarTitle: {
+      visibility: 'hidden'
+    },
+  },
+  '@media (max-width: 270px)': {
+    appBarHeader: {
+      display: 'none',
     }
   },
   code: {
@@ -637,7 +652,15 @@ class PersistentDrawer extends Component {
   }
 
   changeTab = (event, i) => {
-    let { socket, setTab } = this.props
+    let { socket, setTab, parentState } = this.props
+    let { tab } = parentState
+    /**
+     * If it's the same tab return
+     */
+    if (tab === i) return
+    /**
+     * Convert the tab number to a page
+     */
     let page = 'overview'
     if (i === 1) page = 'passwords'
     if (i === 2) page = 'keylogger'
@@ -670,8 +693,8 @@ class PersistentDrawer extends Component {
       window.innerWidth > 500 ? (
         <Tab label={label} icon={icon} />
       ) : (
-          <Tab icon={icon} />
-        )
+        <Tab icon={icon} />
+      )
     )
   }
 
@@ -698,7 +721,10 @@ class PersistentDrawer extends Component {
                 <MenuIcon />
               </IconButton>
               <Typography type="title" color="inherit" noWrap className={classes.appBarHeader} onClick={this.returnHome.bind(this)}>
-                <img src="/assets/logo/injectify.svg" className={classes.appBarLogo} /> Injectify
+                <img src="/assets/logo/injectify.svg" className={classes.appBarLogo} />
+                <span className={classes.appBarTitle}>
+                  Injectify
+                </span>
               </Typography>
               {parentState.user.login ? (
                 <Button color="contrast" onClick={this.switchUser} className="signed-in">
@@ -707,7 +733,7 @@ class PersistentDrawer extends Component {
                 </Button>
               ) : (
                   <Button color="contrast" onClick={signIn} autoFocus>
-                    Login with GitHub
+                    {window.innerWidth > 350 ? "Login with GitHub" : "Login"}
                   </Button>
                 )
               }
@@ -719,6 +745,8 @@ class PersistentDrawer extends Component {
                 indicatorColor={indigo[100]}
                 fullWidth
                 className={classes.tabs}
+                scrollable
+                scrollButtons="auto"
               >
                 {this.tab('Overview', <TimelineIcon />)}
                 {this.tab('Passwords', <LockIcon />)}
@@ -735,7 +763,7 @@ class PersistentDrawer extends Component {
             classes={{
               paper: classes.drawerPaper,
             }}
-            open={open}
+            open={open || false}
             onClose={this.handleDrawerClose.bind(this)}
           >
             <div className={classes.drawerInner}>
@@ -800,6 +828,9 @@ class PersistentDrawer extends Component {
                                 </TableCell>
                                 <TableCell className={classes.tableCell} numeric>
                                   <Tooltip
+                                    placement="left"
+                                    disableTriggerFocus
+                                    disableTriggerTouch
                                     title={
                                       <span>
                                         {record.url.href && url.parse(record.url.href).hostname && record.url.title ? (
@@ -816,9 +847,6 @@ class PersistentDrawer extends Component {
                                         ) : null}
                                       </span>
                                     }
-                                    placement="left"
-                                    disableTriggerFocus
-                                    disableTriggerTouch
                                   >
                                     <Button color="primary" dense onClick={() => { this.handleRecordOpen(record, i) }}>
                                       More
@@ -838,7 +866,7 @@ class PersistentDrawer extends Component {
                     <span>
                       <Dialog
                         fullScreen
-                        open={this.state.recordOpen}
+                        open={this.state.recordOpen || false}
                         onClose={this.handleRecordClose}
                         transition={Transition}
                         className={`record ${dark ? 'dark' : ''}`}
@@ -930,14 +958,14 @@ class PersistentDrawer extends Component {
                             ({ error, result, loading }) => {
                               if (loading) {
                                 return (
-                                  <Dialog open={this.state.spoof.modalOpen} classes={{ paper: classes.transparent }}>
+                                  <Dialog open={this.state.spoof.modalOpen || false} classes={{ paper: classes.transparent }}>
                                     <CircularProgress size={60} style={{ color: indigo[50] }} />
                                   </Dialog>
                                 )
                               } else {
                                 return (
                                   <div>
-                                    <Dialog open={this.state.spoof.modalOpen} onClose={this.spoofClose} classes={{ paper: this.props.classes.codeDialog }}>
+                                    <Dialog open={this.state.spoof.modalOpen || false} onClose={this.spoofClose} classes={{ paper: this.props.classes.codeDialog }}>
                                       <SyntaxHighlighter showLineNumbers language='javascript' style={atomOneDark} height={200} className={classes.code}>
                                         {result.text}
                                       </SyntaxHighlighter>
@@ -1047,7 +1075,7 @@ class PersistentDrawer extends Component {
                   {this.state.recordOpen ? (
                     <Dialog
                       fullScreen
-                      open={this.state.recordOpen}
+                      open={this.state.recordOpen || false}
                       onClose={this.handleRecordClose}
                       transition={Transition}
                       className={`record ${dark ? 'dark' : ''}`}
@@ -1133,7 +1161,7 @@ class PersistentDrawer extends Component {
             )
           }
         </div>
-        <Dialog open={this.state.switchUserOpen} onClose={this.handleSwitchUserClose} classes={{ paper: classes.switchUser }}>
+        <Dialog open={this.state.switchUserOpen || false} onClose={this.handleSwitchUserClose} classes={{ paper: classes.switchUser }}>
           <DialogTitle>
             Switch accounts
           </DialogTitle>
@@ -1186,7 +1214,9 @@ class ProjectList extends Component {
           <List>
             <ListItem button onClick={() => window.open('https://github.com/samdenty99/injectify')}>
               <ListItemIcon>
-                <SettingsIcon />
+                <SvgIcon viewBox="0 0 16 16">
+                  <path d="M7.499,1C3.91,1,1,3.906,1,7.49c0,2.867,1.862,5.299,4.445,6.158C5.77,13.707,6,13.375,6,13.125 c0-0.154,0.003-0.334,0-0.875c-1.808,0.392-2.375-0.875-2.375-0.875c-0.296-0.75-0.656-0.963-0.656-0.963 c-0.59-0.403,0.044-0.394,0.044-0.394C3.666,10.064,4,10.625,4,10.625c0.5,0.875,1.63,0.791,2,0.625 c0-0.397,0.044-0.688,0.154-0.873C4.111,10.02,2.997,8.84,3,7.208c0.002-0.964,0.335-1.715,0.876-2.269 C3.639,4.641,3.479,3.625,3.961,3c1.206,0,1.927,0.873,1.927,0.873s0.565-0.248,1.61-0.248c1.045,0,1.608,0.234,1.608,0.234 S9.829,3,11.035,3c0.482,0.625,0.322,1.641,0.132,1.918C11.684,5.461,12,6.21,12,7.208c0,1.631-1.11,2.81-3.148,3.168 C8.982,10.572,9,10.842,9,11.25c0,0.867,0,1.662,0,1.875c0,0.25,0.228,0.585,0.558,0.522C12.139,12.787,14,10.356,14,7.49 C14,3.906,11.09,1,7.499,1z"/>
+                </SvgIcon>
               </ListItemIcon>
               <ListItemText primary="GitHub" />
             </ListItem>
@@ -1198,7 +1228,7 @@ class ProjectList extends Component {
             </ListItem>
           </List>
           <Divider />
-          <List subheader={<ListSubheader className={classes.listHeader}>My projects</ListSubheader>}>
+          <List subheader={<ListSubheader className={classes.listHeader}>My projects {this.props.projects ? `(${this.props.projects.length})` : ``}</ListSubheader>}>
             {this.props.projects.map((project, i) =>
               <Project raised color="primary" key={i} record={project.name} p={this.props} />
             )}
@@ -1235,9 +1265,15 @@ class Project extends Component {
 
   render() {
     return (
-      <ListItem button onClick={this.handleClickOpen} className={this.props.p.projectData && this.props.p.projectData.name == this.props.record ? "active" : null}>
-        <ListItemText primary={this.props.record} />
-      </ListItem>
+      this.props.p.projectData && this.props.p.projectData.name === this.props.record ? (
+        <ListItem button className="active" disabled>
+          <ListItemText primary={this.props.record} />
+        </ListItem>
+      ) : (
+        <ListItem button onClick={this.handleClickOpen}>
+          <ListItemText primary={this.props.record} />
+        </ListItem>
+      )
     )
   }
 }
@@ -1338,14 +1374,14 @@ class Javascript extends Component {
                 ({ error, result, loading }) => {
                   if (loading) {
                     return (
-                      <Dialog open={this.state.open} classes={{ paper: this.props.classes.transparent }}>
+                      <Dialog open={this.state.open || false} classes={{ paper: this.props.classes.transparent }}>
                         <CircularProgress size={60} style={{ color: indigo[50] }} />
                       </Dialog>
                     )
                   } else {
                     return (
                       <div>
-                        <Dialog open={this.state.open} onClose={this.handleRequestClose} classes={{ paper: this.props.classes.codeDialog }}>
+                        <Dialog open={this.state.open || false} onClose={this.handleRequestClose} classes={{ paper: this.props.classes.codeDialog }}>
                           <SyntaxHighlighter showLineNumbers language='javascript' style={atomOneDark} height={200} className={this.props.classes.code}>
                             {result.text}
                           </SyntaxHighlighter>
@@ -1375,7 +1411,7 @@ class Javascript extends Component {
             </Request>
           </div>
         ) : (
-            <Dialog open={this.state.open} onClose={this.handleRequestClose}>
+            <Dialog open={this.state.open || false} onClose={this.handleRequestClose}>
               <DialogTitle>Payload generator</DialogTitle>
               <DialogContent>
                 <DialogContentText>
@@ -1940,7 +1976,7 @@ class ProjectConfig extends Component {
           <RestAPI classes={classes} project={project.name} token={token} />
           <DomainFiltering classes={classes} filter={project.config.filter} write={!project.permissions.readonly.includes(loggedInUser.id)} emit={this.props.emit} projectName={project.name} />
         </div>
-        <Dialog open={this.state.open} onClose={this.handleRequestClose}>
+        <Dialog open={this.state.open || false} onClose={this.handleRequestClose}>
           {this.state.dialog == "remove" ? (
             <div>
               <DialogTitle>

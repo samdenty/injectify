@@ -400,7 +400,7 @@ class Injectify extends Component {
 								)}
 						</PersistentDrawer>
 						: ''}
-					<Dialog open={this.state.open} onClose={this.handleRequestClose}>
+					<Dialog open={this.state.open || false} onClose={this.handleRequestClose}>
 						<DialogTitle>New project</DialogTitle>
 						<DialogContent>
 							<DialogContentText>
@@ -430,13 +430,13 @@ class Injectify extends Component {
 							</Button>
 						</DialogActions>
 					</Dialog>
-					<Agree open={this.state.agreeOpen} />
+					<Agree open={this.state.agreeOpen || false} />
 					<Snackbar
 						anchorOrigin={{
 							vertical: 'bottom',
 							horizontal: 'left',
 						}}
-						open={this.state.notifyOpen}
+						open={this.state.notifyOpen || false}
 						autoHideDuration={this.state.notify.id ? 100000 : 6000}
 						onClose={this.handleNotifyClose}
 						SnackbarContentProps={{
@@ -488,7 +488,7 @@ class Agree extends Component {
 	render() {
 		if (localStorage.getItem("agree") != "true") {
 			return (
-				<Dialog open={this.props.open}>
+				<Dialog open={this.props.open || false}>
 					<DialogTitle>{"Terms and Conditions"}</DialogTitle>
 					<DialogContent>
 						<DialogContentText>
