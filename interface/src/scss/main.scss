@@ -1,10 +1,10 @@
 $drawer: 240px;
 @media (min-width: 620px) {
-  ::-webkit-scrollbar {
+   ::-webkit-scrollbar {
     width: 15px;
     background: #FAFAFA;
   }
-  ::-webkit-scrollbar-thumb {
+   ::-webkit-scrollbar-thumb {
     background-color: #9a9898;
     border: 2px solid #FAFAFA;
     border-top: 4px solid #FAFAFA;
@@ -16,12 +16,12 @@ $drawer: 240px;
       background-color: #747272;
     }
   }
-  ::-webkit-scrollbar-button {
+   ::-webkit-scrollbar-button {
     display: none;
     width: 0;
     height: 0
   }
-  ::-webkit-scrollbar-corner {
+   ::-webkit-scrollbar-corner {
     background-color: transparent
   }
   app.dark {
@@ -42,10 +42,10 @@ $drawer: 240px;
         }
       }
     }
-    ::-webkit-scrollbar {
+     ::-webkit-scrollbar {
       background: #424242;
     }
-    ::-webkit-scrollbar-thumb {
+     ::-webkit-scrollbar-thumb {
       background-color: #696767;
       border: 2px solid #424242;
       border-top: 4px solid #424242;
@@ -57,12 +57,12 @@ $drawer: 240px;
         background-color: #5a5a5a;
       }
     }
-    ::-webkit-scrollbar-button {
+     ::-webkit-scrollbar-button {
       display: none;
       width: 0;
       height: 0
     }
-    ::-webkit-scrollbar-corner {
+     ::-webkit-scrollbar-corner {
       background-color: transparent
     }
   }
@@ -158,10 +158,10 @@ pre {
       background-color: #353941;
     }
   }
-  ::selection {
+   ::selection {
     background: #4d75c5;
   }
-  ::-moz-selection {
+   ::-moz-selection {
     background: #4d75c5;
   }
   code:nth-child(1) {
@@ -227,10 +227,10 @@ pre {
   h3 {
     color: #cecfe0
   }
-  ::-webkit-scrollbar {
+   ::-webkit-scrollbar {
     background: #2f323c !important;
   }
-  ::-webkit-scrollbar-thumb {
+   ::-webkit-scrollbar-thumb {
     background-color: #4d525c !important;
     border: 2px solid #2f323c !important;
     border-top: 4px solid #2f323c !important;
@@ -387,8 +387,7 @@ pre {
         background: #e25c4b;
       }
     }
-  }
-  // .react-monaco-editor-container {
+  } // .react-monaco-editor-container {
   // }
 }
 
@@ -402,10 +401,10 @@ pre {
     overflow-x: scroll;
   }
   &.dark {
-    ::-webkit-scrollbar {
+     ::-webkit-scrollbar {
       background: #272822 !important;
     }
-    ::-webkit-scrollbar-thumb {
+     ::-webkit-scrollbar-thumb {
       background-color: #676767 !important;
       border: 2px solid #272822 !important;
       border-top: 4px solid #272822 !important;
@@ -419,9 +418,12 @@ pre {
     }
   }
 }
+
+
 /**
  * Crate
  */
+
 .crate.widgetbot.io {
   &.WidgetBot__pop .WidgetBot__toggle {
     transition: background-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms, right 0.3s ease !important;
@@ -450,7 +452,6 @@ pre {
     right: 15px !important;
   }
 }
-
 
 @-moz-keyframes chrome-tab-just-added {
   to {

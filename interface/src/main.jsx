@@ -33,7 +33,7 @@ let last_commit
 let loc = queryString.parse(location.search)
 
 String.prototype.endsWith = function (s) {
-  return this.length >= s.length && this.substr(this.length - s.length) == s;
+	return this.length >= s.length && this.substr(this.length - s.length) == s;
 }
 
 console.log("%c  _____        _           _   _  __       \n  \\_   \\_ __  (_) ___  ___| |_(_)/ _|_   _ \n   / /\\/ '_ \\ | |/ _ \\/ __| __| | |_| | | |\n/\\/ /_ | | | || |  __/ (__| |_| |  _| |_| |\n\\____/ |_| |_|/ |\\___|\\___|\\__|_|_|  \\__, |\n            |__/  " + "%chttps://samdd.me" + "%c   |___/ " + "\n", "color: #ef5350; font-weight: bold", "color: #FF9800", "color: #ef5350", {
@@ -81,14 +81,14 @@ class Injectify extends Component {
 		window.addEventListener('resize', this.updateWindowDimensions)
 		if (loc.token) {
 			localStorage.setItem("token", loc.token)
-			window.history.pushState("","", "./")
+			window.history.pushState("", "", "./")
 		}
 		if (loc.code) {
 			if (loc.state && url.parse(loc.state).hostname && window.location.hostname !== url.parse(loc.state).hostname) {
 				window.location = window.location.href.replace(window.location.origin, url.parse(loc.state).protocol + "//" + url.parse(loc.state).host)
 			} else {
 				socket.emit("auth:github", loc)
-				window.history.pushState("","", "./")
+				window.history.pushState("", "", "./")
 			}
 		}
 		this.sessionAuth()
@@ -128,7 +128,7 @@ class Injectify extends Component {
 					accounts = [
 						{
 							token: data.token,
-							user : {
+							user: {
 								login: data.user.login,
 								id: data.user.id,
 							}
@@ -137,13 +137,13 @@ class Injectify extends Component {
 				} else {
 					try {
 						accounts = JSON.parse(accounts)
-					} catch(e) {
+					} catch (e) {
 						accounts = [
 							{
 								token: data.token,
-								user : {
+								user: {
 									login: data.user.login,
-									id	 : data.user.id,
+									id: data.user.id,
 								}
 							}
 						]
@@ -155,7 +155,7 @@ class Injectify extends Component {
 					if (replaceIndex == false) {
 						accounts[replaceIndex] = {
 							token: data.token,
-							user : {
+							user: {
 								login: data.user.login,
 								id: data.user.id,
 							}
@@ -163,7 +163,7 @@ class Injectify extends Component {
 					} else {
 						accounts.push({
 							token: data.token,
-							user : {
+							user: {
 								login: data.user.login,
 								id: data.user.id,
 							}
@@ -265,9 +265,9 @@ class Injectify extends Component {
 			console.error("%c[websocket] " + "%cdisconnected =>", "color: #ef5350", "color:  #FF9800", "abruptly disconnected")
 			this.setState({
 				notify: {
-					title	: "Connectivity issues",
-					message	: "Disconnected from server",
-					id		: "reconnect"
+					title: "Connectivity issues",
+					message: "Disconnected from server",
+					id: "reconnect"
 				},
 				notifyOpen: true
 			})
@@ -277,7 +277,7 @@ class Injectify extends Component {
 	componentWillUnmount() {
 		window.removeEventListener('resize', this.updateWindowDimensions);
 	}
-	
+
 	updateWindowDimensions() {
 		this.setState({ width: window.innerWidth, height: window.innerHeight });
 	}
@@ -299,7 +299,7 @@ class Injectify extends Component {
 
 	handleRequestNewProject = () => {
 		let project = document.getElementById("newProject").value
-		if(project.length !== 0) {
+		if (project.length !== 0) {
 			if (project) {
 				socket.emit("project:create", {
 					name: project
@@ -343,7 +343,7 @@ class Injectify extends Component {
 			return true
 		}
 	}
-	
+
 	loading = value => {
 		this.setState({
 			loading: value
@@ -360,27 +360,27 @@ class Injectify extends Component {
 		return (
 			<MuiThemeProvider theme={createMuiTheme({
 				palette: {
-				  type: this.state.dark ? 'dark' : 'light',
-				  primary: this.state.dark ? grey : indigo,
+					type: this.state.dark ? 'dark' : 'light',
+					primary: this.state.dark ? grey : indigo,
 				},
-			  })}>
+			})}>
 				<app className={`main ${this.state.dark ? 'dark' : ''}`}>
-			  		{this.state.mounted ?
+					{this.state.mounted ?
 						<PersistentDrawer
-						parentState={this.state}
-						signIn={this.signIn.bind(this)}
-						signOut={this.signOut.bind(this)}
-						socket={socket}
-						emit={(a, b) => socket.emit(a, b)}
-						token={token}
-						newProject={this.handleClickOpen.bind(this)}
-						notify={this.notify.bind(this)}
-						ref={instance => { this.main = instance }}
-						setTab={tab => this.setState({ tab: tab })}
-						setLoading={this.loading.bind(this)}
-						loading={this.state.loading}
-						darkMode={this.darkMode.bind(this)}
-						remount={() => { this.setState({ mounted: false }); setTimeout(() => this.setState({ mounted: true }), 0) }}
+							parentState={this.state}
+							signIn={this.signIn.bind(this)}
+							signOut={this.signOut.bind(this)}
+							socket={socket}
+							emit={(a, b) => socket.emit(a, b)}
+							token={token}
+							newProject={this.handleClickOpen.bind(this)}
+							notify={this.notify.bind(this)}
+							ref={instance => { this.main = instance }}
+							setTab={tab => this.setState({ tab: tab })}
+							setLoading={this.loading.bind(this)}
+							loading={this.state.loading}
+							darkMode={this.darkMode.bind(this)}
+							remount={() => { this.setState({ mounted: false }); setTimeout(() => this.setState({ mounted: true }), 0) }}
 						>
 							{this.state.user.login ? (
 								<div>
@@ -394,12 +394,12 @@ class Injectify extends Component {
 									<Button onClick={this.handleClickOpen}>New project</Button>
 								</div>
 							) : (
-								<div>
-									This software is still in development! Please login to continue
+									<div>
+										This software is still in development! Please login to continue
 								</div>
-							)}
+								)}
 						</PersistentDrawer>
-					: ''}
+						: ''}
 					<Dialog open={this.state.open} onClose={this.handleRequestClose}>
 						<DialogTitle>New project</DialogTitle>
 						<DialogContent>
@@ -442,7 +442,7 @@ class Injectify extends Component {
 						SnackbarContentProps={{
 							'aria-describedby': 'message-id',
 						}}
-						message={<span id="message-id"><b>{this.state.notify.title}</b><br/>{this.state.notify.message}</span>}
+						message={<span id="message-id"><b>{this.state.notify.title}</b><br />{this.state.notify.message}</span>}
 						action={[
 							this.state.notify.id == "reconnect" ? (
 								<Button key="reconnect" color="accent" dense onClick={() => { location.reload() }}>
@@ -460,10 +460,10 @@ class Injectify extends Component {
 								color="inherit"
 								onClick={this.handleNotifyClose}
 							>
-							<CloseIcon />
+								<CloseIcon />
 							</IconButton>,
 						]}
-						/>
+					/>
 				</app>
 			</MuiThemeProvider>
 		)

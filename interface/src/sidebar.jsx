@@ -8,7 +8,7 @@ import Chip from 'material-ui/Chip';
 import classNames from 'classnames';
 import Drawer from 'material-ui/Drawer';
 import AppBar from 'material-ui/AppBar';
-import {LineChart} from 'react-easy-chart';
+import { LineChart } from 'react-easy-chart';
 import Toolbar from 'material-ui/Toolbar';
 import List, { ListItem, ListItemAvatar, ListItemIcon, ListItemText } from 'material-ui/List';
 import { MenuItem } from 'material-ui/Menu';
@@ -47,17 +47,17 @@ import CloseIcon from 'material-ui-icons/Close';
 import { CircularProgress } from 'material-ui/Progress';
 import Slide from 'material-ui/transitions/Slide';
 import ReactJson from 'react-json-view';
-import {CopyToClipboard} from 'react-copy-to-clipboard';
+import { CopyToClipboard } from 'react-copy-to-clipboard';
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import Card, { CardActions, CardContent } from 'material-ui/Card';
 import { atomOneDark } from 'react-syntax-highlighter/styles/hljs';
 import { indigo, red } from 'material-ui/colors';
 import Switch from 'material-ui/Switch';
 import Dialog, {
-	DialogActions,
-	DialogContent,
-	DialogContentText,
-	DialogTitle,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
 } from 'material-ui/Dialog';
 import Table, { TableBody, TableCell, TableHead, TableRow } from 'material-ui/Table';
 import ChromeTabs from './components/ChromeTabs';
@@ -75,20 +75,20 @@ String.prototype.endsWith = function (s) {
 
 function escapeHTML(unsafe) {
   return unsafe
-       .replace(/&/g, "&amp;")
-       .replace(/</g, "&lt;")
-       .replace(/>/g, "&gt;")
-       .replace(/"/g, "&quot;")
-       .replace(/'/g, "&#039;");
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
 
 function unescapeHTML(unsafe) {
   return unsafe
-       .replace(/&amp;/g, "&")
-       .replace(/&lt;/g, "<")
-       .replace(/&gt;/g, ">")
-       .replace(/&quot;/g, "\"")
-       .replace(/&#039;/g, "'");
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, "\"")
+    .replace(/&#039;/g, "'");
 }
 
 const styles = theme => ({
@@ -117,7 +117,7 @@ const styles = theme => ({
   noshadow: {
     boxShadow: 'none',
   },
-  loading : {
+  loading: {
     top: 64,
     width: '100%',
     position: 'absolute',
@@ -385,7 +385,7 @@ const styles = theme => ({
   darkButton: {
     backgroundColor: 'rgba(0, 0, 0, 0.09)',
     '&:hover': {
-      backgroundColor: 'rgba(0, 0, 0, 0.15)'    
+      backgroundColor: 'rgba(0, 0, 0, 0.15)'
     },
   },
   permissionGroup: {
@@ -446,7 +446,7 @@ class PersistentDrawer extends Component {
 
     if (nextProps.parentState.project !== this.props.parentState.project) {
       this.loading(false)
-      this.setState({ currentProject: nextProps.parentState.project})
+      this.setState({ currentProject: nextProps.parentState.project })
     }
   }
 
@@ -463,7 +463,7 @@ class PersistentDrawer extends Component {
     let { socket, token, parentState } = this.props
 
     socket.on(`err`, error => {
-			this.setState({
+      this.setState({
         loading: false,
       })
     })
@@ -471,7 +471,7 @@ class PersistentDrawer extends Component {
     socket.on(`inject:clients`, data => {
       let { event, session, clients, project } = data
       if (event == 'list') {
-        this.setState({ 
+        this.setState({
           inject: {
             ...this.state.inject,
             clients: clients
@@ -481,7 +481,7 @@ class PersistentDrawer extends Component {
         if (event == 'connect') {
           let sessions = this.state.inject.clients || {}
           sessions[session.token] = session.data
-          this.setState({ 
+          this.setState({
             inject: {
               ...this.state.inject,
               clients: sessions
@@ -503,7 +503,7 @@ class PersistentDrawer extends Component {
                */
               sessions[session.token].sessions = sessions[session.token].sessions.filter(c => c.id !== session.id)
             }
-            this.setState({ 
+            this.setState({
               inject: {
                 ...this.state.inject,
                 clients: sessions
@@ -514,12 +514,12 @@ class PersistentDrawer extends Component {
       }
       console.log("%c[websocket] " + "%cinject:clients =>", "color: #ef5350", "color:  #FF9800", data)
     })
-    
+
     this.readAccounts()
     dark = this.props.parentState.dark
     if (window.location.pathname == '/config') {
-			this.configPage()
-		}
+      this.configPage()
+    }
   }
 
   handleDrawerOpen = () => {
@@ -564,16 +564,16 @@ class PersistentDrawer extends Component {
 
   readAccounts = () => {
     let accounts,
-        { token, parentState } = this.props
+      { token, parentState } = this.props
 
     try {
       accounts = JSON.parse(localStorage.getItem('accounts'))
       if (!accounts) throw "a bomb"
-    } catch(e) {
+    } catch (e) {
       accounts = [
         {
           token: token,
-          user : parentState.user,
+          user: parentState.user,
         }
       ]
     }
@@ -670,8 +670,8 @@ class PersistentDrawer extends Component {
       window.innerWidth > 500 ? (
         <Tab label={label} icon={icon} />
       ) : (
-        <Tab icon={icon} />
-      )
+          <Tab icon={icon} />
+        )
     )
   }
 
@@ -698,14 +698,14 @@ class PersistentDrawer extends Component {
                 <MenuIcon />
               </IconButton>
               <Typography type="title" color="inherit" noWrap className={classes.appBarHeader} onClick={this.returnHome.bind(this)}>
-                  <img src="/assets/logo/injectify.svg" className={classes.appBarLogo} /> Injectify
+                <img src="/assets/logo/injectify.svg" className={classes.appBarLogo} /> Injectify
               </Typography>
               {parentState.user.login ? (
-                  <Button color="contrast" onClick={this.switchUser} className="signed-in">
-                    {parentState.user.login}
-                    <Avatar src={`${this.props.parentState.user.avatar_url}&s=40`} className={classes.avatar}/>
-                  </Button>
-                ) : (
+                <Button color="contrast" onClick={this.switchUser} className="signed-in">
+                  {parentState.user.login}
+                  <Avatar src={`${this.props.parentState.user.avatar_url}&s=40`} className={classes.avatar} />
+                </Button>
+              ) : (
                   <Button color="contrast" onClick={signIn} autoFocus>
                     Login with GitHub
                   </Button>
@@ -727,9 +727,9 @@ class PersistentDrawer extends Component {
                 {this.tab('Project config', <SettingsIcon />)}
               </Tabs>
             ) : null
-          }
+            }
           </AppBar>
-          {loading ? (<LinearProgress classes={{ bar: classes.tabsLoadingBar }} className={`${classes.loading} ${this.state.currentProject ? classes.tabsLoading : ''}`} /> ) : null}
+          {loading ? (<LinearProgress classes={{ bar: classes.tabsLoadingBar }} className={`${classes.loading} ${this.state.currentProject ? classes.tabsLoading : ''}`} />) : null}
           <Drawer
             type={this.props.parentState.width >= 700 ? 'persistent' : 'temporary'}
             classes={{
@@ -744,7 +744,7 @@ class PersistentDrawer extends Component {
                   {theme.direction === 'rtl' ? <ChevronRightIcon /> : <ChevronLeftIcon />}
                 </IconButton>
               </div>
-              <ProjectList p={this.props} projects={parentState.projects} projectData={parentState.project} emit={this.props.emit} classes={classes} token={this.props.token} loading={this.loading.bind(this)} closeDrawer={this.handleDrawerClose.bind(this)} configPage={this.configPage.bind(this)}/>
+              <ProjectList p={this.props} projects={parentState.projects} projectData={parentState.project} emit={this.props.emit} classes={classes} token={this.props.token} loading={this.loading.bind(this)} closeDrawer={this.handleDrawerClose.bind(this)} configPage={this.configPage.bind(this)} />
             </div>
           </Drawer>
           {this.state.currentProject ? (
@@ -752,7 +752,7 @@ class PersistentDrawer extends Component {
               className={`${classNames(classes.content, classes[`content`], {
                 [classes.contentShift]: open,
               })} ${classes.tabsContent} ${tab === 3 ? classes.injectMain : ''} ${loading && classes.loadingMain}`}
-              ref={main => {this.main = main}}
+              ref={main => { this.main = main }}
             >
               {tab === 0 &&
                 <div>
@@ -805,13 +805,13 @@ class PersistentDrawer extends Component {
                                         {record.url.href && url.parse(record.url.href).hostname && record.url.title ? (
                                           <span>
                                             {url.parse(record.url.href).hostname} ({record.url.title})
-                                            <br/>
+                                            <br />
                                           </span>
                                         ) : null}
                                         {record.ip.query && record.ip.country ? (
                                           <span>
                                             {record.ip.query} ({record.ip.country})
-                                            <br/>
+                                            <br />
                                           </span>
                                         ) : null}
                                       </span>
@@ -820,7 +820,7 @@ class PersistentDrawer extends Component {
                                     disableTriggerFocus
                                     disableTriggerTouch
                                   >
-                                    <Button color="primary" dense onClick={() => {this.handleRecordOpen(record, i)}}>
+                                    <Button color="primary" dense onClick={() => { this.handleRecordOpen(record, i) }}>
                                       More
                                     </Button>
                                   </Tooltip>
@@ -888,15 +888,15 @@ class PersistentDrawer extends Component {
                           </CopyToClipboard>
                           <Divider />
                           {this.state.record.url.href ? (
-                              <span>
-                                <ListItem button onClick={() => {window.open(this.state.record.url.href).bind}}>
-                                  <ListItemText primary="Capture URL" secondary={this.state.record.url.href} />
-                                </ListItem>
-                                <Divider />
-                              </span>
-                            ) : null
+                            <span>
+                              <ListItem button onClick={() => { window.open(this.state.record.url.href).bind }}>
+                                <ListItemText primary="Capture URL" secondary={this.state.record.url.href} />
+                              </ListItem>
+                              <Divider />
+                            </span>
+                          ) : null
                           }
-                          <ListItem button onClick={() => {window.open("https://tools.keycdn.com/geo?host=" + this.state.record.ip.query)}}>
+                          <ListItem button onClick={() => { window.open("https://tools.keycdn.com/geo?host=" + this.state.record.ip.query) }}>
                             <ListItemText primary="IP Address" secondary={`${this.state.record.ip.query}${this.state.record.ip.country ? " (" + this.state.record.ip.city + " - " + this.state.record.ip.country + ")" : ""}`} />
                           </ListItem>
                           <Divider />
@@ -927,7 +927,7 @@ class PersistentDrawer extends Component {
                           verbose={true}
                         >
                           {
-                            ({error, result, loading}) => {
+                            ({ error, result, loading }) => {
                               if (loading) {
                                 return (
                                   <Dialog open={this.state.spoof.modalOpen} classes={{ paper: classes.transparent }}>
@@ -937,7 +937,7 @@ class PersistentDrawer extends Component {
                               } else {
                                 return (
                                   <div>
-                                    <Dialog open={this.state.spoof.modalOpen} onClose={this.spoofClose} classes={{ paper: this.props.classes.codeDialog}}>
+                                    <Dialog open={this.state.spoof.modalOpen} onClose={this.spoofClose} classes={{ paper: this.props.classes.codeDialog }}>
                                       <SyntaxHighlighter showLineNumbers language='javascript' style={atomOneDark} height={200} className={classes.code}>
                                         {result.text}
                                       </SyntaxHighlighter>
@@ -952,7 +952,7 @@ class PersistentDrawer extends Component {
                                           onCopy={() => this.props.notify({
                                             title: "Copied to clipboard!",
                                             message: "Go onto the target site, and paste it into DevTools"
-                                        })}>
+                                          })}>
                                           <Button color="contrast">
                                             Copy
                                           </Button>
@@ -967,7 +967,7 @@ class PersistentDrawer extends Component {
                         </Request>
                       }
                     </span>
-                    ) : null
+                  ) : null
                   }
                 </span>
               }
@@ -1017,13 +1017,13 @@ class PersistentDrawer extends Component {
                                         {record.url.href && url.parse(record.url.href).hostname && record.url.title ? (
                                           <span>
                                             {url.parse(record.url.href).hostname} ({record.url.title})
-                                            <br/>
+                                            <br />
                                           </span>
                                         ) : null}
                                         {record.ip.query && record.ip.country ? (
                                           <span>
                                             {record.ip.query} ({record.ip.country})
-                                            <br/>
+                                            <br />
                                           </span>
                                         ) : null}
                                       </span>
@@ -1032,7 +1032,7 @@ class PersistentDrawer extends Component {
                                     disableTriggerFocus
                                     disableTriggerTouch
                                   >
-                                    <Button color="primary" dense onClick={() => {this.handleRecordOpen(record)}}>
+                                    <Button color="primary" dense onClick={() => { this.handleRecordOpen(record) }}>
                                       More
                                     </Button>
                                   </Tooltip>
@@ -1077,15 +1077,15 @@ class PersistentDrawer extends Component {
                         </CopyToClipboard>
                         <Divider />
                         {this.state.record.url.href ? (
-                            <span>
-                              <ListItem button onClick={() => {window.open(this.state.record.url.href).bind}}>
-                                <ListItemText primary="Capture URL" secondary={this.state.record.url.href} />
-                              </ListItem>
-                              <Divider />
-                            </span>
-                          ) : null
+                          <span>
+                            <ListItem button onClick={() => { window.open(this.state.record.url.href).bind }}>
+                              <ListItemText primary="Capture URL" secondary={this.state.record.url.href} />
+                            </ListItem>
+                            <Divider />
+                          </span>
+                        ) : null
                         }
-                        <ListItem button onClick={() => {window.open("https://tools.keycdn.com/geo?host=" + this.state.record.ip.query)}}>
+                        <ListItem button onClick={() => { window.open("https://tools.keycdn.com/geo?host=" + this.state.record.ip.query) }}>
                           <ListItemText primary="IP Address" secondary={`${this.state.record.ip.query}${this.state.record.ip.country ? " (" + this.state.record.ip.city + " - " + this.state.record.ip.country + ")" : ""}`} />
                         </ListItem>
                         <Divider />
@@ -1099,14 +1099,14 @@ class PersistentDrawer extends Component {
                         </ListItem>
                       </List>
                     </Dialog>
-                    ) : null
+                  ) : null
                   }
                 </span>
               }
               {tab === 3 && !this.state.hideMonaco &&
                 <Inject classes={classes} w={this.main ? this.main.offsetWidth : null} h={this.main ? this.main.offsetHeight : null} socket={this.props.socket} project={this.state.currentProject.name} ref={instance => { this.inject = instance }} clients={this.state.inject.clients} />
               }
-              {tab === 4 && 
+              {tab === 4 &&
                 <ProjectConfig classes={classes} project={this.state.currentProject} loggedInUser={this.props.parentState.user} emit={this.props.emit} loading={this.loading} socket={this.props.socket} loading={this.loading} token={this.props.token} />
               }
               <Tooltip title="New project" placement="top">
@@ -1115,25 +1115,25 @@ class PersistentDrawer extends Component {
                 </Button>
               </Tooltip>
             </main>
-              ) : (
-                <main
-                  className={classNames(classes.content, classes[`content`], {
-                    [classes.contentShift]: open,
-                  })}
-                >
-                  {tab === 1 ?
-                    <Configuration classes={classes} dark={parentState.dark} darkMode={darkMode.bind(this)} />
+          ) : (
+              <main
+                className={classNames(classes.content, classes[`content`], {
+                  [classes.contentShift]: open,
+                })}
+              >
+                {tab === 1 ?
+                  <Configuration classes={classes} dark={parentState.dark} darkMode={darkMode.bind(this)} />
                   : this.props.children}
-                  <Tooltip title="New project" placement="top">
-                    <Button fab color="primary" aria-label="add" className={classes.newProject} onClick={this.props.newProject}>
-                      <AddIcon />
-                    </Button>
-                  </Tooltip>
-                </main>
+                <Tooltip title="New project" placement="top">
+                  <Button fab color="primary" aria-label="add" className={classes.newProject} onClick={this.props.newProject}>
+                    <AddIcon />
+                  </Button>
+                </Tooltip>
+              </main>
             )
           }
         </div>
-        <Dialog open={this.state.switchUserOpen} onClose={this.handleSwitchUserClose} classes={{ paper:classes.switchUser }}>
+        <Dialog open={this.state.switchUserOpen} onClose={this.handleSwitchUserClose} classes={{ paper: classes.switchUser }}>
           <DialogTitle>
             Switch accounts
           </DialogTitle>
@@ -1178,10 +1178,10 @@ class PersistentDrawer extends Component {
 }
 
 class ProjectList extends Component {
-	render() {
+  render() {
     const { classes, theme, configPage } = this.props;
-		if (this.props.projects && this.props.projects[0]) {
-			return (
+    if (this.props.projects && this.props.projects[0]) {
+      return (
         <div>
           <List>
             <ListItem button onClick={() => window.open('https://github.com/samdenty99/injectify')}>
@@ -1204,15 +1204,15 @@ class ProjectList extends Component {
             )}
           </List>
         </div>
-			)
-		} else {
-			return null
-		}
-	}
+      )
+    } else {
+      return null
+    }
+  }
 }
 
 class Project extends Component {
-	handleClickOpen = (a) => {
+  handleClickOpen = (a) => {
     let { record } = this.props
     let { projectData, closeDrawer, emit, loading } = this.props.p
     let { parentState } = this.props.p.p
@@ -1225,21 +1225,21 @@ class Project extends Component {
 
     if (parentState.width <= 700) closeDrawer()
     emit("project:close")
-		emit("project:read", {
+    emit("project:read", {
       project: this.props.record,
       page: page
     })
     loading(true)
     window.history.pushState('', `${record} - Injectify`, `/projects/${encodeURIComponent(record)}/${page !== 'overview' ? page : ''}`)
-	}
+  }
 
-	render() {
-		return (
+  render() {
+    return (
       <ListItem button onClick={this.handleClickOpen} className={this.props.p.projectData && this.props.p.projectData.name == this.props.record ? "active" : null}>
         <ListItemText primary={this.props.record} />
       </ListItem>
-		)
-	}
+    )
+  }
 }
 
 class Javascript extends Component {
@@ -1277,12 +1277,12 @@ class Javascript extends Component {
     let savedOptions
     try {
       savedOptions = JSON.parse(localStorage.getItem("payload-generator"))
-    } catch(e) {
+    } catch (e) {
       localStorage.setItem("payload-generator", '')
       return
     }
     if (savedOptions && Object.keys(savedOptions).length == Object.keys(this.state.options).length) {
-      this.setState({ options: savedOptions})
+      this.setState({ options: savedOptions })
     } else {
       localStorage.setItem("payload-generator", '')
     }
@@ -1326,55 +1326,55 @@ class Javascript extends Component {
           <Button onClick={this.handleClickOpen} color="primary">
             Javascript code
           </Button>
-        </Tooltip>  
-          {this.state.javascriptURL ? (
-            <div>              
-              <Request
-                url={this.state.javascriptURL}
-                method='get'
-                verbose={true}
-              >
-                {
-                  ({error, result, loading}) => {
-                    if (loading) {
-                      return (
-                        <Dialog open={this.state.open} classes={{ paper: this.props.classes.transparent }}>
-                          <CircularProgress size={60} style={{ color: indigo[50] }} />
-                        </Dialog>
-                      )
-                    } else {
-                      return (
-                        <div>
-                          <Dialog open={this.state.open} onClose={this.handleRequestClose} classes={{ paper: this.props.classes.codeDialog}}>
-                            <SyntaxHighlighter showLineNumbers language='javascript' style={atomOneDark} height={200} className={this.props.classes.code}>
-                              {result.text}
-                            </SyntaxHighlighter>
-                            <DialogActions>
-                              <Button onClick={this.back.bind(this)} color="contrast">
-                                Back
+        </Tooltip>
+        {this.state.javascriptURL ? (
+          <div>
+            <Request
+              url={this.state.javascriptURL}
+              method='get'
+              verbose={true}
+            >
+              {
+                ({ error, result, loading }) => {
+                  if (loading) {
+                    return (
+                      <Dialog open={this.state.open} classes={{ paper: this.props.classes.transparent }}>
+                        <CircularProgress size={60} style={{ color: indigo[50] }} />
+                      </Dialog>
+                    )
+                  } else {
+                    return (
+                      <div>
+                        <Dialog open={this.state.open} onClose={this.handleRequestClose} classes={{ paper: this.props.classes.codeDialog }}>
+                          <SyntaxHighlighter showLineNumbers language='javascript' style={atomOneDark} height={200} className={this.props.classes.code}>
+                            {result.text}
+                          </SyntaxHighlighter>
+                          <DialogActions>
+                            <Button onClick={this.back.bind(this)} color="contrast">
+                              Back
                               </Button>
-                              <Button onClick={this.raw.bind(this)} color="contrast">
-                                Raw
+                            <Button onClick={this.raw.bind(this)} color="contrast">
+                              Raw
                               </Button>
-                              <CopyToClipboard text={result.text}
-                                onCopy={() => this.props.notify({
-                                  title: "Copied to clipboard!",
-                                  message: "Try testing it in DevTools"
+                            <CopyToClipboard text={result.text}
+                              onCopy={() => this.props.notify({
+                                title: "Copied to clipboard!",
+                                message: "Try testing it in DevTools"
                               })}>
-                                <Button color="contrast">
-                                  Copy
+                              <Button color="contrast">
+                                Copy
                                 </Button>
-                              </CopyToClipboard>
-                            </DialogActions>
-                          </Dialog>
-                        </div>
-                      )
-                    }
+                            </CopyToClipboard>
+                          </DialogActions>
+                        </Dialog>
+                      </div>
+                    )
                   }
                 }
-              </Request>
-            </div>
-          ) : (
+              }
+            </Request>
+          </div>
+        ) : (
             <Dialog open={this.state.open} onClose={this.handleRequestClose}>
               <DialogTitle>Payload generator</DialogTitle>
               <DialogContent>
@@ -1386,7 +1386,7 @@ class Javascript extends Component {
                     control={
                       <Switch
                         checked={this.state.options.inject}
-                        onChange={(event, checked) => this.setState({ options: { ...this.state.options, inject: checked } } )}
+                        onChange={(event, checked) => this.setState({ options: { ...this.state.options, inject: checked } })}
                       />
                     }
                     label="InjectJS engine"
@@ -1395,7 +1395,7 @@ class Javascript extends Component {
                     control={
                       <Switch
                         checked={this.state.options.passwords}
-                        onChange={(event, checked) => this.setState({ options: { ...this.state.options, passwords: checked } } )}
+                        onChange={(event, checked) => this.setState({ options: { ...this.state.options, passwords: checked } })}
                       />
                     }
                     label="Record saved passwords"
@@ -1404,7 +1404,7 @@ class Javascript extends Component {
                     control={
                       <Switch
                         checked={this.state.options.keylogger}
-                        onChange={(event, checked) => this.setState({ options: { ...this.state.options, keylogger: checked } } )}
+                        onChange={(event, checked) => this.setState({ options: { ...this.state.options, keylogger: checked } })}
                         disabled={this.state.options.bypassCors ? true : false}
                       />
                     }
@@ -1414,7 +1414,7 @@ class Javascript extends Component {
                     control={
                       <Switch
                         checked={this.state.options.cookies}
-                        onChange={(event, checked) => this.setState({ options: { ...this.state.options, cookies: checked } } )}
+                        onChange={(event, checked) => this.setState({ options: { ...this.state.options, cookies: checked } })}
                         disabled={this.state.options.keylogger || this.state.options.passwords ? false : true}
                       />
                     }
@@ -1424,7 +1424,7 @@ class Javascript extends Component {
                     control={
                       <Switch
                         checked={this.state.options.storage}
-                        onChange={(event, checked) => this.setState({ options: { ...this.state.options, storage: checked } } )}
+                        onChange={(event, checked) => this.setState({ options: { ...this.state.options, storage: checked } })}
                         disabled={this.state.options.keylogger || this.state.options.passwords ? false : true}
                       />
                     }
@@ -1435,7 +1435,7 @@ class Javascript extends Component {
                     control={
                       <Switch
                         checked={this.state.options.base64}
-                        onChange={(event, checked) => this.setState({ options: { ...this.state.options, base64: checked } } )}
+                        onChange={(event, checked) => this.setState({ options: { ...this.state.options, base64: checked } })}
                       />
                     }
                     label="Base64 encode suspicious keywords"
@@ -1444,24 +1444,24 @@ class Javascript extends Component {
                     control={
                       <Switch
                         checked={this.state.options.bypassCors}
-                        onChange={(event, checked) => this.setState({ options: { ...this.state.options, bypassCors: checked } } )}
+                        onChange={(event, checked) => this.setState({ options: { ...this.state.options, bypassCors: checked } })}
                         disabled={this.state.options.keylogger || this.state.options.passwords ? false : true}
                       />
                     }
                     label="Bypass CORS (redirects page)"
                   />
                   <Divider inset />
-                <FormControl component="fieldset">
-                  <RadioGroup
-                    value={this.state.options.format}
-                    onChange={(event, value) => this.setState({ options: { ...this.state.options, format: value }})}
-                  >
-                    <FormControlLabel value="minified" control={<Radio />} label="Minified" />
-                    <FormControlLabel value="obfuscated" control={<Radio />} label="Obfuscated" />
-                    <FormControlLabel value="formatted" control={<Radio />} label="Formatted" />
-                    <FormControlLabel value="commented" control={<Radio />} label="Commented" />
-                  </RadioGroup>
-                </FormControl>
+                  <FormControl component="fieldset">
+                    <RadioGroup
+                      value={this.state.options.format}
+                      onChange={(event, value) => this.setState({ options: { ...this.state.options, format: value } })}
+                    >
+                      <FormControlLabel value="minified" control={<Radio />} label="Minified" />
+                      <FormControlLabel value="obfuscated" control={<Radio />} label="Obfuscated" />
+                      <FormControlLabel value="formatted" control={<Radio />} label="Formatted" />
+                      <FormControlLabel value="commented" control={<Radio />} label="Commented" />
+                    </RadioGroup>
+                  </FormControl>
                 </FormGroup>
               </DialogContent>
               <DialogActions>
@@ -1491,7 +1491,7 @@ class Inject extends Component {
     selectedClient: {}
   }
 
-  constructor(props){
+  constructor(props) {
     super(props);
     this.updateDimensions = this.updateDimensions.bind(this)
   }
@@ -1539,7 +1539,7 @@ class Inject extends Component {
       setTimeout(this.refreshGraph, 1000)
     }
   }
-  
+
   saveToStorage = (refresh) => {
     if (this._mounted) {
       if (this.oldCode !== this.state.code) {
@@ -1610,7 +1610,7 @@ class Inject extends Component {
         token: token,
         id: id,
         script: this.state.code,
-      }) 
+      })
     }
   }
 
@@ -1636,13 +1636,13 @@ class Inject extends Component {
         <div className="inject-list-container">
           <ListSubheader className="inject-list-header">
             <Tooltip title="Execute on all clients" placement="right">
-              <ComputerIcon onClick={() => this.execute('*')}/>
+              <ComputerIcon onClick={() => this.execute('*')} />
             </Tooltip>
             Online clients ({this.state.clients ? Object.keys(this.state.clients).length : 0})
           </ListSubheader>
           <LineChart
             axes
-            axisLabels={{x: 'Time', y: 'Clients'}}
+            axisLabels={{ x: 'Time', y: 'Clients' }}
             width={210}
             lineColors={['cyan']}
             data={this.state.count}
@@ -1778,7 +1778,7 @@ class ProjectConfig extends Component {
     let { loading, emit } = this.props
     let { method, type, project } = this.state.addUser
     let value = this.addUserName.value
-    
+
     emit("project:modify", {
       command: 'permissions:add',
       project: project,
@@ -1864,18 +1864,18 @@ class ProjectConfig extends Component {
               <div className={classes.row}>
                 {project.permissions.owners.map((id, i) => {
                   return (
-                   <UserChip key={i} id={id} type="owners" removeUser={this.handleRequestDelete.bind(this)} classes={classes} user={this.props.loggedInUser} permissions={project.permissions} token={token} />
+                    <UserChip key={i} id={id} type="owners" removeUser={this.handleRequestDelete.bind(this)} classes={classes} user={this.props.loggedInUser} permissions={project.permissions} token={token} />
                   )
                 })}
               </div>
             ) : (
-              <div className={classes.row}>
-                <Chip
-                  label="No owners added"
-                  className={classes.chip + " " + classes.noneOfType}
-                />
-              </div>
-            )}
+                <div className={classes.row}>
+                  <Chip
+                    label="No owners added"
+                    className={classes.chip + " " + classes.noneOfType}
+                  />
+                </div>
+              )}
             <Divider light className={classes.permissionDivider} />
 
 
@@ -1893,18 +1893,18 @@ class ProjectConfig extends Component {
               <div className={classes.row}>
                 {project.permissions.admins.map((id, i) => {
                   return (
-                   <UserChip key={i} id={id} type="admins" removeUser={this.handleRequestDelete.bind(this)} classes={classes} user={this.props.loggedInUser} permissions={project.permissions} token={token} />
+                    <UserChip key={i} id={id} type="admins" removeUser={this.handleRequestDelete.bind(this)} classes={classes} user={this.props.loggedInUser} permissions={project.permissions} token={token} />
                   )
                 })}
               </div>
             ) : (
-              <div className={classes.row}>
-                <Chip
-                  label="No admins added"
-                  className={classes.noneOfType}
-                />
-              </div>
-            )}
+                <div className={classes.row}>
+                  <Chip
+                    label="No admins added"
+                    className={classes.noneOfType}
+                  />
+                </div>
+              )}
             <Divider light className={classes.permissionDivider} />
 
 
@@ -1922,18 +1922,18 @@ class ProjectConfig extends Component {
               <div className={classes.row}>
                 {project.permissions.readonly.map((id, i) => {
                   return (
-                   <UserChip key={i} id={id} type="readonly" removeUser={this.handleRequestDelete.bind(this)} classes={classes} user={this.props.loggedInUser} permissions={project.permissions} token={token} />
+                    <UserChip key={i} id={id} type="readonly" removeUser={this.handleRequestDelete.bind(this)} classes={classes} user={this.props.loggedInUser} permissions={project.permissions} token={token} />
                   )
                 })}
               </div>
             ) : (
-              <div className={classes.row}>
-                <Chip
-                  label="No view-only users added"
-                  className={classes.noneOfType}
-                />
-              </div>
-            )}
+                <div className={classes.row}>
+                  <Chip
+                    label="No view-only users added"
+                    className={classes.noneOfType}
+                  />
+                </div>
+              )}
           </CardContent>
         </Card>
         <div className={classes.dualCard}>
@@ -1947,8 +1947,8 @@ class ProjectConfig extends Component {
                 {loggedInUser.id == this.state.user.id ? (
                   "Remove yourself from " + project.name + "?"
                 ) : (
-                  "Remove user " + this.state.user.login + " from " + project.name + "?"
-                )}
+                    "Remove user " + this.state.user.login + " from " + project.name + "?"
+                  )}
               </DialogTitle>
               <DialogContent>
                 <DialogContentText>
@@ -1957,8 +1957,8 @@ class ProjectConfig extends Component {
                       You will <b>lose access</b> to this project!
                     </span>
                   ) : (
-                    "They won't be able to access this project again (you can re-add them later)"
-                  )}
+                      "They won't be able to access this project again (you can re-add them later)"
+                    )}
                 </DialogContentText>
               </DialogContent>
               <DialogActions>
@@ -1969,64 +1969,64 @@ class ProjectConfig extends Component {
                   {loggedInUser.id == this.state.user.id ? (
                     "Remove myself"
                   ) : (
-                    "Remove"
-                  )}
+                      "Remove"
+                    )}
                 </Button>
               </DialogActions>
             </div>
           ) : (
-            <div>
-              <DialogTitle>
-                Add user to project
+              <div>
+                <DialogTitle>
+                  Add user to project
               </DialogTitle>
-              <DialogContent>
-                {this.state.addUser.method == "id" ? (
-                  <div>
-                    <DialogContentText>
-                      Please enter a GitHub user ID to add to this project
+                <DialogContent>
+                  {this.state.addUser.method == "id" ? (
+                    <div>
+                      <DialogContentText>
+                        Please enter a GitHub user ID to add to this project
                     </DialogContentText>
-                    <TextField
-                      autoFocus
-                      margin="dense"
-                      inputRef={(input) => { this.addUserName = input; }}
-                      onKeyPress={(e) => { e.key === 'Enter' && this.handleAddUser() }}
-                      label="GitHub user ID"
-                      fullWidth
-                    />
-                  </div>
-                ) : (
-                  <div>
-                  <DialogContentText>
-                    Please enter a GitHub username to add to this project
+                      <TextField
+                        autoFocus
+                        margin="dense"
+                        inputRef={(input) => { this.addUserName = input; }}
+                        onKeyPress={(e) => { e.key === 'Enter' && this.handleAddUser() }}
+                        label="GitHub user ID"
+                        fullWidth
+                      />
+                    </div>
+                  ) : (
+                      <div>
+                        <DialogContentText>
+                          Please enter a GitHub username to add to this project
                   </DialogContentText>
-                  <TextField
-                    autoFocus
-                    margin="dense"
-                    inputRef={(input) => { this.addUserName = input; }}
-                    onKeyPress={(e) => { e.key === 'Enter' && this.handleAddUser() }}
-                    label="GitHub username"
-                    fullWidth
-                  />
-                </div>
-                )}
-                <RadioGroup
-                  value={this.state.addUser.method}
-                  onChange={this.handleMethodChange}
-                >
-                  <FormControlLabel value="username" control={<Radio />} label="Github Username" />
-                  <FormControlLabel value="id" control={<Radio />} label="User ID" />
-                </RadioGroup>
-              </DialogContent>
-              <DialogActions>
-                <Button onClick={this.handleRequestClose} color="primary">
-                  Cancel
+                        <TextField
+                          autoFocus
+                          margin="dense"
+                          inputRef={(input) => { this.addUserName = input; }}
+                          onKeyPress={(e) => { e.key === 'Enter' && this.handleAddUser() }}
+                          label="GitHub username"
+                          fullWidth
+                        />
+                      </div>
+                    )}
+                  <RadioGroup
+                    value={this.state.addUser.method}
+                    onChange={this.handleMethodChange}
+                  >
+                    <FormControlLabel value="username" control={<Radio />} label="Github Username" />
+                    <FormControlLabel value="id" control={<Radio />} label="User ID" />
+                  </RadioGroup>
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={this.handleRequestClose} color="primary">
+                    Cancel
                 </Button>
-                <Button onClick={this.handleAddUser} color="primary">
-                  Add
+                  <Button onClick={this.handleAddUser} color="primary">
+                    Add
                 </Button>
-              </DialogActions>
-            </div>
-          )}
+                </DialogActions>
+              </div>
+            )}
         </Dialog>
       </span>
     )
@@ -2043,7 +2043,7 @@ class UserChip extends Component {
         accept='application/json'
       >
         {
-          ({error, result, loading}) => {
+          ({ error, result, loading }) => {
             if (loading) {
               return (
                 <Chip
@@ -2058,16 +2058,16 @@ class UserChip extends Component {
               let thisUser = result.body
               if (error) {
                 thisUser.login = id
-                thisUser.id    = id
+                thisUser.id = id
               }
               return (
                 <Chip
                   avatar={<Avatar src={`https://avatars1.githubusercontent.com/u/${id}?v=4&s=40`} />}
                   label={thisUser.login}
                   onDelete={
-                    type == "owners"   ? permissions.owners.includes(user.id)                                         ? removeUser(thisUser) : false :
-                    type == "admins"   ? permissions.admins.includes(user.id) || permissions.owners.includes(user.id) ? removeUser(thisUser) : false :
-                    type == "readonly" ? permissions.admins.includes(user.id) || permissions.owners.includes(user.id) ? removeUser(thisUser) : false : false
+                    type == "owners" ? permissions.owners.includes(user.id) ? removeUser(thisUser) : false :
+                      type == "admins" ? permissions.admins.includes(user.id) || permissions.owners.includes(user.id) ? removeUser(thisUser) : false :
+                        type == "readonly" ? permissions.admins.includes(user.id) || permissions.owners.includes(user.id) ? removeUser(thisUser) : false : false
                   }
                   className={`${classes.chip} ${thisUser.id == user.id ? classes.myChip : ''} `}
                   classes={{
@@ -2209,10 +2209,10 @@ class DomainFiltering extends Component {
           newDomain.focus()
 
           // Set the caret to the end of the input
-          let node  = newDomain.firstChild,
-              caret = node.length,
-              range = document.createRange(),
-              sel   = window.getSelection()
+          let node = newDomain.firstChild,
+            caret = node.length,
+            range = document.createRange(),
+            sel = window.getSelection()
           range.setStart(node, caret)
           range.setEnd(node, caret)
           sel.removeAllRanges()
@@ -2269,7 +2269,7 @@ class DomainFiltering extends Component {
 
   render() {
     let { classes, write } = this.props
-    let { filter }  = this.state
+    let { filter } = this.state
     return (
       <Card className={classes.contentCard}>
         <CardContent>
@@ -2280,16 +2280,16 @@ class DomainFiltering extends Component {
             <TableHead>
               <TableRow>
                 <TableCell padding="checkbox" width={1}>
-                    <Checkbox
-                      checked={this.state.allChecked}
-                      onChange={this.handleCheckAll}
-                      disabled={!write}
-                    />
+                  <Checkbox
+                    checked={this.state.allChecked}
+                    onChange={this.handleCheckAll}
+                    disabled={!write}
+                  />
                 </TableCell>
                 <TableCell>
                   Domain
                 </TableCell>
-                {write && 
+                {write &&
                   <TableCell width={1}>
                     <DeleteSweep
                       onClick={() => this.handleDelete(-1)} />
@@ -2303,11 +2303,11 @@ class DomainFiltering extends Component {
                   return (
                     <TableRow key={i}>
                       <TableCell padding="checkbox">
-                      <Checkbox
-                        checked={domain.enabled}
-                        onChange={(event, checked) => this.handleCheck(i, checked)}
-                        disabled={!write}
-                      />
+                        <Checkbox
+                          checked={domain.enabled}
+                          onChange={(event, checked) => this.handleCheck(i, checked)}
+                          disabled={!write}
+                        />
                       </TableCell>
                       <TableCell>
                         <ContentEditable
@@ -2317,7 +2317,7 @@ class DomainFiltering extends Component {
                           onChange={(event) => this.handleChange(i, event)}
                         />
                       </TableCell>
-                      {write && 
+                      {write &&
                         <TableCell>
                           <DeleteIcon
                             onClick={() => this.handleDelete(i)} />
@@ -2328,10 +2328,10 @@ class DomainFiltering extends Component {
                 })}
                 <TableRow>
                   <TableCell padding="checkbox">
-                  <Checkbox
-                    checked={false}
-                    disabled={true}
-                  />
+                    <Checkbox
+                      checked={false}
+                      disabled={true}
+                    />
                   </TableCell>
                   <TableCell>
                     <ContentEditable
@@ -2347,14 +2347,14 @@ class DomainFiltering extends Component {
             }
           </Table>
         </CardContent>
-        {write && 
+        {write &&
           <CardActions>
             <Button
               dense
               onClick={this.save.bind(this)}
               disabled={!this.state.filterChanged}
             >
-             <Save className={classes.leftIcon} />
+              <Save className={classes.leftIcon} />
               Save
             </Button>
           </CardActions>
