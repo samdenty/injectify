@@ -1057,14 +1057,8 @@ MongoClient.connect(config.mongodb, (err, client) => {
     })
 
     socket.on('inject:execute', data => {
-      let {
-        project,
-        token,
-        id,
-        script,
-        recursive
-      } = data
-      if (project && (recursive || (token && id)) && script && globalToken) {
+      let { project, token, id, script, recursive } = data
+      if (project && (recursive || (typeof token === 'string' && typeof id === 'number')) && typeof script === 'string' && globalToken) {
         getUser(globalToken).then(user => {
           getProject(project, user).then(thisProject => {
             if (recursive) {

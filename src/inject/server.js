@@ -38,7 +38,7 @@ module.exports = (express, db) => {
     }
   }})
 
-  server.on('connection', socket => {
+  server.on('connection', (socket, t) => {
     websockets(db, state, socket)
   })
 

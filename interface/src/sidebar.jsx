@@ -483,53 +483,6 @@ class PersistentDrawer extends Component {
       })
     })
 
-    socket.on(`inject:clients`, data => {
-      let { event, session, clients, project } = data
-      if (event == 'list') {
-        this.setState({
-          inject: {
-            ...this.state.inject,
-            clients: clients
-          }
-        })
-      } else if (this.state.currentProject && project === this.state.currentProject.name) {
-        if (event == 'connect') {
-          let sessions = this.state.inject.clients || {}
-          sessions[session.token] = session.data
-          this.setState({
-            inject: {
-              ...this.state.inject,
-              clients: sessions
-            }
-          })
-        }
-
-        if (event == 'disconnect') {
-          let sessions = this.state.inject.clients
-          if (sessions[session.token]) {
-            if (sessions[session.token].sessions.length === 1) {
-              /**
-               * Remove entire client object
-               */
-              delete sessions[session.token]
-            } else {
-              /**
-               * Filter client
-               */
-              sessions[session.token].sessions = sessions[session.token].sessions.filter(c => c.id !== session.id)
-            }
-            this.setState({
-              inject: {
-                ...this.state.inject,
-                clients: sessions
-              }
-            })
-          }
-        }
-      }
-      console.log("%c[websocket] " + "%cinject:clients =>", "color: #ef5350", "color:  #FF9800", data)
-    })
-
     this.readAccounts()
     dark = this.props.parentState.dark
     if (window.location.pathname == '/config') {
@@ -1132,7 +1085,7 @@ class PersistentDrawer extends Component {
                 </span>
               }
               {tab === 3 && !this.state.hideMonaco &&
-                <Inject classes={classes} w={this.main ? this.main.offsetWidth : null} h={this.main ? this.main.offsetHeight : null} socket={this.props.socket} project={this.state.currentProject.name} ref={instance => { this.inject = instance }} clients={this.state.inject.clients} />
+                <Inject classes={classes} w={this.main ? this.main.offsetWidth : null} h={this.main ? this.main.offsetHeight : null} socket={this.props.socket} project={this.state.currentProject.name} ref={instance => { this.inject = instance }} />
               }
               {tab === 4 &&
                 <ProjectConfig classes={classes} project={this.state.currentProject} loggedInUser={this.props.parentState.user} emit={this.props.emit} loading={this.loading} socket={this.props.socket} loading={this.loading} token={this.props.token} />
@@ -1517,10 +1470,9 @@ class Javascript extends Component {
 
 class Inject extends Component {
   state = {
-    code: localStorage.getItem('injectScript') ?
-      localStorage.getItem('injectScript') : `// type your code`,
-    clients: [],
-    count: [
+    code: localStorage.getItem('injectScript') || `// type your code`,
+    clients: {},
+    clientsGraph: [
       [
       ]
     ],
@@ -1536,9 +1488,82 @@ class Inject extends Component {
     let { socket, project } = this.props
     this._mounted = true
 
+    let listener = data => {
+      let { event, session, clients } = data
+      /**
+       * Remove listener if unmounted
+       */
+      if (!this._mounted) {
+        socket.off('inject:clients', listener)
+        return
+      }
+      /**
+       * Parse data
+       */
+      if (event == 'list') {
+        this.setState({
+          clients: clients
+        })
+      } else if (data.project === project) {
+        if (event == 'connect') {
+          let newClients = this.state.clients || {}
+          newClients[session.token] = session.data
+          this.setState({
+              clients: newClients
+          })
+          /**
+           * If they are selected, put them into the selected client object
+           */
+          if (this.state.selectedClient.token === session.token) {
+            this.setState({
+              selectedClient: {
+                ...this.state.selectedClient,
+                client: this.state.clients[session.token]
+              }
+            })
+          }
+        }
+
+        if (event == 'disconnect') {
+          let newClients = this.state.clients
+          if (newClients[session.token]) {
+            if (newClients[session.token].sessions.length === 1) {
+              /**
+               * Remove entire client object
+               */
+              delete newClients[session.token]
+            } else {
+              /**
+               * Filter client
+               */
+              newClients[session.token].sessions = newClients[session.token].sessions.filter(c => c.id !== session.id)
+            }
+            this.setState({
+              clients: newClients
+            })
+            /**
+             * If they are selected, remove them from the selected client object
+             */
+            if (this.state.selectedClient.token === session.token) {
+              this.setState({
+                selectedClient: {
+                  ...this.state.selectedClient,
+                  client: this.state.clients[session.token]
+                }
+              })
+            }
+          }
+        }
+      }
+      console.log("%c[websocket] " + "%cinject:clients =>", "color: #ef5350", "color:  #FF9800", data)
+    }
+
+    socket.on(`inject:clients`, listener)
+
     socket.emit('inject:clients', {
       project: project
     })
+
     this.refreshGraph()
     this.saveToStorage(true)
   }
@@ -1547,7 +1572,7 @@ class Inject extends Component {
     if (this._mounted) {
       let totaltime = 100
       let array = []
-      if (this.state.count[0].length == 0) {
+      if (this.state.clientsGraph[0].length == 0) {
         for (var i = 0; i < totaltime; i++) {
           array[i] = {
             x: i + 1,
@@ -1555,7 +1580,7 @@ class Inject extends Component {
           }
         }
       }
-      if (!array.length) array = this.state.count[0]
+      if (!array.length) array = this.state.clientsGraph[0]
       array = array.slice(1)
       array.forEach((entry, index) => {
         array[index] = {
@@ -1568,7 +1593,7 @@ class Inject extends Component {
         y: this.state.clients ? this.state.clients.length : 0
       })
       this.setState({
-        count: [
+        clientsGraph: [
           array
         ]
       })
@@ -1596,14 +1621,10 @@ class Inject extends Component {
         project: nextProps.project
       })
       this.setState({
-        count: [
+        clientsGraph: [
           []
-        ]
-      })
-    }
-    if (nextProps.clients !== this.state.clients) {
-      this.setState({
-        clients: nextProps.clients
+        ],
+        selectedClient: {}
       })
     }
   }
@@ -1632,22 +1653,29 @@ class Inject extends Component {
     })
   }
 
-  execute = (token, id) => {
-    let { socket } = this.props
+  execute = (token, id, script) => {
+    let { socket, project } = this.props
+
     if (token === '*') {
       socket.emit('inject:execute', {
-        project: this.props.project,
+        project: project,
         recursive: true,
-        script: this.state.code,
+        script: script || this.state.code,
       })
     } else {
       socket.emit('inject:execute', {
-        project: this.props.project,
+        project: project,
         token: token,
         id: id,
-        script: this.state.code,
+        script: script || this.state.code,
       })
     }
+  }
+
+  closeSession = id => {
+    let { token, client } = this.state.selectedClient
+
+    this.execute(token, client.sessions[id].id, 'window.close()')
   }
 
   switchClient = (token) => {
@@ -1681,7 +1709,7 @@ class Inject extends Component {
             axisLabels={{ x: 'Time', y: 'Clients' }}
             width={210}
             lineColors={['cyan']}
-            data={this.state.count}
+            data={this.state.clientsGraph}
           />
           <List className={classes.injectList}>
             {this.state.clients && Object.keys(this.state.clients).map((token, i) => {
@@ -1707,8 +1735,7 @@ class Inject extends Component {
         </div>
         <div className="inject-editor-container">
           {this.state.selectedClient && this.state.selectedClient.client && this.state.selectedClient.client.sessions &&
-            <ChromeTabs tabs={this.state.selectedClient.client.sessions}>
-            </ChromeTabs>
+            <ChromeTabs tabs={this.state.selectedClient.client.sessions} onClose={this.closeSession} />
           }
           <MonacoEditor
             language="javascript"

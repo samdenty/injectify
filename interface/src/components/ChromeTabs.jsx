@@ -11,6 +11,8 @@ class ChromeTabs extends Component {
   }
   render() {
     const { width, height } = this.state.dimensions
+    const { onClose } = this.props
+
     return (
       <div className="chrome-tabs">
         <Measure
@@ -33,7 +35,8 @@ class ChromeTabs extends Component {
                     title={tab.window.title}
                     favicon={tab.window.favicon}
                     active={tab.window.active}
-                    width={this.state.tabWidth} />
+                    width={this.state.tabWidth}
+                    onClose={onClose} />
                 ) : ''
               })}
             </div>
@@ -47,14 +50,15 @@ class ChromeTabs extends Component {
 
 class ChromeTab extends Component {
   render() {
+    const { onClose, order, width, height, title, active, favicon } = this.props
     return(
       <div
-        className={`chrome-tab${this.props.active ? ' chrome-tab-current' : ''}`}
+        className={`chrome-tab${active ? ' chrome-tab-current' : ''}`}
         style={{
-          width: this.props.width,
-          transform: this.props.order ? `translate(${(this.props.width * this.props.order) - (this.props.order * 14)}px, 0)` : ''
+          width: width,
+          transform: order ? `translate(${(width * order) - (order * 14)}px, 0)` : ''
         }}
-        title={this.props.title}>
+        title={title}>
         <div className="chrome-tab-background">
           <svg version="1.1" xmlns="http://www.w3.org/2000/svg">
             <defs>
@@ -103,11 +107,11 @@ class ChromeTab extends Component {
         <div
           className="chrome-tab-favicon"
           style={{
-            backgroundImage: this.props.favicon ? `url(${JSON.stringify(this.props.favicon)})` : ''
+            backgroundImage: favicon ? `url(${JSON.stringify(favicon)})` : ''
           }}
         />
-        <div className="chrome-tab-title">{this.props.title}</div>
-        <div className="chrome-tab-close" title="" />
+        <div className="chrome-tab-title">{title}</div>
+        <div className="chrome-tab-close" title="" onClick={() => onClose(order)} />
       </div>
     )
   }
