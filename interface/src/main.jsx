@@ -58,7 +58,8 @@ class Injectify extends Component {
 				/**
 				 * No need to replace, server will replace it from server.config.js
 				 */
-				client_id: '95dfa766d1ceda2d163d'
+				client_id: '95dfa766d1ceda2d163d',
+				repo: 'samdenty99/injectify'
 			},
 			discord: {
 				/**
@@ -325,7 +326,7 @@ class Injectify extends Component {
 	}
 
 	signIn() {
-		window.location = `https://github.com/login/oauth/authorize?client_id=${encodeURIComponent(this.state.server.github.client_id)}&state=${encodeURIComponent(window.location.href.split("?")[0].split("#")[0])}` // ${/*&scope=user%20gist&redirect_url=*/}
+		window.location = `https://github.com/login/oauth/authorize?client_id=${encodeURIComponent(this.state.server.github.client_id)}&state=${encodeURIComponent(window.location.href.split("?")[0].split("#")[0])}${this.state.server.github.scope ? `&scope=${encodeURIComponent(this.state.server.github.scope)}` : ``}`
 	}
 
 	signOut() {
@@ -383,6 +384,7 @@ class Injectify extends Component {
 							loading={this.state.loading}
 							darkMode={this.darkMode.bind(this)}
 							remount={() => { this.setState({ mounted: false }); setTimeout(() => this.setState({ mounted: true }), 0) }}
+							server={this.state.server}
 						>
 							{this.state.user.login ? (
 								<div>

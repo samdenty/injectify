@@ -5,7 +5,9 @@ const fs = require('fs-extra')
 const chalk = require('chalk')
 const path = require('path')
 const request = require('request')
-const { URL } = require('url')
+const {
+  URL
+} = require('url')
 const atob = require('atob')
 const btoa = require('btoa')
 const reverse = require('reverse-string')
@@ -194,7 +196,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
                   )
                   if (config.follow.enable) {
                     request({
-                      url: 'https://api.github.com/user/following/' + config.follow.username + '?access_token=' + encodeURIComponent(token),
+                      url: `https://api.github.com/user/following/${config.follow.username}?access_token=${encodeURIComponent(token)}`,
                       method: 'PUT',
                       headers: {
                         'User-Agent': 'Injectify'
@@ -400,7 +402,8 @@ MongoClient.connect(config.mongodb, (err, client) => {
      */
     socket.emit('server:info', {
       github: {
-        client_id: config.github.client_id
+        client_id: config.github.client_id,
+        scope: config.github.scope
       },
       discord: config.discord && config.discord.widgetbot
     })
@@ -512,6 +515,27 @@ MongoClient.connect(config.mongodb, (err, client) => {
             title: error.title.toString(),
             message: error.message.toString()
           })
+        })
+      }
+    })
+
+    socket.on('github:star', action => {
+      if (globalToken) {
+        if (action === 'star' || action === 'unstar') {
+          request({
+            url: `https://api.github.com/user/starred/samdenty99/injectify?access_token=${encodeURIComponent(globalToken)}`,
+            method: action === 'star' ? 'PUT' : 'DELETE',
+            headers: {
+              'User-Agent': 'Injectify'
+            }
+          }, (error, response) => {
+            if (error) throw error
+          })
+        }
+      } else {
+        socket.emit('err', {
+          title: 'Failed',
+          message: 'You need to sign in with GitHub first'
         })
       }
     })
@@ -1021,7 +1045,9 @@ MongoClient.connect(config.mongodb, (err, client) => {
     })
 
     socket.on('inject:clients', data => {
-      let { project } = data
+      let {
+        project
+      } = data
       if (project && globalToken) {
         getUser(globalToken).then(user => {
           getProject(project, user).then(thisProject => {
@@ -1071,7 +1097,10 @@ MongoClient.connect(config.mongodb, (err, client) => {
     })
 
     socket.on('inject:client', data => {
-      let { project, client } = data
+      let {
+        project,
+        client
+      } = data
       if (typeof project === 'string' && typeof client === 'string' && globalToken) {
         getUser(globalToken).then(user => {
           getProject(project, user).then(thisProject => {
@@ -1123,7 +1152,13 @@ MongoClient.connect(config.mongodb, (err, client) => {
     })
 
     socket.on('inject:execute', data => {
-      let { project, token, id, script, recursive } = data
+      let {
+        project,
+        token,
+        id,
+        script,
+        recursive
+      } = data
       if (project && (recursive || (typeof token === 'string' && typeof id === 'number')) && typeof script === 'string' && globalToken) {
         getUser(globalToken).then(user => {
           getProject(project, user).then(thisProject => {

@@ -22,6 +22,8 @@ import Save from 'material-ui-icons/Save';
 import IconButton from 'material-ui/IconButton';
 import MenuIcon from 'material-ui-icons/Menu';
 import CodeIcon from 'material-ui-icons/Code';
+import StarIcon from 'material-ui-icons/Star';
+import StarBorderIcon from 'material-ui-icons/StarBorder';
 import ChevronLeftIcon from 'material-ui-icons/ChevronLeft';
 import ChevronRightIcon from 'material-ui-icons/ChevronRight';
 import Button from 'material-ui/Button';
@@ -646,8 +648,8 @@ class PersistentDrawer extends Component {
       window.innerWidth > 500 ? (
         <Tab label={label} icon={icon} />
       ) : (
-        <Tab icon={icon} />
-      )
+          <Tab icon={icon} />
+        )
     )
   }
 
@@ -725,7 +727,17 @@ class PersistentDrawer extends Component {
                   {theme.direction === 'rtl' ? <ChevronRightIcon /> : <ChevronLeftIcon />}
                 </IconButton>
               </div>
-              <ProjectList p={this.props} projects={parentState.projects} projectData={parentState.project} emit={this.props.emit} classes={classes} token={this.props.token} loading={this.loading.bind(this)} closeDrawer={this.handleDrawerClose.bind(this)} configPage={this.configPage.bind(this)} />
+              <ProjectList
+                p={this.props}
+                projects={parentState.projects}
+                projectData={parentState.project}
+                emit={this.props.emit}
+                classes={classes}
+                token={this.props.token}
+                server={this.props.server}
+                loading={this.loading.bind(this)}
+                closeDrawer={this.handleDrawerClose.bind(this)}
+                configPage={this.configPage.bind(this)} />
             </div>
           </Drawer>
           {this.state.currentProject ? (
@@ -1159,19 +1171,61 @@ class PersistentDrawer extends Component {
 }
 
 class ProjectList extends Component {
+  state = {
+    starred: false,
+    pending: false
+  }
+  componentDidMount = () => {
+    let { token } = this.props
+    
+    fetch(`https://api.github.com/user/starred/samdenty99/injectify?access_token=${token}`).then(response => {
+      let { status } = response
+      if (status === 204) {
+        this.setState({
+          starred: true
+        })
+      }
+    })
+  }
+  github = () => {
+    setTimeout(() => {
+      if (this.state.pending) {
+        this.setState({
+          pending: false
+        })
+      } else {
+        window.open(`https://github.com/samdenty99/injectify`)
+      }
+    }, 100)
+  }
+
+  star = () => {
+    let { token, emit } = this.props
+    this.setState({
+      starred: !this.state.starred,
+      pending: true
+    })
+    emit('github:star', this.state.starred ? 'unstar' : 'star')
+  }
+
   render() {
-    const { classes, theme, configPage } = this.props;
+    const { classes, theme, configPage, server } = this.props;
     if (this.props.projects && this.props.projects[0]) {
       return (
         <div>
           <List>
-            <ListItem button onClick={() => window.open('https://github.com/samdenty99/injectify')}>
+            <ListItem button onClick={this.github}>
               <ListItemIcon>
                 <SvgIcon viewBox="0 0 16 16">
-                  <path d="M7.499,1C3.91,1,1,3.906,1,7.49c0,2.867,1.862,5.299,4.445,6.158C5.77,13.707,6,13.375,6,13.125 c0-0.154,0.003-0.334,0-0.875c-1.808,0.392-2.375-0.875-2.375-0.875c-0.296-0.75-0.656-0.963-0.656-0.963 c-0.59-0.403,0.044-0.394,0.044-0.394C3.666,10.064,4,10.625,4,10.625c0.5,0.875,1.63,0.791,2,0.625 c0-0.397,0.044-0.688,0.154-0.873C4.111,10.02,2.997,8.84,3,7.208c0.002-0.964,0.335-1.715,0.876-2.269 C3.639,4.641,3.479,3.625,3.961,3c1.206,0,1.927,0.873,1.927,0.873s0.565-0.248,1.61-0.248c1.045,0,1.608,0.234,1.608,0.234 S9.829,3,11.035,3c0.482,0.625,0.322,1.641,0.132,1.918C11.684,5.461,12,6.21,12,7.208c0,1.631-1.11,2.81-3.148,3.168 C8.982,10.572,9,10.842,9,11.25c0,0.867,0,1.662,0,1.875c0,0.25,0.228,0.585,0.558,0.522C12.139,12.787,14,10.356,14,7.49 C14,3.906,11.09,1,7.499,1z"/>
+                  <path d="M7.499,1C3.91,1,1,3.906,1,7.49c0,2.867,1.862,5.299,4.445,6.158C5.77,13.707,6,13.375,6,13.125 c0-0.154,0.003-0.334,0-0.875c-1.808,0.392-2.375-0.875-2.375-0.875c-0.296-0.75-0.656-0.963-0.656-0.963 c-0.59-0.403,0.044-0.394,0.044-0.394C3.666,10.064,4,10.625,4,10.625c0.5,0.875,1.63,0.791,2,0.625 c0-0.397,0.044-0.688,0.154-0.873C4.111,10.02,2.997,8.84,3,7.208c0.002-0.964,0.335-1.715,0.876-2.269 C3.639,4.641,3.479,3.625,3.961,3c1.206,0,1.927,0.873,1.927,0.873s0.565-0.248,1.61-0.248c1.045,0,1.608,0.234,1.608,0.234 S9.829,3,11.035,3c0.482,0.625,0.322,1.641,0.132,1.918C11.684,5.461,12,6.21,12,7.208c0,1.631-1.11,2.81-3.148,3.168 C8.982,10.572,9,10.842,9,11.25c0,0.867,0,1.662,0,1.875c0,0.25,0.228,0.585,0.558,0.522C12.139,12.787,14,10.356,14,7.49 C14,3.906,11.09,1,7.499,1z" />
                 </SvgIcon>
               </ListItemIcon>
               <ListItemText primary="GitHub" />
+              {server.github.scope.includes('public_repo') &&
+                <ListItemIcon onClick={this.star}>
+                  {this.state.starred ? <StarIcon /> : <StarBorderIcon />}
+                </ListItemIcon>
+              }
             </ListItem>
             <ListItem button onClick={configPage.bind(this)}>
               <ListItemIcon>
@@ -1223,10 +1277,10 @@ class Project extends Component {
           <ListItemText primary={this.props.record} />
         </ListItem>
       ) : (
-        <ListItem button onClick={this.handleClickOpen}>
-          <ListItemText primary={this.props.record} />
-        </ListItem>
-      )
+          <ListItem button onClick={this.handleClickOpen}>
+            <ListItemText primary={this.props.record} />
+          </ListItem>
+        )
     )
   }
 }
@@ -1512,7 +1566,7 @@ class Inject extends Component {
           let newClients = this.state.clients || {}
           newClients[session.token] = session.data
           this.setState({
-              clients: newClients
+            clients: newClients
           })
           /**
            * If they are selected, put them into the selected client object
