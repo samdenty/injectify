@@ -47,11 +47,14 @@ MongoClient.connect(config.mongodb, (err, client) => {
 
   io.on('connection', socket => {
     let globalToken
-    let injectWatcher
     let state = {
       previous: '',
       page: '',
       refresh: null
+    }
+    let watchers = {
+      inject: null,
+      client: null
     }
     var getToken = code => {
       return new Promise((resolve, reject) => {
@@ -378,6 +381,19 @@ MongoClient.connect(config.mongodb, (err, client) => {
         })
       })
     }
+    var unwatch = type => {
+      if (type === 'client' && watchers.client && inject.clients[watchers.client.id][watchers.client.token] && inject.clients[watchers.client.id][watchers.client.token].watchers)
+        inject.clients[watchers.client.id][watchers.client.token].watchers.forEach((watcher, i) => {
+          if (watcher.socket === socket.id) {
+            inject.clients[watchers.client.id][watchers.client.token].watchers.splice(i, 1)
+          }
+        })
+
+      if (type === 'inject' && watchers.inject)
+        inject.watchers[watchers.inject] = inject.watchers[watchers.inject].filter(watcher => {
+          return watcher.id !== socket.id
+        })
+    }
 
     /**
      * Send server info to client
@@ -450,8 +466,8 @@ MongoClient.connect(config.mongodb, (err, client) => {
     socket.on('auth:signout', data => {
       globalToken = ''
       state = {}
-      if (injectWatcher) {
-        inject.watchers[injectWatcher] = inject.watchers[injectWatcher].filter(watcher => {
+      if (watchers.inject) {
+        inject.watchers[watchers.inject] = inject.watchers[watchers.inject].filter(watcher => {
           return watcher.id !== socket.id
         })
       }
@@ -1005,20 +1021,18 @@ MongoClient.connect(config.mongodb, (err, client) => {
     })
 
     socket.on('inject:clients', data => {
-      let {
-        project
-      } = data
+      let { project } = data
       if (project && globalToken) {
         getUser(globalToken).then(user => {
           getProject(project, user).then(thisProject => {
-            if (injectWatcher) {
-              inject.watchers[injectWatcher] = inject.watchers[injectWatcher].filter(watcher => {
+            if (watchers.inject) {
+              inject.watchers[watchers.inject] = inject.watchers[watchers.inject].filter(watcher => {
                 return watcher.id !== socket.id
               })
             }
-            injectWatcher = thisProject.doc['_id']
-            if (!inject.watchers[injectWatcher]) inject.watchers[injectWatcher] = []
-            inject.watchers[injectWatcher].push({
+            watchers.inject = thisProject.doc['_id']
+            if (!inject.watchers[watchers.inject]) inject.watchers[watchers.inject] = []
+            inject.watchers[watchers.inject].push({
               id: socket.id,
               callback: (event, session) => {
                 socket.emit('inject:clients', {
@@ -1043,6 +1057,58 @@ MongoClient.connect(config.mongodb, (err, client) => {
         }).catch(error => {
           // Failed to authenticate user with token
           console.log(chalk.redBright('[inject:clients] '), error.message)
+          socket.emit('err', {
+            title: error.title.toString(),
+            message: error.message.toString()
+          })
+        })
+      } else {
+        socket.emit('err', {
+          title: 'Access denied',
+          message: 'You need to be authenticated first!'
+        })
+      }
+    })
+
+    socket.on('inject:client', data => {
+      let { project, client } = data
+      if (typeof project === 'string' && typeof client === 'string' && globalToken) {
+        getUser(globalToken).then(user => {
+          getProject(project, user).then(thisProject => {
+            let clients = inject.clients[thisProject.doc['_id']]
+            /**
+             * Remove previous watchers
+             */
+            unwatch('client')
+            if (clients && clients[client]) {
+              let watchingClient = clients[client]
+              if (!watchingClient.watchers) watchingClient.watchers = []
+              watchingClient.watchers.push({
+                socket: socket.id,
+                emit: client => {
+                  socket.emit('inject:client', client)
+                }
+              })
+
+              inject.clients[thisProject.doc['_id']][client] = watchingClient
+              /**
+               * Overwrite watchers object
+               */
+              watchers.client = {
+                id: thisProject.doc['_id'],
+                token: client
+              }
+            }
+          }).catch(e => {
+            console.log(e)
+            socket.emit('err', {
+              title: e.title,
+              message: e.message
+            })
+          })
+        }).catch(error => {
+          // Failed to authenticate user with token
+          console.log(chalk.redBright('[inject:client] '), error.message)
           socket.emit('err', {
             title: error.title.toString(),
             message: error.message.toString()
@@ -1114,22 +1180,17 @@ MongoClient.connect(config.mongodb, (err, client) => {
       state.project = ''
       state.page = ''
       clearTimeout(state.refresh)
+      unwatch('client')
     })
 
     socket.on('inject:close', data => {
-      if (injectWatcher) {
-        inject.watchers[injectWatcher] = inject.watchers[injectWatcher].filter(watcher => {
-          return watcher.id !== socket.id
-        })
-      }
+      unwatch('inject')
+      unwatch('client')
     })
 
     socket.on('disconnect', data => {
-      if (injectWatcher) {
-        inject.watchers[injectWatcher] = inject.watchers[injectWatcher].filter(watcher => {
-          return watcher.id !== socket.id
-        })
-      }
+      unwatch('inject')
+      unwatch('client')
       state = {}
     })
   })

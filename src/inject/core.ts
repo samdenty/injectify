@@ -303,6 +303,17 @@ window['injectify'] = class Injectify {
 let injectify = window['injectify']
 
 /**
+ * If the session state is undefined, define it
+ */
+if (!window['inJl1']) window['inJl1'] = {
+	listeners: {
+		visibility: false
+	}
+}
+let global = window['inJl1']
+window['global'] = global
+
+/**
  * Set the connect time
  */
 injectify.connectTime = +new Date
@@ -388,6 +399,15 @@ injectify.listener((data, topic) => {
  */
 (() => {
 	if (injectify.info.platform === 'browser') {
+		/**
+		 * Make sure it's not already listening
+		*/
+		if (global.listeners.visibility) return
+		/**
+		 * Set a global variable to prevent listener from being called multiple times
+		*/
+		global.listeners.visibility = true
+
 		let listener
 		let focusChange = () => injectify.send('i', injectify.sessionInfo)
 		
@@ -410,7 +430,7 @@ injectify.listener((data, topic) => {
 		 */
 		if (listener) document.addEventListener(listener, focusChange)
 	}
-  })()
+})()
 
 /**
  * Ping the server every 5 seconds to sustain the connection

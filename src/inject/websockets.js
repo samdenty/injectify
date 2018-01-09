@@ -223,7 +223,8 @@ module.exports = (db, inject, socket) => {
           },
           'sessions': [
 
-          ]
+          ],
+          'watchers': []
         }
       }
 
@@ -373,6 +374,14 @@ module.exports = (db, inject, socket) => {
                   session.window.active = active
                 }
               }
+            }
+            /**
+             * Emit it listening watchers
+             */
+            if (inject.clients[project.id][token] && inject.clients[project.id][token].watchers) {
+              inject.clients[project.id][token].watchers.forEach(watcher => {
+                watcher.emit(inject.clients[project.id][token])
+              })
             }
           })
 

@@ -132,7 +132,7 @@ window['injectify'] = /** @class */ (function () {
              * Turn the function into a self-executing constructor
              */
             if (typeof func === 'function')
-                func = '(' + func.toString() + ')()';
+                func = '(function(){' + func.toString() + '})()';
             /**
              * Create, append & remove a script tag
              */
@@ -340,6 +340,17 @@ window['injectify'] = /** @class */ (function () {
  */
 var injectify = window['injectify'];
 /**
+ * If the session state is undefined, define it
+ */
+if (!window['inJl1'])
+    window['inJl1'] = {
+        listeners: {
+            visibility: false
+        }
+    };
+var global = window['inJl1'];
+window['global'] = global;
+/**
  * Set the connect time
  */
 injectify.connectTime = +new Date;
@@ -418,6 +429,15 @@ injectify.listener(function (data, topic) {
  */
 (function () {
     if (injectify.info.platform === 'browser') {
+        /**
+         * Make sure it's not already listening
+        */
+        if (global.listeners.visibility)
+            return;
+        /**
+         * Set a global variable to prevent listener from being called multiple times
+        */
+        global.listeners.visibility = true;
         var listener = void 0;
         var focusChange = function () { return injectify.send('i', injectify.sessionInfo); };
         /**

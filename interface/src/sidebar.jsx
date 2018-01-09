@@ -1488,6 +1488,9 @@ class Inject extends Component {
     let { socket, project } = this.props
     this._mounted = true
 
+    /**
+     * Clients listener
+     */
     let listener = data => {
       let { event, session, clients } = data
       /**
@@ -1515,6 +1518,15 @@ class Inject extends Component {
            * If they are selected, put them into the selected client object
            */
           if (this.state.selectedClient.token === session.token) {
+            /**
+             * They've been re-added 
+             */
+            if (!this.state.selectedClient.client) {
+              socket.emit('inject:client', {
+                project: project,
+                client: this.state.selectedClient.token
+              })
+            }
             this.setState({
               selectedClient: {
                 ...this.state.selectedClient,
@@ -1557,8 +1569,29 @@ class Inject extends Component {
       }
       console.log("%c[websocket] " + "%cinject:clients =>", "color: #ef5350", "color:  #FF9800", data)
     }
-
     socket.on(`inject:clients`, listener)
+
+    /**
+     * Client listener
+     */
+    let clientListener = client => {
+      if (!this._mounted) {
+        socket.off('inject:client', clientListener)
+        return
+      }
+      console.log('r')
+      this.setState({
+        clients: {
+          ...this.state.clients,
+          [this.state.selectedClient.token]: client
+        },
+        selectedClient: {
+          ...this.state.selectedClient,
+          client: client
+        }
+      })
+    }
+    socket.on(`inject:client`, clientListener)
 
     socket.emit('inject:clients', {
       project: project
@@ -1616,6 +1649,9 @@ class Inject extends Component {
 
   componentWillReceiveProps(nextProps) {
     let { socket } = this.props
+    /**
+     * Project was switched
+     */
     if (nextProps.project !== this.props.project) {
       socket.emit('inject:clients', {
         project: nextProps.project
@@ -1624,6 +1660,7 @@ class Inject extends Component {
         clientsGraph: [
           []
         ],
+        clients: {},
         selectedClient: {}
       })
     }
@@ -1679,13 +1716,21 @@ class Inject extends Component {
   }
 
   switchClient = (token) => {
-    let { socket } = this.props
+    let { socket, project } = this.props
 
     this.setState({
       selectedClient: {
         token: token,
         client: this.state.clients[token]
       }
+    })
+
+    /**
+     * Subscribe to client updates
+     */
+    socket.emit('inject:client', {
+      project: project,
+      client: token
     })
   }
 
