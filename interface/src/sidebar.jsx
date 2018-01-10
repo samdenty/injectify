@@ -1633,7 +1633,7 @@ class Inject extends Component {
         socket.off('inject:client', clientListener)
         return
       }
-      console.log('r')
+      console.log('Client emitted an update', client)
       this.setState({
         clients: {
           ...this.state.clients,

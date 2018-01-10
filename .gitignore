@@ -2,7 +2,10 @@
 server.config.js
 database/*
 !database/README.md
-src/inject/core.js
+
+# Typescript
+src/**.js
+!src/inject/modules
 
 # Interface files
 interface/assets/css

@@ -6,7 +6,7 @@ const config = require('../../server.config.js').injectify
 
 const websockets = require('./websockets.js')
 const loadModules = require('./loadModules.js')
-const core = fs.readFileSync(`${__dirname}/core.js`, 'utf8')
+const core = fs.readFileSync(`${__dirname}/core/core.js`, 'utf8')
 
 module.exports = (express, db) => {
   let state = {
