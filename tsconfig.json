@@ -2,7 +2,10 @@
   "compilerOptions": {
     "module": "commonjs",
     "moduleResolution": "node",
-    "target": "es6"
+    "lib": [
+      "dom",
+      "es7"
+    ]
   },
   "exclude": [
     "./src/inject/core"

