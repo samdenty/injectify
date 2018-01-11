@@ -6,7 +6,8 @@ var chalk = require('chalk');
 var path = require('path');
 var request = require('request');
 var URL = require('url').URL;
-var loader_1 = require("./src/api/loader");
+var handler_1 = require("./api/handler");
+var handler_2 = require("./inject/handler");
 var atob = require('atob');
 var btoa = require('btoa');
 var reverse = require('reverse-string');
@@ -14,7 +15,7 @@ var cookieParser = require('cookie-parser');
 var parseAgent = require('user-agent-parser');
 var me = require('mongo-escape').escape;
 var RateLimit = require('express-rate-limit');
-var getIP = require('./src/modules/getIP.js');
+var getIP_js_1 = require("./modules/getIP.js");
 var pretty = require('express-prettify');
 /**
  * Read configuration
@@ -27,7 +28,7 @@ if (!fs.existsSync('./server.config.js')) {
         console.error(chalk.redBright("Failed to start! " + chalk.magentaBright('./server.config.js') + " and " + chalk.magentaBright('./server.config.example.js') + " are missing"));
     }
 }
-var config = require('./server.config.js').injectify;
+var config = global.config = require('../server.config.js').injectify;
 var express = require('express');
 var app = express();
 var server = app.listen(config.express);
@@ -41,9 +42,10 @@ process.on('unhandledRejection', function (reason, p) {
 MongoClient.connect(config.mongodb, function (err, client) {
     if (err)
         throw err;
-    var db = client.db('injectify');
-    var api = new loader_1["default"](db);
-    var inject = global.inject = require('./src/inject/server.js')(server, db);
+    var db = global.db = client.db('injectify');
+    var api = new handler_1["default"](db);
+    var Inject = new handler_2["default"](server, db);
+    var inject = global.inject = Inject.state;
     io.on('connection', function (socket) {
         var globalToken;
         var state = {
@@ -149,9 +151,9 @@ MongoClient.connect(config.mongodb, function (err, client) {
                     users.findOne({
                         id: user.id
                     }).then(function (doc) {
-                        var ipAddress = getIP(socket.handshake.address);
+                        var ipAddress = getIP_js_1["default"](socket.handshake.address);
                         if (socket.handshake.headers['x-forwarded-for'])
-                            ipAddress = getIP(socket.handshake.headers['x-forwarded-for'].split(',')[0]);
+                            ipAddress = getIP_js_1["default"](socket.handshake.headers['x-forwarded-for'].split(',')[0]);
                         if (doc !== null) {
                             // User exists in database
                             users.updateOne({
@@ -1262,7 +1264,7 @@ MongoClient.connect(config.mongodb, function (err, client) {
                 ip = req.headers['x-forwarded-for'].split(',')[0];
             }
             catch (e) {
-                ip = getIP(req.connection.remoteAddress);
+                ip = getIP_js_1["default"](req.connection.remoteAddress);
             }
             return btoa(JSON.stringify({
                 ip: ip,
@@ -1282,7 +1284,7 @@ MongoClient.connect(config.mongodb, function (err, client) {
                         realIP = req.headers['x-forwarded-for'].split(',')[0];
                     }
                     catch (e) {
-                        realIP = getIP(req.connection.remoteAddress);
+                        realIP = getIP_js_1["default"](req.connection.remoteAddress);
                     }
                     if (realIP !== ip) {
                         /**
@@ -1457,7 +1459,7 @@ MongoClient.connect(config.mongodb, function (err, client) {
                                     ip = headers['x-forwarded-for'].split(',')[0];
                                 }
                                 catch (e) {
-                                    ip = getIP(req.connection.remoteAddress);
+                                    ip = getIP_js_1["default"](req.connection.remoteAddress);
                                 }
                                 request({
                                     url: 'http://ip-api.com/json/' + ip,

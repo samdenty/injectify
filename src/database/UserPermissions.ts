@@ -55,7 +55,7 @@ export default class {
             if (permission.group && permission.level) {
               resolve({
                 permission: permission,
-                doc:doc
+                doc: doc
               })
             } else {
               reject({

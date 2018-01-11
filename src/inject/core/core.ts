@@ -13,7 +13,7 @@ window['injectify'] = class Injectify {
 	 * Overrides the message handler for the websocket connection
 	 * @param {function} callback Callback to be triggered once message received
 	 */
-	static listener(callback) {
+	static listener(callback: Function) {
 		ws.onmessage = message => {
 			try {
 				let data = JSON.parse(message.data)
@@ -361,7 +361,7 @@ injectify.listener((data, topic) => {
 			var module = {
 				name: data.name,
 				token: data.token,
-				callback: window[data.token],
+				callback: window[data.token] || function() {}, // Fallback function if no callback was specified
 				returned: undefined,
 				config: {
 					async: false

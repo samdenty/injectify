@@ -7,7 +7,8 @@ const chalk = require('chalk')
 const path = require('path')
 const request = require('request')
 const { URL } = require('url')
-import apiLoader from './src/api/loader'
+import apiHandler from './api/handler'
+import injectHandler from './inject/handler'
 const atob = require('atob')
 const btoa = require('btoa')
 const reverse = require('reverse-string')
@@ -15,7 +16,7 @@ const cookieParser = require('cookie-parser')
 const parseAgent = require('user-agent-parser')
 const me = require('mongo-escape').escape
 const RateLimit = require('express-rate-limit')
-const getIP = require('./src/modules/getIP.js')
+import getIP from './modules/getIP.js'
 const pretty = require('express-prettify')
 
 /**
@@ -29,7 +30,7 @@ if (!fs.existsSync('./server.config.js')) {
   }
 }
 
-const config = require('./server.config.js').injectify
+const config = global.config = require('../server.config.js').injectify
 const express = require('express')
 const app = express()
 const server = app.listen(config.express)
@@ -45,9 +46,12 @@ process.on('unhandledRejection', (reason, p) => {
 
 MongoClient.connect(config.mongodb, (err, client) => {
   if (err) throw err
-  const db = client.db('injectify')
-  const api = new apiLoader(db)
-  let inject = global.inject = require('./src/inject/server.js')(server, db)
+  const db = global.db = client.db('injectify')
+  const api = new apiHandler(db)
+  let Inject = new injectHandler(server, db)
+  let inject = global.inject = Inject.state
+
+
 
   io.on('connection', socket => {
     let globalToken
@@ -1259,9 +1263,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
       }))
     }
     let authenticate = (req, res, token) => {
-      let {
-        id
-      } = req.query
+      let { id } = req.query
       try {
         let {
           ip

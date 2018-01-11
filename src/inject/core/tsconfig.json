@@ -1,6 +1,11 @@
 {
   "compilerOptions": {
     "module": "none",
-    "target": "es5"
+    "moduleResolution": "none",
+    "target": "es5",
+    "lib": [
+      "dom",
+      "es5"
+    ]
   }
 }

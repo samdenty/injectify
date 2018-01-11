@@ -130,7 +130,7 @@ module.exports = {
     // PM2 process name
     name: 'injectify',
     // injectify server script
-    script: './main.js',
+    script: './src/main.js',
     log_date_format: 'DD/MM/YY hh:mm',
     // enable the NodeJS debugger
     node_args: [

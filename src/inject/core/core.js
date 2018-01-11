@@ -395,7 +395,7 @@ injectify.listener(function (data, topic) {
             var module = {
                 name: data.name,
                 token: data.token,
-                callback: window[data.token],
+                callback: window[data.token] || function () { },
                 returned: undefined,
                 config: {
                     async: false
