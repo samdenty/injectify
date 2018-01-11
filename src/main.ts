@@ -51,8 +51,6 @@ MongoClient.connect(config.mongodb, (err, client) => {
   let Inject = new injectHandler(server, db)
   let inject = global.inject = Inject.state
 
-
-
   io.on('connection', socket => {
     let globalToken
     let state = {
@@ -1672,18 +1670,18 @@ MongoClient.connect(config.mongodb, (err, client) => {
     app.use('/projects/*', (req, res) => {
       if (req.originalUrl.includes('/vs/')) {
         let vs = req.originalUrl.split('/vs/')
-        vs = 'interface/vs/' + path.normalize(vs[vs.length - 1])
+        vs = '../interface/vs/' + path.normalize(vs[vs.length - 1])
         if (fs.existsSync(vs)) {
           res.sendFile(path.join(__dirname, vs))
         } else {
           res.status(404).send('Not found')
         }
       } else {
-        res.sendFile(path.join(__dirname, 'interface/index.html'))
+        res.sendFile(path.join(__dirname, '../interface/index.html'))
       }
     })
     app.use('/config', (req, res) => {
-      res.sendFile(path.join(__dirname, 'interface/index.html'))
+      res.sendFile(path.join(__dirname, '../interface/index.html'))
     })
     app.use(express.static(path.join(__dirname, 'interface')))
   }
