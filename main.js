@@ -1656,16 +1656,10 @@ MongoClient.connect(config.mongodb, function (err, client) {
         });
     });
     /**
-     * Spoof API
+     * APIs
      */
     app.get('/api/spoof/*', apiLimiter, function (req, res) { return api.spoof(req, res); });
-    /**
-     * Payload API
-     */
     app.get('/api/payload/*', apiLimiter, function (req, res) { return api.payload(req, res); });
-    /**
-     * Project API
-     */
     app.get('/api/*', apiLimiter, function (req, res) { return api.json(req, res); });
     if (config.dev) {
         // Proxy through to webpack-dev-server if in development mode

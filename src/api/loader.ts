@@ -75,6 +75,8 @@ export default class {
             console.log(
               chalk.greenBright('[API/JSON] ') +
               chalk.yellowBright('delivered ') +
+              chalk.magentaBright(page) +
+              chalk.yellowBright(' for project ') +
               chalk.magentaBright(project) +
               chalk.redBright(` (length=${json ? json.length : 0}) `) +
               chalk.yellowBright('to ') +

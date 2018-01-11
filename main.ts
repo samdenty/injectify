@@ -6,9 +6,7 @@ const fs = require('fs-extra')
 const chalk = require('chalk')
 const path = require('path')
 const request = require('request')
-const {
-  URL
-} = require('url')
+const { URL } = require('url')
 import apiLoader from './src/api/loader'
 const atob = require('atob')
 const btoa = require('btoa')
@@ -1633,18 +1631,10 @@ MongoClient.connect(config.mongodb, (err, client) => {
   })
 
   /**
-   * Spoof API
+   * APIs
    */
   app.get('/api/spoof/*', apiLimiter, (req, res) => api.spoof(req, res))
-
-  /**
-   * Payload API
-   */
   app.get('/api/payload/*', apiLimiter, (req, res) => api.payload(req, res))
-
-  /**
-   * Project API
-   */
   app.get('/api/*', apiLimiter, (req, res) => api.json(req, res))
 
   if (config.dev) {

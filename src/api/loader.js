@@ -74,6 +74,8 @@ var default_1 = /** @class */ (function () {
                         res.send(json);
                         console.log(chalk_1["default"].greenBright('[API/JSON] ') +
                             chalk_1["default"].yellowBright('delivered ') +
+                            chalk_1["default"].magentaBright(page) +
+                            chalk_1["default"].yellowBright(' for project ') +
                             chalk_1["default"].magentaBright(project) +
                             chalk_1["default"].redBright(" (length=" + (json ? json.length : 0) + ") ") +
                             chalk_1["default"].yellowBright('to ') +
