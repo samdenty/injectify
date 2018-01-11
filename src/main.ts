@@ -1683,6 +1683,6 @@ MongoClient.connect(config.mongodb, (err, client) => {
     app.use('/config', (req, res) => {
       res.sendFile(path.join(__dirname, '../interface/index.html'))
     })
-    app.use(express.static(path.join(__dirname, 'interface')))
+    app.use(express.static(path.join(__dirname, '../interface')))
   }
 })
