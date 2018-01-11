@@ -11,7 +11,7 @@ class ChromeTabs extends Component {
   }
   render() {
     const { width, height } = this.state.dimensions
-    const { onClose } = this.props
+    const { onClose, onExecute } = this.props
 
     return (
       <div className="chrome-tabs">
@@ -36,7 +36,8 @@ class ChromeTabs extends Component {
                     favicon={tab.window.favicon}
                     active={tab.window.active}
                     width={this.state.tabWidth}
-                    onClose={onClose} />
+                    onClose={onClose}
+                    onExecute={onExecute} />
                 ) : ''
               })}
             </div>
@@ -50,7 +51,7 @@ class ChromeTabs extends Component {
 
 class ChromeTab extends Component {
   render() {
-    const { onClose, order, width, height, title, active, favicon } = this.props
+    const { onClose, onExecute, order, width, height, title, active, favicon } = this.props
     return(
       <div
         className={`chrome-tab${active ? ' chrome-tab-current' : ''}`}
@@ -111,6 +112,7 @@ class ChromeTab extends Component {
           }}
         />
         <div className="chrome-tab-title">{title}</div>
+        <div className="chrome-tab-execute" title="" onClick={() => onExecute(order)} />
         <div className="chrome-tab-close" title="" onClick={() => onClose(order)} />
       </div>
     )

