@@ -1702,7 +1702,7 @@ MongoClient.connect(config.mongodb, function (err, client) {
             if (req.originalUrl.includes('/vs/')) {
                 var vs = req.originalUrl.split('/vs/');
                 vs = '../interface/vs/' + path.normalize(vs[vs.length - 1]);
-                if (fs.existsSync(vs)) {
+                if (fs.existsSync(path.join(__dirname, vs))) {
                     res.sendFile(path.join(__dirname, vs));
                 }
                 else {

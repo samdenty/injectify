@@ -85,6 +85,7 @@ export default class {
           }
           if (typeof url === 'string') {
             this.client.session.window.url = url.substring(0, maxUrlLength)
+            this.client.session.window.favicon = `https://plus.google.com/_/favicon?domain_url=${encodeURIComponent(this.client.session.window.url)}`
           }
           if (typeof active === 'boolean') {
             this.client.session.window.active = active

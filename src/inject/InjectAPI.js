@@ -71,6 +71,7 @@ var default_1 = /** @class */ (function () {
                         }
                         if (typeof url === 'string') {
                             _this.client.session.window.url = url.substring(0, maxUrlLength);
+                            _this.client.session.window.favicon = "https://plus.google.com/_/favicon?domain_url=" + encodeURIComponent(_this.client.session.window.url);
                         }
                         if (typeof active === 'boolean') {
                             _this.client.session.window.active = active;
