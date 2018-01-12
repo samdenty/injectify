@@ -4,8 +4,8 @@ database/*
 !database/README.md
 
 # Typescript
-src/**.js
-!src/inject/modules
+src/**/*.js
+!src/inject/modules/
 
 # Interface files
 interface/assets/css
