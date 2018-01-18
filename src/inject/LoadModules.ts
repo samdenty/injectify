@@ -15,6 +15,7 @@ export default class {
 
   }
 
+  // @ts-ignore
   get load() {
     return new Promise<{ modules: any, debugModules: any, count: number }>((resolve, reject) => {
       fs.readdir(`${__dirname}/modules/`, (err, folders) => {

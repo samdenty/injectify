@@ -7,10 +7,11 @@ const ExtractTextPlugin = require('extract-text-webpack-plugin')
 module.exports = {
 	entry: ['./main.jsx', './scss/main.scss'],
 	output: {
-		path: path.resolve(__dirname) + '/..',
+		path: path.resolve(__dirname) + '/../public',
 		filename: 'bundle.js',
 		publicPath: '/'
 	},
+	devtool: 'source-map',
 	module: {
 		rules: [
 			{
@@ -23,7 +24,12 @@ module.exports = {
 				loader: ['css-hot-loader'].concat(ExtractTextPlugin.extract({
 					use: ['css-loader', 'sass-loader']
 				}))
-			}
+			},
+			{
+        enforce: 'pre',
+        test: /\.js$/,
+        loader: 'source-map-loader'
+      }
 		]
 	},
 	plugins: [
@@ -47,7 +53,7 @@ module.exports = {
 		extensions: ['*', '.js', '.jsx']
 	},
 	devServer: {
-		contentBase: '../',
+		contentBase: '../public/',
 		hot: true
 	}
 }

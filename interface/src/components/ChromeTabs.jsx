@@ -7,45 +7,117 @@ class ChromeTabs extends Component {
       width: -1,
       height: -1
     },
-    tabWidth: 240
+    scroll: {
+      left: false,
+      right: false
+    },
+    listener: false,
+    tabWidth: 240,
   }
+
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.tabs && this.props.tabs) {
+      if (nextProps.tabs.length !== this.props.tabs) {
+        this.update(nextProps.tabs.length)
+      }
+    }
+  }
+
+  update(tabCount) {
+    let w = this.state.dimensions.width / tabCount
+    if (w > 240) w = 240
+    if (w < 150) w = 150
+    
+    this.setState({
+      scroll: this.updateScroll(),
+      tabWidth: w
+    })
+  }
+
+  updateScroll(setState) {
+    let scroll = this.state.scroll
+    if (this.tabs) {
+      let overflow = this.tabs.scrollWidth > this.tabs.clientWidth
+      scroll.left = overflow && this.tabs.scrollLeft !== 0
+      scroll.right = overflow && this.tabs.scrollLeft !== (this.tabs.scrollWidth - this.tabs.offsetWidth)
+    }
+    if (setState) {
+      this.setState({
+        scroll: scroll
+      })
+    } else {
+      return scroll
+    }
+  }
+
+  addListener() {
+    if (!this.state.listener) {
+      this.setState({
+        listener: true
+      })
+      this.tabs.addEventListener('scroll', () => this.updateScroll(true))
+    }
+  }
+
+  previous() {
+    let tab = Math.floor(((this.state.dimensions.width + this.tabs.scrollLeft - 5) / (this.state.tabWidth - 14)) - (this.state.dimensions.width  / (this.state.tabWidth - 14)))
+    if (this.tabs.childNodes[tab])
+      this.tabs.childNodes[tab].scrollIntoView({
+        inline: 'start',
+        behavior: 'smooth'
+      })
+  }
+
+  next() {
+    let tab = Math.ceil((this.state.dimensions.width + this.tabs.scrollLeft) / (this.state.tabWidth - 14)) - 1
+    if (this.tabs.childNodes[tab])
+      this.tabs.childNodes[tab].scrollIntoView({
+        inline: 'end',
+        behavior: 'smooth'
+      })
+  }
+
   render() {
     const { width, height } = this.state.dimensions
     const { onClose, onExecute } = this.props
 
     return (
       <div className="chrome-tabs">
+        <div onClick={this.previous.bind(this)} className={`chrome-tabs-previous ${this.state.scroll.left ? 'required' : ''}`} />
         <Measure
           bounds
           onResize={(contentRect) => {
+            this.addListener()
             this.setState({ dimensions: contentRect.bounds })
-            let w = contentRect.bounds.width / this.props.tabs.length
-            if (w > 240) w = 240
-            this.setState({ tabWidth: w })
-          }}>
-          {({measureRef}) =>
-            <div
-              className="chrome-tabs-content"
-              ref={measureRef} >
-              {this.props.tabs && this.props.tabs.map((tab, i) => {
-                return tab.window ? (
-                  <ChromeTab
-                    key={i}
-                    order={i}
-                    title={tab.window.title}
-                    favicon={tab.window.favicon}
-                    active={tab.window.active}
-                    width={this.state.tabWidth}
-                    onClose={onClose}
-                    onExecute={onExecute} />
-                ) : ''
-              })}
-            </div>
-          }
+            this.update(this.props.tabs.length)
+          }}
+          innerRef={tabs => this.tabs = tabs}>
+          {({measureRef}) => {
+            return (
+              <div
+                className="chrome-tabs-content"
+                ref={measureRef} >
+                {this.props.tabs && this.props.tabs.map((tab, i) => {
+                  return tab.window ? (
+                    <ChromeTab
+                      key={tab.id || i}
+                      order={i}
+                      title={tab.window.title}
+                      favicon={tab.window.favicon}
+                      active={tab.window.active}
+                      width={this.state.tabWidth}
+                      onClose={onClose}
+                      onExecute={onExecute} />
+                  ) : ''
+                })}
+              </div>
+            )
+          }}
         </Measure>
+        <div onClick={this.next.bind(this)} className={`chrome-tabs-next ${this.state.scroll.right ? 'required' : ''}`} />
         <div className="chrome-tabs-bottom-bar" />
       </div>
-    );
+    )
   }
 }
 

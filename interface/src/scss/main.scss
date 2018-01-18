@@ -189,7 +189,7 @@ pre {
     }
   } // Online clients graph
   >div:nth-child(2) {
-    box-shadow: -24px 3px 8px #2f323c;
+    box-shadow: -12px 3px 8px #2f323c;
     z-index: 1;
     position: sticky;
     svg {
@@ -250,6 +250,7 @@ pre {
   width: 100%;
   height: 100%;
   .chrome-tabs {
+    display: flex;
     box-sizing: border-box;
     position: relative;
     font-size: 10px;
@@ -263,6 +264,28 @@ pre {
       box-sizing: inherit;
       font-family: inherit;
     }
+    .chrome-tabs-previous,
+    .chrome-tabs-next {
+      width: 18px;
+      z-index: 499;
+      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20.57 38"><path xmlns="http://www.w3.org/2000/svg" fill="none" stroke="rgba(255,255,255,0.9)" stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M18.54 2L2 18.86 18.57 36"/></svg>');
+      background-repeat: no-repeat;
+      background-position: 0 50%;
+      background-size: 8px;
+      box-shadow: 3px 0px 6px -1px #333536;
+      opacity: 0.1;
+      transition: 0.3s opacity ease;
+      &.required {
+        cursor: pointer;
+        opacity: 0.7;
+        &:hover {
+          opacity: 1
+        }
+      }
+    }
+    .chrome-tabs-next {
+      transform: scaleX(-1);
+    }
     .chrome-tabs-bottom-bar {
       position: absolute;
       bottom: 0;
@@ -271,13 +294,17 @@ pre {
       width: 100%;
       background: #1F1F1F;
       box-shadow: 0 -0.05em rgba(0, 0, 0, 0.5);
-      z-index: 20;
+      z-index: 500;
     }
     .chrome-tabs-content {
       position: relative;
       width: 100%;
       height: 100%;
-      overflow: hidden;
+      overflow: scroll;
+      &::-webkit-scrollbar {
+        display: none
+      }
+
     }
     .chrome-tab {
       position: absolute;
@@ -316,7 +343,7 @@ pre {
         }
       }
       &.chrome-tab-current {
-        z-index: 999;
+        z-index: 498;
         .chrome-tab-background>svg .chrome-tab-background {
           fill: #1F1F1F;
         }
@@ -403,8 +430,10 @@ pre {
         }
       }
     }
-  } // .react-monaco-editor-container {
-  // }
+  }
+  .react-monaco-editor-container {
+    overflow: hidden
+  }
 }
 
 

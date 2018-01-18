@@ -321,6 +321,7 @@ if (!window['inJl1']) window['inJl1'] = {
 		}
 	}
 }
+// @ts-ignore
 let global = window['inJl1']
 window['global'] = global
 
