@@ -6,7 +6,6 @@ import Websockets from './Websockets'
 
 const fs = require('fs')
 const UglifyJS = require('uglify-es')
-const sockjs = require('sockjs')
 const WebSocket = require('ws')
 const core = fs.readFileSync(`${__dirname}/core/core.js`, 'utf8')
 
