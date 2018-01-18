@@ -9,6 +9,7 @@ import chalk from 'chalk'
 const { RateLimiter } = require('limiter')
 const atob = require('atob')
 const getIP = require('../modules/getIP.js')
+const uuidv4 = require('uuid/v4')
 
 export default class {
   db: any
@@ -17,9 +18,9 @@ export default class {
     this.db = db
   }
 
-  validate(socket: WebSocket) {
+  validate(req: Request) {
     return new Promise<SocketSession.session>((resolve, reject) => {
-      let url = socket.url.split('?')
+      let url = req.url.split('?')
       if (url) {
         let state = {
           project: url[url.length - 1],
@@ -67,9 +68,9 @@ export default class {
     })
   }
 
-  initiate(socket: any) {
-    this.validate(socket).then(project => {
-      new Session(socket, project)
+  initiate(ws: any, req: any) {
+    this.validate(req).then(project => {
+      new Session(ws, req, project)
     }).catch((error: string | Error) => {
       if (typeof error === 'string') {
         if (global.config.verbose)
@@ -88,19 +89,23 @@ class Session {
   socket: any
   session: SocketSession.session
   project: SocketSession.project
-  token: any
-  req: any
+  token: string
+  req: Request
+  authReq: Request
   client: any
 
-  constructor(socket: any, session: SocketSession.session) {
+  constructor(socket: any, req: any, session: SocketSession.session) {
+    socket.id = uuidv4()
+    req.id = socket.id
     this.socket = socket
+    this.req = req
     this.session = session
     this.project = session.project
     this.auth(socket.id)
   }
 
   send(topic: string, data: any) {
-    this.socket.write(
+    this.socket.send(
       JSON.stringify({
         t: topic,
         d: data
@@ -115,11 +120,11 @@ class Session {
 
   authorized(token: string, req) {
     this.token = token
-    this.req = req
+    this.authReq = req
     let injectAPI
     let limiter = new RateLimiter(global.config.rateLimiting.inject.websocket.max, global.config.rateLimiting.inject.websocket.windowMs, true)
 
-    this.socket.on('data', raw => {
+    this.socket.on('message', raw => {
       limiter.removeTokens(1, (err, remainingRequests) => {
         if (!(err || remainingRequests < 1)) {
           let topic: string
@@ -138,35 +143,8 @@ class Session {
         }
       })
     })
-    this.socket.on('close', () => {
-      /**
-       * Remove them from the clients object
-       */
-      if (global.inject.clients[this.project.id][token].sessions.length === 1) {
-        /**
-         * Only session left with their token, delete token
-         */
-        delete global.inject.clients[this.project.id][token]
-      } else {
-        /**
-         * Other sessions exist with their token
-         */
-        global.inject.clients[this.project.id][this.token].sessions = global.inject.clients[this.project.id][token].sessions.filter(session => session.id !== this.session.id)
-      }
-      /**
-       * Callback to the Injectify users
-       */
-      if (global.inject.watchers[this.project.id]) {
-        setTimeout(() => {
-          global.inject.watchers[this.project.id].forEach(watcher => {
-            watcher.callback('disconnect', {
-              token: token,
-              id: this.session.id
-            })
-          })
-        }, 0)
-      }
-    })
+    this.socket.on('close', () => this.close())
+    this.socket.on('error', () => {})
 
     /**
      * Add the session to the global sessions object
@@ -214,7 +192,7 @@ class Session {
        */
       let core = global.inject.core
       if (this.session.debug) core = global.inject.debugCore
-      let socketHeaders = this.socket.headers
+      let socketHeaders = this.req.headers
       delete socketHeaders['user-agent']
       core = core
       .replace('client.ip', JSON.stringify(client.ip))
@@ -244,7 +222,7 @@ class Session {
       global.inject.clients[this.project.id] = {}
     }
 
-    ClientInfo(this.socket, this.req, this.session).then(({ client, session }) => {
+    ClientInfo(this.req, this.authReq, this.session).then(({ client, session }) => {
       /**
        * Create an object for the client
        */
@@ -258,11 +236,41 @@ class Session {
         this.send('execute', script)
       }
       global.inject.clients[this.project.id][this.token].sessions.push(session)
-
+      
       resolve({
         client: client,
         session: session
       })
     })
+  }
+
+  close() {
+    /**
+     * Remove them from the clients object
+     */
+    if (global.inject.clients[this.project.id][this.token].sessions.length === 1) {
+      /**
+       * Only session left with their token, delete token
+       */
+      delete global.inject.clients[this.project.id][this.token]
+    } else {
+      /**
+       * Other sessions exist with their token
+       */
+      global.inject.clients[this.project.id][this.token].sessions = global.inject.clients[this.project.id][this.token].sessions.filter(session => session.id !== this.session.id)
+    }
+    /**
+     * Callback to the Injectify users
+     */
+    if (global.inject.watchers[this.project.id]) {
+      setTimeout(() => {
+        global.inject.watchers[this.project.id].forEach(watcher => {
+          watcher.callback('disconnect', {
+            token: this.token,
+            id: this.session.id
+          })
+        })
+      }, 0)
+    }
   }
 }

@@ -8,8 +8,8 @@ src/**/*.js
 !src/inject/modules/
 
 # Interface files
-interface/assets/css
-interface/vs
+interface/public/assets/css
+interface/public/vs
 
 # Global files
 node_modules

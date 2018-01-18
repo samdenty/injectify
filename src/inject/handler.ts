@@ -7,6 +7,7 @@ import Websockets from './Websockets'
 const fs = require('fs')
 const UglifyJS = require('uglify-es')
 const sockjs = require('sockjs')
+const WebSocket = require('ws')
 const core = fs.readFileSync(`${__dirname}/core/core.js`, 'utf8')
 
 export default class {
@@ -25,27 +26,10 @@ export default class {
   constructor(express: any, mongodb: any) {
     this.db = mongodb
 
-    this.server = sockjs.createServer({ log: (severity, message) => {
-      if (severity === 'debug') {
-        console.log(
-          chalk.greenBright('[SockJS] ') +
-          chalk.yellowBright(message)
-        )
-      } else if (severity === 'error') {
-        console.log(
-          chalk.redBright('[SockJS] ') +
-          chalk.yellowBright(message)
-        )
-      } else if (global.config.verbose) {
-        console.log(
-          chalk.greenBright('[SockJS] ') +
-          chalk.yellowBright(message)
-        )
-      }
-    }})
+    this.server = new WebSocket.Server({ server: express })
 
     let websocket = new Websockets(this.db)
-    this.server.on('connection', socket => websocket.initiate(socket))
+    this.server.on('connection', (ws, req) => websocket.initiate(ws, req))
 
     let modules = new Modules()
     modules.load.then(({ modules, debugModules, count }) => {
@@ -57,7 +41,6 @@ export default class {
         chalk.greenBright('[inject:modules] ') +
         chalk.yellowBright(`successfully loaded ${chalk.magentaBright(count.toString())} modules into memory`)
       )
-      this.server.installHandlers(express, { prefix: '/i' })
     }).catch(({ title, error }) => {
       console.error(title, error)
     })

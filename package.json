@@ -7,27 +7,22 @@
     "test": "yarn run install:all && yarn run build:silent",
     "start": "start \"\" cmd /k \"yarn run dev\" && yarn run server:dev",
     "dev": "concurrently -n \"webpack,mongo,typescript\" -c \"bgGreen.bold,bgMagenta.bold,bgCyan.bold\" \"yarn run interface\" \"yarn run mongo\" \"yarn run typescript\"",
-
     "build": "cd interface/src && yarn run build",
     "build:silent": "cd interface/src && yarn run build:silent",
-
     "server:dev": "cross-env NODE_ENV=development nodemon --inspect ./src/main",
     "server:production": "cross-env NODE_ENV=production nodemon --inspect ./src/main",
-
     "interface": "cd interface/src && yarn run dev",
     "typescript": "concurrently -n \"server-typescript,inject-typescript\" -c \"bgMagenta.bold,bgCyan.bold\" \"tsc -w\" \"cd src/inject/core && tsc -w\"",
     "mongo": "mongod --dbpath=./database --port 19000 --bind_ip 0.0.0.0",
     "pm2": "pm2 start server.config.js",
-
     "install:all": "yarn --production=false && cd interface/src && yarn --production=false",
     "pull": "(git stash && git pull) && yarn run deploy || yarn run deploy:failure",
-    "deploy": "yarn run deploy:start; (pm2 stop injectify &> /dev/null; yarn run install:all && yarn run build && tsc && (cd src/inject/core && tsc) && yarn run pm2) && yarn run deploy:success || yarn run deploy:failure",
+    "deploy": "yarn run deploy:start; (pm2 stop injectify &> /dev/null; yarn run install:all && yarn run build && yarn run tsc && yarn run pm2) && yarn run deploy:success || yarn run deploy:failure",
     "deploy:start": "(cd ci && yarn && node status deploy-start)",
     "deploy:success": "(cd ci && yarn && node status deploy-success)",
     "deploy:failure": "(cd ci && yarn && node status deploy-failure)",
-
     "server": "yarn run server:dev",
-    "tsc": "yarn run typescript"
+    "tsc": "tsc || echo done.; cd src/inject/core && tsc || echo done."
   },
   "repository": {
     "type": "git",
@@ -64,11 +59,12 @@
     "request": "^2.83.0",
     "reverse-string": "0.0.6",
     "socket.io": "^2.0.4",
-    "sockjs": "^0.3.19",
     "twemoji": "^2.5.0",
     "typescript": "^2.6.2",
     "uglify-es": "^3.2.2",
-    "user-agent-parser": "^0.6.0"
+    "user-agent-parser": "^0.6.0",
+    "uuid": "^3.2.1",
+    "ws": "^4.0.0"
   },
   "devDependencies": {
     "cross-env": "^5.1.3",

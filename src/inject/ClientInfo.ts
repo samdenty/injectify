@@ -6,7 +6,7 @@ const geoip = require('geoip-lite')
 const parseAgent = require('user-agent-parser')
 const twemoji = require('twemoji')
 
-export default (socket: any, req: any, session: SocketSession.session) => {
+export default (req: any, authReq: any, session: SocketSession.session) => {
   return new Promise((resolve) => {
     /**
      * Gather details about the connection
@@ -18,11 +18,11 @@ export default (socket: any, req: any, session: SocketSession.session) => {
     let ip
     try {
       ip = {
-        query: socket.headers['x-forwarded-for'].split(',')[0]
+        query: req.headers['x-forwarded-for'].split(',')[0]
       }
     } catch (e) {
       ip = {
-        query: getIP(socket.remoteAddress)
+        query: getIP(req.connection.remoteAddress)
       }
     }
     let parsedIP = geoip.lookup(ip.query)
@@ -32,15 +32,15 @@ export default (socket: any, req: any, session: SocketSession.session) => {
       country = 'https://twemoji.maxcdn.com/2/svg/' + twemoji.convert.toCodePoint(flag(ip.country)) + '.svg'
     }
 
-    let agent = parseAgent(socket.headers['user-agent'])
+    let agent = parseAgent(req.headers['user-agent'])
     let os = <any> false
 
     /**
      * Parse user-agent from the Injectify Electron application
      */
-    if (socket.headers['user-agent'] && socket.headers['user-agent'].startsWith('{')) {
+    if (req.headers['user-agent'] && req.headers['user-agent'].startsWith('{')) {
       try {
-        os = JSON.parse(socket.headers['user-agent'])
+        os = JSON.parse(req.headers['user-agent'])
       } catch (e) {
         //
       }
@@ -109,12 +109,12 @@ export default (socket: any, req: any, session: SocketSession.session) => {
     /**
      * Define the correct path to the correct vendor icon
      */
-    if (!os && socket.headers['user-agent']) {
-      if (socket.headers['user-agent'].includes('SamsungBrowser')) {
+    if (!os && req.headers['user-agent']) {
+      if (req.headers['user-agent'].includes('SamsungBrowser')) {
         browser = '/assets/svg/samsung.svg'
-      } else if (socket.headers['user-agent'].includes('Edge')) {
+      } else if (req.headers['user-agent'].includes('Edge')) {
         browser = '/assets/svg/edge.svg'
-      } else if (socket.headers['user-agent'].includes('Trident')) {
+      } else if (req.headers['user-agent'].includes('Trident')) {
         browser = '/assets/svg/ie.svg'
       } else if (agent.browser.name) {
         var browserName = agent.browser.name.toLowerCase()
@@ -154,17 +154,17 @@ export default (socket: any, req: any, session: SocketSession.session) => {
         'id': session.id,
         'debug': session.debug,
         'window': {
-          'title': req.headers.referer,
-          'url': req.headers.referer,
-          'favicon': `https://plus.google.com/_/favicon?domain_url=${encodeURIComponent(req.headers.referer)}`,
+          'title': authReq.headers.referer,
+          'url': authReq.headers.referer,
+          'favicon': `https://plus.google.com/_/favicon?domain_url=${encodeURIComponent(authReq.headers.referer)}`,
           'active': false
         },
         'socket': {
-          'headers': socket.headers,
-          'id': socket.id,
-          'remoteAddress': socket.remoteAddress,
-          'remotePort': socket.remotePort,
-          'url': socket.url
+          'headers': req.headers,
+          'id': req.id,
+          'remoteAddress': req.socket.remoteAddress,
+          'remotePort': req.socket.remotePort,
+          'url': req.url
         }
       }
     })
