@@ -1,7 +1,6 @@
 {
   "compilerOptions": {
     "module": "none",
-    "moduleResolution": "none",
     "target": "es5",
     "lib": [
       "dom",

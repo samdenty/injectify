@@ -23,7 +23,7 @@ if (!webhook) {
     webhook = config.discord.webhook
   }
 }
-if (webhook) {
+if (webhook && webhook !== 'INSERT_WEBHOOK_URL') {
   /**
    * Get status type
    */
@@ -43,12 +43,12 @@ if (webhook) {
     }
     if (
       !(
-        event.platform == 'ci' ||
-        event.platform == 'deploy'
+        event.platform === 'ci' ||
+        event.platform === 'deploy'
       ) || !(
-        event.type == 'start' ||
-        event.type == 'success' ||
-        event.type == 'failure'
+        event.type === 'start' ||
+        event.type === 'success' ||
+        event.type === 'failure'
       )
     ) {
       console.log(`${chalk.redBright('Failed to send message!')} ${chalk.magentaBright(status)} ${chalk.redBright('is an invalid state!')}`)
@@ -58,7 +58,7 @@ if (webhook) {
     console.log(`${chalk.redBright('Failed to send message!')} ${chalk.magentaBright(status)} ${chalk.redBright('is an invalid state!')}`)
     process.exit()
   }
-  
+
   /**
    * Continuous integration
    */
@@ -80,7 +80,7 @@ if (webhook) {
     /**
      * TravisCI
      */
-    if (process.env.TRAVIS_REPO_SLUG)
+    if (process.env.TRAVIS_REPO_SLUG) {
       message = {
         url: `https://travis-ci.org/${process.env.TRAVIS_REPO_SLUG || 'samdenty99/injectify'}/builds/${process.env.TRAVIS_BUILD_ID}`,
         number: process.env.TRAVIS_BUILD_NUMBER,
@@ -91,30 +91,34 @@ if (webhook) {
           failure: 'https://travis-ci.com/images/logos/TravisCI-Mascot-red.png'
         }
       }
+    }
 
     /**
      * Set state
      */
-    if (event.type === 'start')
+    if (event.type === 'start') {
       state = {
         color: 16770600,
         icon: message.icons.start,
         message: 'Starting build ⏳'
       }
+    }
 
-    if (event.type === 'success')
+    if (event.type === 'success') {
       state = {
         color: 5025616,
         icon: message.icons.success,
         message: 'Build passed ✅'
       }
+    }
 
-    if (event.type === 'failure')
+    if (event.type === 'failure') {
       state = {
         color: 16007990,
         icon: message.icons.failure,
         message: 'Build failed! ❌'
       }
+    }
     /**
      * Send message
      */
@@ -136,38 +140,38 @@ if (webhook) {
     /**
      * Set state
      */
-    if (event.type === 'start')
+    if (event.type === 'start') {
       state = {
         color: 16770600,
         icon: message.icons.start,
         message: 'Deploying... 🌐',
         description: ''
       }
+    }
 
-    if (event.type === 'success')
+    if (event.type === 'success') {
       state = {
         color: 5025616,
         icon: message.icons.success,
         message: 'Deployed! ✳️',
         description: ''
       }
+    }
 
-    if (event.type === 'failure')
+    if (event.type === 'failure') {
       state = {
         color: 16007990,
         icon: message.icons.failure,
         message: 'Failed to deploy! SERVER OFFLINE 🛑',
         description: ''
       }
-    
+    }
+
     getos((error, os) => {
       if (error) {
         console.log(error)
       } else {
-        if (os.os === 'win32')
-          os = `Windows ${require('os').release()}`
-        else
-          os = `${os.dist} ${os.release}`
+        if (os.os === 'win32') { os = `Windows ${require('os').release()}` } else { os = `${os.dist} ${os.release}` }
 
         message.footer = `Injectify server | ${os}`
       }
@@ -175,7 +179,7 @@ if (webhook) {
     })
   }
 
-  function send() {
+  function send () {
     request({
       url: webhook,
       method: 'POST',
@@ -185,14 +189,14 @@ if (webhook) {
         avatar_url: 'https://rawgit.com/samdenty99/injectify/master/assets/discord/avatar.png',
         embeds: [
           {
-            author:{
+            author: {
               name: state.message,
               url: message.url,
               icon_url: state.icon
             },
             description: typeof state.description !== 'undefined' ? state.description : `[Log for #${message.number}](${message.url})`,
             color: state.color,
-            footer: {  
+            footer: {
               text: message.footer
             },
             timestamp: moment().format()

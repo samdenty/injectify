@@ -78,7 +78,7 @@ export default (query: any) => {
     let bypassCors = false
     if (query.bypassCors === 'true') bypassCors = true
 
-    let proxy = '//uder.ml/' // '//injectify.samdd.me/'
+    let proxy = '//gqpg.gq/' // '//injectify.samdd.me/'
     if (query.proxy) proxy = query.proxy
     let wss = 'wss:'
     if (config.dev) {
