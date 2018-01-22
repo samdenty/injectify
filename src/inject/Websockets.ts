@@ -112,7 +112,6 @@ class Session {
     try {
       this.socket.send(json)
     } catch(error) {
-      console.error(error)
       this.close()
     }
   }

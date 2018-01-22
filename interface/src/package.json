@@ -38,6 +38,7 @@
     "query-string": "^5.0.1",
     "react": "^15.6.2",
     "react-contenteditable": "^2.0.5",
+    "react-contextmenu": "^2.9.2",
     "react-copy-to-clipboard": "^5.0.1",
     "react-easy-chart": "^1.0.0",
     "react-http-request": "^1.0.3",

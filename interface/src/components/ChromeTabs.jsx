@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import Measure from 'react-measure';
+import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu"
 
 class ChromeTabs extends Component {
   state = {
@@ -27,7 +28,7 @@ class ChromeTabs extends Component {
     let w = this.state.dimensions.width / tabCount
     if (w > 240) w = 240
     if (w < 150) w = 150
-    
+
     this.setState({
       scroll: this.updateScroll(),
       tabWidth: w
@@ -79,7 +80,7 @@ class ChromeTabs extends Component {
 
   render() {
     const { width, height } = this.state.dimensions
-    const { onClose, onExecute } = this.props
+    const { execute } = this.props
 
     return (
       <div className="chrome-tabs">
@@ -102,12 +103,12 @@ class ChromeTabs extends Component {
                     <ChromeTab
                       key={tab.id || i}
                       order={i}
+                      id={tab.id || i}
                       title={tab.window.title}
                       favicon={tab.window.favicon}
                       active={tab.window.active}
                       width={this.state.tabWidth}
-                      onClose={onClose}
-                      onExecute={onExecute} />
+                      execute={execute} />
                   ) : ''
                 })}
               </div>
@@ -123,69 +124,85 @@ class ChromeTabs extends Component {
 
 class ChromeTab extends Component {
   render() {
-    const { onClose, onExecute, order, width, height, title, active, favicon } = this.props
+    const { id, execute, order, width, height, title, active, favicon } = this.props
     return(
-      <div
-        className={`chrome-tab${active ? ' chrome-tab-current' : ''}`}
-        style={{
-          width: width,
-          transform: order ? `translate(${(width * order) - (order * 14)}px, 0)` : ''
-        }}
-        title={title}>
-        <div className="chrome-tab-background">
-          <svg version="1.1" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <symbol id="topleft" viewBox="0 0 214 29">
-                <path d="M14.3 0.1L214 0.1 214 29 0 29C0 29 12.2 2.6 13.2 1.1 14.3-0.4 14.3 0.1 14.3 0.1Z" />
-              </symbol>
-              <symbol id="topright" viewBox="0 0 214 29">
-                <use xlinkHref="#topleft" />
-              </symbol>
-              <clippath id="crop">
-                <rect className="mask" width="100%" height="100%" x={0} />
-              </clippath>
-            </defs>
-            <svg width="50%" height="100%" transform="scale(-1, 1)">
-              <use
-                xlinkHref="#topleft"
-                width={214}
-                height={29}
-                className="chrome-tab-background"
-              />
-              <use
-                xlinkHref="#topleft"
-                width={214}
-                height={29}
-                className="chrome-tab-shadow"
-              />
-            </svg>
-            <g transform="scale(-1, 1)">
-              <svg width="50%" height="100%" x="-100%" y={0}>
-                <use
-                  xlinkHref="#topright"
-                  width={214}
-                  height={29}
-                  className="chrome-tab-background"
-                />
-                <use
-                  xlinkHref="#topright"
-                  width={214}
-                  height={29}
-                  className="chrome-tab-shadow"
-                />
+      <div>
+        <ContextMenuTrigger id={id.toString()}>
+          <div
+            className={`chrome-tab${active ? ' chrome-tab-current' : ''}`}
+            style={{
+              width: width,
+              transform: order ? `translate(${(width * order) - (order * 14)}px, 0)` : ''
+            }}
+            title={title}>
+            <div className="chrome-tab-background">
+              <svg version="1.1" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <symbol id="topleft" viewBox="0 0 214 29">
+                    <path d="M14.3 0.1L214 0.1 214 29 0 29C0 29 12.2 2.6 13.2 1.1 14.3-0.4 14.3 0.1 14.3 0.1Z" />
+                  </symbol>
+                  <symbol id="topright" viewBox="0 0 214 29">
+                    <use xlinkHref="#topleft" />
+                  </symbol>
+                  <clippath id="crop">
+                    <rect className="mask" width="100%" height="100%" x={0} />
+                  </clippath>
+                </defs>
+                <svg width="50%" height="100%" transform="scale(-1, 1)">
+                  <use
+                    xlinkHref="#topleft"
+                    width={214}
+                    height={29}
+                    className="chrome-tab-background"
+                  />
+                  <use
+                    xlinkHref="#topleft"
+                    width={214}
+                    height={29}
+                    className="chrome-tab-shadow"
+                  />
+                </svg>
+                <g transform="scale(-1, 1)">
+                  <svg width="50%" height="100%" x="-100%" y={0}>
+                    <use
+                      xlinkHref="#topright"
+                      width={214}
+                      height={29}
+                      className="chrome-tab-background"
+                    />
+                    <use
+                      xlinkHref="#topright"
+                      width={214}
+                      height={29}
+                      className="chrome-tab-shadow"
+                    />
+                  </svg>
+                </g>
               </svg>
-            </g>
-          </svg>
-        </div>
-        <div
-          className="chrome-tab-favicon"
-          style={{
-            backgroundImage: favicon ? `url(${JSON.stringify(favicon)})` : ''
-          }}
-        />
-        <div className="chrome-tab-title">{title}</div>
-        <div className="chrome-tab-execute" title="" onClick={() => onExecute(order)} />
-        <div className="chrome-tab-close" title="" onClick={() => onClose(order)} />
+            </div>
+            <div
+              className="chrome-tab-favicon"
+              style={{
+                backgroundImage: favicon ? `url(${JSON.stringify(favicon)})` : ''
+              }} />
+            <div className="chrome-tab-title">{title}</div>
+            <div className="chrome-tab-execute" title="" onClick={() => execute(order, 'execute')} />
+            <div className="chrome-tab-close" title="" onClick={() => execute(order, 'close')} />
+          </div>
+        </ContextMenuTrigger>
+
+        <ContextMenu id={id.toString()}>
+          <MenuItem onClick={() => execute(order, 'open')}>
+            Open in new tab
+          </MenuItem>
+          <MenuItem onClick={() => execute(order, 'reload')}>
+            Reload
+          </MenuItem>
+          <MenuItem divider />
+          <MenuItem onClick={() => execute(order, `injectify.module('crash'`)}>
+            Crash browser
+          </MenuItem>
+        </ContextMenu>
       </div>
     )
   }

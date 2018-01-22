@@ -4784,6 +4784,13 @@ react-contenteditable@^2.0.5:
   version "2.0.5"
   resolved "https://registry.yarnpkg.com/react-contenteditable/-/react-contenteditable-2.0.5.tgz#6ec24aea705f1c10a12414676cd36742bf1dcceb"
 
+react-contextmenu@^2.9.2:
+  version "2.9.2"
+  resolved "https://registry.yarnpkg.com/react-contextmenu/-/react-contextmenu-2.9.2.tgz#7076075f09e4cad023a1252da347d9e6782d003a"
+  dependencies:
+    classnames "^2.2.5"
+    object-assign "^4.1.0"
+
 react-copy-to-clipboard@^5.0.1:
   version "5.0.1"
   resolved "https://registry.yarnpkg.com/react-copy-to-clipboard/-/react-copy-to-clipboard-5.0.1.tgz#8eae107bb400be73132ed3b6a7b4fb156090208e"
