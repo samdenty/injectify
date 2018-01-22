@@ -110,7 +110,9 @@ class Session {
         t: topic,
         d: data
       })
-    )
+    ).catch(error => {
+      this.close()
+    })
   }
 
   auth(id: string) {
@@ -186,7 +188,7 @@ class Session {
           })
         }, 0)
       }
-      
+
       /**
        * Send the inject core
        */
@@ -236,7 +238,7 @@ class Session {
         this.send('execute', script)
       }
       global.inject.clients[this.project.id][this.token].sessions.push(session)
-      
+
       resolve({
         client: client,
         session: session

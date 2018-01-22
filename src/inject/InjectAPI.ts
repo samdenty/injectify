@@ -10,7 +10,7 @@ export default class {
   token: string
   project: SocketSession.project
   client: any
-  
+
   constructor(that: any) {
     this.socket = that.socket
     this.session = that.session
