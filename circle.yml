@@ -23,14 +23,12 @@ jobs:
       - run:
           name: 'Run yarn test'
           command: yarn test && (node ci/status ci-success) || (node ci/status ci-failure)
-
-deployment:
-  master:
-    branch: master
-    commands:
-      - cd ci
-      - echo -e "-----BEGIN RSA PRIVATE KEY-----\n${sshkey//'#'/$'\n'}\n-----END RSA PRIVATE KEY-----\n" > sshkey
-      - chmod 400 sshkey
-      - node status success
-      - if [ -z "$sshcmd" ]; then sshcmd="webhook=$webhook; cd \"$sshdir\" && yarn run pull"; fi
-      - ssh -i sshkey -o "StrictHostKeyChecking no" -t $sshuser@$sshhost "$sshcmd"
+      - run:
+          name: 'Deploy'
+          commands:
+            - cd ci
+            - echo -e "-----BEGIN RSA PRIVATE KEY-----\n${sshkey//'#'/$'\n'}\n-----END RSA PRIVATE KEY-----\n" > sshkey
+            - chmod 400 sshkey
+            - node status success
+            - if [ -z "$sshcmd" ]; then sshcmd="webhook=$webhook; cd \"$sshdir\" && yarn run pull"; fi
+            - ssh -i sshkey -o "StrictHostKeyChecking no" -t $sshuser@$sshhost "$sshcmd"

@@ -105,14 +105,15 @@ class Session {
   }
 
   send(topic: string, data: any) {
-    this.socket.send(
-      JSON.stringify({
-        t: topic,
-        d: data
-      })
-    ).catch(error => {
-      this.close()
+    let json = JSON.stringify({
+      t: topic,
+      d: data
     })
+    try {
+      this.socket.send(json)
+    } catch(error) {
+      this.close()
+    }
   }
 
   auth(id: string) {
