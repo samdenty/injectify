@@ -316,25 +316,81 @@ window['injectify'] = class Injectify {
 		let duration = (+new Date - this['connectTime']) / 1000
 		return Math.round(duration)
 	}
+	/**
+	 * Returns the global config
+	 */
+	static get global() {
+		if (!window['inJl1']) window['inJl1'] = {
+			listeners: {
+				visibility: false,
+				timed: {
+					active: false
+				}
+			},
+			consoleOverriden: false,
+		}
+		return window['inJl1']
+	}
+
+	/**
+	 * Updates the global state
+	 */
+	static setState(nextState: any) {
+		this.global
+    Object.keys(nextState).forEach(state => {
+      window['inJl1'][state] = nextState[state]
+    })
+  }
+	/**
+	 * Injects the global console.log functions with Injectify's logger
+	 * @param state Override or don't override
+	 */
+	static console(state: boolean) {
+		if (!state && console['hooked']) {
+				console['unhook']()
+		} else if (!console['hooked']) {
+			((Console) => {
+				// @ts-ignore
+				console = {
+					...Console,
+					Console: Console,
+					log() {
+						Console.log.apply(this, arguments)
+						Array.prototype.slice.call(arguments).forEach(msg => {
+							injectify.log(msg)
+						})
+					},
+					info() {
+						this.log.apply(this, arguments)
+					},
+					warn() {
+						Console.warn.apply(this, arguments)
+						Array.prototype.slice.call(arguments).forEach(msg => {
+							injectify.warn(msg)
+						})
+					},
+					error() {
+						Console.error.apply(this, arguments)
+						Array.prototype.slice.call(arguments).forEach(msg => {
+							injectify.error(msg)
+						})
+					},
+					unhook() {
+						console = Console
+					},
+					hooked: true
+				}
+			})(console)
+		}
+	}
 }
 /**
  * Create local reference to window.injectify
  */
 let injectify = window['injectify']
 
-/**
- * If the session state is undefined, define it
- */
-if (!window['inJl1']) window['inJl1'] = {
-	listeners: {
-		visibility: false,
-		timed: {
-			active: false
-		}
-	}
-}
 // @ts-ignore
-let global = window['inJl1']
+let global = injectify.global
 window['global'] = global
 
 /**
@@ -454,6 +510,11 @@ injectify.listener((data, topic) => {
 		if (listener) document.addEventListener(listener, focusChange)
 	}
 })();
+
+/**
+ * Console.log overrider
+ */
+injectify.console(true);
 
 /**
  * Session info logger
