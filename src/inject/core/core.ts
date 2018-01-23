@@ -514,7 +514,7 @@ injectify.listener((data, topic) => {
 /**
  * Console.log overrider
  */
-injectify.console(true);
+// injectify.console(true);
 
 /**
  * Session info logger
