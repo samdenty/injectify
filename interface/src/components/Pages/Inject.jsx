@@ -1,4 +1,6 @@
 import React, { Component } from "react";
+import ReactJson from 'react-json-view';
+import Linkify from 'react-linkify';
 
 import ChromeTabs from '../ChromeTabs';
 import MonacoEditor from 'react-monaco-editor';
@@ -16,7 +18,8 @@ export class Inject extends Component {
       [
       ]
     ],
-    selectedClient: {}
+    selectedClient: {},
+    logs: []
   }
 
   constructor(props) {
@@ -133,6 +136,25 @@ export class Inject extends Component {
     }
     socket.on(`inject:client`, clientListener)
 
+    /**
+     * Console listener
+     */
+    let consoleListener = (log) => {
+      let { type, message } = log
+      if (!this._mounted) {
+        socket.off('inject:log', consoleListener)
+        return
+      }
+      eval(`console.${type}(${JSON.stringify(message)})`)
+
+      let logs = this.state.logs
+      logs.push(log)
+      this.setState({
+        logs: logs
+      })
+    }
+    socket.on(`inject:log`, consoleListener)
+
     socket.emit('inject:clients', {
       project: project
     })
@@ -215,7 +237,7 @@ export class Inject extends Component {
   }
 
   updateDimensions = () => {
-    this.editor.layout()
+    if (this.editor) this.editor.layout()
   }
 
   editorDidMount = (editor, monaco) => {
@@ -340,7 +362,58 @@ export class Inject extends Component {
             onChange={this.onChange}
             editorDidMount={this.editorDidMount}
           />
+          <Console logs={this.state.logs} />
         </div>
+      </div>
+    )
+  }
+}
+
+class Console extends Component {
+  logs = 0
+
+  componentWillUpdate(nextProps) {
+    /**
+     * Scroll to bottom
+     */
+    if (this.props.logs.length !== this.logs) {
+      this.logs = this.props.logs.length
+      if (this.console) {
+        if (this.console.scrollHeight - this.console.scrollTop === this.console.clientHeight) {
+          setTimeout(() => {
+            this.console.scrollTop = this.console.scrollHeight
+          }, 0)
+        }
+      }
+    }
+  }
+
+  render() {
+    let { logs } = this.props
+    return (
+      <div className="inject-console" ref={console => this.console = console}>
+        {logs.map((log, i) => {
+          return (
+            <div className={`console-message-wrapper ${log.type}`} key={i}>
+              <div className="console-message">
+                <div className="console-timestamp">12</div>
+                <div className="console-indicator"></div>
+                <div className="source-code">{typeof log.message === 'object' ? (
+                  <ReactJson
+                    src={log.message}
+                    theme={'monokai'}
+                    enableClipboard={false}
+                    collapsed={true}
+                    iconStyle="circle" />
+                ) : (
+                  <Linkify properties={{target: '_blank'}}>
+                    {log.message}
+                  </Linkify>
+                )}</div>
+              </div>
+            </div>
+          )
+        })}
       </div>
     )
   }

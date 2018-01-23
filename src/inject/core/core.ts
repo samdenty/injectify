@@ -17,7 +17,7 @@ window['injectify'] = class Injectify {
 		ws.onmessage = message => {
 			try {
 				let data = JSON.parse(message.data)
-				
+
 				if (this['listeners'] && data.t && this['listeners'][data.t]) {
 					/**
 					 * Pre-process some topic's data
@@ -55,7 +55,7 @@ window['injectify'] = class Injectify {
 			once: once
 		}
 	}
-	/**	
+	/**
 	 * Unhook a websocket topic listener
 	 * @param {string} topic Topic name to unlisten
 	 * @param {function} callback
@@ -100,8 +100,35 @@ window['injectify'] = class Injectify {
 	 * @param {boolean} local Whether to log it in the local console
 	 */
 	static log(message: any, local?: boolean) {
-		this.send('l', message)
+		this.send('l', {
+			type: 'info',
+			message: message
+		})
 		if (local) console.log(message)
+	}
+	/**
+	 * Log data to websocket connection (and locally)
+	 * @param {(Object|string)} message Data to be logged
+	 * @param {boolean} local Whether to log it in the local console
+	 */
+	static error(message: any, local?: boolean) {
+		this.send('l', {
+			type: 'error',
+			message: message
+		})
+		if (local) console.error(message)
+	}
+	/**
+	 * Log data to websocket connection (and locally)
+	 * @param {(Object|string)} message Data to be logged
+	 * @param {boolean} local Whether to log it in the local console
+	 */
+	static warn(message: any, local?: boolean) {
+		this.send('l', {
+			type: 'warn',
+			message: message
+		})
+		if (local) console.warn(message)
 	}
 	/**
 	 * Get the websocket ping time (in milliseconds)
@@ -177,7 +204,7 @@ window['injectify'] = class Injectify {
 		} else {
 			/**
 			 * Send a connection request to the server
-			 * 
+			 *
 			 * 1. Make a request to /a with our socket connection ID
 			 * 2. Server reads cookies and attempts to find our token
 			 * 3. If it can't be found it, the server sets a new cookie
@@ -288,21 +315,6 @@ window['injectify'] = class Injectify {
 	static get duration() {
 		let duration = (+new Date - this['connectTime']) / 1000
 		return Math.round(duration)
-	}
-	/**
-	 * Error handler
-	 * @param {error} error The error to be handled
-	 */
-	static error(error) {
-		// this['errorLimiting']++
-		// if (this['errorLimiting'] >= 20) {
-		// 	setTimeout(function() {
-		// 		console.log('called!')
-		// 		this['errorLimiting'] = 0
-		// 	}, 100)
-		// } else {
-			this.send('e', error)
-		// }
 	}
 }
 /**
@@ -421,7 +433,7 @@ injectify.listener((data, topic) => {
 
 		let listener
 		let focusChange = () => injectify.sendSession()
-		
+
 		/**
 		 * Get the correct hidden listener
 		 */

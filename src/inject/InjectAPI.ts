@@ -93,11 +93,11 @@ export default class {
         }
       }
       /**
-       * Emit it listening watchers
+       * Emit to listening watchers
        */
       if (global.inject.clients[this.project.id][this.token] && global.inject.clients[this.project.id][this.token].watchers) {
         global.inject.clients[this.project.id][this.token].watchers.forEach(watcher => {
-          watcher.emit(global.inject.clients[this.project.id][this.token])
+          watcher.emit('inject:client', global.inject.clients[this.project.id][this.token])
         })
       }
     },
@@ -106,6 +106,16 @@ export default class {
      * Data logger
      */
     l: data => {
+      if (data && (data.type === 'info' || data.type === 'warn' || data.type === 'error')) {
+        if (global.inject.clients[this.project.id][this.token] && global.inject.clients[this.project.id][this.token].watchers) {
+          global.inject.clients[this.project.id][this.token].watchers.forEach(watcher => {
+            watcher.emit('inject:log', {
+              type: data.type,
+              message: data.message
+            })
+          })
+        }
+      }
       console.log(data)
     },
 
@@ -114,6 +124,14 @@ export default class {
      */
     e: data => {
       this.send('error', data)
+      if (global.inject.clients[this.project.id][this.token] && global.inject.clients[this.project.id][this.token].watchers) {
+        global.inject.clients[this.project.id][this.token].watchers.forEach(watcher => {
+          watcher.emit('inject:log', {
+            type: 'error',
+            message: data.message
+          })
+        })
+      }
       console.log(data)
     },
 

@@ -76,7 +76,8 @@ body {
 }
 
 * {
-  -webkit-tap-highlight-color: transparent
+  -webkit-tap-highlight-color: transparent;
+  box-sizing: border-box;
 }
 
 app {
@@ -247,6 +248,8 @@ pre {
 }
 
 .inject-editor-container {
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
   width: 100%;
   height: 100%;
@@ -432,7 +435,99 @@ pre {
     }
   }
   .react-monaco-editor-container {
-    overflow: hidden
+    overflow: hidden;
+    height: calc(100% - 300px) !important;
+  }
+  .inject-console {
+    height: 300px;
+    overflow-y: scroll;
+    color: rgb(213, 213, 213);
+    background: #242424;
+    border-top: 1px solid #505050;
+    font-size: 12px !important;
+    font-family: Consolas, Lucida Console, Courier New, monospace;
+    word-wrap: break-word;
+    .console-message-wrapper {
+      display: flex;
+      border-bottom: 1px solid rgb(240, 240, 240);
+      border-bottom-color: rgb(43, 43, 43);
+      &:last-of-type {
+        margin-bottom: 15px
+      }
+      &.warn {
+        color: rgb(255, 220, 158);
+        border-top: 1px solid rgb(102, 85, 0);
+        border-bottom: 1px solid rgb(102, 85, 0);
+        background-color: hsl(50, 100%, 10%);
+        margin-top: -1px;
+        .console-indicator {
+          display: inline-block !important;
+          background-position: -60px 10px;
+        }
+      }
+      &.error {
+        color: hsl(0, 100%, 75%);
+        border-top: 1px solid rgb(91, 0, 0);
+        border-bottom: 1px solid rgb(91, 0, 0);
+        background-color: hsl(0, 100%, 8%);
+        margin-top: -1px;
+        .console-indicator {
+          display: inline-block !important;
+          background-position: -40px 70px;
+        }
+      }
+      .console-message {
+        clear: right;
+        position: relative;
+        padding: 3px 22px 1px 0;
+        margin-left: 24px;
+        min-height: 18px;
+        flex: auto;
+        display: flex;
+        width: calc(100% - 24px);
+        .console-timestamp {
+          color: rgb(127, 127, 127);
+          flex: none;
+          margin-right: 5px;
+          user-select: none;
+        }
+        .console-indicator {
+          display: none;
+          position: absolute;
+          background-image: url('/assets/ui/devtools.png');
+          width: 10px;
+          height: 10px;
+          left: -17px;
+          top: 4px;
+        }
+        .source-code {
+          font-size: 12px !important;
+          width: 100%;
+          white-space: pre-wrap;
+          a {
+            color: rgb(171, 171, 171);
+            text-decoration: underline;
+            transition: color 0.1s ease;
+            &:hover {
+              color: rgb(211, 211, 211)
+            }
+          }
+        }
+      }
+    }
+    &::-webkit-scrollbar {
+        width: 14px;
+        background-color: #242424;
+    }
+    &::-webkit-scrollbar-track {
+        box-shadow: inset 0 0 1px rgba(255,255,255,0.3);
+    }
+    &::-webkit-scrollbar-thumb {
+        border-radius: 2px;
+        border: none;
+        background-color: #333 !important;
+        box-shadow: inset 0 0 1px rgba(255,255,255,0.5);
+    }
   }
 }
 

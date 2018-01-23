@@ -1123,8 +1123,8 @@ MongoClient.connect(config.mongodb, (err, client) => {
               if (!watchingClient.watchers) watchingClient.watchers = []
               watchingClient.watchers.push({
                 socket: socket.id,
-                emit: client => {
-                  socket.emit('inject:client', client)
+                emit: (topic: string, data: any) => {
+                  socket.emit(topic, data)
                 }
               })
 

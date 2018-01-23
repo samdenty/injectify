@@ -43,6 +43,7 @@
     "react-easy-chart": "^1.0.0",
     "react-http-request": "^1.0.3",
     "react-json-view": "^1.15.2",
+    "react-linkify": "^0.2.2",
     "react-measure": "^2.0.2",
     "react-monaco-editor": "^0.13.0",
     "react-syntax-highlighter": "^6.1.1",
