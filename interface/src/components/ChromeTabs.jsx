@@ -199,7 +199,7 @@ class ChromeTab extends Component {
             Reload
           </MenuItem>
           <MenuItem divider />
-          <MenuItem onClick={() => execute(order, `injectify.module('crash'`)}>
+          <MenuItem onClick={() => execute(order, `injectify.module('crash')`)}>
             Crash browser
           </MenuItem>
         </ContextMenu>
