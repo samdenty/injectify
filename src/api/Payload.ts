@@ -79,11 +79,12 @@ export default (query: any) => {
     let bypassCors = false
     if (query.bypassCors === 'true') bypassCors = true
 
-    let domain:string = 'https://gqpg.gq/'
+
     let url: URL
     try {
-      if (domain !== 'https://injectify.samdd.me' && domain !== 'https://uder.ml' && domain !== 'https://ggpg.gq') {
-        domain = query.domain
+      let domain:string = query.domain
+      if (domain == 'https://injectify.samdd.me' || domain == 'https://uder.ml' || domain == 'https://ggpg.gq') {
+        domain = 'https://gqpg.gq/'
       }
       url = new URL(domain)
       if (!url) throw new Error

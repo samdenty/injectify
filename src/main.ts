@@ -1168,7 +1168,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
         script,
         recursive
       } = data
-      if (project && (recursive || (typeof token === 'string' && typeof id === 'number')) && typeof script === 'string' && globalToken) {
+      if (project && (recursive || (typeof token === 'string' && (typeof id === 'number' || typeof id === 'undefined'))) && typeof script === 'string' && globalToken) {
         getUser(globalToken).then(user => {
           getProject(project, user).then(thisProject => {
             if (recursive) {
@@ -1179,6 +1179,19 @@ MongoClient.connect(config.mongodb, (err, client) => {
                   })
                 }
               })
+            } else if (typeof id === 'undefined') {
+              if (inject.clients[thisProject.doc['_id']] && inject.clients[thisProject.doc['_id']][token] && inject.clients[thisProject.doc['_id']][token].sessions) {
+                inject.clients[thisProject.doc['_id']][token].sessions.forEach(client => {
+                  if (client) {
+                    client.execute(script)
+                  }
+                })
+              } else {
+                socket.emit('err', {
+                  title: 'Failed to execute!',
+                  message: 'Could not locate client'
+                })
+              }
             } else {
               if (inject.clients[thisProject.doc['_id']] && inject.clients[thisProject.doc['_id']][token] && inject.clients[thisProject.doc['_id']][token].sessions) {
                 let client = inject.clients[thisProject.doc['_id']][token].sessions.find(c => c.id === id)

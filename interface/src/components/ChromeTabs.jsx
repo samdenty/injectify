@@ -196,7 +196,7 @@ class ChromeTab extends Component {
             Open in new tab
           </MenuItem>
           <MenuItem onClick={() => execute(order, 'reload')}>
-            Reload
+            Reload tab
           </MenuItem>
           <MenuItem divider />
           <MenuItem onClick={() => execute(order, `injectify.console()`)}>

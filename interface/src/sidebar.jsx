@@ -323,7 +323,7 @@ const styles = theme => ({
   },
   injectList: {
     overflowY: 'scroll',
-    height: 'calc(100% - 220px)',
+    height: '100%',
   },
   listHeader: {
     boxShadow: dark ? 'inset 0 115px 5px -70px #424242' : 'inset 0 115px 5px -70px #FFFFFF',
