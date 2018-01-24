@@ -147,7 +147,9 @@ export class Inject extends Component {
       }
 
       if (type === 'info' || type === 'warn' || type === 'error') {
-        eval(`console.${type}(${JSON.stringify(message)})`)
+        console[type].apply(this, message)
+      } else if (type === 'return') {
+        console.log(message)
       }
 
       let logs = this.state.logs

@@ -116,7 +116,6 @@ export default class {
           })
         }
       }
-      console.log(data)
     },
 
     /**
@@ -132,7 +131,6 @@ export default class {
           })
         })
       }
-      console.log(data)
     },
 
     /**
