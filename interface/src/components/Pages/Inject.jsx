@@ -470,8 +470,20 @@ class Console extends Component {
     } else {
       customType.data = message
     }
-    return (
-      <span className={customType.type}>{customType.data}</span>
-    )
+    if (type === 'object' && type !== null) {
+      return (
+        <ReactJson
+          src={customType.data}
+          theme={'monokai'}
+          enableClipboard={false}
+          collapsed={true}
+          iconStyle="circle" />
+      )
+    } else {
+      return (
+        <span className={customType.type}>{customType.data}</span>
+      )
+    }
+
   }
 }

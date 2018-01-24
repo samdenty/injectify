@@ -4,6 +4,13 @@ declare var process: any
 declare var require: any
 
 /**
+ * JSON decycle
+ * https://github.com/douglascrockford/JSON-js/blob/master/cycle.js
+ */
+// @ts-ignore
+"function"!=typeof JSON.decycle&&(JSON.decycle=function(n,e){"use strict";var t=new WeakMap;return function n(c,o){var i,r;return void 0!==e&&(c=e(c)),"object"!=typeof c||null===c||c instanceof Boolean||c instanceof Date||c instanceof Number||c instanceof RegExp||c instanceof String?c:void 0!==(i=t.get(c))?{$ref:i}:(t.set(c,o),Array.isArray(c)?(r=[],c.forEach(function(e,t){r[t]=n(e,o+"["+t+"]")})):(r={},Object.keys(c).forEach(function(e){r[e]=n(c[e],o+"["+JSON.stringify(e)+"]")})),r)}(n,"$")});
+
+/**
  * Injectify core API
  * @class
  */
@@ -86,10 +93,11 @@ window['injectify'] = class Injectify {
 		 */
 		if (ws.readyState == 0) return
 		try {
-			ws.send(JSON.stringify({
+			// @ts-ignore
+			ws.send(JSON.stringify(JSON.decycle({
 				t: topic,
 				d: data,
-			}))
+			})))
 		} catch(e) {
 			this.error(e.stack)
 		}
@@ -320,8 +328,7 @@ window['injectify'] = class Injectify {
 				timed: {
 					active: false
 				}
-			},
-			consoleOverriden: false,
+			}
 		}
 		return window['inJl1']
 	}
