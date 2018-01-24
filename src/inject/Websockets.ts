@@ -209,11 +209,11 @@ class Session {
       /**
        * Send the auto-execute script
        */
-      // if (project.inject) {
-      //   if (project.inject.autoexecute) {
-      //     send('execute', project.inject.autoexecute)
-      //   }
-      // }
+      if (this.session.project.inject) {
+        if (this.session.project.inject.autoexecute) {
+          this.send('execute', this.session.project.inject.autoexecute)
+        }
+      }
     })
   }
 
