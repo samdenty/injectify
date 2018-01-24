@@ -454,6 +454,12 @@ pre {
       &:last-of-type {
         margin-bottom: 15px
       }
+      &.return {
+        .console-indicator {
+          display: inline-block !important;
+          background-position: 0px 70px;
+        }
+      }
       &.warn {
         color: rgb(255, 220, 158);
         border-top: 1px solid rgb(102, 85, 0);
@@ -504,6 +510,34 @@ pre {
           font-size: 12px !important;
           width: 100%;
           white-space: pre-wrap;
+          > span {
+            display: inline-block;
+            vertical-align: top;
+            padding-left: 5px;
+            &:first-of-type {
+              padding-left: 0
+            }
+          }
+          .undefined,
+          .null {
+            color: rgb(127, 127, 127);
+          }
+          .boolean,
+          .number {
+            color: hsl(252, 100%, 75%)
+          }
+          .string {
+            color: rgb(233, 63, 59);
+            .string-quotes {
+              color: rgb(213, 213, 213);
+            }
+          }
+          .react-json-view,
+          .pretty-json-container,
+          .object-content,
+          .object-key-val {
+            display: inline-block
+          }
           a {
             color: rgb(171, 171, 171);
             text-decoration: underline;
@@ -511,6 +545,9 @@ pre {
             &:hover {
               color: rgb(211, 211, 211)
             }
+          }
+          .react-json-view {
+            background: none !important
           }
         }
       }

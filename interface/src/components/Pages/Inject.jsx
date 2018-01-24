@@ -145,7 +145,10 @@ export class Inject extends Component {
         socket.off('inject:log', consoleListener)
         return
       }
-      eval(`console.${type}(${JSON.stringify(message)})`)
+
+      if (type === 'info' || type === 'warn' || type === 'error') {
+        eval(`console.${type}(${JSON.stringify(message)})`)
+      }
 
       let logs = this.state.logs
       logs.push(log)
@@ -398,23 +401,75 @@ class Console extends Component {
               <div className="console-message">
                 <div className="console-timestamp">12</div>
                 <div className="console-indicator"></div>
-                <div className="source-code">{typeof log.message === 'object' ? (
-                  <ReactJson
-                    src={log.message}
-                    theme={'monokai'}
-                    enableClipboard={false}
-                    collapsed={true}
-                    iconStyle="circle" />
-                ) : (
-                  <Linkify properties={{target: '_blank'}}>
-                    {log.message}
-                  </Linkify>
-                )}</div>
+                <div className="source-code">
+                  {log.type === 'return' ? this.customType(log.message) : log.message.map((message, i) => {
+                    return (
+                      <span key={i} className="">
+                        {typeof message === 'object' ? (
+                          <ReactJson
+                            src={message}
+                            theme={'monokai'}
+                            enableClipboard={false}
+                            collapsed={true}
+                            iconStyle="circle" />
+                        ) : (
+                          <Linkify properties={{ target: '_blank' }}>
+                            {this.customType(message, log.message instanceof Array && typeof log.message[0] === 'string')}
+                          </Linkify>
+                        )}
+                      </span>
+                    )
+                  })}
+                </div>
               </div>
             </div>
           )
         })}
       </div>
+    )
+  }
+
+  customType(message, noStringFormat) {
+    let type = typeof message
+    let customType = {
+      type: type
+    }
+    if (type === 'string') {
+      if (noStringFormat) {
+        customType = {
+          type: 'string-primary',
+          data: (
+            <Linkify properties={{ target: '_blank' }}>
+              {message}
+            </Linkify>
+          )
+        }
+      } else {
+        customType.data = (
+          <span>
+            <span className="string-quotes">&quot;</span>
+            <Linkify properties={{ target: '_blank' }}>
+              {message}
+            </Linkify>
+            <span className="string-quotes">&quot;</span>
+          </span>
+        )
+      }
+
+    } else if (message === null) {
+      customType = {
+        type: 'null',
+        data: 'null'
+      }
+    } else if (type === 'boolean') {
+      customType.data = message.toString()
+    } else if (type === 'undefined') {
+      customType.data = 'undefined'
+    } else {
+      customType.data = message
+    }
+    return (
+      <span className={customType.type}>{customType.data}</span>
     )
   }
 }

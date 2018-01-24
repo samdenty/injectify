@@ -117,6 +117,7 @@ class Session {
   }
 
   auth(id: string) {
+    this.socket.on('error', () => {})
     this.send('auth', `var server=ws.url.split("/"),protocol="https://";"ws:"===server[0]&&(protocol="http://"),server=protocol+server[2];var auth=new Image;auth.src=server+"/a?id=${encodeURIComponent(id)}&z=${+new Date()}";auth.onload`)
     global.inject.authenticate[id] = (token: string, req) => this.authorized(token, req)
   }
@@ -147,7 +148,6 @@ class Session {
       })
     })
     this.socket.on('close', () => this.close())
-    this.socket.on('error', () => {})
 
     /**
      * Add the session to the global sessions object
