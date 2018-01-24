@@ -35,9 +35,9 @@
 </p>
 <h2></h2>
 
-
 ![Screenshot of the Injectify UI](https://samdd.me/images/projects/injectify.png)
-A modern BeEF inspired framework for the 21st century.
+
+A modern BeEF inspired framework for the 21st century. Cross-platform clients => Web [in-browser] and Desktop [Electron]. Created from-scratch using pure NodeJS and Typescript.
 
 - Getting started
   - [Installing](https://github.com/samdenty99/injectify/wiki/Installing)
@@ -47,4 +47,9 @@ A modern BeEF inspired framework for the 21st century.
   - [CircleCI](https://github.com/samdenty99/injectify/wiki/Builds-and-deployment%3A-CircleCI)
   - [TravisCI](https://github.com/samdenty99/injectify/wiki/Builds-and-deployment%3A-TravisCI)
 
+![Tabs](https://i.imgur.com/P9Cgksy.gif)
+![Live updates](https://i.imgur.com/XY4qrfR.gif)
+![Tab switchers](https://i.imgur.com/kEcN8kP.gif)
+![Console replication](https://i.imgur.com/dAnXFSq.gif)
+![Console replication 2](https://i.imgur.com/pp5Bys4.gif)
 [![Analytics](https://ga-beacon.appspot.com/UA-85426772-5/Injectify/?pixel)](https://github.com/igrigorik/ga-beacon)
