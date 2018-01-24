@@ -75,24 +75,6 @@ String.prototype.endsWith = function (s) {
   return this.length >= s.length && this.substr(this.length - s.length) == s;
 }
 
-function escapeHTML(unsafe) {
-  return unsafe
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
-
-function unescapeHTML(unsafe) {
-  return unsafe
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, "\"")
-    .replace(/&#039;/g, "'");
-}
-
 const styles = theme => ({
   root: {
     width: '100%',
@@ -273,7 +255,7 @@ const styles = theme => ({
   },
   '@media (max-width: 500px)': {
     content: {
-      padding: theme.spacing.unit * 3 + "px " + theme.spacing.unit + "px",
+      padding: `${theme.spacing.unit * 3}px ${theme.spacing.unit}px`,
     },
     tableCell: {
       padding: '4px 15px',
@@ -288,7 +270,7 @@ const styles = theme => ({
   },
   '@media (max-width: 400px)': {
     content: {
-      padding: theme.spacing.unit * 2 + "px " + theme.spacing.unit * .5 + "px",
+      padding: `${theme.spacing.unit * 2}px ${theme.spacing.unit * .5}px`,
     },
     tableCell: {
       padding: '4px 5px',
@@ -591,7 +573,7 @@ class PersistentDrawer extends Component {
       spoof: {
         open: true,
         modalOpen: true,
-        url: "/api/spoof/" + encodeURIComponent(this.state.currentProject.name) + "?index=" + this.state.recordIndex + "&token=" + encodeURIComponent(this.props.token)
+        url: `/api/spoof/${encodeURIComponent(this.state.currentProject.name)}?index=${this.state.recordIndex}&token=${encodeURIComponent(this.props.token)}`
       }
     })
   }
@@ -888,14 +870,14 @@ class PersistentDrawer extends Component {
                             </span>
                           ) : null
                           }
-                          <ListItem button onClick={() => { window.open("https://tools.keycdn.com/geo?host=" + this.state.record.ip.query) }}>
-                            <ListItemText primary="IP Address" secondary={`${this.state.record.ip.query}${this.state.record.ip.country ? " (" + this.state.record.ip.city + " - " + this.state.record.ip.country + ")" : ""}`} />
+                          <ListItem button onClick={() => { window.open(`https://tools.keycdn.com/geo?host=${this.state.record.ip.query}`) }}>
+                            <ListItemText primary="IP Address" secondary={`${this.state.record.ip.query}${this.state.record.ip.country ? ` (${this.state.record.ip.city} - ${this.state.record.ip.country})` : ""}`} />
                           </ListItem>
                           <Divider />
                           <CopyToClipboard text={`${this.state.record.browser.height}x${this.state.record.browser.width}px`}
                             onCopy={() => this.props.notify({
                               title: "Copied to clipboard!",
-                              message: this.state.record.browser.height + "x" + this.state.record.browser.width + "px"
+                              message: `${this.state.record.browser.height}x${this.state.record.browser.width}px`
                             })}>
                             <ListItem button>
                               <ListItemText primary="Screen resolution" secondary={`${this.state.record.browser.height}x${this.state.record.browser.width}px`} />
@@ -1077,8 +1059,8 @@ class PersistentDrawer extends Component {
                           </span>
                         ) : null
                         }
-                        <ListItem button onClick={() => { window.open("https://tools.keycdn.com/geo?host=" + this.state.record.ip.query) }}>
-                          <ListItemText primary="IP Address" secondary={`${this.state.record.ip.query}${this.state.record.ip.country ? " (" + this.state.record.ip.city + " - " + this.state.record.ip.country + ")" : ""}`} />
+                        <ListItem button onClick={() => { window.open(`https://tools.keycdn.com/geo?host=${this.state.record.ip.query}`) }}>
+                          <ListItemText primary="IP Address" secondary={`${this.state.record.ip.query}${this.state.record.ip.country ? ` (${this.state.record.ip.city} - ${this.state.record.ip.country})` : ""}`} />
                         </ListItem>
                         <Divider />
                         <br />
@@ -1347,7 +1329,7 @@ class Javascript extends Component {
     if (this.state.options.base64 == false) params += "&base64=false"
     if (this.state.options.bypassCors == true) params += "&bypassCors=true"
     this.setState({
-      javascriptURL: "/api/payload/?project=" + encodeURIComponent(this.props.parentState.currentProject.name) + params
+      javascriptURL: `/api/payload/?project=${encodeURIComponent(this.props.parentState.currentProject.name)}&domain=${location.origin}${params}`
     })
   }
 
@@ -1705,7 +1687,7 @@ class ProjectConfig extends Component {
                 <div className={classes.row}>
                   <Chip
                     label="No owners added"
-                    className={classes.chip + " " + classes.noneOfType}
+                    className={`${classes.chip} ${classes.noneOfType}`}
                   />
                 </div>
               )}
@@ -1778,9 +1760,9 @@ class ProjectConfig extends Component {
             <div>
               <DialogTitle>
                 {loggedInUser.id == this.state.user.id ? (
-                  "Remove yourself from " + project.name + "?"
+                  `Remove yourself from ${project.name}?`
                 ) : (
-                    "Remove user " + this.state.user.login + " from " + project.name + "?"
+                  `Remove user ${this.state.user.login} from ${project.name}?`
                   )}
               </DialogTitle>
               <DialogContent>
@@ -1881,7 +1863,7 @@ class UserChip extends Component {
               return (
                 <Chip
                   avatar={<Avatar src={`https://avatars1.githubusercontent.com/u/${id}?v=4&s=40`} />}
-                  className={classes.chip + " " + classes.chipTransparent}
+                  className={`${classes.chip} ${classes.chipTransparent}`}
                   classes={{
                     label: classes.chipLabel
                   }}
