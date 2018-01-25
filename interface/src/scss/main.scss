@@ -179,8 +179,9 @@ pre {
 .inject-list-container {
   display: flex;
   flex-direction: column;
-  width: 300px;
-  z-index: 2;
+  min-width: 215px;
+  width: 256px;
+  z-index: 499;
   box-shadow: -10px 0 5px 10px #191919;
   background: #2A2A2A;
   .inject-list-header {
@@ -268,13 +269,16 @@ pre {
     position: relative;
     font-size: 10px;
     height: 4.2em;
-    background: linear-gradient(#272727, #1d1d1d);
+    background: linear-gradient(#4c4c4c,#585858);
     padding: 1em 1.2em 0.45em 1.2em;
     box-shadow: 0 0.05em #282828;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
     * {
       box-sizing: inherit;
       font-family: inherit;
+    }
+    .inject-list-menu {
+      display: none
     }
     .chrome-tabs-previous,
     .chrome-tabs-next {
@@ -284,12 +288,12 @@ pre {
       background-repeat: no-repeat;
       background-position: 0 50%;
       background-size: 8px;
-      box-shadow: 3px 0px 6px -1px #333536;
-      opacity: 0.1;
-      transition: 0.3s opacity ease;
+      opacity: 0.2;
+      transition: 0.1s opacity ease;
       &.required {
         cursor: pointer;
-        opacity: 0.7;
+        opacity: 1;
+        box-shadow: -10px 0 16px 20px #525252;
         &:hover {
           opacity: 1
         }
@@ -301,12 +305,12 @@ pre {
     .chrome-tabs-bottom-bar {
       position: absolute;
       bottom: 0;
-      height: 0.45em;
+      height: 0.35em;
       left: 0;
       width: 100%;
       background: #1F1F1F;
-      box-shadow: 0 -1px 2px 0px rgba(0, 0, 0, 0.23);
-      z-index: 500;
+      box-shadow: 0 -1px 2px 0 rgba(30, 30, 30, 0.35);
+      z-index: 499;
     }
     .chrome-tabs-content {
       position: relative;
@@ -349,7 +353,7 @@ pre {
             stroke-width: 0.5px;
           }
           .chrome-tab-background {
-            fill: #373737;
+            fill: #3a3939;
             transform: translateX(0.25px) translateY(0.25px);
           }
         }
@@ -357,7 +361,7 @@ pre {
       &.chrome-tab-current {
         z-index: 498;
         .chrome-tab-background>svg .chrome-tab-background {
-          fill: #505050;
+          fill: #1E1E1E;
         }
       }
       &.chrome-tab-just-added {
@@ -444,8 +448,10 @@ pre {
     }
   }
   .react-monaco-editor-container {
+    z-index: 498;
     overflow: hidden;
     height: calc(100% - 300px) !important;
+    background-color: #1E1E1E;
   }
   .inject-console {
     height: 300px;
@@ -572,6 +578,43 @@ pre {
         border: none;
         background-color: #333 !important;
         box-shadow: inset 0 0 1px rgba(255,255,255,0.5);
+    }
+  }
+}
+
+@media (max-width: 650px) {
+  .inject-list-container {
+    transform: translateX(-400px);
+    transition: transform 0.3s ease;
+    pointer-events: none;
+  }
+  .inject-editor-container {
+    margin-left: -256px;
+    transition: opacity 0.3s ease;
+    .chrome-tabs {
+      height: 5em;
+      padding-left: 0;
+      .chrome-tabs-content {
+        padding-top: 5px;
+      }
+      .inject-list-menu {
+        display: block;
+        fill: #fff;
+        margin: 0.2em 2em;
+      }
+    }
+  }
+  .inject-list-open {
+    .inject-list-container {
+      z-index: 999;
+      transform: initial;
+      pointer-events: initial;
+    }
+    .inject-editor-container {
+      opacity: 0.2;
+      * {
+        pointer-events: none !important;
+      }
     }
   }
 }

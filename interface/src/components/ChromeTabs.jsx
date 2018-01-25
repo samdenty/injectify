@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import MenuIcon from 'material-ui-icons/Menu';
 import Measure from 'react-measure';
 import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu"
 
@@ -80,10 +81,11 @@ class ChromeTabs extends Component {
 
   render() {
     const { width, height } = this.state.dimensions
-    const { execute } = this.props
+    const { execute, toggleMenu } = this.props
 
     return (
       <div className="chrome-tabs">
+        <MenuIcon className="inject-list-menu" onClick={toggleMenu.bind(this)} />
         <div onClick={this.previous.bind(this)} className={`chrome-tabs-previous ${this.state.scroll.left ? 'required' : ''}`} />
         <Measure
           bounds

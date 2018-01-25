@@ -21,7 +21,8 @@ export class Inject extends Component {
       ]
     ],
     selectedClient: {},
-    logs: []
+    logs: [],
+    open: false
   }
 
   constructor(props) {
@@ -253,6 +254,12 @@ export class Inject extends Component {
     window.addEventListener("resize", this.updateDimensions)
   }
 
+  toggleMenu = (value) => {
+    this.setState({
+      open: typeof value !== "undefined" ? value : !this.state.open
+    })
+  }
+
   onChange = (newValue, e) => {
     this.setState({
       code: newValue
@@ -303,6 +310,8 @@ export class Inject extends Component {
   switchClient = (token) => {
     let { socket, project } = this.props
 
+    this.toggleMenu(false)
+
     this.setState({
       selectedClient: {
         token: token,
@@ -326,7 +335,7 @@ export class Inject extends Component {
       selectOnLineNumbers: true
     }
     return (
-      <div className={classes.injectContainer}>
+      <div className={`${classes.injectContainer} ${this.state.open ? 'inject-list-open' : ''}`}>
         <div className="inject-list-container">
           <ListSubheader className="inject-list-header">
             <Tooltip title="Execute on all clients" placement="right">
@@ -393,10 +402,8 @@ export class Inject extends Component {
             })}
           </List>
         </div>
-        <div className="inject-editor-container">
-          {this.state.selectedClient && this.state.selectedClient.client && this.state.selectedClient.client.sessions &&
-            <ChromeTabs tabs={this.state.selectedClient.client.sessions} execute={this.executeSession} />
-          }
+        <div className="inject-editor-container" onClick={() => this.state.open && this.toggleMenu()}>
+          <ChromeTabs toggleMenu={this.toggleMenu.bind(this)} tabs={this.state.selectedClient && this.state.selectedClient.client && this.state.selectedClient.client.sessions ? this.state.selectedClient.client.sessions : []} execute={this.executeSession} />
           <MonacoEditor
             language="javascript"
             theme="vs-dark"
