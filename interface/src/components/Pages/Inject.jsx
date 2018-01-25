@@ -259,7 +259,7 @@ import { injectify, window } from 'injectify'
   editorDidMount = (editor, monaco) => {
     this.editor = editor
     let typings = Typings
-      .replace(/^import /, `// import `)
+      .replace(/^\s*import /mg, `// import `)
       .replace('export namespace Injectify', `declare module 'injectify'`)
       .replace('//1', 'export namespace injectify {')
       .replace('//2',
@@ -346,7 +346,7 @@ import { injectify, window } from 'injectify'
 
   code = () => {
     return this.state.code && this.state.code
-      .replace(/\s*import.*/, ``)
+      .replace(/^\s*import .*/gm, ``)
   }
 
   render() {
@@ -430,7 +430,7 @@ import { injectify, window } from 'injectify'
           <ChromeTabs toggleMenu={this.toggleMenu.bind(this)} tabs={this.state.selectedClient && this.state.selectedClient.client && this.state.selectedClient.client.sessions ? this.state.selectedClient.client.sessions : []} execute={this.executeSession} />
           {window.innerWidth >= 650 ? (
             <MonacoEditor
-              language={this.state.code && this.state.code.includes(`import { injectify, window } from 'injectify'`) ? 'typescript' : 'javascript'}
+              language={this.state.code && /^\s*import /m.test(this.state.code) ? 'typescript' : 'javascript'}
               theme="vs-dark"
               value={code}
               options={options}
