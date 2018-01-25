@@ -6,6 +6,10 @@ import copy from 'copy-to-clipboard';
 
 import ChromeTabs from '../ChromeTabs';
 import MonacoEditor from 'react-monaco-editor';
+import CodeMirror from 'react-codemirror';
+require('codemirror/mode/javascript/javascript');
+import Typings from '../../../../src/inject/core/definitions/core.d.ts';
+
 import { LineChart } from 'react-easy-chart';
 import Tooltip from 'material-ui/Tooltip';
 import List, { ListItem, ListItemIcon, ListItemText } from 'material-ui/List';
@@ -14,7 +18,11 @@ import ComputerIcon from 'material-ui-icons/Computer';
 
 export class Inject extends Component {
   state = {
-    code: localStorage.getItem('injectScript') || `// type your code`,
+    code: localStorage.getItem('injectScript') ||
+`// Import types to enable intellisense
+import { injectify, window } from 'injectify'
+
+// Type your code here`,
     clients: {},
     clientsGraph: [
       [
@@ -193,7 +201,7 @@ export class Inject extends Component {
       })
       array.push({
         x: totaltime,
-        y: Object.keys(this.state.clients).length
+        y: this.state.clients && Object.keys(this.state.clients).length
       })
       this.setState({
         clientsGraph: [
@@ -250,6 +258,14 @@ export class Inject extends Component {
 
   editorDidMount = (editor, monaco) => {
     this.editor = editor
+    let typings = Typings
+      .replace(/^import /, `// import `)
+      .replace('export namespace Injectify', `declare module 'injectify'`)
+      .replace('//1', 'export namespace injectify {')
+      .replace('//2',
+      `}
+      export var window: any`)
+    monaco.languages.typescript.typescriptDefaults.addExtraLib(typings, 'injectify.d.ts')
     editor.focus()
     window.addEventListener("resize", this.updateDimensions)
   }
@@ -273,20 +289,20 @@ export class Inject extends Component {
       socket.emit('inject:execute', {
         project: project,
         recursive: true,
-        script: script || this.state.code,
+        script: script || this.code(),
       })
     } else if (id === '*') {
       socket.emit('inject:execute', {
         project: project,
         token: token,
-        script: script || this.state.code,
+        script: script || this.code(),
       })
     } else {
       socket.emit('inject:execute', {
         project: project,
         token: token,
         id: id,
-        script: script || this.state.code,
+        script: script || this.code(),
       })
     }
   }
@@ -295,7 +311,7 @@ export class Inject extends Component {
     let { token, client } = this.state.selectedClient
     let session = client.sessions[id]
     if (data === 'execute') {
-      this.execute(token, session.id, this.state.code)
+      this.execute(token, session.id, this.code())
     } else if (data === 'close') {
       this.execute(token, session.id, 'window.close()')
     } else if (data === 'open') {
@@ -328,11 +344,19 @@ export class Inject extends Component {
     })
   }
 
+  code = () => {
+    return this.state.code && this.state.code
+      .replace(/\s*import.*/, ``)
+  }
+
   render() {
     const code = this.state.code
     const { classes, main } = this.props
     const options = {
-      selectOnLineNumbers: true
+      selectOnLineNumbers: true,
+      lineNumbers: true,
+      mode: 'javascript',
+      theme: 'panda-syntax'
     }
     return (
       <div className={`${classes.injectContainer} ${this.state.open ? 'inject-list-open' : ''}`}>
@@ -404,14 +428,18 @@ export class Inject extends Component {
         </div>
         <div className="inject-editor-container" onClick={() => this.state.open && this.toggleMenu()}>
           <ChromeTabs toggleMenu={this.toggleMenu.bind(this)} tabs={this.state.selectedClient && this.state.selectedClient.client && this.state.selectedClient.client.sessions ? this.state.selectedClient.client.sessions : []} execute={this.executeSession} />
-          <MonacoEditor
-            language="javascript"
-            theme="vs-dark"
-            value={code}
-            options={options}
-            onChange={this.onChange}
-            editorDidMount={this.editorDidMount}
-          />
+          {window.innerWidth >= 650 ? (
+            <MonacoEditor
+              language={this.state.code && this.state.code.includes(`import { injectify, window } from 'injectify'`) ? 'typescript' : 'javascript'}
+              theme="vs-dark"
+              value={code}
+              options={options}
+              onChange={this.onChange}
+              editorDidMount={this.editorDidMount}
+            />
+          ) : (
+            <CodeMirror value={code} onChange={this.onChange} options={options} />
+          )}
           <Console logs={this.state.logs} set={this.setState.bind(this)} />
         </div>
       </div>
@@ -441,9 +469,9 @@ class Console extends Component {
   render() {
     let { logs, set } = this.props
     return (
-      <div>
+      <div className="inject-console">
         <ContextMenuTrigger id={'console'}>
-          <div className="inject-console" ref={console => this.console = console}>
+          <div ref={console => this.console = console}>
             {logs.map((log, i) => {
               return (
                 <div className={`console-message-wrapper ${log.type}`} key={i}>

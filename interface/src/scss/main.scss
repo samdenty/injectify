@@ -1,4 +1,7 @@
 $drawer: 240px;
+@import "../node_modules/codemirror/lib/codemirror.css";
+@import "../node_modules/codemirror/theme/panda-syntax.css";
+
 @media (min-width: 620px) {
    ::-webkit-scrollbar {
     width: 15px;
@@ -264,6 +267,7 @@ pre {
   width: 100%;
   height: 100%;
   .chrome-tabs {
+    flex-shrink: 0;
     display: flex;
     box-sizing: border-box;
     position: relative;
@@ -305,7 +309,7 @@ pre {
     .chrome-tabs-bottom-bar {
       position: absolute;
       bottom: 0;
-      height: 0.35em;
+      height: 0.45em;
       left: 0;
       width: 100%;
       background: #1F1F1F;
@@ -447,14 +451,25 @@ pre {
       }
     }
   }
-  .react-monaco-editor-container {
-    z-index: 498;
+  .react-monaco-editor-container,
+  .ReactCodeMirror {
+    z-index: 499;
     overflow: hidden;
-    height: calc(100% - 300px) !important;
     background-color: #1E1E1E;
   }
+  .ReactCodeMirror {
+    height: 100%;
+    .CodeMirror {
+      height: 100%;
+      background: #1E1E1E !important;
+      font-size: 0.8em;
+      .CodeMirror-gutters {
+        background: #1E1E1E !important;
+      }
+    }
+  }
   .inject-console {
-    height: 300px;
+    height: 60%;
     overflow-y: scroll;
     color: rgb(213, 213, 213);
     background: #242424;
@@ -595,7 +610,7 @@ pre {
       height: 5em;
       padding-left: 0;
       .chrome-tabs-content {
-        padding-top: 5px;
+        padding-top: 8px;
       }
       .inject-list-menu {
         display: block;
@@ -603,6 +618,9 @@ pre {
         fill: #fff;
         margin: 0.2em 2em;
       }
+    }
+    .inject-console {
+      height: 50% !important;
     }
   }
   .inject-list-open {
@@ -618,14 +636,14 @@ pre {
       }
     }
   }
-  .react-contextmenu .react-contextmenu-item {
-    color: #e6e6e6 !important;
-    background-color: transparent !important;
-    padding: 10px 20px;
-    font-size: 12px;
-    &:active {
-      background-color: #7f7f9c !important;
-      color: #efefef !important;
+  .react-contextmenu {
+    padding: 8px 0 !important;
+    .react-contextmenu-item {
+      padding: 10px 20px !important;
+      font-size: 12px !important;
+      &.react-contextmenu-item--divider {
+        padding: 0 !important;
+      }
     }
   }
 }

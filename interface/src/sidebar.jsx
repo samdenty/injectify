@@ -193,10 +193,7 @@ const styles = theme => ({
     backgroundColor: theme.palette.background.default,
     marginLeft: -drawerWidth,
     padding: theme.spacing.unit * 3,
-    transition: theme.transitions.create('margin', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.leavingScreen,
-    }),
+    transition: "margin 195ms cubic-bezier(0.4, 0, 0.6, 1) 0ms, height 195ms cubic-bezier(0.4, 0, 0.6, 1) 0ms",
     height: 'calc(100% - 96px)',
     overflow: 'scroll',
     marginTop: 64,
@@ -218,6 +215,13 @@ const styles = theme => ({
     drawerPaper: {
       flex: 'none',
       width: '256px !important',
+    },
+  },
+  '@media (max-width: 650px)': {
+    contentExpanded: {
+      marginTop: 0,
+      height: '100% !important',
+      zIndex: 11100
     },
   },
   contentShift: {

@@ -1,3 +1,4 @@
+import { Injectify } from './definitions/core'
 declare var ws: any
 declare var client: any
 declare var process: any
@@ -14,12 +15,7 @@ declare var require: any
  * Injectify core API
  * @class
  */
-
 window['injectify'] = class Injectify {
-	/**
-	 * Overrides the message handler for the websocket connection
-	 * @param {function} callback Callback to be triggered once message received
-	 */
 	static listener(callback: Function) {
 		ws.onmessage = message => {
 			try {
@@ -46,11 +42,7 @@ window['injectify'] = class Injectify {
 			}
 		}
 	}
-	/**
-	 * Listen for a topic from websocket connection
-	 * @param {string} topic Topic name to listen to
-	 * @param {function} callback Callback to be triggered once topic received
-	 */
+
 	static listen(topic: string, callback, once?: boolean) {
 		if (!once) once = false
 		if (!this['listeners']) this['listeners'] = {}
@@ -62,11 +54,7 @@ window['injectify'] = class Injectify {
 			once: once
 		}
 	}
-	/**
-	 * Unhook a websocket topic listener
-	 * @param {string} topic Topic name to unlisten
-	 * @param {function} callback
-	 */
+
 	static unlisten(topic: string, callback?: any) {
 		/**
 		 * If the listener is missing, return false
@@ -82,11 +70,7 @@ window['injectify'] = class Injectify {
 		) return false
 		return delete this['listeners'][topic]
 	}
-	/**
-	 * Send data to websocket
-	 * @param {string} topic Message topic
-	 * @param {Object} data Message data
-	 */
+
 	static send(topic: string, data?: any) {
 		/**
 		 * If the websocket is dead, return
@@ -103,10 +87,6 @@ window['injectify'] = class Injectify {
 		}
 	}
 
-	/**
-	 * Log data to websocket connection (and locally)
-	 * @param {(Object|string)} message Data to be logged
-	 */
 	static log(message: any) {
 		injectify.send('l', {
 			type: 'info',
@@ -125,32 +105,20 @@ window['injectify'] = class Injectify {
 			message: Array.prototype.slice.call(arguments)
 		})
 	}
-	static return(message: any) {
+	static result(message: any) {
 		injectify.send('l', {
 			type: 'return',
 			message: message
 		})
 	}
 
-	/**
-	 * Get the websocket ping time (in milliseconds)
-	 * @param {function} callback Callback to be executed on ping complete
-	 */
 	static ping(callback?: any) {
 		this.send('ping', + new Date())
 		if (callback) this.listen('pong', callback, true)
 	}
-	/**
-	 * Safely execute a script with hidden context. Appears as 'VMXXX:1' in DevTools
-	 * @param {string} func the contents inside the <script> tag
-	 * @param {element} targetParent element to execute the script under, defaults to document.head
-	 */
-	static exec(func, targetParent?: any) {
+
+	static exec(func, element: any = document.head) {
 		if (this.info.platform === 'browser') {
-			/**
-			 * Default o using document.head as the script container
-			 */
-			if (!targetParent) targetParent = document.head
 			/**
 			 * Turn the function into a self-executing constructor
 			 */
@@ -160,8 +128,8 @@ window['injectify'] = class Injectify {
 			 */
 			var script = document.createElement('script')
 			script.innerHTML = func
-			targetParent.appendChild(script)
-			targetParent.removeChild(script)
+			element.appendChild(script)
+			element.removeChild(script)
 		} else {
 			if (typeof func === 'string') {
 				eval('(' + func + ')()')
@@ -170,12 +138,7 @@ window['injectify'] = class Injectify {
 			}
 		}
 	}
-	/**
-	 * Loads a module from the injectify server
-	 * @param {string} name module name
-	 * @param {(string|Object)} params parameters to be sent to the module
-	 * @param {function} callback optional callback once the module has been loaded
-	 */
+
 	static module(name, params?: any, callback?: any, errorCallback?: any) {
 		let token = +new Date
 		/**
@@ -196,13 +159,11 @@ window['injectify'] = class Injectify {
 			params: params
 		})
 	}
-	/**
-	 * Injectify authentication API
-	 */
-	static auth(token?: any) {
+
+	static auth(token?: string) {
 		let auth = new Image
 		if (token) {
-			auth.src = this.info.server.url + '/a?id=' + encodeURIComponent(this.info.id) + '&token=' + encodeURIComponent(token) + '&z=' + +new Date
+			auth.src = `${this.info.server.url}/a?id=${encodeURIComponent(this.info.id && this.info.id.toString())}&token=${encodeURIComponent(token)}&z=${+new Date}`
 		} else {
 			/**
 			 * Send a connection request to the server
@@ -213,23 +174,19 @@ window['injectify'] = class Injectify {
 			 * 4. Server gets the passed socket ID and inserts us into database
 			 * 5. All this is done server-side with the below two lines
 			 */
-			auth.src = this.info.server.url + '/a?id=' + encodeURIComponent(this.info.id) + '&z=' + +new Date
+			auth.src = `${this.info.server.url}/a?id=${encodeURIComponent(this.info.id && this.info.id.toString())}&z=${+new Date}`
 		}
 		/**
 		 * Make sure request is sent
 		 */
 		auth.onload
 	}
-	/**
-	 * Check that the Injectify core is active
-	 */
-	static get present() {
+
+	static get present(): boolean {
 		return true
 	}
-	/**
-	 * Returns information about Injectify
-	 */
-	static get info() {
+
+	static get info(): Injectify.info {
 		/**
 		 * Read the project name from the URL
 		 */
@@ -259,10 +216,8 @@ window['injectify'] = class Injectify {
 			'user-agent' : client.agent
 		}
 	}
-	/**
-	 * Returns information about the current session, browser etc.
-	 */
-	static get sessionInfo() {
+
+	static get sessionInfo(): Injectify.sessionInfo {
 		if (this.info.platform === 'browser') {
 			/**
 			 * Get the correct document.hidden method
@@ -279,49 +234,39 @@ window['injectify'] = class Injectify {
 			 * Return object
 			 */
 			return {
-				'window': {
-					'url': window.location.href,
-					'title': document.title ? document.title : window.location.host + window.location.pathname,
-					'active': !document[hidden],
+				window: {
+					url: window.location.href,
+					title: document.title ? document.title : window.location.host + window.location.pathname,
+					active: !document[hidden],
 				}
 			}
 		} else {
 			return {
-				'window': {
-					'url': require('file-url')(process.cwd()),
-					'title': process.cwd(),
-					'active': true,
+				window: {
+					url: require('file-url')(process.cwd()),
+					title: process.cwd(),
+					active: true,
 				}
 			}
 		}
 	}
-	/**
-	 * Sends the session info to the server
-	*/
+
 	static sendSession() {
 		let sessionInfo = injectify.sessionInfo
 		if (this.debug) console.warn('🕵🏼 Delivered session info to server', sessionInfo)
 		this.send('i', sessionInfo)
 	}
-	/**
-	 * Returns whether injectify is in debug mode or not
-	 * true  - being used in development
-	 * false - console output should be suppressed
-	 */
-	static get debug() {
+
+	static get debug(): boolean {
 		return ws.url.split('?')[1].charAt(0) == "$"
 	}
-	/**
-	 * Returns the amount of time connected to injectify server
-	 */
-	static get duration() {
+
+	static get duration(): number {
 		let duration = (+new Date - this['connectTime']) / 1000
 		return Math.round(duration)
 	}
-	/**
-	 * Returns the global config
-	 */
-	static get global() {
+
+	static get global(): Injectify.global {
 		if (!window['inJl1']) window['inJl1'] = {
 			listeners: {
 				visibility: false,
@@ -333,20 +278,14 @@ window['injectify'] = class Injectify {
 		return window['inJl1']
 	}
 
-	/**
-	 * Updates the global state
-	 */
 	static setState(nextState: any) {
 		this.global
     Object.keys(nextState).forEach(state => {
       window['inJl1'][state] = nextState[state]
     })
   }
-	/**
-	 * Injects the global console.log functions with Injectify's logger
-	 * @param state Override or don't override
-	 */
-	static console(state: boolean) {
+
+	static console(state?: boolean) : 'hooked' | 'unhooked'  {
 		if (!state && console['hooked']) {
 				console['unhook']()
 				return 'unhooked'
@@ -463,7 +402,7 @@ injectify.listener((data, topic) => {
 			}
 		}
 		if (topic == 'execute') {
-			injectify.return(eval(data))
+			injectify.result(eval(data))
 		}
 		if (topic === 'core') {
 			eval(data)

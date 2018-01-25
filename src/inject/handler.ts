@@ -28,7 +28,10 @@ export default class {
     this.server = new WebSocket.Server({ server: express })
 
     let websocket = new Websockets(this.db)
-    this.server.on('connection', (ws, req) => websocket.initiate(ws, req))
+    this.server.on('connection', (ws, req) => {
+      websocket.initiate(ws, req)
+      ws.on('error', () => {})
+    })
 
     let modules = new Modules()
     modules.load.then(({ modules, debugModules, count }) => {

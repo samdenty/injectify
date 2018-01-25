@@ -29,14 +29,27 @@
       "es2015",
       "react",
       "stage-2"
+    ],
+    "plugins": [
+      [
+        "babel-plugin-inline-import",
+        {
+          "extensions": [
+            ".ts"
+          ]
+        }
+      ]
     ]
   },
   "dependencies": {
+    "babel-inline-import-loader": "^0.0.5",
+    "babel-plugin-inline-import": "^2.0.6",
     "copy-webpack-plugin": "^4.3.1",
     "material-ui": "^1.0.0-beta.20",
     "material-ui-icons": "^1.0.0-beta.17",
     "query-string": "^5.0.1",
     "react": "^15.6.2",
+    "react-codemirror": "^1.0.0",
     "react-contenteditable": "^2.0.5",
     "react-contextmenu": "^2.9.2",
     "react-copy-to-clipboard": "^5.0.1",
