@@ -464,40 +464,38 @@ class Console extends Component {
   render() {
     let { logs, set } = this.props
     return (
-      <div className="inject-console">
+      <div className="inject-console" ref={console => this.console = console}>
         <ContextMenuTrigger id={'console'}>
-          <div ref={console => this.console = console}>
-            {logs.map((log, i) => {
-              return (
-                <div className={`console-message-wrapper ${log.type}`} key={i}>
-                  <div className="console-message">
-                    <div className="console-timestamp">12</div>
-                    <div className="console-indicator"></div>
-                    <div className="source-code">
-                      {log.type === 'return' ? this.customType(log.message) : log.message.map((message, i) => {
-                        return (
-                          <span key={i} className="">
-                            {typeof message === 'object' ? (
-                              <ReactJson
-                                src={message}
-                                theme={'monokai'}
-                                enableClipboard={false}
-                                collapsed={true}
-                                iconStyle="circle" />
-                            ) : (
-                              <Linkify properties={{ target: '_blank' }}>
-                                {this.customType(message, log.message instanceof Array && typeof log.message[0] === 'string')}
-                              </Linkify>
-                            )}
-                          </span>
-                        )
-                      })}
-                    </div>
+          {logs.map((log, i) => {
+            return (
+              <div className={`console-message-wrapper ${log.type}`} key={i}>
+                <div className="console-message">
+                  <div className="console-timestamp">12</div>
+                  <div className="console-indicator"></div>
+                  <div className="source-code">
+                    {log.type === 'return' ? this.customType(log.message) : log.message.map((message, i) => {
+                      return (
+                        <span key={i} className="">
+                          {typeof message === 'object' ? (
+                            <ReactJson
+                              src={message}
+                              theme={'monokai'}
+                              enableClipboard={false}
+                              collapsed={true}
+                              iconStyle="circle" />
+                          ) : (
+                            <Linkify properties={{ target: '_blank' }}>
+                              {this.customType(message, log.message instanceof Array && typeof log.message[0] === 'string')}
+                            </Linkify>
+                          )}
+                        </span>
+                      )
+                    })}
                   </div>
                 </div>
-              )
-            })}
-          </div>
+              </div>
+            )
+          })}
         </ContextMenuTrigger>
         <ContextMenu id={'console'}>
           <MenuItem onClick={() => { console.clear(); set({ logs: [] }) } }>
