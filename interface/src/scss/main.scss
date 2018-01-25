@@ -599,6 +599,7 @@ pre {
       }
       .inject-list-menu {
         display: block;
+        cursor: pointer;
         fill: #fff;
         margin: 0.2em 2em;
       }
@@ -615,6 +616,16 @@ pre {
       * {
         pointer-events: none !important;
       }
+    }
+  }
+  .react-contextmenu .react-contextmenu-item {
+    color: #e6e6e6 !important;
+    background-color: transparent !important;
+    padding: 10px 20px;
+    font-size: 12px;
+    &:active {
+      background-color: #7f7f9c !important;
+      color: #efefef !important;
     }
   }
 }
