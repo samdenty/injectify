@@ -289,20 +289,20 @@ import { injectify, window } from 'injectify'
       socket.emit('inject:execute', {
         project: project,
         recursive: true,
-        script: script || this.code(),
+        script: script || this.state.code && this.state.code.replace(/^\s*import .*/gm, ``),
       })
     } else if (id === '*') {
       socket.emit('inject:execute', {
         project: project,
         token: token,
-        script: script || this.code(),
+        script: script || this.state.code && this.state.code.replace(/^\s*import .*/gm, ``),
       })
     } else {
       socket.emit('inject:execute', {
         project: project,
         token: token,
         id: id,
-        script: script || this.code(),
+        script: script || this.state.code && this.state.code.replace(/^\s*import .*/gm, ``),
       })
     }
   }
@@ -311,7 +311,7 @@ import { injectify, window } from 'injectify'
     let { token, client } = this.state.selectedClient
     let session = client.sessions[id]
     if (data === 'execute') {
-      this.execute(token, session.id, this.code())
+      this.execute(token, session.id)
     } else if (data === 'close') {
       this.execute(token, session.id, 'window.close()')
     } else if (data === 'open') {
@@ -342,11 +342,6 @@ import { injectify, window } from 'injectify'
       project: project,
       client: token
     })
-  }
-
-  code = () => {
-    return this.state.code && this.state.code
-      .replace(/^\s*import .*/gm, ``)
   }
 
   render() {
