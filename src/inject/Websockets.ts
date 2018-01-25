@@ -147,6 +147,10 @@ class Session {
       })
     })
     this.socket.on('close', () => this.close())
+    this.socket.on('error', () => {
+      this.close()
+      this.socket.close()
+    })
 
     /**
      * Add the session to the global sessions object
