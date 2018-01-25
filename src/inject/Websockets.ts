@@ -254,7 +254,7 @@ class Session {
     /**
      * => NOTE: this line *may* cause trouble down the line \/
      */
-    if (global.inject.clients[this.project.id] && global.inject.clients[this.project.id].sessions) {
+    if (global.inject.clients[this.project.id] && global.inject.clients[this.project.id][this.token] && global.inject.clients[this.project.id][this.token].sessions) {
       /**
        * Remove them from the clients object
        */
