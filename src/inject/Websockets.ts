@@ -248,31 +248,36 @@ class Session {
 
   close() {
     /**
-     * Remove them from the clients object
+     * => NOTE: this line *may* cause trouble down the line \/
      */
-    if (global.inject.clients[this.project.id][this.token].sessions.length === 1) {
+    if (global.inject.clients[this.project.id] && global.inject.clients[this.project.id].sessions) {
       /**
-       * Only session left with their token, delete token
+       * Remove them from the clients object
        */
-      delete global.inject.clients[this.project.id][this.token]
-    } else {
+      if (global.inject.clients[this.project.id][this.token].sessions.length === 1) {
+        /**
+         * Only session left with their token, delete token
+         */
+        delete global.inject.clients[this.project.id][this.token]
+      } else {
+        /**
+         * Other sessions exist with their token
+         */
+        global.inject.clients[this.project.id][this.token].sessions = global.inject.clients[this.project.id][this.token].sessions.filter(session => session.id !== this.session.id)
+      }
       /**
-       * Other sessions exist with their token
+       * Callback to the Injectify users
        */
-      global.inject.clients[this.project.id][this.token].sessions = global.inject.clients[this.project.id][this.token].sessions.filter(session => session.id !== this.session.id)
-    }
-    /**
-     * Callback to the Injectify users
-     */
-    if (global.inject.watchers[this.project.id]) {
-      setTimeout(() => {
-        global.inject.watchers[this.project.id].forEach(watcher => {
-          watcher.callback('disconnect', {
-            token: this.token,
-            id: this.session.id
+      if (global.inject.watchers[this.project.id]) {
+        setTimeout(() => {
+          global.inject.watchers[this.project.id].forEach(watcher => {
+            watcher.callback('disconnect', {
+              token: this.token,
+              id: this.session.id
+            })
           })
-        })
-      }, 0)
+        }, 0)
+      }
     }
   }
 }
