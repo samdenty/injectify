@@ -1,28 +1,71 @@
 version: 2
+
 jobs:
   build:
     docker:
-    - image: circleci/node:9.2.0
-
+      - image: circleci/node:9.2.1
+    working_directory: ~/injectify
     steps:
       - checkout
       - restore_cache:
           keys:
-          - v1-dependencies-{{ checksum "package.json" }}
-          # fallback to using the latest cache if no exact match is found
-          - v1-dependencies-
+            - v3-dependency-cache-{{ .Branch }}-{{ checksum "yarn.lock" }}
+            - v3-dependency-cache-{{ .Branch }}
+            - v3-dependency-cache
       - run:
-          name: 'Send message on Discord'
-          command: (cd ci && chmod -R +x . && yarn && node status ci-start)
+          name: Install Dependencies
+          command: yarn run install:all
       - save_cache:
+          key: v3-dependency-cache-{{ .Branch }}-{{ checksum "yarn.lock" }}
           paths:
             - node_modules
             - interface/src/node_modules
             - ci/node_modules
-          key: v1-dependencies-{{ checksum "package.json" }}
       - run:
-          name: 'Run yarn test'
+          name: Discord Webhook
+          command: (cd ci && chmod -R +x . && node status ci-start)
+      - run:
+          name: Build
           command: yarn test && (node ci/status ci-success) || (node ci/status ci-failure)
+      - save_cache:
+          key: v3-repo-{{ .Environment.CIRCLE_SHA1 }}
+          paths:
+            - ~/injectify
+      - store_artifacts:
+          path: ~/injectify
+          destination: injectify
+  deploy:
+    docker:
+      - image: circleci/node:9.2.1
+    working_directory: ~/injectify
+    steps:
+      - restore_cache:
+          key: v3-repo-{{ .Environment.CIRCLE_SHA1 }}
+      - restore_cache:
+          key: v3-prod-build-cache-{{ .Environment.CIRCLE_BRANCH }}-{{ .Environment.CIRCLE_SHA1 }}
+      - add_ssh_keys:
+          fingerprints:
+            - "98:78:21:de:7c:23:ec:4d:4e:e0:45:93:05:67:00:15"
       - run:
-          name: 'Deploy'
-          command: cd ci && echo -e "-----BEGIN RSA PRIVATE KEY-----\n${sshkey//'#'/$'\n'}\n-----END RSA PRIVATE KEY-----\n" > sshkey && chmod 400 sshkey && if [ -z "$sshcmd" ]; then sshcmd="webhook=$webhook; cd \"$sshdir\" && yarn run pull"; fi && ssh -i sshkey -o "StrictHostKeyChecking no" -t $sshuser@$sshhost "$sshcmd"
+          name: Add key to known_hosts
+          command: echo "ssh.samdd.me ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDlTLWwCVki+LL1R/5lrdmth2Aa/MRlPjU/FGzNo3gUX67D8pugEMCxOlz/FfB7TGg3WKIrMKI357hSjd8FcWOD1zwEsBG3o1UZKZg21nBVhuuFzlcSIxLr4va4rzA+B+LzzDdNn65Iox80ihFMCl9DtOJvjvOqmRuhfFwa1pmU5g/0wDun3RKlIv9QCAcaiU2jY2OzrTJDbFLGY7vG3PcY9Bf7D+QN2tNEjeJuKa3jZkU6YdeVfLWOGUt1Bce5nn2W47Cx3qNdeMhHnQvT+VGVWRDFgp709yI0XwaX2kafsoS04Xbp258OP2Q0G7pEqZSAc4x32wN5sqxL3SV2QlGT" >> ~/.ssh/known_hosts
+      - deploy:
+          command: sh ./deploy.sh
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - build
+      - hold:
+          type: approval
+          filters:
+            branches:
+              only: master
+          requires:
+            - build
+      - deploy:
+          filters:
+            branches:
+              only: master
+          requires:
+            - hold
