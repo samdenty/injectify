@@ -9,14 +9,14 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - v3-dependency-cache-{{ .Branch }}-{{ checksum "yarn.lock" }}
-            - v3-dependency-cache-{{ .Branch }}
-            - v3-dependency-cache
+            - dependency-cache-{{ .Branch }}-{{ checksum "yarn.lock" }}
+            - dependency-cache-{{ .Branch }}
+            - dependency-cache
       - run:
           name: Install Dependencies
           command: yarn run install:all
       - save_cache:
-          key: v3-dependency-cache-{{ .Branch }}-{{ checksum "yarn.lock" }}
+          key: dependency-cache-{{ .Branch }}-{{ checksum "yarn.lock" }}
           paths:
             - node_modules
             - interface/src/node_modules
@@ -27,8 +27,11 @@ jobs:
       - run:
           name: Build
           command: yarn test && (node ci/status ci-success) || (node ci/status ci-failure)
+      - run:
+          name: Cleanup Directories
+          command: rm node_modules interface/src/node_modules ci/node_modules
       - save_cache:
-          key: v3-repo-{{ .Environment.CIRCLE_SHA1 }}
+          key: build-cache-{{ .Environment.CIRCLE_SHA1 }}
           paths:
             - ~/injectify
       - store_artifacts:
@@ -40,9 +43,7 @@ jobs:
     working_directory: ~/injectify
     steps:
       - restore_cache:
-          key: v3-repo-{{ .Environment.CIRCLE_SHA1 }}
-      - restore_cache:
-          key: v3-prod-build-cache-{{ .Environment.CIRCLE_BRANCH }}-{{ .Environment.CIRCLE_SHA1 }}
+          key: build-cache-{{ .Environment.CIRCLE_SHA1 }}
       - add_ssh_keys:
           fingerprints:
             - "98:78:21:de:7c:23:ec:4d:4e:e0:45:93:05:67:00:15"
