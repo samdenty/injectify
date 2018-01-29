@@ -23,12 +23,9 @@ Injectify supports continuous integration via the use of CircleCi or TravisCI. T
 
 | Name    | Value                                                                                    |
 | ------- | ---------------------------------------------------------------------------------------- |
-| sshhost | The IP address of your VPS                                                               |
-| sshuser | The user to login into your VPS                                                          |
-| sshkey  | The root directory in which the Injectify is stored - needs to be specially formatted    |
-| sshdir  | (Optional) The root directory in which the Injectify is stored                           |
-| sshcmd  | (Optional) A custom bash script to run instead of the default                            |
 | webhook | (Optional) A [Discord](https://discordapp.com/) webhook URL                              |
+
+7. Modify `.circle.yml` and `deploy.sh` to suit your needs
 
 ![Environment Variables](https://i.imgur.com/h7cbPQW.png)
 
