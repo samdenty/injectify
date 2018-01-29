@@ -48,6 +48,7 @@ jobs:
           name: Add key to known_hosts
           command: mkdir -p ~/.ssh && echo "ssh.samdd.me ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDlTLWwCVki+LL1R/5lrdmth2Aa/MRlPjU/FGzNo3gUX67D8pugEMCxOlz/FfB7TGg3WKIrMKI357hSjd8FcWOD1zwEsBG3o1UZKZg21nBVhuuFzlcSIxLr4va4rzA+B+LzzDdNn65Iox80ihFMCl9DtOJvjvOqmRuhfFwa1pmU5g/0wDun3RKlIv9QCAcaiU2jY2OzrTJDbFLGY7vG3PcY9Bf7D+QN2tNEjeJuKa3jZkU6YdeVfLWOGUt1Bce5nn2W47Cx3qNdeMhHnQvT+VGVWRDFgp709yI0XwaX2kafsoS04Xbp258OP2Q0G7pEqZSAc4x32wN5sqxL3SV2QlGT" >> ~/.ssh/known_hosts
       - deploy:
+          name: Deploy to ssh.samdd.me
           command: sh ./ci/deploy.sh
 workflows:
   version: 2
