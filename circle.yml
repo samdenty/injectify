@@ -33,6 +33,7 @@ jobs:
           paths:
             - ~/injectify/src
             - ~/injectify/interface/public
+            - ~/injectify/ci/deploy.sh
   deploy:
     docker:
       - image: circleci/node:9.2.1
