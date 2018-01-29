@@ -18,6 +18,7 @@
     "install:all": "yarn --production=false && cd ci && yarn  -production=false && cd ../interface/src && yarn --production=false",
     "pull": "(git stash && git pull) && yarn run deploy || yarn run deploy:failure",
     "deploy": "yarn run deploy:start; (pm2 stop injectify &> /dev/null; yarn run install:all && yarn run build:silent && yarn run tsc && yarn run pm2) && yarn run deploy:success || yarn run deploy:failure",
+    "deploy:tar": "yarn run deploy:start; (git stash && git pull && (pm2 stop injectify &> /dev/null; yarn run install:all && tar -xzf injectify.tar.gz injectify --strip-components=1 && yarn run pm2)) && yarn run deploy:success || yarn run deploy:failure",
     "deploy:start": "(cd ci && yarn && node status deploy-start)",
     "deploy:success": "(cd ci && yarn && node status deploy-success)",
     "deploy:failure": "(cd ci && yarn && node status deploy-failure)",

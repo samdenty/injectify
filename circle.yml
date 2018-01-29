@@ -27,13 +27,12 @@ jobs:
       - run:
           name: Build
           command: yarn test && (node ci/status ci-success) || (node ci/status ci-failure)
-      - run:
-          name: Cleanup Directories
-          command: rm -rf node_modules interface/src/node_modules ci/node_modules
       - save_cache:
           key: build-cache-{{ .Environment.CIRCLE_SHA1 }}
+          # Paths that will be compiled & uploaded to the server
           paths:
-            - ~/injectify
+            - ~/injectify/src
+            - ~/injectify/interface/public
       - store_artifacts:
           path: ~/injectify
           destination: injectify
