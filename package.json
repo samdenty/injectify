@@ -4,7 +4,7 @@
   "description": "",
   "main": "./src/main.js",
   "scripts": {
-    "test": "yarn run build:silent",
+    "test": "yarn run build:silent && yarn run tsc",
     "start": "start \"\" cmd /k \"yarn run dev\" && yarn run server:dev",
     "dev": "concurrently -n \"webpack,mongo,typescript\" -c \"bgGreen.bold,bgMagenta.bold,bgCyan.bold\" \"yarn run interface\" \"yarn run mongo\" \"yarn run typescript\"",
     "build": "cd interface/src && yarn run build",
