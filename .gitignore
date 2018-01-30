@@ -17,6 +17,7 @@ bundle.js
 
 # Linux home-directory files
 .bash*
+.zsh*
 .pm2
 .ssh
 

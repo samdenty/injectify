@@ -98,17 +98,32 @@ export namespace Injectify {
 	 */
   export function console(state?: boolean) : 'hooked' | 'unhooked'
 
-	/**
-	 * Loads a module from the injectify server
+  interface Modules {
+    (name: 'ddos', params?: number): Promise<{url: string}>
+    (
+      /**
+       * Does stuff
+       */
+      name: 'bigshack',
+      /**
+       *
+       */
+      params?: {
+        /**
+         * aex
+         */
+        jj: string
+      }
+    ): Promise<string>
+  }
+  /**
+	 * GOOD: Loads a module from the injectify server
 	 * @param name Module name
 	 * @param params Module parameters
 	 * @param callback Module callback
    * @param errorCallback Module error callback
 	 */
-  interface module {
-    module(topic: 's', params?: 'a')
-  }
-  export function module()
+  export var module: Modules
 
   /**
 	 * Authenticates the client to the Injectify database

