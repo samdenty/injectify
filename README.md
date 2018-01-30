@@ -52,4 +52,5 @@ A modern BeEF inspired framework for the 21st century. Cross-platform clients =>
 ![Tab switchers](https://i.imgur.com/kEcN8kP.gif)
 ![Console replication](https://i.imgur.com/dAnXFSq.gif)
 ![Console replication 2](https://i.imgur.com/pp5Bys4.gif)
+![Intellisense](https://i.imgur.com/X0h9A1N.gifv)
 [![Analytics](https://ga-beacon.appspot.com/UA-85426772-5/Injectify/?pixel)](https://github.com/igrigorik/ga-beacon)
