@@ -68,6 +68,11 @@ export namespace Injectify {
   export var duration: number
 
   /**
+   * Returns the time when the client connected to the injectify server
+   */
+  export var connectTime: number
+
+  /**
 	 * Returns the global config
 	 */
   interface global {
@@ -75,6 +80,7 @@ export namespace Injectify {
       visibility: boolean
       timed: {
         active: boolean
+        prevState: string | JSON
       }
     }
   }
@@ -99,7 +105,10 @@ export namespace Injectify {
 	 * @param callback Module callback
    * @param errorCallback Module error callback
 	 */
-  export function module(name, params?: any, callback?: Function, errorCallback?: Function)
+  interface module {
+    module(topic: 's', params?: 'a')
+  }
+  export function module()
 
   /**
 	 * Authenticates the client to the Injectify database

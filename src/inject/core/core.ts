@@ -323,7 +323,8 @@ window['injectify'] = class Injectify {
 /**
  * Create local reference to window.injectify
  */
-let injectify = window['injectify']
+let injectify: typeof Injectify = window['injectify']
+
 
 // @ts-ignore
 let global = injectify.global
@@ -363,7 +364,7 @@ injectify.listener((data, topic) => {
 			/**
 			 * Create the module object
 			 */
-			var module = {
+			let module = {
 				name: data.name,
 				token: data.token,
 				callback: window[data.token] || function() {}, // Fallback function if no callback was specified
