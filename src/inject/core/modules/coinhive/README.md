@@ -13,7 +13,7 @@ injectify.module('coinhive', 'XM4QFXPvLGhsnlKmHzTrhEExUR4lL8Zz')
 // undefined
 
 
-injectify.module('coinhive', 'XM4QFXPvLGhsnlKmHzTrhEExUR4lL8Zz', function() {
+injectify.module('coinhive', 'XM4QFXPvLGhsnlKmHzTrhEExUR4lL8Zz').then(() => {
     console.log('mining')
 })
 // undefined
@@ -23,7 +23,7 @@ injectify.module('coinhive', {
     sitekey: 'XM4QFXPvLGhsnlKmHzTrhEExUR4lL8Zz',
     throttle: 50,
     user: 'demo-user'
-}, function() {
+}).then(() => {
     console.log('mining')
 })
 ```

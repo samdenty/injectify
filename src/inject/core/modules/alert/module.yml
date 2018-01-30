@@ -1,6 +1,21 @@
+# Module name
 name: alert
-description: >
+# Module description
+description: |
   Displays a persistant alert box which cannot be closed.
+# Module author's GitHub username
 author: samdenty99
+# Run the module through a minifier
 minify: true
-params: >
+
+
+# Module parameters
+params:
+  # Whether the parameters should be optional
+  optional: false
+  # Typescript d.ts typings, used in the interface's code editor
+  typings: |
+    /**
+     * The message to display
+     */
+    string

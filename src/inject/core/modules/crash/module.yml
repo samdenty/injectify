@@ -1,6 +1,9 @@
+# Module name
 name: crash
-description: >
+# Module description
+description: |
   Crashes the target's browser using the crashsafari.com exploit
+# Module author's GitHub username
 author: samdenty99
+# Run the module through a minifier
 minify: true
-params: >

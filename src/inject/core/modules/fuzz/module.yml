@@ -1,9 +1,27 @@
+# Module name
 name: fuzz
-description: >
+# Module description
+description: |
   A module that attempts to make it difficult for the target to use DevTools.
   Disables common keyboard shortcuts such as [CTRL-SHIFT-I] [CTRL-U] [CTRL-R] [F5] [F12],
   whilst spamming the Developer console with messages.
+# Module author's GitHub username
 author: samdenty99
+# Run the module through a minifier
 minify: true
-params: >
-  @param {boolean} spam Spams the developer console with messages (default true)
+
+
+# Module parameters
+params:
+  # Whether the parameters should be optional
+  optional: true
+  # Typescript d.ts typings, used in the interface's code editor
+  typings: |
+    /**
+     * Whether or not to spam the developer console with messages
+     */
+    boolean
+
+# Module callback
+returns: |
+  boolean

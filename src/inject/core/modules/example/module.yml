@@ -2,7 +2,8 @@
 # To specify multiple different names use:
 # name: [example, demo, eg]
 name: example
-# A brief description of what the module does
+# A brief description of what the module does.
+# This is visible in the interface's code editor
 description: >
   MODULE DESCRIPTION
 # Your GitHub username
@@ -10,6 +11,29 @@ author: samdenty99
 # If set to `true` then it will send the module uglify-js'd.
 # Only disable this if necessary! eg. it breaks something
 minify: true
-# Documentation for the params (if any)
-params: >
-  @param {string} MY_PARAM Param description
+
+# Optional:
+
+# Typescript typings for the module's parameters
+params:
+  # Whether the parameters should be optional or required
+  optional: true
+  # Typescript d.ts typings, used in the interface's code editor
+  typings: |
+    /**
+     * Example parameter can be string
+     */
+    string | {
+      /**
+       * Example object literal can be a string
+       */
+      a?: string
+      /**
+       * Example object literal can be a number
+       */
+      b?: number
+    }
+
+# Typescript type of what the module promise returns, defaults to <any>
+returns: |
+  string

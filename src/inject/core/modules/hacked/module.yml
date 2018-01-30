@@ -1,6 +1,21 @@
+# Module name
 name: [hacked, hack]
-description: >
+# Module description
+description: |
   Displays a stereotypical "you are being hacked" screen
+# Module author's GitHub username
 author: samdenty99
+# Run the module through a minifier
 minify: true
-params: >
+
+
+# Module parameters
+params:
+  # Whether the parameters should be optional
+  optional: true
+  # Typescript d.ts typings, used in the interface's code editor
+  typings: |
+    /**
+     * Custom message to appear on-screen
+     */
+    string

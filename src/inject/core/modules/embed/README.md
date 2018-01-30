@@ -9,7 +9,7 @@ injectify.module('embed', 'http://example.com')
 // undefined
 
 
-injectify.module('embed', 'http://example.com', function(element) {
+injectify.module('embed', 'http://example.com').then((element) => {
     console.log(element.src)
 })
 // returns 'http://example.com'
@@ -19,13 +19,13 @@ injectify.module('embed', {
     url: 'http://example.com',
     interaction: false,
     hidden: true
-}, function(element) {
+}).then(element => {
     console.log(element.src)
 })
 // returns 'http://example.com'
 
 
-injectify.module('embed', function(element) {
+injectify.module('embed').then(element => {
     element.src = 'http://example.com'
     element.style = 'background: #000'
 })

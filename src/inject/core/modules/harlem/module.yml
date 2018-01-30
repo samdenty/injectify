@@ -1,6 +1,9 @@
+# Module name
 name: harlem
-description: >
+# Module description
+description: |
   Performs harlem-shake on the current page
+# Module author's GitHub username
 author: samdenty99
+# Run the module through a minifier
 minify: true
-params: >
