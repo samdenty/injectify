@@ -160,7 +160,7 @@ import { injectify, window } from 'injectify'
       if (type === 'info' || type === 'warn' || type === 'error') {
         console[type].apply(this, message)
       } else if (type === 'return') {
-        console.log(message)
+        console.log(message.type, message.data)
       }
 
       let logs = this.state.logs
@@ -473,15 +473,17 @@ class Console extends Component {
                   <div className="console-timestamp">12</div>
                   <div className="console-indicator"></div>
                   <div className="source-code">
-                    {log.type === 'return' ? this.customType(log.message) : log.message.map((message, i) => {
+                    {log.type === 'return' ? this.customReturn(log.message) : log.message.map((message, i) => {
                       return (
                         <span key={i} className="">
-                          {typeof message === 'object' ? (
+                          {message instanceof Object ? (
                             <ReactJson
                               src={message}
                               theme={'monokai'}
-                              enableClipboard={false}
+                              enableClipboard={true}
                               collapsed={true}
+                              name={false}
+                              displayDataTypes={false}
                               iconStyle="circle" />
                           ) : (
                             <Linkify properties={{ target: '_blank' }}>
@@ -546,13 +548,15 @@ class Console extends Component {
     } else {
       customType.data = message
     }
-    if (type === 'object' && type !== null) {
+    if (type === 'object' && message !== null) {
       return (
         <ReactJson
           src={customType.data}
           theme={'monokai'}
-          enableClipboard={false}
+          enableClipboard={true}
           collapsed={true}
+          name={false}
+          displayDataTypes={false}
           iconStyle="circle" />
       )
     } else {
@@ -561,5 +565,21 @@ class Console extends Component {
       )
     }
 
+  }
+
+  customReturn(message) {
+    let { type, data } = message
+    if (type === 'promise') {
+      return (
+        <span className="promise">
+          Promise {`{`}
+          <span>
+            {`<pending>`}
+          </span>{`}`}
+        </span>
+      )
+    } else {
+      return this.customType(data)
+    }
   }
 }
