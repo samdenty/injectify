@@ -1,7 +1,29 @@
+# Module name
 name: [ddos, dos]
-description: >
+# Module description
+description: |
   Performs a DDOS attack on any given URL
+# Module author's GitHub username
 author: samdenty99
+# Run the module through a minifier
 minify: true
-params: >
-  @param {url} url The url for the browser to send requests to
+
+
+# Module parameters
+params:
+  # Whether the parameters should be optional
+  optional: true
+  # Typescript d.ts typings, used in the interface's code editor
+  typings: |
+    {
+      /**
+        * aex
+        */
+      jj: string
+    }
+
+# Module callback
+returns: |
+  {
+    t: boolean
+  }

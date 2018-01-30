@@ -9,6 +9,7 @@ import MonacoEditor from 'react-monaco-editor';
 import CodeMirror from 'react-codemirror';
 require('codemirror/mode/javascript/javascript');
 import Typings from '../../../../src/inject/core/definitions/core.d.ts';
+import ModuleTypings from '../../../../src/inject/core/definitions/modules.d.ts';
 
 import { LineChart } from 'react-easy-chart';
 import Tooltip from 'material-ui/Tooltip';
@@ -262,7 +263,8 @@ import { injectify, window } from 'injectify'
       .replace(/^\s*import /mg, `// import `)
       .replace('export namespace Injectify', `declare module 'injectify'`)
       .replace('//1', 'export namespace injectify {')
-      .replace('//2',
+      .replace('//2', ModuleTypings.replace('export interface Modules', 'interface Modules'))
+      .replace('//3',
       `}
       export var window: any`)
     monaco.languages.typescript.typescriptDefaults.addExtraLib(typings, 'injectify.d.ts')

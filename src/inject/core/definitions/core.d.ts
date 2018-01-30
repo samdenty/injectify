@@ -1,4 +1,5 @@
 import { Url } from 'url'
+import { Modules } from './modules'
 
 /**
  * Inject core typings
@@ -8,6 +9,7 @@ import { Url } from 'url'
 
 export namespace Injectify {
   //1
+  //2
   interface info {
     project: string
     server: {
@@ -98,24 +100,7 @@ export namespace Injectify {
 	 */
   export function console(state?: boolean) : 'hooked' | 'unhooked'
 
-  interface Modules {
-    (name: 'ddos', params?: number): Promise<{url: string}>
-    (
-      /**
-       * Does stuff
-       */
-      name: 'bigshack',
-      /**
-       *
-       */
-      params?: {
-        /**
-         * aex
-         */
-        jj: string
-      }
-    ): Promise<string>
-  }
+
   /**
 	 * GOOD: Loads a module from the injectify server
 	 * @param name Module name
@@ -204,5 +189,5 @@ export namespace Injectify {
 	 * @param element element to execute the script under, defaults to document.head
 	 */
   export function exec(func: Function | string, element?: HTMLElement)
-  //2
+  //3
 }
