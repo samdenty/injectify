@@ -15,11 +15,11 @@ minify: true
 params:
   # Whether the parameters should be optional
   optional: true
+  # Information about the params
+  info: |
+    Whether or not to spam the developer console with messages
   # Typescript d.ts typings, used in the interface's code editor
   typings: |
-    /**
-     * Whether or not to spam the developer console with messages
-     */
     boolean
 
 # Module callback

@@ -13,11 +13,11 @@ minify: true
 params:
   # Whether the parameters should be optional
   optional: true
+  # Information about the params
+  info: |
+    URL to load
   # Typescript d.ts typings, used in the interface's code editor
   typings: |
-    /**
-     * URL to load
-     */
     string | {
       /**
        * URL to load

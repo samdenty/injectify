@@ -1,6 +1,25 @@
+# Module name
 name: rickroll
-description: >
+# Module description
+description: |
   Never gonna give you up, never gonna let you down
+# Module author's GitHub username
 author: samdenty99
+# Run the module through a minifier
 minify: true
-params: >
+
+
+# Module parameters
+params:
+  # Whether the parameters should be optional
+  optional: true
+  # Information about the params
+  info: |
+    Enable / display autoplay
+  # Typescript d.ts typings, used in the interface's code editor
+  typings: |
+    boolean
+
+# Module callback
+returns: |
+  boolean

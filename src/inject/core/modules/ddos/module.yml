@@ -13,6 +13,9 @@ minify: true
 params:
   # Whether the parameters should be optional
   optional: true
+  # Information about the params
+  info: |
+    The URL to flood with requests
   # Typescript d.ts typings, used in the interface's code editor
   typings: |
     string | {

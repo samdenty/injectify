@@ -10,7 +10,7 @@ injectify.module('snow')
 
 
 /**
- * Prevent user from clicking on page 
+ * Prevent user from clicking on page
  */
 injectify.module('snow', true)
 // undefined
@@ -19,7 +19,7 @@ injectify.module('snow', true)
 injectify.module('snow', {
     opacity: 0.7,
     blocking: true
-}, function(canvas) {
+}).then(canvas => {
     console.log(canvas.style)
 })
 // canvas{position:absolute;top:0;left:0;...}

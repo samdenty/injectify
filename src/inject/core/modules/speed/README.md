@@ -22,9 +22,10 @@ injectify.module('speed', function(speed, err) {
 injectify.module('speed', {
     url: 'https://upload.wikimedia.org/wikipedia/commons/2/2d/Snake_River_%285mb%29.jpg',
     bytes: 5245329 // The file-size in bytes of the above URL
-}, function(speed, error) {
-    if (error) return injectify.error(err)
+}).then(speed => {
     console.log(speed)
+}).catch(error => {
+    injectify.error(error)
 })
 // {
 //   "duration": 5.576,

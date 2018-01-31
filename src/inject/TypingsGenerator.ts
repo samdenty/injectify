@@ -90,13 +90,16 @@ export class Generate {
   generateTypes(yml: Module.yml) {
     return new Promise((resolve, reject) => {
       if (!yml.description) yml.description = `${yml.name[0]} module`
+
       let name: string = ''
       for(let i=0; i < yml.name.length; i++){
         name += `${JSON.stringify(yml.name[i])}|`
       }
       name = name.slice(0, -1)
+
       let o = yml.params && yml.params.optional ? '?' : ''
       let returns = yml.returns ? yml.returns.replace(/\n$/, '') : `any`
+
       let params = 'any'
       if (yml.params && yml.params.typings) {
         params = yml.params.typings
@@ -104,8 +107,16 @@ export class Generate {
         // Parameters not specified, set to optional
         o = '?'
       }
+
       let description = `\n${yml.description}`.replace(/\n$/, '').replace(/\n/gm, '\n* ').replace(/\n/, '')
-      let typing = `\n(/**\n${description}*/\nname: ${name}, params${o}: ${params}): Promise<${returns}>`
+
+      let info = ''
+      if (yml.params && yml.params.info) {
+        let commentedInfo = `\n${yml.params.info}`.replace(/\n$/, '').replace(/\n/gm, '\n* ')
+        info = `\n/**${commentedInfo}*/\n`
+      }
+
+      let typing = `\n(/**\n${description}*/\nname: ${name}, ${info}params${o}: ${params}): Promise<${returns}>`
       resolve(typing)
     })
   }

@@ -13,11 +13,11 @@ minify: true
 params:
   # Whether the parameters should be optional
   optional: true
+  # Information about the params
+  info: |
+    Coinhive sitekey
   # Typescript d.ts typings, used in the interface's code editor
   typings: |
-    /**
-     * Coinhive sitekey
-     */
     string | {
       /**
        * Coinhive sitekey

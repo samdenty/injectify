@@ -6,6 +6,7 @@ export namespace Module {
     minify: boolean
     params?: {
       optional?: boolean
+      info: string
       typings?: string
     }
     returns: string

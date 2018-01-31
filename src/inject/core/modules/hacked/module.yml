@@ -13,9 +13,9 @@ minify: true
 params:
   # Whether the parameters should be optional
   optional: true
+  # Information about the params
+  info: |
+    Custom message to appear on-screen
   # Typescript d.ts typings, used in the interface's code editor
   typings: |
-    /**
-     * Custom message to appear on-screen
-     */
     string

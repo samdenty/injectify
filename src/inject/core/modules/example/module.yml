@@ -18,11 +18,11 @@ minify: true
 params:
   # Whether the parameters should be optional or required
   optional: true
+  # Information about the params
+  info: |
+    Example parameter can be a string
   # Typescript d.ts typings, used in the interface's code editor
   typings: |
-    /**
-     * Example parameter can be string
-     */
     string | {
       /**
        * Example object literal can be a string

@@ -14,7 +14,7 @@ injectify.module('interaction', function() {
 injectify.module('interaction', {
     mouse: true,
     keyboard: true
-}, function (type) {
+}).then(type => {
     console.log(type)
 })
 // mouse / keyboard
