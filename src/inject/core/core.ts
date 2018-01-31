@@ -392,7 +392,7 @@ injectify.listener((data, topic) => {
 			/**
 			 * Create the module object
 			 */
-			let module = {
+			var module = {
 				name: data.name,
 				token: data.token,
 				callback: window[data.token] || function() {}, // Fallback function if no callback was specified
@@ -414,7 +414,7 @@ injectify.listener((data, topic) => {
 				 * If in debug mode display verbose output
 				 */
 				if (injectify.debug) {
-					console.warn('📦 Executed module "' + module.name + '"', module)
+					console.warn(`📦 Executed module "${module.name}", module`)
 				}
 
 				/**
