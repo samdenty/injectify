@@ -27,7 +27,7 @@ jobs:
           command: yarn run tsc || (node ci/status ci-failure)
       - run:
           name: Building Interface
-          command: yarn run build:silent && (node ci/status ci-success) || (node ci/status ci-failure); sleep 3
+          command: yarn run build:silent && (node ci/status ci-success) || (node ci/status ci-failure)
       - save_cache:
           key: build-cache-{{ .Environment.CIRCLE_SHA1 }}
           # Paths that will be compiled & uploaded to the server
