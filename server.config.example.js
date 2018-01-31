@@ -103,14 +103,20 @@ module.exports = {
       webhook: 'INSERT_WEBHOOK_URL',
       /**
        * WidgetBot discord widgets
-       * 
+       *
        * Sign up at https://widgetbot.io, invite it to your server, make
        * sure you enable the appropriate channel and replace the below values
+       *
+       * Crate documentation: https://docs.widgetbot.io
        */
       widgetbot: {
         server: '335836376031428618',
         channel: '377173106940182529',
         options: '0002',
+        colors: {
+          toggle: '#3F51B5'
+        },
+        style: 'material',
         beta: false
       }
     },
