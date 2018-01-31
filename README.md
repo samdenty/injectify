@@ -18,7 +18,7 @@
     <a href="https://samdenty99.github.io/r?https://discord.gg/Nsz5AeD">
       Discord
     </a>&nbsp;|
-    <a href="https://samdenty99.github.io/r?https://injectify.github.io/docs/">
+    <a href="https://samdenty99.github.io/r?https://injectify.github.io/">
       Documentation
     </a>
   </b>
@@ -45,22 +45,22 @@ Injectify is a modern web based MiTM tool, similiar to BeEF (although completely
 * :keyboard: Records keystrokes and logs them to a database.
 * :closed_lock_with_key: Extract and log [saved passwords](https://twitter.com/thesamdd/status/947251299262836741) from the browser.
 
-## [Documentation](https://injectify.github.io/docs/)
-- [Getting started](https://injectify.github.io/docs/getting-started/installation/mongodb/)
-  - [Installation ](https://injectify.github.io/docs/getting-started/installation/mongodb/)
-    - [Creating a MongoDB database](https://injectify.github.io/docs/getting-started/installation/mongodb/)
-    - [Creating a GitHub application](https://injectify.github.io/docs/getting-started/installation/github/)
-    - [Configuration](https://injectify.github.io/docs/getting-started/installation/configuration/)
-    - [Setting up the server](https://injectify.github.io/docs/getting-started/installation/setting-up/)
-  - [Using it](https://injectify.github.io/docs/usage/payload-generator/)
-     - [Generating JS payloads](https://injectify.github.io/docs/usage/payload-generator/)
-     - [Hooking browsers](https://injectify.github.io/docs/usage/inject/)
-     - [Password extractor](https://injectify.github.io/docs/usage/passwords/)
-     - [Keylogger](https://injectify.github.io/docs/usage/keylogger/)
-     - [Project configuration](https://injectify.github.io/docs/usage/project-config/roles/)
-        - [Managing users & roles](https://injectify.github.io/docs/usage/project-config/roles/)
-        - [Managing domain filters](https://injectify.github.io/docs/usage/project-config/filters/)
-        - [Project API](https://injectify.github.io/docs/usage/project-config/api/)
+## [Documentation](https://injectify.github.io/)
+- [Getting started](https://injectify.github.io/getting-started/installation/mongodb/)
+  - [Installation ](https://injectify.github.io/getting-started/installation/mongodb/)
+    - [Creating a MongoDB database](https://injectify.github.io/getting-started/installation/mongodb/)
+    - [Creating a GitHub application](https://injectify.github.io/getting-started/installation/github/)
+    - [Configuration](https://injectify.github.io/getting-started/installation/configuration/)
+    - [Setting up the server](https://injectify.github.io/getting-started/installation/setting-up/)
+  - [Using it](https://injectify.github.io/usage/payload-generator/)
+     - [Generating JS payloads](https://injectify.github.io/usage/payload-generator/)
+     - [Hooking browsers](https://injectify.github.io/usage/inject/)
+     - [Password extractor](https://injectify.github.io/usage/passwords/)
+     - [Keylogger](https://injectify.github.io/usage/keylogger/)
+     - [Project configuration](https://injectify.github.io/usage/project-config/roles/)
+        - [Managing users & roles](https://injectify.github.io/usage/project-config/roles/)
+        - [Managing domain filters](https://injectify.github.io/usage/project-config/filters/)
+        - [Project API](https://injectify.github.io/usage/project-config/api/)
 - Development
   - [Setting up the dev-server](https://github.com/samdenty99/injectify/wiki/Development-server)
 - Builds and deployment
@@ -68,7 +68,7 @@ Injectify is a modern web based MiTM tool, similiar to BeEF (although completely
   - [TravisCI](https://github.com/samdenty99/injectify/wiki/Builds-and-deployment%3A-TravisCI)
 
 ## Demos
-See more at the [official documentation site](https://injectify.github.io/docs/demos/interface/)
+See more at the [official documentation site](https://injectify.github.io/demos/interface/)
 
 ### Tabs
 ![](https://i.imgur.com/P9Cgksy.gif)
