@@ -35,4 +35,4 @@ params:
 
 # Module callback
 returns: |
-  HTMLIFrameElement
+  HTMLIFrameElement | any
