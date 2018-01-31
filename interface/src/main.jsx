@@ -119,6 +119,11 @@ class Injectify extends Component {
 
 		socket.on(`auth:github`, data => {
 			this.setState(data)
+			if (window.crate) {
+				crate.config({
+					username: `@${data.user.login}`
+				})
+			}
 			if (data.success && data.token) {
 				localStorage.setItem("token", data.token)
 				let accounts = localStorage.getItem("accounts")
