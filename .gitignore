@@ -6,7 +6,7 @@ database/*
 # Typescript
 src/**/*.js
 src/inject/core/definitions/modules.d.ts
-!src/inject/core/modules/
+!src/inject/core/modules/**/**.js
 
 # Interface files
 interface/public/assets/css
