@@ -104,21 +104,16 @@ class Injectify extends Component {
 			 */
 			if ((window.innerWidth || document.body.clientWidth) > 400 && discord && discord.server && discord.channel) {
 				let crate = document.createElement('script')
-				crate.setAttribute('src', 'https://crate.widgetbot.io/js')
-				crate.setAttribute('server', `${discord.server}/${discord.channel}`)
-				crate.setAttribute('options', discord.options ? discord.options.toString() : '0002')
-				if (discord.beta) crate.setAttribute('beta', '')
-				crate.setAttribute('discord', '')
-				crate.setAttribute('notoast', '')
-				crate.setAttribute('defer', '')
+				crate.setAttribute('src', 'https://crate.widgetbot.io/v2')
+				let config = discord
 				/**
 				 * Don't preload the widget on screens under 1000px or whilst in development
-				 * 
+				 *
 				 * Force-delayed
 				 */
-				if (true || development || (window.innerWidth || document.body.clientWidth) < 1000) crate.setAttribute('delay', '')
-				crate.setAttribute('quiet', '')
-				document.body.appendChild(crate)
+				if (development || (window.innerWidth || document.body.clientWidth) < 1000) config.delay = true
+				crate.innerHTML = `new Crate(${JSON.stringify(config)})`
+				document.head.appendChild(crate)
 			}
 		})
 
