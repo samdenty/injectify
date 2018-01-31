@@ -25,26 +25,16 @@ export default class {
             let js: string
             let error = false
             try {
-              js = fs.readFileSync(`${__dirname}/core/modules/` + folder + '/module.js', 'utf8')
-              yml = yaml.parse(fs.readFileSync(`${__dirname}/core/modules/` + folder + '/module.yml', 'utf8'))
-            } catch (error) {
-              if (js && !yml.name) {
-                // Attempt to load module in basic mode
-                console.warn(
-                  chalk.yellowBright('[inject:module] ') +
-                  chalk.yellowBright('missing configuration for ') +
-                  chalk.magentaBright('./' + folder + '/') +
-                  chalk.yellowBright(', it may misbehave')
-                )
-                yml.name = folder
-              } else {
-                error = true
-                console.error(
-                  chalk.redBright('[inject:module] ') +
-                  chalk.yellowBright('failed to load module ') +
-                  chalk.magentaBright('./' + folder + '/')
-                )
-              }
+              js = fs.readFileSync(`${__dirname}/core/modules/${folder}/module.js`, 'utf8')
+              yml = yaml.parse(fs.readFileSync(`${__dirname}/core/modules/${folder}/module.yml`, 'utf8'))
+            } catch (err) {
+              error = true
+              console.error(error)
+              console.error(
+                chalk.redBright('[inject:module] ') +
+                chalk.yellowBright('failed to load module ') +
+                chalk.magentaBright('./' + folder + '/')
+              )
             }
             if (!error) {
               let unminified = js

@@ -10,8 +10,6 @@ jobs:
       - restore_cache:
           keys:
             - dependency-cache-{{ .Branch }}-{{ checksum "yarn.lock" }}
-            - dependency-cache-{{ .Branch }}
-            - dependency-cache
       - run:
           name: Install Dependencies
           command: yarn run install:all
@@ -25,8 +23,11 @@ jobs:
           name: Discord Webhook
           command: (cd ci && chmod -R +x . && node status ci-start)
       - run:
-          name: Build
-          command: yarn test && (node ci/status ci-success) || (node ci/status ci-failure)
+          name: Compiling Typescript
+          command: yarn run tsc || (node ci/status ci-failure)
+      - run:
+          name: Buildig Interface
+          command: yarn run build:silent && (node ci/status ci-success) || (node ci/status ci-failure); sleep 3
       - save_cache:
           key: build-cache-{{ .Environment.CIRCLE_SHA1 }}
           # Paths that will be compiled & uploaded to the server
