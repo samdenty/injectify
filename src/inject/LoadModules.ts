@@ -18,15 +18,15 @@ export default class {
   // @ts-ignore
   get load() {
     return new Promise<{ modules: any, debugModules: any, count: number }>((resolve, reject) => {
-      fs.readdir(`${__dirname}/modules/`, (err, folders) => {
+      fs.readdir(`${__dirname}/core/modules/`, (err, folders) => {
         if (!err) {
           folders.forEach((folder: string, index: number, array: string[]) => {
             let yml = <Module.yml> {}
             let js: string
             let error = false
             try {
-              js = fs.readFileSync(`${__dirname}/modules/` + folder + '/module.js', 'utf8')
-              yml = yaml.parse(fs.readFileSync(`${__dirname}/modules/` + folder + '/module.yml', 'utf8'))
+              js = fs.readFileSync(`${__dirname}/core/modules/` + folder + '/module.js', 'utf8')
+              yml = yaml.parse(fs.readFileSync(`${__dirname}/core/modules/` + folder + '/module.yml', 'utf8'))
             } catch (error) {
               if (js && !yml.name) {
                 // Attempt to load module in basic mode

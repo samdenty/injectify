@@ -1,0 +1,51 @@
+# Module name
+name: [ddos, dos]
+# Module description
+description: |
+  Performs a DDOS attack on any given URL
+# Module author's GitHub username
+author: samdenty99
+# Run the module through a minifier
+minify: true
+
+
+# Module parameters
+params:
+  # Whether the parameters should be optional
+  optional: true
+  # Information about the params
+  info: |
+    The URL to flood with requests
+  # Typescript d.ts typings, used in the interface's code editor
+  typings: |
+    string | {
+      /**
+       * The URL to flood with requests
+       */
+      url?: string
+      /**
+       * The HTTP method to use
+       */
+      method?: 'GET' | 'POST'
+      /**
+       * The url query parameters
+       */
+      params?: any
+      /**
+       * The request body
+       */
+      body?: any
+      /**
+       * Time interval in-between requests
+       */
+      interval?: number
+      /**
+       * Whether to append a random query string to the end of the URL or not.
+       * If you disable this, the client's browser will cache requests
+       */
+      random?: boolean
+    }
+
+# Module callback
+returns: |
+  boolean

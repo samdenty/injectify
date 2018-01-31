@@ -1,0 +1,26 @@
+# Module name
+name: windowspam
+# Module description
+description: |
+  Runs the window.open command in a loop (thats a lot of windows)
+# Module author's GitHub username
+author: digmorepaka
+# Run the module through a minifier
+minify: true
+
+
+# Module parameters
+params:
+  # Whether the parameters should be optional
+  optional: true
+  # Information about the params
+  info: |
+    Custom URL to open
+  # Typescript d.ts typings, used in the interface's code editor
+  typings: |
+    string | {
+      /**
+       * Custom URL to open
+       */
+      url?: string
+    }

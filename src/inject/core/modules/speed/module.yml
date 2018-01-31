@@ -1,0 +1,42 @@
+# Module name
+name: [speed, speedtest]
+# Module description
+description: |
+  Performs an internet connection speedtest
+# Module author's GitHub username
+author: samdenty99
+# Run the module through a minifier
+minify: true
+
+
+# Module parameters
+params:
+  # Whether the parameters should be optional
+  optional: true
+  # Information about the params
+  info: |
+    Perform speedtest again a fixed size external resource
+  # Typescript d.ts typings, used in the interface's code editor
+  typings: |
+    boolean | {
+      /**
+       * Perform speedtest again a fixed size external resource
+       */
+      url: number,
+      /**
+       * Size in bytes of the custom resource
+       */
+      bytes: boolean
+    }
+
+# Module callback
+returns: |
+  {
+    duration: number
+    speed: {
+      bps: string
+      kbps: string
+      mbps: string
+    }
+    downlink: number
+  }

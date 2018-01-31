@@ -1,7 +1,0 @@
-name: [embed, iframe]
-description: >
-  Replaces the DOM with a 100% x 100% iframe
-author: samdenty99
-minify: true
-params: >
-  @param {url} src The url to load in the embed

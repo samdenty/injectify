@@ -1,0 +1,28 @@
+# Module name
+name: [loadjs, js, javascript]
+# Module description
+description: |
+  Loads & executes an external Javascript file
+# Module author's GitHub username
+author: samdenty99
+# Run the module through a minifier
+minify: true
+
+
+# Module parameters
+params:
+  # Whether the parameters should be optional
+  optional: false
+  # Information about the params
+  info: |
+    URL to the javascript file
+  # Typescript d.ts typings, used in the interface's code editor
+  typings: |
+    string | {
+      /**
+       * URL to the javascript file
+       */
+      url?: string
+    }
+returns: |
+  'keyboard' | 'mouse'

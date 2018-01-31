@@ -1,7 +1,0 @@
-name: [coinhive, mine, monero]
-description: >
-  Coinhive monero cryptocurrency miner
-author: samdenty99
-minify: true
-params: >
-  @param {string} siteKey Coinhive site key

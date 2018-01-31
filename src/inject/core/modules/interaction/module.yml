@@ -1,0 +1,29 @@
+# Module name
+name: [interaction, interact, onclick, trigger]
+# Module description
+description: |
+  Attaches a function to a browser's interaction methods (keyboard, clicks, etc).
+# Module author's GitHub username
+author: samdenty99
+# Run the module through a minifier
+minify: true
+
+
+# Module parameters
+params:
+  # Whether the parameters should be optional
+  optional: true
+  # Typescript d.ts typings, used in the interface's code editor
+  typings: |
+    {
+      /**
+       * Interrupt mouse events
+       */
+      mouse?: boolean
+      /**
+       * Interrupt keyboard events
+       */
+      keyboard?: boolean
+    }
+returns: |
+  'keyboard' | 'mouse'

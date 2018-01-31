@@ -5,7 +5,8 @@ database/*
 
 # Typescript
 src/**/*.js
-!src/inject/modules/
+src/inject/core/definitions/modules.d.ts
+!src/inject/core/modules/
 
 # Interface files
 interface/public/assets/css
@@ -17,6 +18,7 @@ bundle.js
 
 # Linux home-directory files
 .bash*
+.zsh*
 .pm2
 .ssh
 

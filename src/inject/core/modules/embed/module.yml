@@ -1,0 +1,38 @@
+# Module name
+name: [embed, iframe]
+# Module description
+description: |
+  Replaces the DOM with a 100% x 100% iframe
+# Module author's GitHub username
+author: samdenty99
+# Run the module through a minifier
+minify: true
+
+
+# Module parameters
+params:
+  # Whether the parameters should be optional
+  optional: true
+  # Information about the params
+  info: |
+    URL to load
+  # Typescript d.ts typings, used in the interface's code editor
+  typings: |
+    string | {
+      /**
+       * URL to load
+       */
+      url?: string
+      /**
+       * Allow interaction with the iframe
+       */
+      interaction?: boolean
+      /**
+       * Hide the iframe from the user
+       */
+      hidden?: boolean
+    }
+
+# Module callback
+returns: |
+  HTMLIFrameElement

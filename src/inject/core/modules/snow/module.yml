@@ -1,0 +1,34 @@
+# Module name
+name: snow
+# Module description
+description: |
+  Makes the page snow!
+# Module author's GitHub username
+author: samdenty99
+# Run the module through a minifier
+minify: true
+
+
+# Module parameters
+params:
+  # Whether the parameters should be optional
+  optional: true
+  # Information about the params
+  info: |
+    Prevent user from clicking on page
+  # Typescript d.ts typings, used in the interface's code editor
+  typings: |
+    boolean | {
+      /**
+       * Opacity of the snowflakes
+       */
+      opacity?: number
+      /**
+       * Prevent user from clicking on page
+       */
+      blocking?: boolean
+    }
+
+# Module callback
+returns: |
+  HTMLCanvasElement

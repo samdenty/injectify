@@ -1,0 +1,39 @@
+# The module name, injectify.module('NAME')
+# To specify multiple different names use:
+# name: [example, demo, eg]
+name: example
+# A brief description of what the module does.
+# This is visible in the interface's code editor
+description: >
+  MODULE DESCRIPTION
+# Your GitHub username
+author: samdenty99
+# If set to `true` then it will send the module uglify-js'd.
+# Only disable this if necessary! eg. it breaks something
+minify: true
+
+# Optional:
+
+# Typescript typings for the module's parameters
+params:
+  # Whether the parameters should be optional or required
+  optional: true
+  # Information about the params
+  info: |
+    Example parameter can be a string
+  # Typescript d.ts typings, used in the interface's code editor
+  typings: |
+    string | {
+      /**
+       * Example object literal can be a string
+       */
+      a?: string
+      /**
+       * Example object literal can be a number
+       */
+      b?: number
+    }
+
+# Typescript type of what the module promise returns, defaults to <any>
+returns: |
+  string

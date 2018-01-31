@@ -9,6 +9,7 @@ import MonacoEditor from 'react-monaco-editor';
 import CodeMirror from 'react-codemirror';
 require('codemirror/mode/javascript/javascript');
 import Typings from '../../../../src/inject/core/definitions/core.d.ts';
+import ModuleTypings from '../../../../src/inject/core/definitions/modules.d.ts';
 
 import { LineChart } from 'react-easy-chart';
 import Tooltip from 'material-ui/Tooltip';
@@ -160,7 +161,7 @@ import { injectify, window } from 'injectify'
       if (type === 'info' || type === 'warn' || type === 'error') {
         console[type].apply(this, message)
       } else if (type === 'return') {
-        console.log(message)
+        console.log(message.type, message.data)
       }
 
       let logs = this.state.logs
@@ -262,7 +263,8 @@ import { injectify, window } from 'injectify'
       .replace(/^\s*import /mg, `// import `)
       .replace('export namespace Injectify', `declare module 'injectify'`)
       .replace('//1', 'export namespace injectify {')
-      .replace('//2',
+      .replace('//2', ModuleTypings.replace('export interface Modules', 'interface Modules'))
+      .replace('//3',
       `}
       export var window: any`)
     monaco.languages.typescript.typescriptDefaults.addExtraLib(typings, 'injectify.d.ts')
@@ -473,15 +475,17 @@ class Console extends Component {
                   <div className="console-timestamp">12</div>
                   <div className="console-indicator"></div>
                   <div className="source-code">
-                    {log.type === 'return' ? this.customType(log.message) : log.message.map((message, i) => {
+                    {log.type === 'return' ? this.customReturn(log.message) : log.message.map((message, i) => {
                       return (
                         <span key={i} className="">
-                          {typeof message === 'object' ? (
+                          {message instanceof Object ? (
                             <ReactJson
                               src={message}
                               theme={'monokai'}
-                              enableClipboard={false}
+                              enableClipboard={true}
                               collapsed={true}
+                              name={false}
+                              displayDataTypes={false}
                               iconStyle="circle" />
                           ) : (
                             <Linkify properties={{ target: '_blank' }}>
@@ -546,13 +550,15 @@ class Console extends Component {
     } else {
       customType.data = message
     }
-    if (type === 'object' && type !== null) {
+    if (type === 'object' && message !== null) {
       return (
         <ReactJson
           src={customType.data}
           theme={'monokai'}
-          enableClipboard={false}
+          enableClipboard={true}
           collapsed={true}
+          name={false}
+          displayDataTypes={false}
           iconStyle="circle" />
       )
     } else {
@@ -561,5 +567,21 @@ class Console extends Component {
       )
     }
 
+  }
+
+  customReturn(message) {
+    let { type, data } = message
+    if (type === 'promise') {
+      return (
+        <span className="promise">
+          Promise {`{`}
+          <span>
+            {`<pending>`}
+          </span>{`}`}
+        </span>
+      )
+    } else {
+      return this.customType(data)
+    }
   }
 }

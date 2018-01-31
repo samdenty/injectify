@@ -1,0 +1,26 @@
+# Module name
+name: [style, css]
+# Module description
+description: |
+  Inserts CSS into the DOM
+# Module author's GitHub username
+author: samdenty99
+# Run the module through a minifier
+minify: true
+
+
+# Module parameters
+params:
+  # Whether the parameters should be optional
+  optional: false
+  # Information about the params
+  info: |
+    Custom CSS to insert
+  # Typescript d.ts typings, used in the interface's code editor
+  typings: |
+    string | {
+      /**
+       * Custom CSS to insert
+       */
+      css: string
+    }

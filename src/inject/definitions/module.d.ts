@@ -1,9 +1,14 @@
 export namespace Module {
   export class yml {
-    name: string | Array<string>
+    name: string[]
     description: string
     author: string
     minify: boolean
-    params: string
+    params?: {
+      optional?: boolean
+      info: string
+      typings?: string
+    }
+    returns: string
   }
 }

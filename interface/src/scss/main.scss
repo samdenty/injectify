@@ -562,6 +562,12 @@ pre {
               color: rgb(213, 213, 213);
             }
           }
+          .promise {
+            font-style: italic;
+            span {
+              opacity: 0.7
+            }
+          }
           .react-json-view,
           .pretty-json-container,
           .object-content {
@@ -684,6 +690,9 @@ pre {
       margin: 5px 0;
     }
   }
+}
+.copy-to-clipboard-container {
+  position: absolute;
 }
 
 
