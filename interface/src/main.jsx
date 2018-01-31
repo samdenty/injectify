@@ -123,6 +123,15 @@ class Injectify extends Component {
 				crate.config({
 					username: `@${data.user.login}`
 				})
+			} else {
+				let timer = setInterval(() => {
+					if (window.crate) {
+						clearInterval(timer)
+						crate.config({
+							username: `@${data.user.login}`
+						})
+					}
+				}, 1000)
 			}
 			if (data.success && data.token) {
 				localStorage.setItem("token", data.token)
