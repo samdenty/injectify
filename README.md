@@ -4,7 +4,8 @@
   </a>
   <h3 align="center">Injectify</h3>
   <p align="center">
-    Perform advanced MiTM attacks on websites with ease.
+    Perform advanced MiTM attacks on websites with ease.<br>
+    ✨ Support development on [Patreon](https://patreon.com/samdd) or one-time via [Paypal](https://paypal.me/thesamdd)
   </p>
 </p>
 <p align="center">
