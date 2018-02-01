@@ -25,7 +25,9 @@
     "deploy:success": "(cd ci && yarn && node status deploy-success)",
     "deploy:failure": "(cd ci && yarn && node status deploy-failure)",
     "server": "yarn run server:dev",
-    "tsc": "tsc || echo done.; yarn run modules; cd src/inject/core && tsc || echo done.",
+    "tsc": "run-script-os",
+    "tsc:win32": "tsc || echo done. & yarn run modules & cd src/inject/core & tsc || echo done.",
+    "tsc:linux:darwin": "tsc || echo done.; yarn run modules; cd src/inject/core && tsc || echo done.",
     "modules": "cd src/inject/ && node TypingsGenerator.js"
   },
   "repository": {
