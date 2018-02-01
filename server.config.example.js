@@ -33,6 +33,20 @@ module.exports = {
     express: 3000,
 
     /**
+     * Make it available over the internet without port forwarding
+     */
+    localtunnel: {
+      enable: true,
+      /**
+       * Set the below variable to use a custom fixed domain
+       * Subdomains must be lowercase and between 4 and 63 alphanumeric characters.
+       *
+       * Set to false to default to random domain
+       */
+      subdomain: false
+    },
+
+    /**
      * Rate limiting
      */
     rateLimiting: {

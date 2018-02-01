@@ -9,6 +9,7 @@ const request = require('request')
 const { URL } = require('url')
 import apiHandler from './api/handler'
 import recordHandler from './record/handler'
+import LocalTunnel from './network/LocalTunnel'
 import injectHandler from './inject/handler'
 const atob = require('atob')
 const btoa = require('btoa')
@@ -1705,4 +1706,9 @@ MongoClient.connect(config.mongodb, (err, client) => {
     })
     app.use(express.static(path.join(__dirname, '../interface/public')))
   }
+
+  /**
+   * LocalTunnel
+   */
+  if (config.localtunnel && config.localtunnel.enable) new LocalTunnel()
 })
