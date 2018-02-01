@@ -2002,6 +2002,10 @@ rimraf@2, rimraf@^2.5.1, rimraf@^2.5.2, rimraf@^2.6.1:
   dependencies:
     glob "^7.0.5"
 
+run-script-os@^1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/run-script-os/-/run-script-os-1.0.3.tgz#e153737786b86321301b75d22665d5ef85f4be9a"
+
 rx@2.3.24:
   version "2.3.24"
   resolved "https://registry.yarnpkg.com/rx/-/rx-2.3.24.tgz#14f950a4217d7e35daa71bbcbe58eff68ea4b2b7"
