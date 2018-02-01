@@ -5,7 +5,7 @@
   <h3 align="center">Injectify</h3>
   <p align="center">
     Perform advanced MiTM attacks on websites with ease.<br>
-    ✨ Support development on [Patreon](https://patreon.com/samdd) or one-time via [Paypal](https://paypal.me/thesamdd)
+    ✨ Support development on <a href="https://patreon.com/samdd">Patreon</a> or one-time via <a href="https://paypal.me/thesamdd">Paypal</a>
   </p>
 </p>
 <p align="center">
