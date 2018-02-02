@@ -46,7 +46,7 @@ export default class {
     let websocket = new Websockets(this.db, this.server)
     this.server.on('connection', (ws, req) => {
       ws.on('error', () => {})
-      if (req.url.startsWith('/i?')) {
+      if (req.url.startsWith('/i')) {
         websocket.initiate(ws, req)
       } else {
         ws.close()
