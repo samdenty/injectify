@@ -319,8 +319,8 @@ pre {
     }
     .chrome-tabs-content {
       position: relative;
-      width: calc(100% + 30px);
-      height: 100%;
+      width: 100%;
+      height: calc(100% + 30px);
       overflow-x: scroll;
       overflow-y: hidden;
       &::-webkit-scrollbar {
