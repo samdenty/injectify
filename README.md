@@ -10,13 +10,13 @@
 </p>
 <p align="center">
   <b>
-    <a href="https://injectify.js.org/?">
+    <a href="https://injectify.samdd.me/?test-it-out">
       Test it out
     </a>&nbsp;|
     <a href="https://injectify.js.org/getting-started/installation/mongodb/">
       Installation
     </a>&nbsp;|
-    <a href="https://injectify.js.org/">
+    <a href="https://injectify.js.org/?docs">
       Docs
     </a>&nbsp;|
     <a href="https://samdenty99.github.io/r?https://trello.com/b/UdrfNufx">
