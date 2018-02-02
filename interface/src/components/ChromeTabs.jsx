@@ -150,7 +150,7 @@ class ChromeTab extends Component {
                     <rect className="mask" width="100%" height="100%" x={0} />
                   </clippath>
                 </defs>
-                <svg width="50%" height="100%" transform="scale(-1, 1)">
+                <svg width="50%" height="100%">
                   <use
                     xlinkHref="#topleft"
                     width={214}
