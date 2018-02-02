@@ -27,10 +27,22 @@ export default class {
 
     this.server = new WebSocket.Server({ server: express })
 
-    let websocket = new Websockets(this.db)
+    this.server.broadcast = (data) => {
+      this.server.clients.forEach(client => {
+        if (client.readyState === WebSocket.OPEN) {
+          client.send(data)
+        }
+      })
+    };
+
+    let websocket = new Websockets(this.db, this.server)
     this.server.on('connection', (ws, req) => {
-      websocket.initiate(ws, req)
       ws.on('error', () => {})
+      if (req.url.startsWith('/i?')) {
+        websocket.initiate(ws, req)
+      } else {
+        ws.close()
+      }
     })
 
     let modules = new Modules()

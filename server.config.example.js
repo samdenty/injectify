@@ -18,7 +18,7 @@ module.exports = {
     github: {
       client_id: 'MY_APP_ID',
       client_secret: 'MY_APP_SECRET',
-      scope: 'user gist public_repo'
+      scope: 'read:user gist'
     },
 
     /**

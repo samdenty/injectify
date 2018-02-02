@@ -13,9 +13,27 @@ const uuidv4 = require('uuid/v4')
 
 export default class {
   db: any
+  server: any
 
-  constructor(db: any) {
+  constructor(db: any, server: any) {
     this.db = db
+    this.server = server
+  }
+
+  initiate(ws: any, req: any) {
+    this.validate(req).then(project => {
+      new Session(ws, req, project)
+    }).catch((error: string | Error) => {
+      if (typeof error === 'string') {
+        if (global.config.verbose)
+          console.error(
+            chalk.redBright('[inject] ') +
+            chalk.yellowBright(error)
+          )
+      } else {
+        throw error
+      }
+    })
   }
 
   validate(req: Request) {
@@ -64,22 +82,6 @@ export default class {
         }
       } else {
         reject('websocket connection with missing project name, terminating')
-      }
-    })
-  }
-
-  initiate(ws: any, req: any) {
-    this.validate(req).then(project => {
-      new Session(ws, req, project)
-    }).catch((error: string | Error) => {
-      if (typeof error === 'string') {
-        if (global.config.verbose)
-          console.error(
-            chalk.redBright('[inject] ') +
-            chalk.yellowBright(error)
-          )
-      } else {
-        throw error
       }
     })
   }
