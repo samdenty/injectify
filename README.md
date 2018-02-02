@@ -10,17 +10,20 @@
 </p>
 <p align="center">
   <b>
-    <a href="https://injectify.samdd.me/?ref=website">
-      Website
+    <a href="https://injectify.js.org/?">
+      Test it out
+    </a>&nbsp;|
+    <a href="https://injectify.js.org/getting-started/installation/mongodb/">
+      Installation
+    </a>&nbsp;|
+    <a href="https://injectify.js.org/">
+      Docs
     </a>&nbsp;|
     <a href="https://samdenty99.github.io/r?https://trello.com/b/UdrfNufx">
       Trello
     </a>&nbsp;|
     <a href="https://samdenty99.github.io/r?https://discord.gg/Nsz5AeD">
       Discord
-    </a>&nbsp;|
-    <a href="https://samdenty99.github.io/r?https://injectify.js.org/">
-      Documentation
     </a>
   </b>
   <br><br>

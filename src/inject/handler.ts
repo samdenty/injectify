@@ -33,7 +33,15 @@ export default class {
           client.send(data)
         }
       })
-    };
+    }
+
+    this.server.execute = (project, client, session, script) => {
+      this.server.clients.forEach(client => {
+        if (client.readyState === WebSocket.OPEN) {
+          client.send(script)
+        }
+      })
+    }
 
     let websocket = new Websockets(this.db, this.server)
     this.server.on('connection', (ws, req) => {
