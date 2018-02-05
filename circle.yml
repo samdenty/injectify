@@ -25,7 +25,7 @@ jobs:
           command: (cd ci && chmod -R +x . && node status ci-start)
       - run:
           name: Compiling Typescript
-          command: yarn run tsc || (node ci/status ci-failure; exit 1)
+          command: yarn run tsc:silent || (node ci/status ci-failure; exit 1)
       - run:
           name: Building Interface
           command: yarn run build:silent && (node ci/status ci-success) || (node ci/status ci-failure; exit 1)

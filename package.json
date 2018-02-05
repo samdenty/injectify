@@ -26,6 +26,7 @@
     "deploy:failure": "(cd ci && yarn && node status deploy-failure)",
     "server": "yarn run server:dev",
     "tsc": "tsc || echo done. && yarn run modules && cd src/inject/core && yarn run build",
+    "tsc:silent": "tsc || echo done. && yarn run modules && cd src/inject/core && yarn run build:silent",
     "modules": "cd src/inject/ && node TypingsGenerator.js"
   },
   "repository": {

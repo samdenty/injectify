@@ -6,8 +6,8 @@
   "scripts": {
     "watch": "webpack -p --watch --progress --colors --config ./webpack.config.js",
     "build": "webpack -p --progress --colors --config ./webpack.config.js",
-    "dev": "yarn run watch",
-    "build:silent": "webpack -p --colors --config ./webpack.config.js"
+    "build:silent": "webpack -p --colors --config ./webpack.config.js",
+    "dev": "yarn run watch"
   },
   "repository": "https://github.com/samdenty99/injectify",
   "author": "samdenty99",
