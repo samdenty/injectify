@@ -19,6 +19,7 @@ jobs:
             - node_modules
             - interface/src/node_modules
             - ci/node_modules
+            - src/inject/core/node_modules
       - run:
           name: Discord Webhook
           command: (cd ci && chmod -R +x . && node status ci-start)
@@ -28,6 +29,9 @@ jobs:
       - run:
           name: Building Interface
           command: yarn run build:silent && (node ci/status ci-success) || (node ci/status ci-failure)
+      - run:
+          name: Cleanup node_modules
+          command: cd ~/injectify/ && find . -name 'node_modules' -type d -prune -exec rm -rf '{}' +
       - save_cache:
           key: build-cache-{{ .Environment.CIRCLE_SHA1 }}
           # Paths that will be compiled & uploaded to the server

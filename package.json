@@ -15,7 +15,7 @@
     "typescript": "concurrently -n \"server-typescript,inject-typescript\" -c \"bgMagenta.bold,bgCyan.bold\" \"tsc -w\" \"yarn run modules && cd src/inject/core && yarn run watch\"",
     "mongo": "mongod --dbpath=./database --port 19000 --bind_ip 0.0.0.0",
     "pm2": "pm2 start server.config.js",
-    "install:all": "yarn --production=false && cd ci && yarn  -production=false && cd ../interface/src && yarn --production=false",
+    "install:all": "yarn --production=false && cd ci && yarn  -production=false && cd ../interface/src && yarn --production=false && cd ../../src/inject/core && yarn --production=false",
     "pull": "(git stash && git pull) && yarn run deploy || yarn run deploy:failure",
     "deploy": "run-script-os deploy",
     "deploy:win32": "yarn run deploy:start & (pm2 stop --silent injectify >nul 2>&1 & yarn run install:all && yarn run tsc && yarn run build && yarn run pm2) && yarn run deploy:success || yarn run deploy:failure",
