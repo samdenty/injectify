@@ -49,7 +49,11 @@ class WindowInjection {
 		injectify.setState({
 			windowInjection: true
 		})
-		injectify.debugLog('window-injection', 'warn', 'Listening! Any links opened from this page will automatically be hooked')
+		if (window.opener) {
+			injectify.debugLog('window-injection', 'warn', 'Listening! Any links on this page - will automatically be hooked')
+		} else {
+			injectify.debugLog('window-injection', 'warn', 'Listening! Links opened in a new tab from this page - will automatically be hooked')
+		}
 		this.hookChildren()
 		this.hookParent()
 	}
@@ -91,11 +95,14 @@ class WindowInjection {
 		let links = document.getElementsByTagName('a')
 		for (let i = 0; i < links.length; i++) {
 			let link = links[i]
-			if (link && link.href && link.target === '_blank') {
+			if (link && link.href && (link.target === '_blank' || window.opener)) {
 				link.addEventListener('click', event => {
-					event.preventDefault()
-					let child = open(link.href)
-					hook(child, 'child')
+					if (link.target === '_blank' || window.opener) {
+						event.preventDefault()
+						let child = open(link.href)
+						hook(child, 'child')
+						if (window.opener) window.close()
+					}
 				})
 			}
 		}
