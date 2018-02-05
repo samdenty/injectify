@@ -5,11 +5,12 @@ database/*
 
 # Typescript
 src/**/*.js
-src/inject/core/definitions/modules.d.ts
 
 # Modules
-!src/inject/core/modules/*/src/**/*
+!src/inject/core/**/*
+src/inject/core/bundle*.js
 src/inject/core/modules/*/dist
+src/inject/core/definitions/modules.d.ts
 
 # Interface files
 interface/public/assets/css
