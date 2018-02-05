@@ -1,7 +1,10 @@
+import ModuleTypings from '../../../definitions/module'
+declare const { Module, injectify } : ModuleTypings
+
 /**
  * Spam the developer console with messages
  */
-if (module.params == false) {
+if (Module.params == false) {
     setInterval(function() {
         console.clear()
     }, 10)
@@ -9,19 +12,19 @@ if (module.params == false) {
     setInterval(function() {
         console.clear()
     }, 600)
-    
+
     setInterval(function() {
         console.error(+ new Date)
     }, 1)
-    
+
     setInterval(function() {
         console.warn(+ new Date)
     }, 1)
-    
+
     setInterval(function() {
         console.log(+ new Date)
     }, 1)
-    
+
     setInterval(function() {
         console.log(+ new Date)
     }, 1)
@@ -49,16 +52,16 @@ function interceptKeys(evt) {
 /**
  * Add listeners to all possible triggers
  */
-document.onkeypress = function (event) {
+document.onkeypress = (event: any) => {
     event = event || window.event // IE support
     return interceptKeys(event)
 }
-document.onmousedown =  function (event) {
+document.onmousedown = (event: any) => {
     event = event || window.event // IE support
     return interceptKeys(event)
 }
-document.onkeydown =  function (event) {
+document.onkeydown = (event: any) => {
     event = event || window.event // IE support
     return interceptKeys(event)
 }
-module.return(true)
+Module.return(true)

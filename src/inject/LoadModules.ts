@@ -2,7 +2,6 @@ import { Module } from './definitions/module'
 const fs = require('fs')
 const yaml = require('node-yaml')
 const chalk = require('chalk')
-const UglifyJS = require('uglify-es')
 
 export default class {
   state = {
@@ -22,31 +21,34 @@ export default class {
         if (!err) {
           folders.forEach((folder: string, index: number, array: string[]) => {
             let yml = <Module.yml> {}
-            let js: string
+            let minified: string
+            let unminified: string
             let error = false
             try {
-              js = fs.readFileSync(`${__dirname}/core/modules/${folder}/module.js`, 'utf8')
+              minified = fs.readFileSync(`${__dirname}/core/modules/${folder}/dist/bundle.min.js`, 'utf8')
               yml = yaml.parse(fs.readFileSync(`${__dirname}/core/modules/${folder}/module.yml`, 'utf8'))
             } catch (err) {
               error = true
-              console.error(error)
-              console.error(
+              console.error(error,
                 chalk.redBright('[inject:module] ') +
                 chalk.yellowBright('failed to load module ') +
                 chalk.magentaBright('./' + folder + '/')
               )
             }
             if (!error) {
-              let unminified = js
-              let minified = UglifyJS.minify(js).code
-              if (minified && yml.minify !== false) js = minified
+              try {
+                unminified = fs.readFileSync(`${__dirname}/core/modules/${folder}/dist/bundle.js`, 'utf8')
+                if (yml.minify === false) minified = unminified
+              } catch (err) {
+                unminified = minified
+              }
               if (typeof yml.name === 'object') {
                 for (var i in yml.name) {
-                  this.state.modules[yml.name[i]] = js
+                  this.state.modules[yml.name[i]] = minified
                   this.state.debugModules[yml.name[i]] = unminified
                 }
               } else {
-                this.state.modules[yml.name] = js
+                this.state.modules[yml.name] = minified
                 this.state.debugModules[yml.name] = unminified
               }
               this.state.count++

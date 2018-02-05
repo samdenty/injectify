@@ -31,7 +31,7 @@ export default class {
         if (this.session.debug) js = global.inject.debugModules[data.name]
         if (js) {
           try {
-            js = `${typeof data.token === 'number' ? `module.token=${data.token};` : ``}${data.params ? `module.params=${JSON.stringify(data.params)};` : ``}module.return=function(d){this.returned=d};${js}`
+            js = `${typeof data.token === 'number' ? `Module.token=${data.token};` : ``}${data.params ? `Module.params=${JSON.stringify(data.params)};` : ``}Module.return=function(d){this.returned=d};${js}`
             this.send('module', {
               name: data.name,
               token: data.token,

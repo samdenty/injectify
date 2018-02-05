@@ -108,7 +108,7 @@ export namespace Injectify {
 
 
   /**
-	 * GOOD: Loads a module from the injectify server
+	 * Loads a module from the injectify server
 	 * @param name Module name
 	 * @param params Module parameters
 	 * @param callback Module callback

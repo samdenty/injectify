@@ -7,14 +7,15 @@ import Websockets from './Websockets'
 const fs = require('fs')
 const UglifyJS = require('uglify-es')
 const WebSocket = require('ws')
-const core = fs.readFileSync(`${__dirname}/core/core.js`, 'utf8')
+const minifiedCore = fs.readFileSync(`${__dirname}/core/bundle.min.js`, 'utf8')
+const unminifiedCore = fs.readFileSync(`${__dirname}/core/bundle.js`, 'utf8')
 
 export default class {
   db: any
   server: any // SockJS server
   state = {
-    core: <string> UglifyJS.minify(core).code,
-    debugCore: <string> core,
+    core: <string> minifiedCore,
+    debugCore: <string> unminifiedCore,
     modules: {},
     debugModules: {},
     clients: [],
@@ -24,7 +25,6 @@ export default class {
 
   constructor(express: any, mongodb: any) {
     this.db = mongodb
-
     this.server = new WebSocket.Server({ server: express })
 
     this.server.broadcast = (data) => {

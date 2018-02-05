@@ -36,7 +36,7 @@ module.exports = {
      * Make it available over the internet without port forwarding
      */
     localtunnel: {
-      enable: true,
+      enable: false,
       /**
        * Set the below variable to use a custom fixed domain
        * Subdomains must be lowercase and between 4 and 63 alphanumeric characters.
