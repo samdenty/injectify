@@ -65,6 +65,11 @@ export namespace Injectify {
   export var debug: boolean
 
   /**
+	 * Returns whether Injectify was loaded in debugging mode or not.
+	 */
+  export function debugLog(internalName: string, level: 'info' | 'debug' | 'warn' | 'error',  ...message: any[]): void
+
+  /**
 	 * Returns the amount of time connected to injectify server
 	 */
   export var duration: number
@@ -84,7 +89,8 @@ export namespace Injectify {
         active: boolean
         prevState: string | JSON
       }
-    }
+    },
+    windowInjection: boolean
   }
   export var global: global
 

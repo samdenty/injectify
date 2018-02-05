@@ -78,8 +78,6 @@
   },
   "nodemonConfig": {
     "ext": "js,json,yml",
-    "events": {
-      "-restart": "tsc"
-    }
+    "ignore": ["interface/public/*", "ci/*", "database/*"]
   }
 }

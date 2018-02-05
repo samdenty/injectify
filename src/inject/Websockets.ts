@@ -103,7 +103,12 @@ class Session {
     this.req = req
     this.session = session
     this.project = session.project
-    this.auth(socket.id)
+    /**
+     * Give the client time to connect, or else they may be droppped
+     */
+    setTimeout(() => {
+      this.auth(socket.id)
+    }, 100)
   }
 
   send(topic: string, data: any) {
