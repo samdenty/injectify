@@ -291,20 +291,20 @@ import { injectify, window } from 'injectify'
       socket.emit('inject:execute', {
         project: project,
         recursive: true,
-        script: script || this.state.code && this.state.code.replace(/^\s*import .*/gm, ``),
+        script: script || this.state.code && this.state.code.replace(/^\s*import .*\n/gm, ``)
       })
     } else if (id === '*') {
       socket.emit('inject:execute', {
         project: project,
         token: token,
-        script: script || this.state.code && this.state.code.replace(/^\s*import .*/gm, ``),
+        script: script || this.state.code && this.state.code.replace(/^\s*import .*/gm, ``)
       })
     } else {
       socket.emit('inject:execute', {
         project: project,
         token: token,
         id: id,
-        script: script || this.state.code && this.state.code.replace(/^\s*import .*/gm, ``),
+        script: script || this.state.code && this.state.code.replace(/^\s*import .*/gm, ``)
       })
     }
   }

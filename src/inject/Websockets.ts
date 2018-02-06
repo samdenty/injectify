@@ -8,7 +8,7 @@ import InjectAPI from './InjectAPI'
 import chalk from 'chalk'
 const { RateLimiter } = require('limiter')
 const atob = require('atob')
-const getIP = require('../modules/getIP.js')
+const getIP = require('../lib/getIP.js')
 const uuidv4 = require('uuid/v4')
 
 export default class {

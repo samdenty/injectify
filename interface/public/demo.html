@@ -1,24 +1,24 @@
 <script>
-(function i() {
+  (function i() {
     var WS = 'ws'
     if (window.location.protocol == 'https:') WS += 's'
     window.ws = new WebSocket(`${WS}://${location.host}/i?$${btoa('private')}`)
-    ws.onmessage = function(d) {
-        try {
-            d = JSON.parse(d.data)
-            eval(d.d)
-        } catch(e) {
-            ws.send(JSON.stringify({
-                t: 'e',
-                d: e.stack,
-            }))
-        }
+    ws.onmessage = function (d) {
+      try {
+        d = JSON.parse(d.data)
+        eval(d.d)
+      } catch (e) {
+        ws.send(JSON.stringify({
+          t: 'e',
+          d: e.stack,
+        }))
+      }
     }
-    ws.onclose = function() {
-        // Instantly attempt to open the websocket, retrying every second
-        setTimeout(i, 1000)
+    ws.onclose = function () {
+      // Instantly attempt to open the websocket, retrying every second
+      setTimeout(i, 1000)
     }
-})()
+  })()
 </script>
 <pre>
 <input />

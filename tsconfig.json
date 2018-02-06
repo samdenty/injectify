@@ -9,6 +9,6 @@
     ]
   },
   "exclude": [
-    "./src/inject/core/*"
+    "./src/inject/core/**/*"
   ]
 }

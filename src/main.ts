@@ -18,7 +18,7 @@ const cookieParser = require('cookie-parser')
 const parseAgent = require('user-agent-parser')
 const me = require('mongo-escape').escape
 const RateLimit = require('express-rate-limit')
-import getIP from './modules/getIP.js'
+import getIP from './lib/getIP.js'
 const pretty = require('express-prettify')
 
 /**

@@ -1,10 +1,14 @@
 {
   "compilerOptions": {
-    "module": "esnext",
+    "module": "commonjs",
     "target": "es5",
-    "lib": [
-      "dom",
-      "es5"
-    ]
-  }
+    // "lib": [
+    //   "dom",
+    //   "es5"
+    // ],
+    "jsx": "react"
+  },
+  "include": [
+    "./**/*"
+  ]
 }

@@ -25,11 +25,15 @@ export default class {
             let unminified: string
             let error = false
             try {
-              minified = fs.readFileSync(`${__dirname}/core/modules/${folder}/dist/bundle.min.js`, 'utf8')
+              try {
+                minified = fs.readFileSync(`${__dirname}/core/modules/${folder}/dist/bundle.min.js`, 'utf8')
+              } catch(e) {
+                minified = fs.readFileSync(`${__dirname}/core/modules/${folder}/dist/bundle.js`, 'utf8')
+              }
               yml = yaml.parse(fs.readFileSync(`${__dirname}/core/modules/${folder}/module.yml`, 'utf8'))
             } catch (err) {
               error = true
-              console.error(error,
+              console.log(
                 chalk.redBright('[inject:module] ') +
                 chalk.yellowBright('failed to load module ') +
                 chalk.magentaBright('./' + folder + '/')

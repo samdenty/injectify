@@ -1,6 +1,6 @@
 import { SocketSession } from './definitions/session'
 
-import getIP from '../modules/getIP'
+import getIP from '../lib/getIP'
 const { flag } = require('country-emoji')
 const geoip = require('geoip-lite')
 const parseAgent = require('user-agent-parser')

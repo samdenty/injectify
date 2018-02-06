@@ -4,6 +4,7 @@ const fs = require('fs')
 const webpack = require('webpack')
 const UnminifiedWebpackPlugin = require('unminified-webpack-plugin')
 const modules = glob.sync('./modules/*/')
+const extension = process.env.NODE_ENV === 'development' ? 'js' : 'min.js'
 
 let entry = {}
 for (let i = 0; i < modules.length; i++) {
@@ -17,20 +18,21 @@ for (let i = 0; i < modules.length; i++) {
   } else if (fs.existsSync(`${path}/src/module.js`)) {
     file = 'module.js'
   }
-  if (file) entry[`${path}/dist/bundle.min.js`] = `${path}/src/${file}`
+  if (file) entry[`${path}/dist/bundle.${extension}`] = `${path}/src/${file}`
 }
 
 module.exports = {
   entry: {
     ...entry,
-    'bundle.min.js': './core/App.ts'
+    [`bundle.${extension}`]: './core/App.ts'
   },
+
   output: {
     filename: '[name]'
   },
 
   resolve: {
-    extensions: ['.ts', '.tsx']
+    extensions: ['.ts', '.tsx', '.js', '.json']
   },
 
   module: {
@@ -39,7 +41,10 @@ module.exports = {
       loader: 'awesome-typescript-loader'
     }]
   },
-  plugins: [
+
+  plugins: process.env.NODE_ENV === 'development' ? [
+    new UnminifiedWebpackPlugin()
+  ] : [
     new webpack.optimize.UglifyJsPlugin({
       compress: {
         warnings: false
@@ -47,4 +52,9 @@ module.exports = {
     }),
     new UnminifiedWebpackPlugin()
   ],
+
+  externals: {
+    "react": "React",
+    "react-dom": "ReactDOM"
+  },
 }

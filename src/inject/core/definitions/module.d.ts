@@ -35,6 +35,15 @@ export default class {
      * Synchronously return module data
      */
     return(any): Function
+    /**
+     * Modules global state, persistent until the page is reloaded
+     */
+    state: any
+    /**
+     * Updates the module's global state
+     * @param newState An object containing the nextState
+     */
+    setState: Function
   }
   injectify: typeof Injectify
 }

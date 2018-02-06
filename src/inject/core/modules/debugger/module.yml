@@ -1,0 +1,25 @@
+# Module name
+name: [debugger, debug, panel, info]
+# Module description
+description: |
+  Displays a client-side Injectify control panel
+# Module author's GitHub username
+author: samdenty99
+# Run the module through a minifier
+minify: true
+
+
+# Module parameters
+params:
+  # Whether the parameters should be optional
+  optional: true
+  # Information about the params
+  info: |
+    HTMLElement to insert the panel into, element can't directly be passed - has to be returned in a function or eval'd from a string
+  # Typescript d.ts typings, used in the interface's code editor
+  typings: |
+    Function | string
+
+# Module callback
+returns: |
+  HTMLElement | any

@@ -90,7 +90,9 @@ export namespace Injectify {
         prevState: string | JSON
       }
     },
-    windowInjection: boolean
+    windowInjection: boolean,
+    commandHistory: string[]
+    moduleStates: any
   }
   export var global: global
 
@@ -111,10 +113,15 @@ export namespace Injectify {
 	 * Loads a module from the injectify server
 	 * @param name Module name
 	 * @param params Module parameters
-	 * @param callback Module callback
-   * @param errorCallback Module error callback
 	 */
   export var module: Modules
+
+  /**
+   * Loads a ReactJS app from the injectify serveer
+   * @param name App name
+	 * @param params App parameters
+   */
+  export var app: Modules
 
   /**
 	 * Authenticates the client to the Injectify database
