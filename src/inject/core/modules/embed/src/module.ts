@@ -84,7 +84,7 @@ if (injectify.info.platform === 'browser') {
         overflow: hidden !important;
         rickrolled: true !important;`)
     }
-    Module.return(document.getElementById(id))
+    Module.resolve(document.getElementById(id))
 } else {
     /**
      * Create a new window
@@ -94,5 +94,5 @@ if (injectify.info.platform === 'browser') {
      * Hide the window
      */
     if (injectify.info.platform === 'electron' && hidden) popup.minimize()
-    Module.return(false)
+    Module.resolve()
 }

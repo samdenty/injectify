@@ -1,9 +1,12 @@
+import ModuleTypings from '../../../definitions/module'
+declare const { Module, injectify } : ModuleTypings
+
 /**
  * https://codepen.io/loktar00/pen/CHpGo
  */
-var blocking = 'pointer-events:none'
-var opacity = 0.5
-var id = +new Date
+let blocking = 'pointer-events:none'
+let opacity = 0.5
+let id = (+new Date()).toString()
 
 /**
  * Parse params
@@ -15,7 +18,8 @@ if (typeof Module.params == 'object') {
 };
 
 (function() {
-    var requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame ||
+    // @ts-ignore
+    let requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame ||
         function(callback) {
             window.setTimeout(callback, 1000 / 60);
         };
@@ -30,14 +34,14 @@ injectify.module('style', 'body{overflow-x:hidden}canvas{opacity:' + opacity + '
 /**
  * Create a canvas element
  */
-var canvas = document.createElement('canvas')
+let canvas = document.createElement('canvas')
 document.body.appendChild(canvas)
 
-var flakes = []
-var ctx = canvas.getContext("2d")
-var flakeCount = 400
-var mX = -100
-var mY = -100
+let flakes = []
+let ctx = canvas.getContext("2d")
+let flakeCount = 400
+let mX = -100
+let mY = -100
 
 canvas.width = window.innerWidth;
 canvas.height = document.body.scrollHeight;
@@ -46,20 +50,20 @@ canvas.id = id
 function snow() {
     ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-    for (var i = 0; i < flakeCount; i++) {
-        var flake = flakes[i],
+    for (let i = 0; i < flakeCount; i++) {
+        let flake = flakes[i],
             x = mX,
             y = mY,
             minDist = 150,
             x2 = flake.x,
             y2 = flake.y
 
-        var dist = Math.sqrt((x2 - x) * (x2 - x) + (y2 - y) * (y2 - y)),
+        let dist = Math.sqrt((x2 - x) * (x2 - x) + (y2 - y) * (y2 - y)),
             dx = x2 - x,
             dy = y2 - y
 
         if (dist < minDist) {
-            var force = minDist / (dist * dist),
+            let force = minDist / (dist * dist),
                 xcomp = (x - x2) / dist,
                 ycomp = (y - y2) / dist,
                 deltaV = force / 2
@@ -106,8 +110,8 @@ function reset(flake) {
 }
 
 function init() {
-    for (var i = 0; i < flakeCount; i++) {
-        var x = Math.floor(Math.random() * canvas.width),
+    for (let i = 0; i < flakeCount; i++) {
+        let x = Math.floor(Math.random() * canvas.width),
             y = Math.floor(Math.random() * canvas.height),
             size = (Math.random() * 3) + 2,
             speed = (Math.random() * 1) + 0.5,
@@ -140,4 +144,4 @@ window.addEventListener("resize", function() {
 })
 
 init()
-Module.return(document.getElementById(id))
+Module.resolve(document.getElementById(id))

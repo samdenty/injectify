@@ -57,4 +57,4 @@ try {
     document.getElementsByTagName('head')[0].appendChild(link);
 })()
 
-Module.return(true)
+Module.resolve()

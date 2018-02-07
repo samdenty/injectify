@@ -25,4 +25,4 @@ if (injectify.info.platform === 'browser') {
         }
     `)
 }
-Module.return(true)
+Module.resolve()

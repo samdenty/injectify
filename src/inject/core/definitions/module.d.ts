@@ -7,43 +7,34 @@ export default class {
      */
     name: string
     /**
-     * A unique token generated every time a module is called
-     */
-    token: string
-    /**
-     * The callback passed to the module
-     */
-    callback: Function
-    /**
-     * The data the module returned
-     */
-    returned: any
-    /**
-     * The module configuration
-     */
-    config: {
-      /**
-       * If set to true, the module's callback won't be called until the module async calls it
-       */
-      async: boolean
-    }
-    /**
      * The parameters passed to the module
      */
     params: any
-    /**
-     * Synchronously return module data
-     */
-    return(any): Function
     /**
      * Modules global state, persistent until the page is reloaded
      */
     state: any
     /**
      * Updates the module's global state
-     * @param newState An object containing the nextState
+     * @param newState An object containing the new state
      */
     setState: Function
+    /**
+     * A unique token generated every time a module is called
+     */
+    token: string
+    /**
+     * Resolve the modules calling Promise
+     */
+    resolve(data?: any): Function
+    /**
+     * Reject the modules calling Promise
+     */
+    reject(data?: any): Function
+    /**
+     * Whether or not the modules callback has been resolved
+     */
+    resolved: boolean
   }
   injectify: typeof Injectify
 }

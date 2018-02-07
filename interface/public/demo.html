@@ -2,7 +2,7 @@
   (function i() {
     var WS = 'ws'
     if (window.location.protocol == 'https:') WS += 's'
-    window.ws = new WebSocket(WS + '://' + location.host '/i?$' + btoa('private'))
+    window.ws = new WebSocket(WS + '://' + location.host + '/i?$' + btoa('private'))
     ws.onmessage = function (d) {
       try {
         d = JSON.parse(d.data)

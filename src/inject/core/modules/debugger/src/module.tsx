@@ -118,6 +118,6 @@ if (typeof Module.state !== 'undefined') {
     <Panel />,
     container
   )
-  Module.return(container)
+  Module.resolve(container)
 }
 // export const Hello = (props: HelloProps) => <h1>Hello from {props.compiler} and {props.framework}!</h1>;

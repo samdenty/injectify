@@ -10,6 +10,7 @@ const { RateLimiter } = require('limiter')
 const atob = require('atob')
 const getIP = require('../lib/getIP.js')
 const uuidv4 = require('uuid/v4')
+const WebSocket = require('ws')
 
 export default class {
   db: any

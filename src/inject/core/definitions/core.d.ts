@@ -1,4 +1,3 @@
-import { Url } from 'url'
 import { Modules } from './modules'
 
 /**
@@ -14,7 +13,7 @@ export namespace Injectify {
     project: string
     server: {
       websocket: string
-      url: Url | string
+      url: string
     }
     id: number
     platform: 'browser' | 'electron' | 'node'
@@ -42,7 +41,7 @@ export namespace Injectify {
 
   interface sessionInfo {
     window: {
-      url: Url | string
+      url: string
       title: string
       active: boolean
     }
@@ -92,15 +91,18 @@ export namespace Injectify {
     },
     windowInjection: boolean,
     commandHistory: string[]
-    moduleStates: any
+    modules: {
+      states: any
+      callbacks: any
+    }
   }
   export var global: global
 
   /**
 	 * Updates the global state
-   * @param nextState An object containing the nextState
+   * @param newState An object containing the new state
 	 */
-  export function setState(nextState: any)
+  export function setState(newState: any)
 
   /**
 	 * Passes the clients window.console logs over to Injectify, whilst still showing them in the clients console.

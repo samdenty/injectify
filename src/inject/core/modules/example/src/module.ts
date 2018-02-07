@@ -17,17 +17,14 @@ declare const { Module, injectify } : ModuleTypings
 console.log(module)
 
 /**
- * SYNChronously returns a value to the module's callback
+ * Reject the modules promise
  */
-Module.return('returned value')
+Module.reject('error message')
 
 /**
- * ASYNChronously returns a value to the module's callback
- *
- * You NEED to set `Module.config.async = true` if the moduleis async,
- * or else the callback will return undefined
+ * Resolve the modules promise
  */
-Module.callback('returned value')
+Module.resolve('returned value')
 
 /**
  * Load another module

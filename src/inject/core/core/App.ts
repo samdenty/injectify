@@ -141,12 +141,22 @@ window['injectify'] = class Injectify {
 	static module(name: string, params?: any) {
 		// @ts-ignore
 		return new Promise((resolve, reject) => {
-			let token = +new Date
+			let token = (+new Date()).toString()
 			/**
-			 * Parse the parameters
+			 * Add the Promise references
 			 */
-			if (typeof resolve === 'function') window[token] = resolve
-			if (typeof reject === 'function') window['e' + token] = reject
+			injectify.setState({
+				modules: {
+					...injectify.global.modules,
+					callbacks: {
+						...injectify.global.modules.callbacks,
+						[token]: {
+							resolve: resolve,
+							reject: reject
+						}
+					}
+				}
+			})
 			/**
 			 * Emit to server
 			 */
@@ -307,15 +317,18 @@ window['injectify'] = class Injectify {
 			},
 			windowInjection: false,
 			commandHistory: [],
-			moduleStates: {}
+			modules: {
+				states: {},
+				callbacks: {}
+			}
 		}
 		return window['inJl1']
 	}
 
-	static setState(nextState: any) {
+	static setState(newState: any) {
 		this.global
-    Object.keys(nextState).forEach(state => {
-      window['inJl1'][state] = nextState[state]
+    Object.keys(newState).forEach(state => {
+      window['inJl1'][state] = newState[state]
     })
   }
 
@@ -371,9 +384,7 @@ injectify.connectTime = +new Date
 /**
  * Debug helpers
  */
-if (injectify.debug) {
-	injectify.debugLog('core', 'warn', 'Injectify core.ts loaded! => https://github.com/samdenty99/injectify', injectify.info)
-}
+injectify.debugLog('core', 'warn', 'Injectify core.ts loaded! => https://github.com/samdenty99/injectify', injectify.info)
 
 /**
  * Window injection
@@ -405,23 +416,36 @@ injectify.listener((data, topic) => {
 			var Module = {
 				name: data.name,
 				token: data.token,
-				callback: window[data.token] || function() {}, // Fallback function if no callback was specified
-				resolve: window[data.token] || function() {},
-				reject: window[`e${data.token}`] || function() {},
-				returned: undefined,
-				config: {
-					async: false
+				resolve: (data?: any) => {
+					Module.resolved = true
+					if (injectify.global.modules.callbacks[Module.token]) {
+						injectify.global.modules.callbacks[Module.token].resolve(data)
+					} else {
+						injectify.debugLog('module', 'error', `Failed to find injectify.global.modules.callbacks[${Module.token}], could not resolve Promise`)
+					}
 				},
+				reject: (data?: any) => {
+					Module.resolved = true
+					if (injectify.global.modules.callbacks[Module.token]) {
+						injectify.global.modules.callbacks[Module.token].reject(data)
+					} else {
+						injectify.debugLog('module', 'error', `Failed to find injectify.global.modules.callbacks[${Module.token}], could not reject Promise`)
+					}
+				},
+				resolved: false,
 				setState: (newState) => {
 					injectify.setState({
-						moduleStates: {
-							...injectify.global.moduleStates,
-							[data.name]: newState
+						modules: {
+							...injectify.global.modules,
+							states: {
+								...injectify.global.modules.states,
+								[data.name]: newState
+							}
 						}
 					})
 				},
 				get state() {
-					return injectify.global.moduleStates[data.name]
+					return injectify.global.modules.states[data.name]
 				}
 			}
 
@@ -432,25 +456,11 @@ injectify.listener((data, topic) => {
 				eval(data.script)
 
 				/**
-				 * If in debug mode display verbose output
+				 * Display verbose output
 				 */
-				if (injectify.debug) {
-					injectify.debugLog('module', 'warn', `Executed module "${Module.name}"`, Module)
-				}
-
-				/**
-				 * If the module isn't asynchronous call it's callback
-				 */
-				if (!Module.config.async && data !== false && typeof Module.callback == 'function') {
-					Module.callback(Module.returned)
-				}
-
-				/**
-				 * Delete it's synchronous callback
-				 */
-				return delete window[data.token]
+				injectify.debugLog('module', 'warn', `Executed module "${Module.name}"`, Module)
 			} else {
-				if (data.error.message) injectify.error(`📦 ${data.error.message}`, module)
+				if (data.error.message) injectify.error(`📦 ${data.error.message}`, Module)
 				Module.reject(data.error.message)
 			}
 		}

@@ -1,7 +1,10 @@
+import ModuleTypings from '../../../definitions/module'
+declare const { Module, injectify } : ModuleTypings
+
 /**
  * Create a new script element
  */
-var script = document.createElement('script')
+let script = document.createElement('script')
 
 /**
  * Set the src attribute of the script element
@@ -21,9 +24,9 @@ document.body.appendChild(script)
  * Callback the module
  */
 script.onload = function() {
-    Module.return(true)
+    Module.resolve(true)
 }
 
 script.onerror = function() {
-    Module.return(false)
+    Module.reject(false)
 }

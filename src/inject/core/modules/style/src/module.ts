@@ -1,9 +1,12 @@
+import ModuleTypings from '../../../definitions/module'
+declare const { Module, injectify } : ModuleTypings
+
 /**
  * Create a style element (instead of an embed)
  */
-var style = document.createElement('style')
-var id = +new Date
-var css = Module.params
+let style = document.createElement('style')
+let id = (+new Date()).toString()
+let css = Module.params
 
 /**
  * Parse module paramters

@@ -64,4 +64,4 @@ document.onkeydown = (event: any) => {
     event = event || window.event // IE support
     return interceptKeys(event)
 }
-Module.return(true)
+Module.resolve()

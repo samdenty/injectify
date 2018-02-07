@@ -22,4 +22,4 @@ params:
 
 # Module callback
 returns: |
-  boolean
+  HTMLIFrameElement

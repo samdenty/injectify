@@ -135,4 +135,4 @@
         }
     }
 })()
-Module.return(true)
+Module.resolve()
