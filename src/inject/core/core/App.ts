@@ -5,6 +5,7 @@ import WindowInjection from './components/WindowInjection'
 import Decycle from './lib/JSON-Decycle'
 import instanceOf from './lib/InstanceOf'
 import LoadJS from './lib/LoadJS'
+const Guid = require('guid')
 
 /**
  * Injectify core API
@@ -141,7 +142,7 @@ window['injectify'] = class Injectify {
 	static module(name: string, params?: any) {
 		// @ts-ignore
 		return new Promise((resolve, reject) => {
-			let token = (+new Date()).toString()
+			let token = Guid.create()
 			/**
 			 * Add the Promise references
 			 */
