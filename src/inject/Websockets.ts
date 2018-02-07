@@ -119,7 +119,7 @@ class Session {
     try {
       this.socket.send(json)
     } catch(error) {
-      this.socket.close()
+      if (this.socket.readyState !== WebSocket.OPEN) this.socket.close()
     }
   }
 
@@ -155,8 +155,10 @@ class Session {
     })
     this.socket.on('close', () => this.close())
     this.socket.on('error', () => {
-      this.close()
-      this.socket.close()
+      if (this.socket.readyState !== WebSocket.OPEN) {
+        this.close()
+        this.socket.close()
+      }
     })
 
     /**
