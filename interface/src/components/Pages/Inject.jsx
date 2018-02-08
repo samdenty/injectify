@@ -1,26 +1,29 @@
-import React, { Component } from "react";
-import ReactJson from 'react-json-view';
-import Linkify from 'react-linkify';
+import React, { Component } from "react"
+import Inspector from 'react-inspector'
+import { chromeDark } from 'react-inspector'
+import Rnd from 'react-rnd'
+import Linkify from 'react-linkify'
 import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu"
-import copy from 'copy-to-clipboard';
+import copy from 'copy-to-clipboard'
 
-import ChromeTabs from '../ChromeTabs';
-import MonacoEditor from 'react-monaco-editor';
-import CodeMirror from 'react-codemirror';
-require('codemirror/mode/javascript/javascript');
-import Typings from '../../../../src/inject/core/definitions/core.d.ts';
-import ModuleTypings from '../../../../src/inject/core/definitions/modules.d.ts';
+import ChromeTabs from '../ChromeTabs'
+import MonacoEditor from 'react-monaco-editor'
+import CodeMirror from 'react-codemirror'
+require('codemirror/mode/javascript/javascript')
+import Typings from '../../../../src/inject/core/definitions/core.d.ts'
+import ModuleTypings from '../../../../src/inject/core/definitions/modules.d.ts'
 
-import { LineChart } from 'react-easy-chart';
-import Tooltip from 'material-ui/Tooltip';
-import List, { ListItem, ListItemIcon, ListItemText } from 'material-ui/List';
-import ListSubheader from 'material-ui/List/ListSubheader';
-import ComputerIcon from 'material-ui-icons/Computer';
+import { LineChart } from 'react-easy-chart'
+import Tooltip from 'material-ui/Tooltip'
+import List, { ListItem, ListItemIcon, ListItemText } from 'material-ui/List'
+import ListSubheader from 'material-ui/List/ListSubheader'
+import ComputerIcon from 'material-ui-icons/Computer'
+import moment from 'moment'
 
 export class Inject extends Component {
   state = {
     code: localStorage.getItem('injectScript') ||
-`// Import types to enable intellisense
+      `// Import types to enable intellisense
 import { injectify, window } from 'injectify'
 
 // Type your code here`,
@@ -42,6 +45,7 @@ import { injectify, window } from 'injectify'
   componentDidMount() {
     let { socket, project } = this.props
     this._mounted = true
+    this.hookConsole()
 
     /**
      * Clients listener
@@ -158,10 +162,10 @@ import { injectify, window } from 'injectify'
         return
       }
 
-      if (type === 'info' || type === 'warn' || type === 'error') {
-        console[type].apply(this, message)
-      } else if (type === 'return') {
+      if (type === 'return') {
         console.log(message.type, message.data)
+      } else {
+        console[type].apply(this, message)
       }
 
       let logs = this.state.logs
@@ -178,6 +182,22 @@ import { injectify, window } from 'injectify'
 
     this.refreshGraph()
     this.saveToStorage(true)
+  }
+
+  hookConsole = () => {
+    let Console = console
+    if (console.Console) Console = console.Console
+    const clear = () => {
+      this.setState({ logs: [] })
+    }
+    console = {
+      ...Console,
+      clear() {
+        Console.clear()
+        clear()
+      },
+      Console: Console
+    }
   }
 
   refreshGraph = () => {
@@ -265,9 +285,19 @@ import { injectify, window } from 'injectify'
       .replace('//1', 'export namespace injectify {')
       .replace('//2', ModuleTypings.replace('export interface Modules', 'interface Modules'))
       .replace('//3',
-      `}
+        `}
       export var window: any`)
     monaco.languages.typescript.typescriptDefaults.addExtraLib(typings, 'injectify.d.ts')
+    monaco.editor.defineTheme('Injectify', {
+      base: 'vs-dark',
+      inherit: true,
+      rules: [
+        { token: 'comment', foreground: '626466' },
+        { token: 'keyword', foreground: '6CAEDD' },
+        { token: 'identifier', foreground: 'fac863' },
+      ],
+    })
+    monaco.editor.setTheme('Injectify')
     editor.focus()
     window.addEventListener("resize", this.updateDimensions)
   }
@@ -353,6 +383,10 @@ import { injectify, window } from 'injectify'
       selectOnLineNumbers: true,
       lineNumbers: true,
       mode: 'javascript',
+      formatOnPaste: true,
+      folding: true,
+      glyphMargin: false,
+      fontLigatures: true,
       theme: 'panda-syntax'
     }
     return (
@@ -428,16 +462,15 @@ import { injectify, window } from 'injectify'
           {window.innerWidth >= 650 ? (
             <MonacoEditor
               language={this.state.code && /^\s*import /m.test(this.state.code) ? 'typescript' : 'javascript'}
-              theme="vs-dark"
               value={code}
               options={options}
               onChange={this.onChange}
               editorDidMount={this.editorDidMount}
             />
           ) : (
-            <CodeMirror value={code} onChange={this.onChange} options={options} />
-          )}
-          <Console logs={this.state.logs} set={this.setState.bind(this)} />
+              <CodeMirror value={code} onChange={this.onChange} options={options} />
+            )}
+          <Console logs={this.state.logs} set={this.setState.bind(this)} resizeMonaco={this.updateDimensions.bind(this)} />
         </div>
       </div>
     )
@@ -464,54 +497,74 @@ class Console extends Component {
   }
 
   render() {
-    let { logs, set } = this.props
+    let { logs, set, resizeMonaco } = this.props
     return (
-      <div className="inject-console" ref={console => this.console = console}>
+      <Rnd
+        bounds="parent"
+        default={{ height: 200 }}
+        enableResizing={{
+          top: true,
+          right: false,
+          bottom: false,
+          left: false,
+          topRight: false,
+          bottomRight: false,
+          bottomLeft: false,
+          topLeft: false
+        }}
+        onResizeStop={resizeMonaco.bind(this)}
+        disableDragging={true}
+        className="inject-console"
+        minHeight={60}
+        resizeHandleClasses={{ top: 'resizer' }}
+      >
         <ContextMenuTrigger id={'console'}>
-          {logs.map((log, i) => {
-            return (
-              <div className={`console-message-wrapper ${log.type}`} key={i}>
-                <div className="console-message">
-                  <div className="console-timestamp">12</div>
-                  <div className="console-indicator"></div>
-                  <div className="source-code">
-                    {log.type === 'return' ? this.customReturn(log.message) : log.message.map((message, i) => {
-                      return (
-                        <span key={i} className="">
-                          {message instanceof Object ? (
-                            <ReactJson
-                              src={message}
-                              theme={'monokai'}
-                              enableClipboard={true}
-                              collapsed={true}
-                              name={false}
-                              displayDataTypes={false}
-                              iconStyle="circle" />
-                          ) : (
-                            <Linkify properties={{ target: '_blank' }}>
-                              {this.customType(message, log.message instanceof Array && typeof log.message[0] === 'string')}
-                            </Linkify>
-                          )}
-                        </span>
-                      )
-                    })}
+          <div className="inject-console-content" ref={console => this.console = console}>
+            {logs.map((log, i) => {
+              return (
+                <div className={`console-message-wrapper ${log.type}`} key={i}>
+                  <div className="console-message">
+                    <div className="console-timestamp">{moment(log.timestamp).format('HH:mm:ss')}</div>
+                    <div className="console-indicator"></div>
+                    <div className="source-code">
+                      {log.type === 'return' ? this.customReturn(log.message) : log.message.map((message, i) => {
+                        return (
+                          <span key={i} className="">
+                            {message instanceof Object ? (
+                              log.type === 'table' ? (
+                                <span className="react-inspector-table">
+                                  <Inspector data={[message]} theme="chromeDark" table />
+                                  <Inspector data={message[0]} theme={{...chromeDark, ...({ ARROW_FONT_SIZE: 9})}} />
+                                </span>
+                              ) : (
+                                <Inspector data={message} theme={{...chromeDark, ...({ ARROW_FONT_SIZE: 9})}} />
+                              )
+                            ) : (
+                                <Linkify properties={{ target: '_blank' }}>
+                                  {this.customType(message, log.type, log.message instanceof Array && typeof log.message[0] === 'string')}
+                                </Linkify>
+                              )}
+                          </span>
+                        )
+                      })}
+                    </div>
                   </div>
                 </div>
-              </div>
-            )
-          })}
+              )
+            })}
+          </div>
         </ContextMenuTrigger>
         <ContextMenu id={'console'}>
-          <MenuItem onClick={() => { console.clear(); set({ logs: [] }) } }>
+          <MenuItem onClick={() => { console.clear(); set({ logs: [] }) }}>
             Clear console
           </MenuItem>
           {/* <MenuItem divider /> */}
         </ContextMenu>
-      </div>
+      </Rnd>
     )
   }
 
-  customType(message, noStringFormat) {
+  customType(message, logType, noStringFormat) {
     let type = typeof message
     let customType = {
       type: type
@@ -552,14 +605,14 @@ class Console extends Component {
     }
     if (type === 'object' && message !== null) {
       return (
-        <ReactJson
-          src={customType.data}
-          theme={'monokai'}
-          enableClipboard={true}
-          collapsed={true}
-          name={false}
-          displayDataTypes={false}
-          iconStyle="circle" />
+        logType === 'table' ? (
+          <span className="react-inspector-table">
+            <Inspector data={[message]} theme="chromeDark" table />
+            <Inspector data={message[0]} theme={{...chromeDark, ...({ ARROW_FONT_SIZE: 9})}} />
+          </span>
+        ) : (
+          <Inspector data={message} theme={{...chromeDark, ...({ ARROW_FONT_SIZE: 9})}} />
+        )
       )
     } else {
       return (

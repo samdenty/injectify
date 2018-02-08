@@ -1169,7 +1169,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
         script,
         recursive
       } = data
-      if (project && (recursive || (typeof token === 'string' && (typeof id === 'number' || typeof id === 'undefined'))) && typeof script === 'string' && globalToken) {
+      if (project && (recursive || (typeof token === 'string' && (typeof id === 'string' || typeof id === 'undefined'))) && typeof script === 'string' && globalToken) {
         getUser(globalToken).then(user => {
           getProject(project, user).then(thisProject => {
             if (recursive) {
@@ -1312,7 +1312,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
             if (config.verbose) {
               console.log(
                 chalk.redBright('[inject:auth] ') +
-                chalk.yellowBright('failed to authenticate client, failed to locate inject.authenticate["' + id + '"]')
+                chalk.yellowBright(`failed to authenticate client, failed to locate inject.authenticate["${id}"]`)
               )
             }
           }

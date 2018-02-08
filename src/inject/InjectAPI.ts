@@ -31,7 +31,7 @@ export default class {
         if (this.session.debug) js = global.inject.debugModules[data.name]
         if (js) {
           try {
-            js = `${typeof data.token === 'number' ? `Module.token=${data.token};` : ``}${data.params ? `Module.params=${JSON.stringify(data.params)};` : ``}${js}`
+            js = `${data.params ? `Module.params=${JSON.stringify(data.params)};` : ``}${js}`
             this.send('module', {
               name: data.name,
               token: data.token,
@@ -106,12 +106,13 @@ export default class {
      * Data logger
      */
     l: data => {
-      if (data && ((data.type === 'return' && data.message instanceof Object && typeof data.message.type === 'string') || (data.message instanceof Array && (data.type === 'info' || data.type === 'warn' || data.type === 'error')))) {
+      if (data && ((data.type === 'return' && data.message instanceof Object && typeof data.message.type === 'string') || (data.message instanceof Array && (data.type === 'info' || data.type === 'warn' || data.type === 'error' || data.type === 'table')))) {
         if (global.inject.clients[this.project.id][this.token] && global.inject.clients[this.project.id][this.token].watchers) {
           global.inject.clients[this.project.id][this.token].watchers.forEach(watcher => {
             watcher.emit('inject:log', {
               type: data.type,
-              message: data.message
+              message: data.message,
+              timestamp: +new Date()
             })
           })
         }

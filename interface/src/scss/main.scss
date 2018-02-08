@@ -1,13 +1,12 @@
 $drawer: 240px;
 @import "../node_modules/codemirror/lib/codemirror.css";
 @import "../node_modules/codemirror/theme/panda-syntax.css";
-
 @media (min-width: 620px) {
-   ::-webkit-scrollbar {
+  ::-webkit-scrollbar {
     width: 15px;
     background: #FAFAFA;
   }
-   ::-webkit-scrollbar-thumb {
+  ::-webkit-scrollbar-thumb {
     background-color: #9a9898;
     border: 2px solid #FAFAFA;
     border-top: 4px solid #FAFAFA;
@@ -19,12 +18,12 @@ $drawer: 240px;
       background-color: #747272;
     }
   }
-   ::-webkit-scrollbar-button {
+  ::-webkit-scrollbar-button {
     display: none;
     width: 0;
     height: 0
   }
-   ::-webkit-scrollbar-corner {
+  ::-webkit-scrollbar-corner {
     background-color: transparent
   }
   app.dark {
@@ -45,10 +44,10 @@ $drawer: 240px;
         }
       }
     }
-     ::-webkit-scrollbar {
+    ::-webkit-scrollbar {
       background: #424242;
     }
-     ::-webkit-scrollbar-thumb {
+    ::-webkit-scrollbar-thumb {
       background-color: #696767;
       border: 2px solid #424242;
       border-top: 4px solid #424242;
@@ -60,12 +59,12 @@ $drawer: 240px;
         background-color: #5a5a5a;
       }
     }
-     ::-webkit-scrollbar-button {
+    ::-webkit-scrollbar-button {
       display: none;
       width: 0;
       height: 0
     }
-     ::-webkit-scrollbar-corner {
+    ::-webkit-scrollbar-corner {
       background-color: transparent
     }
   }
@@ -163,17 +162,16 @@ pre {
       background-color: #353941;
     }
   }
-   ::selection {
+  ::selection {
     background: #4d75c5;
   }
-   ::-moz-selection {
+  ::-moz-selection {
     background: #4d75c5;
   }
   code:nth-child(1) {
     user-select: none;
   }
 }
-
 
 /**
  * Inject page
@@ -194,8 +192,7 @@ pre {
       margin-right: 10px;
       fill: #aab6ea;
     }
-  }
-  // Online clients graph
+  } // Online clients graph
   >div:nth-child(2) {
     box-shadow: -12px 3px 8px #2A2A2A;
     z-index: 1;
@@ -240,13 +237,13 @@ pre {
   h3 {
     color: #cecfe0
   }
-   ::-webkit-scrollbar {
+  ::-webkit-scrollbar {
     background: #2A2A2A !important;
     &:disabled {
       width: 0
     }
   }
-   ::-webkit-scrollbar-thumb {
+  ::-webkit-scrollbar-thumb {
     background-color: #4d525c !important;
     border: 2px solid #2A2A2A !important;
     border-top: 4px solid #2A2A2A !important;
@@ -273,7 +270,7 @@ pre {
     position: relative;
     font-size: 10px;
     height: 4.2em;
-    background: linear-gradient(#4c4c4c,#585858);
+    background: linear-gradient(#4c4c4c, #585858);
     padding: 1em 1.2em 0.45em 1.2em;
     box-shadow: 0 0.05em #282828;
     overflow: hidden;
@@ -326,7 +323,6 @@ pre {
       &::-webkit-scrollbar {
         display: none
       }
-
     }
     .chrome-tab {
       position: absolute;
@@ -459,6 +455,61 @@ pre {
     overflow: hidden;
     background-color: #1E1E1E;
   }
+  .react-monaco-editor-container {
+    // .margin-view-overlays,
+    // .monaco-editor.vs-dark .monaco-editor-background {
+    //   background: #1C2022;
+    // }
+    .monaco-editor .view-overlays .current-line {
+      border: none !important;
+      background-color: rgba(24, 24, 24, 0.897);
+    }
+    .mtk5 {
+      color: #99c794 !important;
+    }
+    .mtk12.PropertyAssignment {
+      color: #99c794;
+    }
+    .mtk12.PropertyAssignment.PropertyAccessExpression {
+      color: #fac863;
+    }
+    .mtk12.Identifier.JsxOpeningElement {
+      color: #ec5f67;
+    }
+    .mtk12.Identifier.JsxExpression.JsxClosingElement {
+      color: #ec5f67;
+    }
+    .mtk12.Identifier.JsxClosingElement {
+      color: #ec5f67 !important;
+    }
+    .mtk12.Identifier.JsxSelfClosingElement {
+      color: #ec5f67;
+    }
+    .mtk12.Identifier.VariableStatement.JsxClosingElement {
+      color: #ec5f67 !important;
+    }
+    .mtk12.VariableStatement.JsxSelfClosingElement.Identifier {
+      color: #ec5f67;
+    }
+    .mtk12.Identifier.JsxAttribute.VariableDeclaration {
+      color: #aa759f;
+    }
+    .mtk12.JsxExpression.VariableStatement {
+      color: #fac863;
+    }
+    .mtk12.VariableStatement.JsxSelfClosingElement {
+      color: #e0e0e0;
+    }
+    .mtk12.VariableStatement.JsxClosingElement {
+      color: #e0e0e0;
+    }
+    .mtk12.JsxElement.JsxText {
+      color: #e0e0e0;
+    }
+    .JsxText {
+      color: #e0e0e0;
+    }
+  }
   .ReactCodeMirror {
     height: 100%;
     .CodeMirror {
@@ -471,136 +522,159 @@ pre {
     }
   }
   .inject-console {
+    position: relative !important;
     height: 60%;
-    overflow-y: scroll;
     color: rgb(213, 213, 213);
     background: #242424;
     border-top: 1px solid #505050;
     font-size: 12px !important;
     font-family: Consolas, Lucida Console, Courier New, monospace;
     word-wrap: break-word;
-    .console-message-wrapper {
-      display: flex;
-      border-bottom: 1px solid rgb(240, 240, 240);
-      border-bottom-color: rgb(43, 43, 43);
-      &:last-of-type {
-        margin-bottom: 15px
-      }
-      &.return {
-        .console-indicator {
-          display: inline-block !important;
-          background-position: 0px 70px;
-        }
-      }
-      &.warn {
-        color: rgb(255, 220, 158);
-        border-top: 1px solid rgb(102, 85, 0);
-        border-bottom: 1px solid rgb(102, 85, 0);
-        background-color: hsl(50, 100%, 10%);
-        margin-top: -1px;
-        .console-indicator {
-          display: inline-block !important;
-          background-position: -60px 10px;
-        }
-      }
-      &.error {
-        color: hsl(0, 100%, 75%);
-        border-top: 1px solid rgb(91, 0, 0);
-        border-bottom: 1px solid rgb(91, 0, 0);
-        background-color: hsl(0, 100%, 8%);
-        margin-top: -1px;
-        .console-indicator {
-          display: inline-block !important;
-          background-position: -40px 70px;
-        }
-      }
-      .console-message {
-        clear: right;
-        position: relative;
-        padding: 3px 22px 1px 0;
-        margin-left: 24px;
-        min-height: 18px;
-        flex: auto;
-        display: flex;
-        width: calc(100% - 24px);
-        .console-timestamp {
-          color: rgb(127, 127, 127);
-          flex: none;
-          margin-right: 5px;
-          user-select: none;
-        }
-        .console-indicator {
-          display: none;
-          position: absolute;
-          background-image: url('/assets/ui/devtools.png');
-          width: 10px;
-          height: 10px;
-          left: -17px;
-          top: 4px;
-        }
-        .source-code {
-          font-size: 12px !important;
-          width: 100%;
-          white-space: pre-wrap;
-          > span {
-            display: inline-block;
-            vertical-align: top;
-            padding-left: 5px;
-            &:first-of-type {
-              padding-left: 0
-            }
-          }
-          .undefined,
-          .null {
-            color: rgb(127, 127, 127);
-          }
-          .boolean,
-          .number {
-            color: hsl(252, 100%, 75%)
-          }
-          .string {
-            color: rgb(233, 63, 59);
-            .string-quotes {
-              color: rgb(213, 213, 213);
-            }
-          }
-          .promise {
-            font-style: italic;
-            span {
-              opacity: 0.7
-            }
-          }
-          .react-json-view,
-          .pretty-json-container,
-          .object-content {
-            display: inline-block
-          }
-          a {
-            color: rgb(171, 171, 171);
-            text-decoration: underline;
-            transition: color 0.1s ease;
-            &:hover {
-              color: rgb(211, 211, 211)
-            }
-          }
-          .react-json-view {
-            background: none !important
-          }
-        }
+    flex-shrink: 0;
+    .resizer {
+      transition: background-color 0.3s ease;
+      z-index: 1000;
+      &:hover,
+      &:active {
+        background-color: rgba(0, 0, 0, 0.32)
       }
     }
-    &::-webkit-scrollbar {
-        width: 14px;
-        background-color: #242424;
-    }
-    &::-webkit-scrollbar-track {
-        box-shadow: inset 0 0 1px rgba(255,255,255,0.3);
-    }
-    &::-webkit-scrollbar-thumb {
-        border-radius: 2px;
-        border: none;
-        background-color: #333 !important;
-        box-shadow: inset 0 0 1px rgba(255,255,255,0.5);
+    .react-contextmenu-wrapper {
+      height: 100%;
+      width: 100%;
+      .inject-console-content {
+        overflow-y: scroll;
+        height: 100%;
+        width: 100%;
+        .console-message-wrapper {
+          display: flex;
+          border-bottom: 1px solid rgb(240, 240, 240);
+          border-bottom-color: rgb(43, 43, 43);
+          &:last-of-type {
+            margin-bottom: 15px
+          }
+          &.return {
+            .console-indicator {
+              display: inline-block !important;
+              background-position: 0px 70px;
+            }
+          }
+          &.warn {
+            color: rgb(255, 220, 158);
+            border-top: 1px solid rgb(102, 85, 0);
+            border-bottom: 1px solid rgb(102, 85, 0);
+            background-color: hsl(50, 100%, 10%);
+            margin-top: -1px;
+            .console-indicator {
+              display: inline-block !important;
+              background-position: -60px 10px;
+            }
+          }
+          &.error {
+            color: hsl(0, 100%, 75%);
+            border-top: 1px solid rgb(91, 0, 0);
+            border-bottom: 1px solid rgb(91, 0, 0);
+            background-color: hsl(0, 100%, 8%);
+            margin-top: -1px;
+            .console-indicator {
+              display: inline-block !important;
+              background-position: -40px 70px;
+            }
+          }
+          .console-message {
+            clear: right;
+            position: relative;
+            padding: 3px 22px 1px 0;
+            margin-left: 24px;
+            min-height: 18px;
+            flex: auto;
+            display: flex;
+            width: calc(100% - 24px);
+            .console-timestamp {
+              color: rgb(127, 127, 127);
+              flex: none;
+              margin-right: 5px;
+              user-select: none;
+            }
+            .console-indicator {
+              display: none;
+              position: absolute;
+              background-image: url('/assets/ui/devtools.png');
+              width: 10px;
+              height: 10px;
+              left: -17px;
+              top: 4px;
+            }
+            .source-code {
+              font-size: 12px !important;
+              width: 100%;
+              white-space: pre-wrap;
+              >span {
+                display: inline-block;
+                vertical-align: top;
+                padding-left: 5px;
+                &:first-of-type {
+                  padding-left: 0
+                }
+              }
+              .undefined,
+              .null {
+                color: rgb(127, 127, 127);
+              }
+              .boolean,
+              .number {
+                color: hsl(252, 100%, 75%)
+              }
+              .string {
+                color: rgb(233, 63, 59);
+                .string-quotes {
+                  color: rgb(213, 213, 213);
+                }
+              }
+              .promise {
+                font-style: italic;
+                span {
+                  opacity: 0.7
+                }
+              }
+              .react-json-view,
+              .pretty-json-container,
+              .object-content {
+                display: inline-block
+              }
+              a {
+                color: rgb(171, 171, 171);
+                text-decoration: underline;
+                transition: color 0.1s ease;
+                &:hover {
+                  color: rgb(211, 211, 211)
+                }
+              }
+              .react-json-view {
+                background: none !important
+              }
+            }
+          }
+        }
+        .react-inspector-table {
+          >div {
+            margin-bottom: 10px;
+          }
+        }
+        &::-webkit-scrollbar {
+          width: 14px;
+          background-color: #242424;
+        }
+        &::-webkit-scrollbar-track {
+          box-shadow: inset 0 0 1px rgba(255, 255, 255, 0.3);
+        }
+        &::-webkit-scrollbar-thumb {
+          border-radius: 2px;
+          border: none;
+          background-color: #333 !important;
+          box-shadow: inset 0 0 1px rgba(255, 255, 255, 0.5);
+        }
+      }
     }
   }
 }
@@ -665,7 +739,7 @@ pre {
   padding: 4px 0;
   border-radius: 3px;
   z-index: 9999999999999;
-  box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
   font-family: "Roboto", "Helvetica", "Arial", sans-serif;
   color: #e6e6e6;
   font-size: 11px;
@@ -693,10 +767,10 @@ pre {
     }
   }
 }
+
 .copy-to-clipboard-container {
   position: absolute;
 }
-
 
 /**
  * Project record page
@@ -707,10 +781,10 @@ pre {
     overflow-x: scroll;
   }
   &.dark {
-     ::-webkit-scrollbar {
+    ::-webkit-scrollbar {
       background: #272822 !important;
     }
-     ::-webkit-scrollbar-thumb {
+    ::-webkit-scrollbar-thumb {
       background-color: #676767 !important;
       border: 2px solid #272822 !important;
       border-top: 4px solid #272822 !important;
@@ -725,10 +799,10 @@ pre {
   }
 }
 
-
 /**
  * Crate
  */
+
 .crate {
   .crate-toggle {
     bottom: 15px !important;

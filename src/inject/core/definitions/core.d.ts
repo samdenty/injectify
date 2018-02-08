@@ -155,6 +155,12 @@ export namespace Injectify {
   export function error(...messages: any[])
 
   /**
+	 * Logs a table to the InjectJS console
+	 * @param object An object / array to be converted to a table
+	 */
+  export function table(object: any)
+
+  /**
 	 * Logs the result of a function to the InjectJS console
 	 * @param data Data to be logged
 	 */

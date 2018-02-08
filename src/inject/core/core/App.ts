@@ -101,6 +101,12 @@ window['injectify'] = class Injectify {
 			message: Array.prototype.slice.call(arguments)
 		})
 	}
+	static table(message: any) {
+		injectify.send('l', {
+			type: 'table',
+			message: Array.prototype.slice.call(arguments)
+		})
+	}
 	static result(message: any) {
 		let type = instanceOf(message)
 		injectify.send('l', {
@@ -347,9 +353,7 @@ window['injectify'] = class Injectify {
 						Console.log.apply(this, arguments)
 						injectify.log.apply(this, arguments)
 					},
-					info() {
-						this.log.apply(this, arguments)
-					},
+					info: this.log,
 					warn() {
 						Console.warn.apply(this, arguments)
 						injectify.warn.apply(this, arguments)
@@ -357,6 +361,10 @@ window['injectify'] = class Injectify {
 					error() {
 						Console.error.apply(this, arguments)
 						injectify.error.apply(this, arguments)
+					},
+					table() {
+						Console.table.apply(this, arguments)
+						injectify.table.apply(this, arguments)
 					},
 					unhook() {
 						console = Console
@@ -407,7 +415,7 @@ injectify.listener((data, topic) => {
 			return
 		}
 		if (topic == 'error') {
-			injectify.exec('console.error(' + JSON.stringify(data) + ')')
+			if (injectify.debug) injectify.exec(`console.error(${JSON.stringify(data)})`)
 			return
 		}
 		if (topic == 'module') {
