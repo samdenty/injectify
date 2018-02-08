@@ -54,6 +54,14 @@ MongoClient.connect(config.mongodb, (err, client) => {
   let Inject = new injectHandler(server, db)
   let inject = global.inject = Inject.state
 
+  server.on('upgrade', (req, socket, head) => {
+    if (req.url && req.url.startsWith('/i')) {
+      Inject.server.handleUpgrade(req, socket, head, (ws) => {
+        Inject.connectionHandler(ws, req)
+      })
+    }
+  })
+
   io.on('connection', socket => {
     let globalToken
     let state = {

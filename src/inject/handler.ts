@@ -13,6 +13,7 @@ const unminifiedCore = fs.readFileSync(`${__dirname}/core/bundle.js`, 'utf8')
 export default class {
   db: any
   server: any // SockJS server
+  Websockets
   state = {
     core: <string> minifiedCore,
     debugCore: <string> unminifiedCore,
@@ -25,7 +26,7 @@ export default class {
 
   constructor(express: any, mongodb: any) {
     this.db = mongodb
-    this.server = new WebSocket.Server({ server: express })
+    this.server = new WebSocket.Server({ noServer: true })
 
     this.server.broadcast = (data) => {
       this.server.clients.forEach(client => {
@@ -43,14 +44,9 @@ export default class {
       })
     }
 
-    let websocket = new Websockets(this.db, this.server)
+    this.Websockets = new Websockets(this.db, this.server)
     this.server.on('connection', (ws, req) => {
-      ws.on('error', () => {})
-      if (req.url.startsWith('/i')) {
-        websocket.initiate(ws, req)
-      } else {
-        ws.close()
-      }
+      this.connectionHandler(ws, req)
     })
 
     let modules = new Modules()
@@ -66,6 +62,11 @@ export default class {
     }).catch(({ title, error }) => {
       console.error(title, error)
     })
+  }
+
+  connectionHandler(ws, req) {
+    ws.on('error', () => {})
+    this.Websockets.initiate(ws, req)
   }
 
   setState(newState: any) {
