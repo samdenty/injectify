@@ -676,6 +676,9 @@ class MessageParser extends React.Component {
               <DOMInspector data={element} theme={{ ...chromeDark, ...({ ARROW_FONT_SIZE: 9 }) }} />
             </ContextMenuTrigger>
             <ContextMenu id={id}>
+              <MenuItem onClick={() => { let win = window.open(); win.document.documentElement.innerHTML = `<base href=${JSON.stringify(sender.window.url)}>${innerHTML}` }}>
+                Recreate DOM in new tab
+              </MenuItem>
               <MenuItem onClick={() => { download(`ExtractedDOM-${+new Date()}.html`, `<base href=${JSON.stringify(sender.window.url)}>${innerHTML}`)}}>
                 Save as HTML file
               </MenuItem>
