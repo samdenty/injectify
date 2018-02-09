@@ -201,6 +201,9 @@ class ChromeTab extends Component {
             Reload tab
           </MenuItem>
           <MenuItem divider />
+          <MenuItem onClick={() => execute(order, `document.getElementsByTagName('html')[0]`)}>
+            Extract DOM
+          </MenuItem>
           <MenuItem onClick={() => execute(order, `injectify.console()`)}>
             Hook / unhook console API
           </MenuItem>
