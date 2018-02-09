@@ -2,9 +2,11 @@ import { Injectify } from '../definitions/core'
 declare let ws, require, client, process: any
 // Components
 import WindowInjection from './components/WindowInjection'
+import Logger from './components/Logger'
+import DOMExtractor from './components/DOMExtractor'
+// Libraries
 import Decycle from './lib/JSON-Decycle'
 import LoadJS from './lib/LoadJS'
-import Logger from './components/Logger'
 const Guid = require('guid')
 
 /**
@@ -139,6 +141,10 @@ window['injectify'] = class Injectify {
 				func()
 			}
 		}
+	}
+
+	static get DOMExtractor() {
+		return DOMExtractor()
 	}
 
 	static module(name: string, params?: any) {

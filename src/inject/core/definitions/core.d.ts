@@ -176,6 +176,11 @@ export namespace Injectify {
   export function listener(callback: Function)
 
   /**
+   * Returns the current state of the DOM with all the values from input elements intact
+   */
+  export var DOMExtractor: HTMLDocument
+
+  /**
 	 * Listen for a topic from the websocket connection
 	 * @param topic Topic name to listen to
 	 * @param callback Callback to be triggered once received
