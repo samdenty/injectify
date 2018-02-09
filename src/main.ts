@@ -1180,32 +1180,22 @@ MongoClient.connect(config.mongodb, (err, client) => {
       if (project && (recursive || (typeof token === 'string' && (typeof id === 'string' || typeof id === 'undefined'))) && typeof script === 'string' && globalToken) {
         getUser(globalToken).then(user => {
           getProject(project, user).then(thisProject => {
-            if (recursive) {
-              Object.keys(inject.clients[thisProject.doc['_id']]).forEach(token => {
-                if (inject.clients[thisProject.doc['_id']][token] && inject.clients[thisProject.doc['_id']][token].sessions) {
-                  inject.clients[thisProject.doc['_id']][token].sessions.forEach(client => {
-                    client.execute(script)
-                  })
-                }
-              })
-            } else if (typeof id === 'undefined') {
-              if (inject.clients[thisProject.doc['_id']] && inject.clients[thisProject.doc['_id']][token] && inject.clients[thisProject.doc['_id']][token].sessions) {
-                inject.clients[thisProject.doc['_id']][token].sessions.forEach(client => {
-                  if (client) {
-                    client.execute(script)
+            if (inject.clients[thisProject.doc['_id']]) {
+              if (recursive) {
+                Object.keys(inject.clients[thisProject.doc['_id']]).forEach(token => {
+                  if (inject.clients[thisProject.doc['_id']][token] && inject.clients[thisProject.doc['_id']][token].sessions) {
+                    inject.clients[thisProject.doc['_id']][token].sessions.forEach(client => {
+                      client.execute(script)
+                    })
                   }
                 })
-              } else {
-                socket.emit('err', {
-                  title: 'Failed to execute!',
-                  message: 'Could not locate client'
-                })
-              }
-            } else {
-              if (inject.clients[thisProject.doc['_id']] && inject.clients[thisProject.doc['_id']][token] && inject.clients[thisProject.doc['_id']][token].sessions) {
-                let client = inject.clients[thisProject.doc['_id']][token].sessions.find(c => c.id === id)
-                if (client) {
-                  client.execute(script)
+              } else if (typeof id === 'undefined') {
+                if (inject.clients[thisProject.doc['_id']][token] && inject.clients[thisProject.doc['_id']][token].sessions) {
+                  inject.clients[thisProject.doc['_id']][token].sessions.forEach(client => {
+                    if (client) {
+                      client.execute(script)
+                    }
+                  })
                 } else {
                   socket.emit('err', {
                     title: 'Failed to execute!',
@@ -1213,11 +1203,28 @@ MongoClient.connect(config.mongodb, (err, client) => {
                   })
                 }
               } else {
-                socket.emit('err', {
-                  title: 'Failed to execute!',
-                  message: 'Could not locate client'
-                })
+                if (inject.clients[thisProject.doc['_id']][token] && inject.clients[thisProject.doc['_id']][token].sessions) {
+                  let client = inject.clients[thisProject.doc['_id']][token].sessions.find(c => c.id === id)
+                  if (client) {
+                    client.execute(script)
+                  } else {
+                    socket.emit('err', {
+                      title: 'Failed to execute!',
+                      message: 'Could not locate client'
+                    })
+                  }
+                } else {
+                  socket.emit('err', {
+                    title: 'Failed to execute!',
+                    message: 'Could not locate client'
+                  })
+                }
               }
+            } else {
+              socket.emit('err', {
+                title: 'Failed to execute!',
+                message: 'Could not locate clients for project'
+              })
             }
           }).catch(e => {
             console.log(e)

@@ -1,5 +1,6 @@
 declare var global: any
 import chalk from 'chalk'
+const uuidv4 = require('uuid/v4')
 
 import { SocketSession } from './definitions/session'
 
@@ -112,7 +113,9 @@ export default class {
             watcher.emit('inject:log', {
               type: data.type,
               message: data.message,
-              timestamp: +new Date()
+              timestamp: +new Date(),
+              id: uuidv4(),
+              sender: this.client.session
             })
           })
         }

@@ -20,6 +20,21 @@ import ListSubheader from 'material-ui/List/ListSubheader'
 import ComputerIcon from 'material-ui-icons/Computer'
 import moment from 'moment'
 
+function download(filename, text) {
+  var pom = document.createElement('a');
+  pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+  pom.setAttribute('download', filename);
+
+  if (document.createEvent) {
+      var event = document.createEvent('MouseEvents');
+      event.initEvent('click', true, true);
+      pom.dispatchEvent(event);
+  }
+  else {
+      pom.click();
+  }
+}
+
 export class Inject extends Component {
   state = {
     code: localStorage.getItem('injectScript') ||
@@ -470,7 +485,7 @@ import { injectify, window } from 'injectify'
           ) : (
               <CodeMirror value={code} onChange={this.onChange} options={options} />
             )}
-          <Console logs={this.state.logs} set={this.setState.bind(this)} resizeMonaco={this.updateDimensions.bind(this)} />
+          <Console logs={this.state.logs} resizeMonaco={this.updateDimensions.bind(this)} />
         </div>
       </div>
     )
@@ -497,7 +512,7 @@ class Console extends Component {
   }
 
   render() {
-    let { logs, set, resizeMonaco } = this.props
+    let { logs, resizeMonaco } = this.props
     return (
       <Rnd
         bounds="parent"
@@ -527,7 +542,7 @@ class Console extends Component {
                     <div className="console-timestamp">{moment(log.timestamp).format('HH:mm:ss')}</div>
                     <div className="console-indicator"></div>
                     <div className="source-code">
-                      <MessageParser messages={log.message} type={log.type} />
+                      <MessageParser messages={log.message} type={log.type} sender={log.sender} id={log.id} />
                     </div>
                   </div>
                 </div>
@@ -536,7 +551,7 @@ class Console extends Component {
           </div>
         </ContextMenuTrigger>
         <ContextMenu id={'console'}>
-          <MenuItem onClick={() => { console.clear(); set({ logs: [] }) }}>
+          <MenuItem onClick={() => { console.clear(); }}>
             Clear console
           </MenuItem>
           {/* <MenuItem divider /> */}
@@ -548,12 +563,23 @@ class Console extends Component {
 
 class MessageParser extends React.Component {
   render() {
-    let { messages } = this.props
+    let { messages, id } = this.props
     return (
       this.props.type === 'table' ? (
         <span className="react-inspector-table">
-          <Inspector data={[messages[0] && messages[0].message]} theme="chromeDark" table />
-          <Inspector data={messages[0] && messages[0].message} theme={{ ...chromeDark, ...({ ARROW_FONT_SIZE: 9 }) }} />
+          <ContextMenuTrigger id={id}>
+            <Inspector data={[messages[0].message]} theme="chromeDark" table />
+            <Inspector data={messages[0].message} theme={{ ...chromeDark, ...({ ARROW_FONT_SIZE: 9 }) }} />
+          </ContextMenuTrigger>
+          <ContextMenu id={id}>
+            <MenuItem onClick={() => { download(`ExtractedTableObject-${+new Date()}.json`, JSON.stringify(messages[0].message, null, '  '))}}>
+              Save as JSON file
+            </MenuItem>
+            <MenuItem divider />
+            <MenuItem onClick={() => { console.clear(); }}>
+              Clear console
+            </MenuItem>
+          </ContextMenu>
         </span>
       ) : (
         <span className="message-group">
@@ -595,7 +621,23 @@ class MessageParser extends React.Component {
   }
 
   object(object) {
-    return <Inspector data={object} theme={{ ...chromeDark, ...({ ARROW_FONT_SIZE: 9 }) }} />
+    let { id } = this.props
+    return (
+      <span>
+        <ContextMenuTrigger id={id}>
+          <Inspector data={object} theme={{ ...chromeDark, ...({ ARROW_FONT_SIZE: 9 }) }} />
+        </ContextMenuTrigger>
+        <ContextMenu id={id}>
+          <MenuItem onClick={() => { download(`ExtractedObject-${+new Date()}.json`, JSON.stringify(object, null, '  '))}}>
+            Save as JSON file
+          </MenuItem>
+          <MenuItem divider />
+          <MenuItem onClick={() => { console.clear(); }}>
+            Clear console
+          </MenuItem>
+        </ContextMenu>
+      </span>
+    )
   }
 
   number(number) {
@@ -623,12 +665,26 @@ class MessageParser extends React.Component {
 
   html(message) {
     let { tagName, innerHTML } = message
+    let { sender, id } = this.props
     if (tagName && typeof innerHTML !== 'undefined') {
       try {
         let element = document.createElement(tagName)
         element.innerHTML = innerHTML
         return (
-          <DOMInspector data={element} theme={{ ...chromeDark, ...({ ARROW_FONT_SIZE: 9 }) }} />
+          <span>
+            <ContextMenuTrigger id={id}>
+              <DOMInspector data={element} theme={{ ...chromeDark, ...({ ARROW_FONT_SIZE: 9 }) }} />
+            </ContextMenuTrigger>
+            <ContextMenu id={id}>
+              <MenuItem onClick={() => { download(`ExtractedDOM-${+new Date()}.html`, `<base href=${JSON.stringify(sender.window.url)}>${innerHTML}`)}}>
+                Save as HTML file
+              </MenuItem>
+              <MenuItem divider />
+              <MenuItem onClick={() => { console.clear(); }}>
+                Clear console
+              </MenuItem>
+            </ContextMenu>
+          </span>
         )
       } catch (e) {
         return this.object(message)
