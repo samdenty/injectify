@@ -3,8 +3,8 @@ declare let ws, require, client, process: any
 // Components
 import WindowInjection from './components/WindowInjection'
 import Decycle from './lib/JSON-Decycle'
-import instanceOf from './lib/InstanceOf'
 import LoadJS from './lib/LoadJS'
+import Logger from './components/Logger'
 const Guid = require('guid')
 
 /**
@@ -86,35 +86,31 @@ window['injectify'] = class Injectify {
 	static log(message: any) {
 		injectify.send('l', {
 			type: 'info',
-			message: Array.prototype.slice.call(arguments)
+			message: new Logger(Array.prototype.slice.call(arguments))
 		})
 	}
 	static error(message: any) {
 		injectify.send('l', {
 			type: 'error',
-			message: Array.prototype.slice.call(arguments)
+			message: new Logger(Array.prototype.slice.call(arguments))
 		})
 	}
 	static warn(message: any) {
 		injectify.send('l', {
 			type: 'warn',
-			message: Array.prototype.slice.call(arguments)
+			message: new Logger(Array.prototype.slice.call(arguments))
 		})
 	}
 	static table(message: any) {
 		injectify.send('l', {
 			type: 'table',
-			message: Array.prototype.slice.call(arguments)
+			message: new Logger(Array.prototype.slice.call(arguments))
 		})
 	}
 	static result(message: any) {
-		let type = instanceOf(message)
 		injectify.send('l', {
 			type: 'return',
-			message: {
-				type: type,
-				data: message
-			}
+			message: new Logger(Array.prototype.slice.call(arguments))
 		})
 	}
 

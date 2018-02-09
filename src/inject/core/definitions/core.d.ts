@@ -164,7 +164,7 @@ export namespace Injectify {
 	 * Logs the result of a function to the InjectJS console
 	 * @param data Data to be logged
 	 */
-  export function result(data: any)
+  export function result(...messages: any[])
 
 
 	/**

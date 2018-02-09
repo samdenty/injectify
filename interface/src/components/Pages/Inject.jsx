@@ -1,5 +1,5 @@
 import React, { Component } from "react"
-import Inspector from 'react-inspector'
+import Inspector, { DOMInspector } from 'react-inspector'
 import { chromeDark } from 'react-inspector'
 import Rnd from 'react-rnd'
 import Linkify from 'react-linkify'
@@ -163,7 +163,7 @@ import { injectify, window } from 'injectify'
       }
 
       if (type === 'return') {
-        console.log(message.type, message.data)
+        console.log.apply(this, message)
       } else {
         console[type].apply(this, message)
       }
@@ -527,26 +527,7 @@ class Console extends Component {
                     <div className="console-timestamp">{moment(log.timestamp).format('HH:mm:ss')}</div>
                     <div className="console-indicator"></div>
                     <div className="source-code">
-                      {log.type === 'return' ? this.customReturn(log.message) : log.message.map((message, i) => {
-                        return (
-                          <span key={i} className="">
-                            {message instanceof Object ? (
-                              log.type === 'table' ? (
-                                <span className="react-inspector-table">
-                                  <Inspector data={[message]} theme="chromeDark" table />
-                                  <Inspector data={message[0]} theme={{...chromeDark, ...({ ARROW_FONT_SIZE: 9})}} />
-                                </span>
-                              ) : (
-                                <Inspector data={message} theme={{...chromeDark, ...({ ARROW_FONT_SIZE: 9})}} />
-                              )
-                            ) : (
-                                <Linkify properties={{ target: '_blank' }}>
-                                  {this.customType(message, log.type, log.message instanceof Array && typeof log.message[0] === 'string')}
-                                </Linkify>
-                              )}
-                          </span>
-                        )
-                      })}
+                      <MessageParser messages={log.message} type={log.type} />
                     </div>
                   </div>
                 </div>
@@ -563,78 +544,97 @@ class Console extends Component {
       </Rnd>
     )
   }
+}
 
-  customType(message, logType, noStringFormat) {
-    let type = typeof message
-    let customType = {
-      type: type
-    }
-    if (type === 'string') {
-      if (noStringFormat) {
-        customType = {
-          type: 'string-primary',
-          data: (
-            <Linkify properties={{ target: '_blank' }}>
-              {message}
-            </Linkify>
-          )
-        }
-      } else {
-        customType.data = (
-          <span>
-            <span className="string-quotes">&quot;</span>
-            <Linkify properties={{ target: '_blank' }}>
-              {message}
-            </Linkify>
-            <span className="string-quotes">&quot;</span>
-          </span>
-        )
-      }
-
-    } else if (message === null) {
-      customType = {
-        type: 'null',
-        data: 'null'
-      }
-    } else if (type === 'boolean') {
-      customType.data = message.toString()
-    } else if (type === 'undefined') {
-      customType.data = 'undefined'
-    } else {
-      customType.data = message
-    }
-    if (type === 'object' && message !== null) {
-      return (
-        logType === 'table' ? (
-          <span className="react-inspector-table">
-            <Inspector data={[message]} theme="chromeDark" table />
-            <Inspector data={message[0]} theme={{...chromeDark, ...({ ARROW_FONT_SIZE: 9})}} />
-          </span>
-        ) : (
-          <Inspector data={message} theme={{...chromeDark, ...({ ARROW_FONT_SIZE: 9})}} />
-        )
-      )
-    } else {
-      return (
-        <span className={customType.type}>{customType.data}</span>
-      )
-    }
-
-  }
-
-  customReturn(message) {
-    let { type, data } = message
-    if (type === 'promise') {
-      return (
-        <span className="promise">
-          Promise {`{`}
-          <span>
-            {`<pending>`}
-          </span>{`}`}
+class MessageParser extends React.Component {
+  render() {
+    let { messages } = this.props
+    return (
+      this.props.type === 'table' ? (
+        <span className="react-inspector-table">
+          <Inspector data={[messages[0] && messages[0].message]} theme="chromeDark" table />
+          <Inspector data={messages[0] && messages[0].message} theme={{ ...chromeDark, ...({ ARROW_FONT_SIZE: 9 }) }} />
+        </span>
+      ) : (
+        <span className="message-group">
+          {messages.map((data, i) => {
+            let { type, message } = data
+            return (
+              <span key={i}>
+                {type === 'string' ? (
+                  this.string(message, messages[0].type !== 'string')
+                ) : /^undefined|null$/.test(type) ? (
+                  this.literal(type)
+                ) : type === 'boolean' ? (
+                  this.boolean(message)
+                ) : type === 'number' ? (
+                  this.boolean(message)
+                ) : type === 'promise' ? (
+                  this.promise()
+                ) : type === 'HTMLElement' ? (
+                  this.html(message)
+                ) : this.object(message)}
+              </span>
+            )
+          })}
         </span>
       )
+    )
+  }
+
+  string(message, quotes = true) {
+    return (
+      <span className={`string ${quotes ? 'quotes' : ''}`}>
+        {quotes && <span className="quotes">&quot;</span>}
+        <Linkify properties={{ target: '_blank' }}>
+          {message}
+        </Linkify>
+        {quotes && <span className="quotes">&quot;</span>}
+      </span>
+    )
+  }
+
+  object(object) {
+    return <Inspector data={object} theme={{ ...chromeDark, ...({ ARROW_FONT_SIZE: 9 }) }} />
+  }
+
+  number(number) {
+    return <span className="number">{number.toString()}</span>
+  }
+
+  boolean(boolean) {
+    return <span className="boolean">{boolean.toString()}</span>
+  }
+
+  literal(type) {
+    return <span className={type}>{type}</span>
+  }
+
+  promise() {
+    return (
+      <span className="promise">
+        Promise {`{`}
+        <span>
+          {`<pending>`}
+        </span>{`}`}
+      </span>
+    )
+  }
+
+  html(message) {
+    let { tagName, innerHTML } = message
+    if (tagName && typeof innerHTML !== 'undefined') {
+      try {
+        let element = document.createElement(tagName)
+        element.innerHTML = innerHTML
+        return (
+          <DOMInspector data={element} theme={{ ...chromeDark, ...({ ARROW_FONT_SIZE: 9 }) }} />
+        )
+      } catch (e) {
+        return this.object(message)
+      }
     } else {
-      return this.customType(data)
+      return this.object(message)
     }
   }
 }

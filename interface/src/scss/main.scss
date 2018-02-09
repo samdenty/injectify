@@ -609,12 +609,21 @@ pre {
               font-size: 12px !important;
               width: 100%;
               white-space: pre-wrap;
-              >span {
+              .message-group >span {
                 display: inline-block;
                 vertical-align: top;
                 padding-left: 5px;
                 &:first-of-type {
                   padding-left: 0
+                }
+                li {
+                  background-color: transparent !important;
+                  div {
+                    &:hover {
+                      background-color: rgba(255, 220, 158, 0.1);
+                      border-radius: 3px;
+                    }
+                  }
                 }
               }
               .undefined,
@@ -626,9 +635,11 @@ pre {
                 color: hsl(252, 100%, 75%)
               }
               .string {
-                color: rgb(233, 63, 59);
-                .string-quotes {
-                  color: rgb(213, 213, 213);
+                &.quotes {
+                  color: rgb(233, 63, 59);
+                  .quotes {
+                    color: rgb(213, 213, 213);
+                  }
                 }
               }
               .promise {

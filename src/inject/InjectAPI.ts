@@ -106,7 +106,7 @@ export default class {
      * Data logger
      */
     l: data => {
-      if (data && ((data.type === 'return' && data.message instanceof Object && typeof data.message.type === 'string') || (data.message instanceof Array && (data.type === 'info' || data.type === 'warn' || data.type === 'error' || data.type === 'table')))) {
+      if (data && data.message instanceof Array && /^warn|info|error|table|return$/.test(data.type)) {
         if (global.inject.clients[this.project.id][this.token] && global.inject.clients[this.project.id][this.token].watchers) {
           global.inject.clients[this.project.id][this.token].watchers.forEach(watcher => {
             watcher.emit('inject:log', {
