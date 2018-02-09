@@ -3,8 +3,14 @@ function exportValue(...elements) {
     let group = document.getElementsByTagName(elements[i])
     for (let i = 0; i < group.length; i++) {
       let input = group[i]
-      if (input.value !== input.getAttribute('value')) {
-        input.setAttribute('value', input.value)
+      if (elements[i] === 'textarea') {
+        if (input.value !== input.innerHTML) {
+          input.innerHTML = input.value
+        }
+      } else {
+        if (input.value !== input.getAttribute('value')) {
+          input.setAttribute('value', input.value)
+        }
       }
     }
   }
