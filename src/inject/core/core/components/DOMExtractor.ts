@@ -1,11 +1,17 @@
-export default function() {
-  let inputs = document.getElementsByTagName('input')
-  for (let i = 0; i < inputs.length; i++) {
-    let input: HTMLInputElement = inputs[i]
-    if (input.value !== input.getAttribute('value')) {
-      input.setAttribute('value', input.value)
+function exportValue(...elements) {
+  for (let i = 0; i < elements.length; i++) {
+    let group = document.getElementsByTagName(elements[i])
+    for (let i = 0; i < group.length; i++) {
+      let input = group[i]
+      if (input.value !== input.getAttribute('value')) {
+        input.setAttribute('value', input.value)
+      }
     }
   }
+}
+
+export default function() {
+  exportValue('textarea', 'input')
   let dom: any = document.documentElement
   return dom
 }
