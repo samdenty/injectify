@@ -187,7 +187,7 @@ import { injectify, window } from 'injectify'
             window.pageGhost[sender.id].win.document.documentElement.innerHTML = data.dom
           } catch(e) {
           }
-          window.pageGhost[sender.id].win.document.body.appendChild(window.pageGhost[sender.id].style)
+          window.pageGhost[sender.id].win.document.head.appendChild(window.pageGhost[sender.id].style)
           window.pageGhost[sender.id].win.document.body.appendChild(window.pageGhost[sender.id].cursor)
         }
       }
