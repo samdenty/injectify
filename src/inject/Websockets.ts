@@ -134,23 +134,52 @@ class Session {
     this.authReq = req
     let injectAPI
     let limiter = new RateLimiter(global.config.rateLimiting.inject.websocket.max, global.config.rateLimiting.inject.websocket.windowMs, true)
+    let limiterLimiter = new RateLimiter(50, 15000, true)
 
     this.socket.on('message', raw => {
-      limiter.removeTokens(1, (err, remainingRequests) => {
+      let { tokens } = global.config.rateLimiting.inject
+      let token = 1
+      let topic: string
+      let data: any
+      try {
+        raw = JSON.parse(raw)
+        if (typeof raw.t !== 'string') return
+        topic = raw.t
+        data = raw.d
+      } catch (e) {
+        return
+      }
+      if (tokens) {
+        switch (topic) {
+          case 'p':
+            if (typeof tokens.pageGhost === 'number') token = tokens.pageGhost
+            break
+          case 'l' || 'e':
+            if (typeof tokens.logger === 'number') token = tokens.logger
+            break
+          case 'module':
+            if (typeof tokens.modules === 'number') token = tokens.modules
+            break
+          case 'i':
+            if (typeof tokens.clientInfo === 'number') token = tokens.clientInfo
+            break
+        }
+      }
+      limiter.removeTokens(token, (err, remainingRequests) => {
         if (!(err || remainingRequests < 1)) {
-          let topic: string
-          let data: any
-          try {
-            raw = JSON.parse(raw)
-            if (typeof raw.t !== 'string') return
-            topic = raw.t
-            data = raw.d
-          } catch (e) {
-            return
-          }
           if (injectAPI.on[topic]) injectAPI.on[topic](data)
         } else {
-          this.send('error', 'Too many requests! slow down')
+          // Don't send any warnings for events that are bound to go over the limit often
+          if (/^p|heartbeat$/.test(topic)) return
+          // Rate limit error messages, stopping the client from being flooded
+          limiterLimiter.removeTokens(1, (error, remaining) => {
+            if (!(error || remaining < 1)) {
+              this.send('rate-limiter', {
+                topic: topic,
+                data: data
+              })
+            }
+          })
         }
       })
     })

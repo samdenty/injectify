@@ -168,6 +168,25 @@ import { injectify, window } from 'injectify'
     socket.on(`inject:client`, clientListener)
 
     /**
+     * Page Ghost listener
+     */
+    window.pageGhost = {}
+    let pageGhostListener = raw => {
+      if (!this._mounted) {
+        socket.off('inject:pageghost', pageGhostListener)
+        return
+      }
+      let { sender, timestamp, data, id } = raw
+      if (window.pageGhost[sender.id]) {
+        if (typeof data.clientX === 'number' && typeof data.clientY === 'number') {
+          window.pageGhost[sender.id].cursor.style.top = `${data.clientY}px`
+          window.pageGhost[sender.id].cursor.style.left = `${data.clientX}px`
+        }
+      }
+    }
+    socket.on(`inject:pageghost`, pageGhostListener)
+
+    /**
      * Console listener
      */
     let consoleListener = (log) => {

@@ -1,0 +1,38 @@
+# Module name
+name: [pageghost, PageGhost]
+# Module description
+description: |
+  Silently watch what the target is doing on a page
+# Module author's GitHub username
+author: samdenty99
+# Run the module through a minifier
+minify: true
+
+
+# Module parameters
+params:
+  # Whether the parameters should be optional
+  optional: true
+  # Information about the params
+  info: |
+    Whether to enable or disable
+  # Typescript d.ts typings, used in the interface's code editor
+  typings: |
+    boolean | {
+      /**
+       * Whether to enable or disable
+       */
+      enable?: boolean
+      /**
+       * Record mouse movements
+       */
+      mouse?: boolean
+      /**
+       * Capture values from input fields
+       */
+      values?: boolean
+    }
+
+# Module callback
+returns: |
+  any

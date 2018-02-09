@@ -47,6 +47,7 @@
     "concurrently": "^3.5.1",
     "cookie-parser": "^1.4.3",
     "country-emoji": "^1.2.0",
+    "crypto-js": "^3.1.9-1",
     "ejs": "^2.5.7",
     "express": "^4.16.2",
     "express-prettify": "0.0.10",
@@ -79,6 +80,11 @@
   },
   "nodemonConfig": {
     "ext": "js,json,yml",
-    "ignore": ["interface/public/*", "ci/*", "database/*", "src/inject/core/modules/*/src"]
+    "ignore": [
+      "interface/public/*",
+      "ci/*",
+      "database/*",
+      "src/inject/core/modules/*/src"
+    ]
   }
 }

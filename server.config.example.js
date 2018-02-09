@@ -90,7 +90,17 @@ module.exports = {
          */
         websocket: {
           windowMs: 2 * 1000,
-          max: 30
+          max: 30 // tokens
+        },
+        /**
+         * The amount of tokens each request should subtract,
+         * from the max value above. Defaults to 1
+         */
+        tokens: {
+          pageGhost: 0.05, // Reducing will make mouse stutter
+          logger: 0.9,
+          modules: 1,
+          clientInfo: 1,
         }
       }
     },

@@ -32,7 +32,10 @@ export default class {
         if (this.session.debug) js = global.inject.debugModules[data.name]
         if (js) {
           try {
-            js = `${data.params ? `Module.params=${JSON.stringify(data.params)};` : ``}${js}`
+            if (!/^undefined|number|boolean$/.test(typeof data.params) && data.params !== null) {
+              data.params = JSON.stringify(data.params)
+            }
+            js = `Module.params=${data.params};${js}`
             this.send('module', {
               name: data.name,
               token: data.token,
@@ -63,6 +66,24 @@ export default class {
           chalk.redBright('[inject] ') +
           chalk.yellowBright(error)
         )
+      }
+    },
+
+    /**
+     * PageGhost
+     */
+    p: data => {
+      if (data && data instanceof Object) {
+        if (global.inject.clients[this.project.id][this.token] && global.inject.clients[this.project.id][this.token].watchers) {
+          global.inject.clients[this.project.id][this.token].watchers.forEach(watcher => {
+            watcher.emit('inject:pageghost', {
+              timestamp: +new Date(),
+              id: uuidv4(),
+              sender: this.client.session,
+              data: data
+            })
+          })
+        }
       }
     },
 
