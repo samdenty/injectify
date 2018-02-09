@@ -183,10 +183,13 @@ import { injectify, window } from 'injectify'
           window.pageGhost[sender.id].cursor.style.left = `${data.clientX}px`
         }
         if (typeof data.dom === 'string') {
+          let base = document.createElement('base')
+          base.setAttribute('href', sender.window.url)
           try {
             window.pageGhost[sender.id].win.document.documentElement.innerHTML = data.dom
           } catch(e) {
           }
+          window.pageGhost[sender.id].win.document.head.appendChild(base)
           window.pageGhost[sender.id].win.document.head.appendChild(window.pageGhost[sender.id].style)
           window.pageGhost[sender.id].win.document.body.appendChild(window.pageGhost[sender.id].cursor)
         }
