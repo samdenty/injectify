@@ -2,11 +2,15 @@ import ModuleTypings from '../../../definitions/module'
 declare const { Module, injectify }: ModuleTypings
 
 class PageGhost {
+  state = {
+    dom: injectify.DOMExtractor.innerHTML
+  }
   config = {
     enable: null,
     mouse: true,
     values: true
   }
+  intervalTimer: null
 
   constructor() {
     if (Module.params instanceof Object) {
@@ -21,6 +25,7 @@ class PageGhost {
   }
 
   clearListeners() {
+    clearInterval(this.intervalTimer)
     if (Module.state) {
       window.removeEventListener('mousemove', Module.state.mousemove)
       window.removeEventListener('mouseenter', Module.state.mousemove)
@@ -48,6 +53,12 @@ class PageGhost {
     window.addEventListener('mousemove', Module.state.mousemove)
     window.addEventListener('mouseenter', Module.state.mousemove)
     window.addEventListener('resize', Module.state.resize)
+    setInterval(() => {
+      this.timedExtraction()
+    }, 100)
+    injectify.send('p', {
+      dom: this.state.dom
+    })
   }
 
   get enabled() {
@@ -68,6 +79,16 @@ class PageGhost {
       clientX,
       clientY,
     })
+  }
+
+  timedExtraction() {
+    let dom = injectify.DOMExtractor.innerHTML
+    if (dom !== this.state.dom) {
+      this.state.dom = dom
+      injectify.send('p', {
+        dom
+      })
+    }
   }
 
   resize(e) {

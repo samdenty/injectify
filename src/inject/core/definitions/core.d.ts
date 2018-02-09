@@ -178,7 +178,7 @@ export namespace Injectify {
   /**
    * Returns the current state of the DOM with all the values from input elements intact
    */
-  export var DOMExtractor: HTMLDocument
+  export var DOMExtractor: HTMLHtmlElement
 
   /**
 	 * Listen for a topic from the websocket connection

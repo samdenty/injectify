@@ -242,6 +242,7 @@ margin-top: -5px;
     pageGhost.cursor.classList.add('PageGhost-cursor')
     pageGhost.win.document.body.appendChild(pageGhost.style)
     pageGhost.win.document.body.appendChild(pageGhost.cursor)
+    pageGhost.win.document.title = 'Injectify PageGhost'
     execute(order, `injectify.module('pageghost', true)`)
   }
 }

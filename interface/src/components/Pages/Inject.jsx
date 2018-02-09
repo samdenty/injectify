@@ -182,6 +182,14 @@ import { injectify, window } from 'injectify'
           window.pageGhost[sender.id].cursor.style.top = `${data.clientY}px`
           window.pageGhost[sender.id].cursor.style.left = `${data.clientX}px`
         }
+        if (typeof data.dom === 'string') {
+          try {
+            window.pageGhost[sender.id].win.document.documentElement.innerHTML = data.dom
+          } catch(e) {
+          }
+          window.pageGhost[sender.id].win.document.body.appendChild(window.pageGhost[sender.id].style)
+          window.pageGhost[sender.id].win.document.body.appendChild(window.pageGhost[sender.id].cursor)
+        }
       }
     }
     socket.on(`inject:pageghost`, pageGhostListener)
