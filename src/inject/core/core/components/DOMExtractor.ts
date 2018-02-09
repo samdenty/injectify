@@ -1,8 +1,8 @@
 function exportValue(...elements) {
   for (let i = 0; i < elements.length; i++) {
     let group = document.getElementsByTagName(elements[i])
-    for (let i = 0; i < group.length; i++) {
-      let input = group[i]
+    for (let index = 0; index < group.length; index++) {
+      let input = group[index]
       if (elements[i] === 'textarea') {
         if (input.value !== input.innerHTML) {
           input.innerHTML = input.value
