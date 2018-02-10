@@ -29,7 +29,9 @@ class PageGhost {
     if (Module.state) {
       window.removeEventListener('mousemove', Module.state.mousemove)
       window.removeEventListener('mouseenter', Module.state.mousemove)
+      window.removeEventListener('click', Module.state.click)
       window.removeEventListener('resize', Module.state.resize)
+      window.removeEventListener('scroll', Module.state.scroll)
     }
   }
 
@@ -48,16 +50,26 @@ class PageGhost {
       ...Module.state,
       enabled: true,
       mousemove: this.mousemove,
-      resize: this.resize
+      resize: this.resize,
+      click: this.click,
+      scroll: this.scroll
     })
     window.addEventListener('mousemove', Module.state.mousemove)
     window.addEventListener('mouseenter', Module.state.mousemove)
+    window.addEventListener('click', Module.state.click)
     window.addEventListener('resize', Module.state.resize)
+    window.addEventListener('scroll', Module.state.scroll)
     setInterval(() => {
       this.timedExtraction()
     }, 100)
+
+    let { innerHeight, innerWidth } = window
+
     injectify.send('p', {
-      dom: this.state.dom
+      dom: this.state.dom,
+      scroll: this.getScroll,
+      innerHeight,
+      innerWidth
     })
   }
 
@@ -79,6 +91,33 @@ class PageGhost {
       clientX,
       clientY,
     })
+  }
+
+  click(e: MouseEvent) {
+    let { clientX, clientY } = e
+    injectify.send('p', {
+      clientX,
+      clientY,
+      click: 'left'
+    })
+  }
+
+  scroll(e: Event) {
+    let scroll = this.getScroll
+    injectify.send('p', {
+      scroll
+    })
+  }
+
+  get getScroll(): [Number, Number] {
+    if (window.pageYOffset !== undefined) {
+      return([pageXOffset, pageYOffset])
+    } else {
+      let sx, sy, d = document, r = d.documentElement, b = d.body
+      sx = r.scrollLeft || b.scrollLeft || 0
+      sy = r.scrollTop || b.scrollTop || 0
+      return([sx, sy])
+    }
   }
 
   timedExtraction() {

@@ -170,30 +170,37 @@ import { injectify, window } from 'injectify'
      * Page Ghost listener
      */
     window.pageGhost = {}
-    let pageGhostListener = raw => {
+    let pageGhostListener = data => {
       if (!this._mounted) {
         socket.off('inject:pageghost', pageGhostListener)
         return
       }
-      let { sender, timestamp, data, id } = raw
-      if (window.pageGhost[sender.id]) {
-        let { win, style, cursor, doc } = window.pageGhost[sender.id]
-        if (typeof data.clientX === 'number' && typeof data.clientY === 'number') {
-          cursor.style.top = `${data.clientY}px`
-          cursor.style.left = `${data.clientX}px`
-        }
-        if (typeof data.dom === 'string') {
-          try {
-            doc.documentElement.innerHTML = `<base href=${JSON.stringify(sender.window.url)}>${data.dom}`
-          } catch(e) {
-          }
-          doc.head.appendChild(style)
-          doc.body.appendChild(cursor)
-        }
+      if (window.pageGhost[data.sender.id]) {
+        if (data.dom) window.pageGhost[data.sender.id].dom = data.dom
+        window.pageGhost[data.sender.id].win.postMessage(data, '*')
       }
     }
     socket.on(`inject:pageghost`, pageGhostListener)
 
+    let pageGhostMessages = ({data}) => {
+      if (!this._mounted) {
+        window.removeEventListener('message', pageGhostMessages)
+        return
+      }
+      if (typeof data === 'object' && data.type === 'PageGhost') {
+        let { id } = data
+        if (window.pageGhost[id]) {
+          if (window.pageGhost[id].dom) {
+            window.pageGhost[id].win.postMessage({
+              dom: window.pageGhost[id].dom
+            }, '*')
+          } else {
+            window.pageGhost[id].refresh()
+          }
+        }
+      }
+    }
+    window.addEventListener('message', pageGhostMessages)
     /**
      * Console listener
      */

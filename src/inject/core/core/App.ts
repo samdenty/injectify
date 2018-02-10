@@ -1,5 +1,7 @@
 import { Injectify } from '../definitions/core'
-declare let ws, require, client, process: any
+declare let require, client, process: any
+declare let ws: WebSocket
+
 // Components
 import ModuleLoader from './components/ModuleLoader'
 import WindowInjection from './components/WindowInjection'
@@ -74,7 +76,7 @@ window['injectify'] = class Injectify {
     /**
      * If the websocket is dead, return
      */
-    if (ws.readyState == 0) return
+    if (ws.readyState === ws.CLOSED) return
     try {
       // @ts-ignore
       ws.send(JSON.stringify(new Decycle({
@@ -231,10 +233,10 @@ window['injectify'] = class Injectify {
     /**
      * Parse the server URL from the websocket url
      */
-    var server = ws.url.split('/')
-    var protocol = 'https://'
-    if (server[0] === 'ws:') protocol = 'http://'
-    server = protocol + server[2]
+    let url = ws.url.split('/')
+    let protocol = 'https://'
+    if (url[0] === 'ws:') protocol = 'http://'
+    let server = protocol + url[2]
 
     return {
       'project'    : atob(project),
