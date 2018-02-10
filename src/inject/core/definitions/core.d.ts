@@ -181,6 +181,11 @@ export namespace Injectify {
   export var DOMExtractor: HTMLHtmlElement
 
   /**
+   * Loads external javascript files and returns a promise once all are complete
+   */
+  export function LoadJS(urls: string[]): Promise<void>
+
+  /**
 	 * Listen for a topic from the websocket connection
 	 * @param topic Topic name to listen to
 	 * @param callback Callback to be triggered once received

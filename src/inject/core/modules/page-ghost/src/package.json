@@ -1,0 +1,9 @@
+{
+  "name": "PageGhost",
+  "version": "1.0.0",
+  "description": "Injectify PageGhost",
+  "main": "module.ts",
+  "author": "samdenty99",
+  "license": "MIT",
+  "dependencies": {}
+}

@@ -186,7 +186,7 @@ window['injectify'] = class Injectify {
     return new Promise((resolve, reject) => {
       let type = 'production.min.js'
       if (this.debug) type = 'development.js'
-      LoadJS([
+      this.LoadJS([
         `https://cdnjs.cloudflare.com/ajax/libs/react/16.2.0/umd/react.${type}`,
         `https://cdnjs.cloudflare.com/ajax/libs/react-dom/16.2.0/umd/react-dom.${type}`
       ]).then(() => {
@@ -197,6 +197,8 @@ window['injectify'] = class Injectify {
       })
     })
   }
+
+  static LoadJS = LoadJS
 
   static auth(token?: string) {
     let auth = new Image

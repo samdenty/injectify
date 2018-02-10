@@ -78,6 +78,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             };
             PageGhost.update = function (message) {
+                console.log(message.data);
                 var data = message.data, id = message.id, sender = message.sender, timestamp = message.timestamp;
                 this.linkify(sender.window.url);
                 if (data.click) {

@@ -122,7 +122,7 @@ class PageGhost {
     if (dom !== this.state.dom) {
       this.state.dom = dom
       injectify.send('p', {
-        dom
+        dom: dom
       })
     }
   }
@@ -135,5 +135,4 @@ class PageGhost {
     })
   }
 }
-
 Module.resolve(new PageGhost())

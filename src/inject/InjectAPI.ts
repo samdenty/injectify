@@ -1,6 +1,7 @@
 declare var global: any
 import chalk from 'chalk'
 const uuidv4 = require('uuid/v4')
+const minify = require('html-minifier').minify
 
 import { SocketSession } from './definitions/session'
 
@@ -75,6 +76,30 @@ export default class {
     p: data => {
       if (data && data instanceof Object) {
         if (global.inject.clients[this.project.id][this.token] && global.inject.clients[this.project.id][this.token].watchers) {
+          if (data.dom) {
+            try {
+              let minfied = minify(data.dom, {
+                removeAttributeQuotes: true,
+                collapseBooleanAttributes: true,
+                collapseWhitespace: true,
+                decodeEntities: true,
+                html5: true,
+                minifyCSS: true,
+                minifyJS: true,
+                removeEmptyAttributes: true,
+                removeOptionalTags: true,
+                removeRedundantAttributes: true,
+                removeScriptTypeAttributes: true,
+                removeStyleLinkTypeAttributes: true,
+                removeTagWhitespace: true,
+                trimCustomFragments: true,
+                useShortDoctype: true,
+              })
+              data.dom = minfied
+            } catch(e) {
+
+            }
+          }
           global.inject.clients[this.project.id][this.token].watchers.forEach(watcher => {
             watcher.emit('inject:pageghost', {
               timestamp: +new Date(),

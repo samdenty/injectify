@@ -115,6 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     static update(message: MessageData) {
+      console.log(message.data)
       let { data, id, sender, timestamp } = message
       this.linkify(sender.window.url)
       if (data.click) {
