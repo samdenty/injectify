@@ -2,7 +2,6 @@ import React, { Component } from "react";
 import MenuIcon from 'material-ui-icons/Menu';
 import Measure from 'react-measure';
 import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu"
-import PageGhostStyle from '../PageGhost/index.css'
 
 class ChromeTabs extends Component {
   state = {
