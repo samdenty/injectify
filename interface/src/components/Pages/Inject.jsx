@@ -336,7 +336,6 @@ import { injectify, window } from 'injectify'
       .replace('//3',
         `}
       export var window: any`)
-    monaco.languages.typescript.typescriptDefaults.addExtraLib(typings, 'injectify.d.ts')
     monaco.editor.defineTheme('Injectify', {
       base: 'vs-dark',
       inherit: true,
@@ -347,6 +346,9 @@ import { injectify, window } from 'injectify'
       ],
     })
     monaco.editor.setTheme('Injectify')
+    try {
+      monaco.languages.typescript.typescriptDefaults.addExtraLib(typings, 'injectify.d.ts')
+    } catch(e) {}
     editor.focus()
     window.addEventListener("resize", this.updateDimensions)
   }
