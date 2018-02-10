@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import MenuIcon from 'material-ui-icons/Menu';
 import Measure from 'react-measure';
 import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu"
+import PageGhostStyle from '../PageGhost/index.css'
 
 class ChromeTabs extends Component {
   state = {
@@ -222,27 +223,24 @@ class ChromeTab extends Component {
     const { execute } = this.props
     let pageGhost = window.pageGhost[id] = {
       win: window.open(),
+      style: null,
+      cursor: null,
+      doc: null
     }
     // Prevent page from executing JS in our page
     pageGhost.win.opener = null
-    pageGhost.style = document.createElement('style')
-    pageGhost.style.innerHTML =
-`.PageGhost-cursor {
-pointer-events: none !important;
-height: 25px !important;
-width: 25px !important;
-position: fixed !important;
-z-index: 999999999999 !important;
-image-rendering: -webkit-optimize-contrast !important;
-margin-left: -10px;
-margin-top: -5px;
-}`
-    pageGhost.cursor = document.createElement('img')
+    let doc = pageGhost.doc = pageGhost.win.document
+    doc.title = 'Injectify PageGhost'
+
+    pageGhost.style = doc.createElement('style')
+    pageGhost.style.innerHTML = PageGhostStyle
+    doc.head.appendChild(pageGhost.style)
+
+    pageGhost.cursor = doc.createElement('img')
     pageGhost.cursor.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAQZSURBVFhH7ZhdSJtXGMfV2cyvJanMDZZZZO0spAusrReyMVZ0Qm8LIjgvFIsIihYExQ+GNxO/LlREdyFqxQ8QvCyCqDdeilUzsBQaNpMY/IgfUWNUNvPs/39nQrW16sgbM/CBP77nyav+/J/zPOccw67jOv4nEf6WQi4iIM3BwYFjenr6B4vF8t2/6dAJDXRzf39fPB6Pe2ho6BHGkconIRKxUKIcx9ra2nJvb29IQX4C3SWc3W6Xzc1N2dvb2+ns7Pwe+ZCA1EL3CNjT0yPt7e3i9XpleXnZ1tDQwPV45ZAE/IaAcE2ioqKkvLxctra2ZHd311VTU3PlkCcA8SzR0dHS0dGhOPknorCw8AHyVwb5DiBFJ6uqqsTlcsnOzs5GaWnpQ+Q/goIe7wWkYmNjpaury+ekpbi4+D7yQYc8E5CKiYmR2tpa2d7eppNOOPkt8kGF/CAgFRcXJ93d3Wzksri4+LqgoMCIfNAgzwWkCFlXV6c4Ca0UFRWZkA8K5IUAKa1WK/39/cJtEU6+qq6uvou86pAXBqQI2djYqDiJCrc3NTWpDnkpQEqn08nw8LDi5NLSkrmlpeUr5FWDvDQgpdfrpbW1lZVNJ23YJr9Gnke3gMd/AqTi4+NlZGREcRJ798u2trZbyAcc8kzAyMhI/zPXHg8TDofjhDY2NuTo6EhpQW63+w3evQEFNN4LGBERISUlJUqj5jg8PFwyMzP5Gt36a2ZmxmE2m+0LCwtWfP4TxLbzGfQxFNCrwzuAhOKxC9cAqaioUGCZp8bHx+mU5OXlVWPMMyN3FlayAeLZMuCHihOAnFZCcV0x5ufnxWg0+gGzs7OVwhgdHTVjzOr9FNJBPJnz+qDeGuzr61MOBwSYnZ11DQwMTLPf1dfX+wF5gBgcHKSLRyiQX5AL+JSeDj8g1pYcHh6yt3kyMjLKMdVPbDab2+l0isFg8EOmpKQo04z7iwVjTqsq7cUXBFSO/JxWLPr1nJycIuS46E24QD1Hn/M2NzeLRqPxQ9JFVu7Y2NgzjDm1qgUdSCbgysqKOz8/vxDjO1A8lJCenp6Gs6ATktTUVD8gHKbTYrVa/8jNzVWl//kiBkpcXV1dwl3kZzzfhrjo2c+iIENZWVklT9Zw01/RSUlJMjExwXuLd3JysgU51VzkD9bjwv4YXz+HOOW+VkFXCGuEg2u4jorJZJK0tDSZmppSionTvL6+/jveieY3qBGEICR/ASvydB9j7ovKyspfcWf+GzBKf2R1YyfxwNXfAHwP76gG6IuzWgX/AG1ycvL9ubk5K9cqiwbnwhdZWVlP8RmbNNdrwLe4ywQdToBY2T9C/NcIr6JJkB6iy6q2mvOC7rJguGskQl8eP7PAgnY3OS/okK+yfWs1JP+feB0hFGFh/wCT3Pm6RsUJuAAAAABJRU5ErkJggg=='
     pageGhost.cursor.classList.add('PageGhost-cursor')
-    pageGhost.win.document.head.appendChild(pageGhost.style)
-    pageGhost.win.document.body.appendChild(pageGhost.cursor)
-    pageGhost.win.document.title = 'Injectify PageGhost'
+    doc.body.appendChild(pageGhost.cursor)
+
     execute(order, `injectify.module('pageghost', true)`)
   }
 }

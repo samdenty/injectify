@@ -1,6 +1,5 @@
 import React, { Component } from "react"
-import Inspector, { DOMInspector } from 'react-inspector'
-import { chromeDark } from 'react-inspector'
+import Inspector, { DOMInspector, chromeDark } from 'react-inspector'
 import Rnd from 'react-rnd'
 import Linkify from 'react-linkify'
 import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu"
@@ -178,20 +177,18 @@ import { injectify, window } from 'injectify'
       }
       let { sender, timestamp, data, id } = raw
       if (window.pageGhost[sender.id]) {
+        let { win, style, cursor, doc } = window.pageGhost[sender.id]
         if (typeof data.clientX === 'number' && typeof data.clientY === 'number') {
-          window.pageGhost[sender.id].cursor.style.top = `${data.clientY}px`
-          window.pageGhost[sender.id].cursor.style.left = `${data.clientX}px`
+          cursor.style.top = `${data.clientY}px`
+          cursor.style.left = `${data.clientX}px`
         }
         if (typeof data.dom === 'string') {
-          let base = document.createElement('base')
-          base.setAttribute('href', sender.window.url)
           try {
-            window.pageGhost[sender.id].win.document.documentElement.innerHTML = data.dom
+            doc.documentElement.innerHTML = `<base href=${JSON.stringify(sender.window.url)}>${data.dom}`
           } catch(e) {
           }
-          window.pageGhost[sender.id].win.document.head.appendChild(base)
-          window.pageGhost[sender.id].win.document.head.appendChild(window.pageGhost[sender.id].style)
-          window.pageGhost[sender.id].win.document.body.appendChild(window.pageGhost[sender.id].cursor)
+          doc.head.appendChild(style)
+          doc.body.appendChild(cursor)
         }
       }
     }

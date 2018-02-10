@@ -50,7 +50,7 @@ module.exports = {
 		//new UglifyJSPlugin()
 	],
 	resolve: {
-		extensions: ['*', '.js', '.jsx']
+		extensions: ['.*', '.js', '.jsx']
 	},
 	devServer: {
 		contentBase: '../public/',

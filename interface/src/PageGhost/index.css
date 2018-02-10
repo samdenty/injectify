@@ -1,0 +1,16 @@
+.PageGhost-cursor,
+.PageGhost-cursor:after {
+  pointer-events: none !important;
+  height: 25px !important;
+  width: 25px !important;
+  position: fixed !important;
+  z-index: 999999999999 !important;
+  image-rendering: -webkit-optimize-contrast !important;
+  margin-left: -10px;
+  margin-top: -5px;
+}
+
+.PageGhost-cursor:after {
+  content: 'aa';
+  background: #fff
+}

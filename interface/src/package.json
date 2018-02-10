@@ -35,7 +35,9 @@
         "babel-plugin-inline-import",
         {
           "extensions": [
-            ".ts"
+            ".ts",
+            ".html",
+            ".css"
           ]
         }
       ]
