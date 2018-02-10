@@ -3,7 +3,7 @@ declare const { Module, injectify }: ModuleTypings
 
 class PageGhost {
   state = {
-    dom: injectify.DOMExtractor.innerHTML
+    dom: injectify.DOMExtractor.innerHTML,
   }
   config = {
     enable: null,
@@ -27,6 +27,7 @@ class PageGhost {
   clearListeners() {
     clearInterval(this.intervalTimer)
     if (Module.state) {
+      window.removeEventListener('mouseover', Module.state.mouseover)
       window.removeEventListener('mousemove', Module.state.mousemove)
       window.removeEventListener('mouseenter', Module.state.mousemove)
       window.removeEventListener('click', Module.state.click)
@@ -50,11 +51,13 @@ class PageGhost {
       ...Module.state,
       enabled: true,
       mousemove: this.mousemove,
+      mouseover: this.mouseover,
       resize: this.resize,
       click: this.click,
       scroll: this.scroll
     })
     window.addEventListener('mousemove', Module.state.mousemove)
+    window.addEventListener('mouseover', Module.state.mouseover)
     window.addEventListener('mouseenter', Module.state.mousemove)
     window.addEventListener('click', Module.state.click)
     window.addEventListener('resize', Module.state.resize)
@@ -93,6 +96,32 @@ class PageGhost {
     })
   }
 
+  mouseover(e: MouseEvent) {
+    if (!(<any>window).curzorStyle) (<any>window).curzorStyle = 'default'
+    let element = <HTMLElement>e.target
+    let cursorStyle = window.getComputedStyle(element).cursor
+    if (cursorStyle === 'auto') {
+      let tagName = element.tagName.toLowerCase()
+      switch (tagName) {
+        case 'a':
+          cursorStyle = 'pointer'
+          break
+        case 'input':
+          cursorStyle = 'text'
+          break
+        case 'button':
+          cursorStyle = 'default'
+          break
+      }
+    }
+    if (cursorStyle !== (<any>window).curzorStyle) {
+      (<any>window).curzorStyle = cursorStyle
+      injectify.send('p', {
+        cursorStyle
+      })
+    }
+  }
+
   click(e: MouseEvent) {
     let { clientX, clientY } = e
     injectify.send('p', {
@@ -122,7 +151,7 @@ class PageGhost {
     if (dom !== this.state.dom) {
       this.state.dom = dom
       injectify.send('p', {
-        dom: dom
+        dom
       })
     }
   }

@@ -1,9 +1,57 @@
+function Cursors(input?: string) {
+  let cursor = 'default'
+  switch (input) {
+    case 'all-scroll':
+    case 'grab':
+    case 'grabbing':
+    case 'move':
+      cursor = 'grab'
+      break
+    case 'e-resize':
+    case 'ew-resize':
+      cursor = 'e-resize'
+      break
+    case 'ne-resize':
+    case 'sw-resize':
+    case 'nesw-resize':
+      cursor = 'ne-resize'
+      break
+    case 'ns-resize':
+    case 's-resize':
+      cursor = 'ns-resize'
+      break
+    case 'nw-resize':
+    case 'se-resize':
+    case 'nwse-resize':
+      cursor = 'nw-resize'
+      break
+    case 'crosshair':
+    case 'col-resize':
+    case 'help':
+    case 'n-resize':
+    case 'no-drop':
+    case  'not-allowed':
+    case 'pointer':
+    case 'progress':
+    case 'wait':
+    case 'text':
+    case 'w-resize':
+    case 'default':
+    case 'row-resize':
+      cursor = input
+      break
+  }
+  return `./cursors/unix/${cursor}.apng`
+}
+
 interface MessageData {
   data: {
     clientX?: number
     clientY?: number
 
     click?: 'left' | 'right'
+
+    cursorStyle?: string
 
     innerHeight?: number
     innerWidth?: number
@@ -32,12 +80,13 @@ document.addEventListener('DOMContentLoaded', () => {
     static master = <HTMLElement>document.getElementsByClassName('window-container')[0]
     static container = document.getElementsByTagName('iframe')[0]
     static cursor = <HTMLElement>document.getElementsByClassName('cursor')[0]
+    static pointer = <HTMLElement>document.getElementsByClassName('pointer')[0]
     static iframe: HTMLIFrameElement
     static base: HTMLBaseElement
     static html: string
 
     static config = {
-      smoothCursor: true
+      smoothCursor: false
     }
 
     static initialize() {
@@ -97,7 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     static fadeCursor(x: number, y: number) {
       let cursor = <HTMLElement>document.getElementsByClassName('cursor')[0]
-      cursor.style.transition = 'transform 0.1s ease-in-out'
+      cursor.style.transition = 'transform 0.05s ease-in-out'
       this.setCursor(x, y)
       this.setConfig()
     }
@@ -108,14 +157,14 @@ document.addEventListener('DOMContentLoaded', () => {
         ...newConfig
       }
       if (this.config.smoothCursor) {
-        this.cursor.style.transition = 'transform 0.1s ease-in-out'
+        this.cursor.style.transition = 'transform 0.05s ease-in-out'
       } else {
         this.cursor.style.transition = ''
       }
     }
 
     static update(message: MessageData) {
-      console.log(message.data)
+      console.debug(message.data)
       let { data, id, sender, timestamp } = message
       this.linkify(sender.window.url)
       if (data.click) {
@@ -127,6 +176,10 @@ document.addEventListener('DOMContentLoaded', () => {
       if (data.dom) {
         this.html = data.dom
         this.setInnerHTML(data.dom)
+      }
+      if (typeof data.cursorStyle === 'string') {
+        console.log(data.cursorStyle)
+        this.pointer.style.backgroundImage = `url('${Cursors(data.cursorStyle)}')`
       }
       if (typeof data.clientX !== 'undefined' && typeof data.clientY !== 'undefined') {
         this.setCursor(data.clientX, data.clientY)

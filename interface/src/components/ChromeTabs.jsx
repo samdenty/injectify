@@ -222,7 +222,8 @@ class ChromeTab extends Component {
   pageGhost(order, id) {
     const { execute } = this.props
     let pageGhost = window.pageGhost[id] = {
-      win: window.open(`/PageGhost/?${id}`),
+      // HTTP so mixed content requests can be served
+      win: window.open(`http://${window.location.host}/PageGhost/?${id}`),
       dom: null,
       refresh: () => {
         execute(order, `injectify.module('pageghost', true)`)

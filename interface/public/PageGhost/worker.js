@@ -6,6 +6,51 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
     }
     return t;
 };
+function Cursors(input) {
+    var cursor = 'default';
+    switch (input) {
+        case 'all-scroll':
+        case 'grab':
+        case 'grabbing':
+        case 'move':
+            cursor = 'grab';
+            break;
+        case 'e-resize':
+        case 'ew-resize':
+            cursor = 'e-resize';
+            break;
+        case 'ne-resize':
+        case 'sw-resize':
+        case 'nesw-resize':
+            cursor = 'ne-resize';
+            break;
+        case 'ns-resize':
+        case 's-resize':
+            cursor = 'ns-resize';
+            break;
+        case 'nw-resize':
+        case 'se-resize':
+        case 'nwse-resize':
+            cursor = 'nw-resize';
+            break;
+        case 'crosshair':
+        case 'col-resize':
+        case 'help':
+        case 'n-resize':
+        case 'no-drop':
+        case 'not-allowed':
+        case 'pointer':
+        case 'progress':
+        case 'wait':
+        case 'text':
+        case 'w-resize':
+        case 'default':
+        case 'row-resize':
+            cursor = input;
+            break;
+    }
+    return "./cursors/unix/" + cursor + ".apng";
+}
 document.addEventListener('DOMContentLoaded', function () {
     window['PageGhost'] = (_a = /** @class */ (function () {
             function PageGhost() {
@@ -64,21 +109,21 @@ document.addEventListener('DOMContentLoaded', function () {
             };
             PageGhost.fadeCursor = function (x, y) {
                 var cursor = document.getElementsByClassName('cursor')[0];
-                cursor.style.transition = 'transform 0.1s ease-in-out';
+                cursor.style.transition = 'transform 0.05s ease-in-out';
                 this.setCursor(x, y);
                 this.setConfig();
             };
             PageGhost.setConfig = function (newConfig) {
                 this.config = __assign({}, this.config, newConfig);
                 if (this.config.smoothCursor) {
-                    this.cursor.style.transition = 'transform 0.1s ease-in-out';
+                    this.cursor.style.transition = 'transform 0.05s ease-in-out';
                 }
                 else {
                     this.cursor.style.transition = '';
                 }
             };
             PageGhost.update = function (message) {
-                console.log(message.data);
+                console.debug(message.data);
                 var data = message.data, id = message.id, sender = message.sender, timestamp = message.timestamp;
                 this.linkify(sender.window.url);
                 if (data.click) {
@@ -90,6 +135,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (data.dom) {
                     this.html = data.dom;
                     this.setInnerHTML(data.dom);
+                }
+                if (typeof data.cursorStyle === 'string') {
+                    console.log(data.cursorStyle);
+                    this.pointer.style.backgroundImage = "url('" + Cursors(data.cursorStyle) + "')";
                 }
                 if (typeof data.clientX !== 'undefined' && typeof data.clientY !== 'undefined') {
                     this.setCursor(data.clientX, data.clientY);
@@ -160,8 +209,9 @@ document.addEventListener('DOMContentLoaded', function () {
         _a.master = document.getElementsByClassName('window-container')[0],
         _a.container = document.getElementsByTagName('iframe')[0],
         _a.cursor = document.getElementsByClassName('cursor')[0],
+        _a.pointer = document.getElementsByClassName('pointer')[0],
         _a.config = {
-            smoothCursor: true
+            smoothCursor: false
         },
         _a);
     window['PageGhost'].initialize();
