@@ -76,7 +76,7 @@ window['injectify'] = class Injectify {
     /**
      * If the websocket is dead, return
      */
-    if (ws.readyState === ws.CLOSED) return
+    if (ws.readyState !== ws.OPEN) return
     try {
       // @ts-ignore
       ws.send(JSON.stringify(new Decycle({
@@ -120,7 +120,7 @@ window['injectify'] = class Injectify {
     })
   }
 
-  static ping(callback?: any) {
+  static ping(callback?: any ) {
     this.send('ping', + new Date())
     if (callback) this.listen('pong', callback, true)
   }

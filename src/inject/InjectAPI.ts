@@ -152,7 +152,10 @@ export default class {
         global.inject.clients[this.project.id][this.token].watchers.forEach(watcher => {
           watcher.emit('inject:log', {
             type: 'error',
-            message: data.message
+            message: [{
+              type: 'string',
+              message: data
+            }]
           })
         })
       }

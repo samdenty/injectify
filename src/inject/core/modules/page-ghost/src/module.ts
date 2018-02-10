@@ -67,10 +67,10 @@ class PageGhost {
 
     injectify.send('p', {
       dom: this.state.dom,
-      scroll: this.getScroll,
       innerHeight,
       innerWidth
     })
+    this.scroll()
   }
 
   get enabled() {
@@ -102,22 +102,19 @@ class PageGhost {
     })
   }
 
-  scroll(e: Event) {
-    let scroll = this.getScroll
-    injectify.send('p', {
-      scroll
-    })
-  }
-
-  get getScroll(): [Number, Number] {
+  scroll(e?: Event) {
+    let scroll: [Number, Number]
     if (window.pageYOffset !== undefined) {
-      return([pageXOffset, pageYOffset])
+      scroll = [pageXOffset, pageYOffset]
     } else {
       let sx, sy, d = document, r = d.documentElement, b = d.body
       sx = r.scrollLeft || b.scrollLeft || 0
       sy = r.scrollTop || b.scrollTop || 0
-      return([sx, sy])
+      scroll = [sx, sy]
     }
+    injectify.send('p', {
+      scroll: scroll
+    })
   }
 
   timedExtraction() {

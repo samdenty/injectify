@@ -1,9 +1,16 @@
 body {
   margin: 0;
+  background-color: #1E1E1E;
 }
+
 .window-container {
-  position: relative;
+  position: absolute;
   overflow: hidden;
+  display: inline-block;
+  top: 50%;
+  left: 50%;
+  transform-origin: 0 0;
+  background-color: #ffffff;
 }
 
 .window,
@@ -24,9 +31,9 @@ body {
   /**
    * Adding a transition improves the performance
    * for low-speed connections, but causes unnecesarry
-   * lag on normal connections
+   * lag on higher-end connections
    */
-  /* transition: transform 0.1s ease-in-out; */
+  transition: transform 0.1s ease-in-out;
   transform: translate(0, 0)
 }
 

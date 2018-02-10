@@ -12,7 +12,7 @@
     "server:dev": "cross-env NODE_ENV=development nodemon ./src/main",
     "server:production": "cross-env NODE_ENV=production nodemon ./src/main",
     "interface": "cd interface/src && yarn run dev",
-    "typescript": "concurrently -n \"server-typescript,inject-typescript\" -c \"bgMagenta.bold,bgCyan.bold\" \"tsc -w\" \"yarn run modules && cd src/inject/core && yarn run watch\"",
+    "typescript": "concurrently -n \"server-typescript,inject-typescript,module-typings\" -c \"bgMagenta.bold,bgCyan.bold,byGreen.bold\" \"tsc -w\" \"cd src/inject/core && yarn run watch\" \"yarn run modules\"",
     "mongo": "mongod --dbpath=./database --port 19000 --bind_ip 0.0.0.0",
     "pm2": "pm2 start server.config.js",
     "install:all": "yarn --production=false && cd ci && yarn  -production=false && cd ../interface/src && yarn --production=false && cd ../../src/inject/core && yarn --production=false && yarn run install:all",

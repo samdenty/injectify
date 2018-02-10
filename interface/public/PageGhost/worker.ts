@@ -36,6 +36,10 @@ document.addEventListener('DOMContentLoaded', () => {
     static base: HTMLBaseElement
     static html: string
 
+    static config = {
+      smoothCursor: true
+    }
+
     static initialize() {
       let { container, cursor, iframe } = this
       this.containarize((doc: Document) => {
@@ -43,6 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
           type: 'PageGhost',
           id: decodeURIComponent(window.location.search.substr(1))
         }, '*')
+        this.setConfig()
         // this.fadeCursor(10, 0)
         // setTimeout(() => {
         //   this.click()
@@ -56,6 +61,9 @@ document.addEventListener('DOMContentLoaded', () => {
       })
       window.addEventListener('message', ({ data }: { data: MessageData }) => {
         this.update(data)
+      })
+      window.addEventListener('resize', () => {
+        this.scale()
       })
     }
 
@@ -91,9 +99,19 @@ document.addEventListener('DOMContentLoaded', () => {
       let cursor = <HTMLElement>document.getElementsByClassName('cursor')[0]
       cursor.style.transition = 'transform 0.1s ease-in-out'
       this.setCursor(x, y)
-      setTimeout(() => {
-        cursor.style.transition = ''
-      }, 100)
+      this.setConfig()
+    }
+
+    static setConfig(newConfig?: any) {
+      this.config = {
+        ...this.config,
+        ...newConfig
+      }
+      if (this.config.smoothCursor) {
+        this.cursor.style.transition = 'transform 0.1s ease-in-out'
+      } else {
+        this.cursor.style.transition = ''
+      }
     }
 
     static update(message: MessageData) {
@@ -103,7 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
         this.click(data.click)
       }
       if (data.scroll instanceof Array && typeof data.scroll[0] === 'number' && typeof data.scroll[1] === 'number') {
-        this.iframe.scrollTo(data.scroll[0], data.scroll[1])
+        this.iframe.contentWindow.scrollTo(data.scroll[0], data.scroll[1])
       }
       if (data.dom) {
         this.html = data.dom
@@ -128,6 +146,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     static resize(width: number, height: number) {
       this.master.setAttribute('style', `width: ${width}px; height: ${height}px`)
+      this.scale()
+    }
+
+    static scale() {
+      this.master.style.transform = ``
+      let heightScale = (window.innerHeight - 60) / this.master.offsetHeight
+      let widthScale = (window.innerWidth  - 60) / this.master.offsetWidth
+      let scale = heightScale < widthScale ? heightScale : widthScale
+      let pixelScale = ((1 - scale) + 1)
+      this.master.style.transform = `scale(${scale}) translate(-50%, -50%)`
+      this.master.style.borderRadius = `${pixelScale * 7}px`
+      this.master.style.boxShadow = `0 ${pixelScale * 14}px ${pixelScale * 28}px rgba(0,0,0,0.25), 0 ${pixelScale * 10}px ${pixelScale * 10}px rgba(0,0,0,0.22)`
     }
 
     static setInnerHTML(html: string) {
@@ -161,7 +191,7 @@ document.addEventListener('DOMContentLoaded', () => {
           if (this.html) {
             this.setInnerHTML(this.html)
           }
-        } catch(e) {}
+        } catch (e) { }
       }
       (<any>this.container.contentWindow.parent) = null;
 
