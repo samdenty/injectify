@@ -178,28 +178,42 @@ pre {
  */
 
 .inject-list-container {
-  display: flex;
+  position: relative !important;
+  display: flex !important;
   flex-direction: column;
-  min-width: 215px;
-  width: 256px;
+  min-width: 200px;
+  flex-shrink: 0;
+  width: 220px;
   z-index: 500;
   box-shadow: -10px 0 5px 10px #191919;
   background: #2A2A2A;
   .inject-list-header {
     color: #fefeff;
+    text-align: center;
     svg {
       vertical-align: middle;
       margin-right: 10px;
       fill: #aab6ea;
     }
   } // Online clients graph
-  >div:nth-child(2) {
+  > .react-contextmenu-wrapper {
     box-shadow: -12px 3px 8px #2A2A2A;
     z-index: 1;
     position: sticky;
+    text-align: center;
+    padding-bottom: 10px;
+    button.execute-all {
+      opacity: 0.3;
+      transition: background-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms, opacity 0.2s ease;
+      &:hover {
+        opacity: 1;
+      }
+    }
     svg {
       height: 120px;
       padding-left: 7px;
+      margin: 0 auto;
+      display: block;
       .domain {
         stroke: rgba(128, 128, 128, 0.26)
       }
@@ -531,14 +545,6 @@ pre {
     font-family: Consolas, Lucida Console, Courier New, monospace;
     word-wrap: break-word;
     flex-shrink: 0;
-    .resizer {
-      transition: background-color 0.3s ease;
-      z-index: 1000;
-      &:hover,
-      &:active {
-        background-color: rgba(0, 0, 0, 0.32)
-      }
-    }
     .react-contextmenu-wrapper {
       height: 100%;
       width: 100%;
@@ -690,11 +696,30 @@ pre {
   }
 }
 
+.resizer {
+  transition: background-color 0.3s ease;
+  z-index: 1000;
+  &:hover,
+  &:active {
+    background-color: rgba(0, 0, 0, 0.32)
+  }
+  &.light {
+    &:hover,
+    &:active {
+      background-color: rgba(0, 0, 0, 0.2)
+    }
+  }
+}
+
 @media (max-width: 650px) {
   .inject-list-container {
     transform: translateX(-400px);
     transition: transform 0.3s ease;
     pointer-events: none;
+    width: 256px !important;
+    .resizer {
+      display: none !important;
+    }
   }
   .inject-editor-container {
     margin-left: -256px;
@@ -765,7 +790,7 @@ pre {
   .react-contextmenu-item {
     outline: none;
     cursor: pointer;
-    padding: 4px 15px;
+    padding: 7px 15px;
     &:hover {
       background-color: #7f7f9c;
       color: #efefef;

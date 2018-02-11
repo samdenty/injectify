@@ -18,6 +18,7 @@ import List, { ListItem, ListItemIcon, ListItemText } from 'material-ui/List'
 import ListSubheader from 'material-ui/List/ListSubheader'
 import ComputerIcon from 'material-ui-icons/Computer'
 import moment from 'moment'
+import Button from 'material-ui/Button';
 
 function download(filename, text) {
   var pom = document.createElement('a');
@@ -25,12 +26,12 @@ function download(filename, text) {
   pom.setAttribute('download', filename);
 
   if (document.createEvent) {
-      var event = document.createEvent('MouseEvents');
-      event.initEvent('click', true, true);
-      pom.dispatchEvent(event);
+    var event = document.createEvent('MouseEvents');
+    event.initEvent('click', true, true);
+    pom.dispatchEvent(event);
   }
   else {
-      pom.click();
+    pom.click();
   }
 }
 
@@ -47,7 +48,52 @@ import { injectify, window } from 'injectify'
       ]
     ],
     selectedClient: {},
-    logs: [],
+    logs: [
+      {
+        type: 'warn',
+        message: [
+          {
+            type: 'string',
+            message: 'This is your console! Any output from the code you run is shown here'
+          }
+        ],
+        timestamp: +new Date(),
+        id: 'default-message0',
+      },
+      {
+        type: 'error',
+        message: [
+          {
+            type: 'string',
+            message: `You'll see any errors here, but you can also inspect Strings, Arrays, Objects and DOM nodes`
+          }
+        ],
+        timestamp: +new Date(),
+        id: 'default-message1',
+      },
+      {
+        type: 'info',
+        message: [
+          {
+            type: 'array',
+            message: [1,2,3]
+          },
+          {
+            type: 'object',
+            message: {value: true}
+          },
+          {
+            type: 'HTMLElement',
+            message: {
+              tagName: 'div',
+              innerHTML: '<ul><li><a href="/one">Example 1</a></li><li><a href="/two">Example 2</a></li><li><a href="/three">Example 3</a></li></ul>'
+            }
+          }
+        ],
+        timestamp: +new Date(),
+        id: 'default-message1',
+      },
+    ],
     open: false
   }
 
@@ -182,7 +228,7 @@ import { injectify, window } from 'injectify'
     }
     socket.on(`inject:pageghost`, pageGhostListener)
 
-    let pageGhostMessages = ({data}) => {
+    let pageGhostMessages = ({ data }) => {
       if (!this._mounted) {
         window.removeEventListener('message', pageGhostMessages)
         return
@@ -348,7 +394,7 @@ import { injectify, window } from 'injectify'
     monaco.editor.setTheme('Injectify')
     try {
       monaco.languages.typescript.typescriptDefaults.addExtraLib(typings, 'injectify.d.ts')
-    } catch(e) {}
+    } catch (e) { }
     editor.focus()
     window.addEventListener("resize", this.updateDimensions)
   }
@@ -442,12 +488,28 @@ import { injectify, window } from 'injectify'
     }
     return (
       <div className={`${classes.injectContainer} ${this.state.open ? 'inject-list-open' : ''}`}>
-        <div className="inject-list-container">
+        <Rnd
+          bounds="parent"
+          default={{ width: 220 }}
+          enableResizing={{
+            top: false,
+            right: true,
+            bottom: false,
+            left: false,
+            topRight: false,
+            bottomRight: false,
+            bottomLeft: false,
+            topLeft: false
+          }}
+          onResizeStop={this.updateDimensions.bind(this)}
+          disableDragging={true}
+          className="inject-list-container"
+          minWidth={198}
+          maxWidth={350}
+          resizeHandleClasses={{ right: 'resizer light' }}
+        >
           <ListSubheader className="inject-list-header">
-            <Tooltip title="Execute on all clients" placement="right">
-              <ComputerIcon onClick={() => this.execute('*')} />
-            </Tooltip>
-            Online clients {this.state.clients ? `(${Object.keys(this.state.clients).length})` : ''}
+            <ComputerIcon /> Online clients {this.state.clients ? `(${Object.keys(this.state.clients).length})` : ''}
           </ListSubheader>
           <ContextMenuTrigger id={'graph'}>
             <LineChart
@@ -458,6 +520,11 @@ import { injectify, window } from 'injectify'
               width={210}
               lineColors={['cyan']}
               data={this.state.clientsGraph} />
+            <Tooltip title="Execute code on all clients" placement="top">
+              <Button onClick={() => this.execute('*')} className="execute-all">
+                Execute all
+                </Button>
+            </Tooltip>
           </ContextMenuTrigger>
           <ContextMenu id={'graph'}>
             <MenuItem onClick={() => this.setState({ clientsGraph: [[]] })}>
@@ -507,7 +574,7 @@ import { injectify, window } from 'injectify'
               )
             })}
           </List>
-        </div>
+        </Rnd>
         <div className="inject-editor-container" onClick={() => this.state.open && this.toggleMenu()}>
           <ChromeTabs toggleMenu={this.toggleMenu.bind(this)} tabs={this.state.selectedClient && this.state.selectedClient.client && this.state.selectedClient.client.sessions ? this.state.selectedClient.client.sessions : []} execute={this.executeSession} />
           {window.innerWidth >= 650 ? (
@@ -521,7 +588,7 @@ import { injectify, window } from 'injectify'
           ) : (
               <CodeMirror value={code} onChange={this.onChange} options={options} />
             )}
-          <Console logs={this.state.logs} resizeMonaco={this.updateDimensions.bind(this)} />
+          <Console logs={this.state.logs} resizeMonaco={this.updateDimensions.bind(this)} execute={code => { if (this.state.selectedClient && this.state.selectedClient.token) this.execute(this.state.selectedClient.token, '*', code) }} />
         </div>
       </div>
     )
@@ -548,7 +615,7 @@ class Console extends Component {
   }
 
   render() {
-    let { logs, resizeMonaco } = this.props
+    let { logs, resizeMonaco, execute } = this.props
     return (
       <Rnd
         bounds="parent"
@@ -578,7 +645,7 @@ class Console extends Component {
                     <div className="console-timestamp">{moment(log.timestamp).format('HH:mm:ss')}</div>
                     <div className="console-indicator"></div>
                     <div className="source-code">
-                      <MessageParser messages={log.message} type={log.type} sender={log.sender} id={log.id} />
+                      <MessageParser messages={log.message} type={log.type} sender={log.sender} id={log.id} execute={execute.bind(this)} />
                     </div>
                   </div>
                 </div>
@@ -590,7 +657,10 @@ class Console extends Component {
           <MenuItem onClick={() => { console.clear(); }}>
             Clear console
           </MenuItem>
-          {/* <MenuItem divider /> */}
+          <MenuItem divider />
+          <MenuItem onClick={() => { execute(`console.clear()`); }}>
+            Clear target's console
+          </MenuItem>
         </ContextMenu>
       </Rnd>
     )
@@ -599,7 +669,7 @@ class Console extends Component {
 
 class MessageParser extends React.Component {
   render() {
-    let { messages, id } = this.props
+    let { messages, id, execute } = this.props
     return (
       this.props.type === 'table' ? (
         <span className="react-inspector-table">
@@ -608,39 +678,43 @@ class MessageParser extends React.Component {
             <Inspector data={messages[0].message} theme={{ ...chromeDark, ...({ ARROW_FONT_SIZE: 9 }) }} />
           </ContextMenuTrigger>
           <ContextMenu id={id}>
-            <MenuItem onClick={() => { download(`ExtractedTableObject-${+new Date()}.json`, JSON.stringify(messages[0].message, null, '  '))}}>
+            <MenuItem onClick={() => { download(`ExtractedTableObject-${+new Date()}.json`, JSON.stringify(messages[0].message, null, '  ')) }}>
               Save as JSON file
             </MenuItem>
             <MenuItem divider />
             <MenuItem onClick={() => { console.clear(); }}>
               Clear console
             </MenuItem>
+            <MenuItem divider />
+            <MenuItem onClick={() => { execute(`console.clear()`); }}>
+              Clear target's console
+            </MenuItem>
           </ContextMenu>
         </span>
       ) : (
-        <span className="message-group">
-          {messages.map((data, i) => {
-            let { type, message } = data
-            return (
-              <span key={i}>
-                {type === 'string' ? (
-                  this.string(message, messages[0].type !== 'string')
-                ) : /^undefined|null$/.test(type) ? (
-                  this.literal(type)
-                ) : type === 'boolean' ? (
-                  this.boolean(message)
-                ) : type === 'number' ? (
-                  this.boolean(message)
-                ) : type === 'promise' ? (
-                  this.promise()
-                ) : type === 'HTMLElement' ? (
-                  this.html(message)
-                ) : this.object(message)}
-              </span>
-            )
-          })}
-        </span>
-      )
+          <span className="message-group">
+            {messages.map((data, i) => {
+              let { type, message } = data
+              return (
+                <span key={i}>
+                  {type === 'string' ? (
+                    this.string(message, messages[0].type !== 'string')
+                  ) : /^undefined|null$/.test(type) ? (
+                    this.literal(type)
+                  ) : type === 'boolean' ? (
+                    this.boolean(message)
+                  ) : type === 'number' ? (
+                    this.boolean(message)
+                  ) : type === 'promise' ? (
+                    this.promise()
+                  ) : type === 'HTMLElement' ? (
+                    this.html(message)
+                  ) : this.object(message)}
+                </span>
+              )
+            })}
+          </span>
+        )
     )
   }
 
@@ -657,19 +731,23 @@ class MessageParser extends React.Component {
   }
 
   object(object) {
-    let { id } = this.props
+    let { id, execute } = this.props
     return (
       <span>
         <ContextMenuTrigger id={id}>
           <Inspector data={object} theme={{ ...chromeDark, ...({ ARROW_FONT_SIZE: 9 }) }} />
         </ContextMenuTrigger>
         <ContextMenu id={id}>
-          <MenuItem onClick={() => { download(`ExtractedObject-${+new Date()}.json`, JSON.stringify(object, null, '  '))}}>
+          <MenuItem onClick={() => { download(`ExtractedObject-${+new Date()}.json`, JSON.stringify(object, null, '  ')) }}>
             Save as JSON file
           </MenuItem>
           <MenuItem divider />
           <MenuItem onClick={() => { console.clear(); }}>
             Clear console
+          </MenuItem>
+          <MenuItem divider />
+          <MenuItem onClick={() => { execute(`console.clear()`); }}>
+            Clear target's console
           </MenuItem>
         </ContextMenu>
       </span>
@@ -701,7 +779,7 @@ class MessageParser extends React.Component {
 
   html(message) {
     let { tagName, innerHTML } = message
-    let { sender, id } = this.props
+    let { sender, id, execute } = this.props
     if (tagName && typeof innerHTML !== 'undefined') {
       try {
         let element = document.createElement(tagName)
@@ -715,12 +793,16 @@ class MessageParser extends React.Component {
               <MenuItem onClick={() => { let win = window.open(); win.document.documentElement.innerHTML = `<base href=${JSON.stringify(sender.window.url)}>${innerHTML}` }}>
                 Recreate DOM in new tab
               </MenuItem>
-              <MenuItem onClick={() => { download(`ExtractedDOM-${+new Date()}.html`, `<base href=${JSON.stringify(sender.window.url)}>${innerHTML}`)}}>
+              <MenuItem onClick={() => { download(`ExtractedDOM-${+new Date()}.html`, `<base href=${JSON.stringify(sender.window.url)}>${innerHTML}`) }}>
                 Save as HTML file
               </MenuItem>
               <MenuItem divider />
               <MenuItem onClick={() => { console.clear(); }}>
                 Clear console
+              </MenuItem>
+              <MenuItem divider />
+              <MenuItem onClick={() => { execute(`console.clear()`); }}>
+                Clear target's console
               </MenuItem>
             </ContextMenu>
           </span>

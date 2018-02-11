@@ -147,7 +147,7 @@ const styles = theme => ({
     paddingLeft: 35,
   },
   appBarLogo: {
-    position: 'fixed',
+    position: 'absolute',
     marginLeft: -35,
     height: 24,
   },

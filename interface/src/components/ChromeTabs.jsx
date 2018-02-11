@@ -201,17 +201,15 @@ class ChromeTab extends Component {
             Reload tab
           </MenuItem>
           <MenuItem divider />
-          <MenuItem onClick={() => execute(order, `injectify.DOMExtractor`)}>
-            Extract DOM
-          </MenuItem>
           <MenuItem onClick={() => this.pageGhost(order, id.toString())}>
             Page Ghost
           </MenuItem>
+          <MenuItem onClick={() => execute(order, `injectify.DOMExtractor`)}>
+            Extract DOM
+          </MenuItem>
+          <MenuItem divider />
           <MenuItem onClick={() => execute(order, `injectify.console()`)}>
             Hook / unhook console API
-          </MenuItem>
-          <MenuItem onClick={() => execute(order, `injectify.module('crash')`)}>
-            Crash browser
           </MenuItem>
         </ContextMenu>
       </div>
