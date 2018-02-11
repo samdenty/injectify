@@ -1,6 +1,10 @@
 body {
+  height: 100vh;
+  widows: 100vw;
   margin: 0;
-  background-color: #1E1E1E;
+  background: #111;
+  background: radial-gradient(#111, #000);
+  overflow: hidden;
 }
 
 .window-container {
@@ -11,6 +15,12 @@ body {
   left: 50%;
   transform-origin: 0 0;
   background-color: #ffffff;
+  opacity: 0;
+  transition: opacity 0.9s ease;
+}
+
+.loaded .window-container {
+  opacity: 1;
 }
 
 .window,
@@ -76,5 +86,50 @@ body {
   100% {
     transform: scale(1, 1);
     opacity: 1;
+  }
+}
+
+.loader {
+  top: 50%;
+  left: 50%;
+  transform-origin: 0 0;
+  transform: translate(-50%, -50%);
+  position: absolute;
+  color: #fff;
+  font-family: Consolas, Menlo, Monaco, monospace;
+  font-weight: bold;
+  font-size: 30vh;
+  opacity: 0.8;
+  transition: opacity 0.2s ease;
+}
+
+.loaded .loader {
+  opacity: 0
+}
+
+.loader span {
+  display: inline-block;
+  -webkit-animation: pulse 0.4s alternate infinite ease-in-out;
+  animation: pulse 0.4s alternate infinite ease-in-out;
+}
+
+.loader span:nth-child(odd) {
+  -webkit-animation-delay: 0.4s;
+  animation-delay: 0.4s;
+}
+
+@-webkit-keyframes pulse {
+  to {
+    -webkit-transform: scale(0.8);
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+}
+
+@keyframes pulse {
+  to {
+    -webkit-transform: scale(0.8);
+    transform: scale(0.8);
+    opacity: 0.5;
   }
 }

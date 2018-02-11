@@ -126,6 +126,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 console.debug(message.data);
                 var data = message.data, id = message.id, sender = message.sender, timestamp = message.timestamp;
                 this.linkify(sender.window.url);
+                if (!document.body.classList.contains('loaded')) {
+                    document.body.classList.add('loaded');
+                    setTimeout(function () {
+                        document.body.removeChild(document.getElementsByClassName('loader')[0]);
+                    }, 1000);
+                }
                 if (data.click) {
                     this.click(data.click);
                 }
@@ -165,6 +171,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 var widthScale = (window.innerWidth - 60) / this.master.offsetWidth;
                 var scale = heightScale < widthScale ? heightScale : widthScale;
                 var pixelScale = ((1 - scale) + 1);
+                if (pixelScale < 0.5)
+                    pixelScale = 0.5;
                 this.master.style.transform = "scale(" + scale + ") translate(-50%, -50%)";
                 this.master.style.borderRadius = pixelScale * 7 + "px";
                 this.master.style.boxShadow = "0 " + pixelScale * 14 + "px " + pixelScale * 28 + "px rgba(0,0,0,0.25), 0 " + pixelScale * 10 + "px " + pixelScale * 10 + "px rgba(0,0,0,0.22)";

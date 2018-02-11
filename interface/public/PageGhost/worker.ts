@@ -167,6 +167,12 @@ document.addEventListener('DOMContentLoaded', () => {
       console.debug(message.data)
       let { data, id, sender, timestamp } = message
       this.linkify(sender.window.url)
+      if (!document.body.classList.contains('loaded')) {
+        document.body.classList.add('loaded')
+        setTimeout(() => {
+          document.body.removeChild(document.getElementsByClassName('loader')[0])
+        }, 1000)
+      }
       if (data.click) {
         this.click(data.click)
       }
@@ -209,6 +215,7 @@ document.addEventListener('DOMContentLoaded', () => {
       let widthScale = (window.innerWidth  - 60) / this.master.offsetWidth
       let scale = heightScale < widthScale ? heightScale : widthScale
       let pixelScale = ((1 - scale) + 1)
+      if (pixelScale < 0.5) pixelScale = 0.5
       this.master.style.transform = `scale(${scale}) translate(-50%, -50%)`
       this.master.style.borderRadius = `${pixelScale * 7}px`
       this.master.style.boxShadow = `0 ${pixelScale * 14}px ${pixelScale * 28}px rgba(0,0,0,0.25), 0 ${pixelScale * 10}px ${pixelScale * 10}px rgba(0,0,0,0.22)`
