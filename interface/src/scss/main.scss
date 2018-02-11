@@ -633,8 +633,12 @@ pre {
                 }
               }
               .undefined,
-              .null {
+              .null,
+              .broadcast {
                 color: rgb(127, 127, 127);
+              }
+              .broadcast {
+                font-style: italic
               }
               .boolean,
               .number {

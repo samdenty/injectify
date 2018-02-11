@@ -283,7 +283,19 @@ import { injectify, window } from 'injectify'
     let Console = console
     if (console.Console) Console = console.Console
     const clear = () => {
-      this.setState({ logs: [] })
+      this.setState({
+        logs: [
+          {
+            type: 'info',
+            timestamp: +new Date(),
+            id: (+new Date()).toString(),
+            message: [{
+              type: 'broadcast',
+              message: 'Console was cleared'
+            }]
+          }
+        ]
+      })
     }
     console = {
       ...Console,
@@ -703,6 +715,8 @@ class MessageParser extends React.Component {
                     this.literal(type)
                   ) : type === 'boolean' ? (
                     this.boolean(message)
+                  ) : type === 'broadcast' ? (
+                    this.literal(message, 'broadcast')
                   ) : type === 'number' ? (
                     this.boolean(message)
                   ) : type === 'promise' ? (
@@ -762,8 +776,8 @@ class MessageParser extends React.Component {
     return <span className="boolean">{boolean.toString()}</span>
   }
 
-  literal(type) {
-    return <span className={type}>{type}</span>
+  literal(type, className) {
+    return <span className={className || type}>{type}</span>
   }
 
   promise() {

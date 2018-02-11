@@ -393,6 +393,16 @@ window['injectify'] = class Injectify {
           unhook() {
             console = Console
           },
+          clear() {
+            Console.clear()
+            injectify.send('l', {
+              type: 'info',
+              message: [{
+                type: 'broadcast',
+                message: `Client's console was cleared`
+              }]
+            })
+          },
           hooked: true
         }
       })(console)
