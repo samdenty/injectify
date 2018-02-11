@@ -517,8 +517,9 @@ injectify.listener((data, topic) => {
 
 /**
  * Console.log overrider
+ * Disabled as it can lock up the server - eg. hacked module
  */
-injectify.console(true);
+// injectify.console(true);
 
 /**
  * Session info logger
