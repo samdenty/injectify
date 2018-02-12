@@ -1,4 +1,4 @@
-import { Injectify } from '../../definitions/core'
+import { Injectify } from '../../../definitions/core'
 declare const injectify: typeof Injectify
 
 export default class {

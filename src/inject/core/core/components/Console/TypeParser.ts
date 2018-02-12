@@ -1,4 +1,4 @@
-import instanceOf from '../lib/InstanceOf'
+import instanceOf from '../../lib/InstanceOf'
 
 export default class {
   constructor(messages: any[]) {

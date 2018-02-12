@@ -1,5 +1,5 @@
 export default class {
-  constructor(object, replacer) {
+  constructor(object: any, replacer?: Function) {
     "use strict"
     // @ts-ignore
     var objects = new WeakMap() // object to path mappings

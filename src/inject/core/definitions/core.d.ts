@@ -39,22 +39,39 @@ export namespace Injectify {
 	 */
   export var info: info
 
-  interface sessionInfo {
-    window: {
-      url: string
-      title: string
-      active: boolean
-    }
-  }
   /**
-	 * Returns information about the current session, browser etc.
+	 * Information regarding the current session
 	 */
-  export var sessionInfo: sessionInfo
+  export namespace session {
+    interface Info {
+      window: {
+        url: string
+        title: string
+        active: boolean
+      }
+    }
+    /**
+     * Returns information about the current session, browser etc.
+     */
+    export var info: Info
+    /**
+     * Sends the session info to the server
+     */
+    export function send()
+  }
 
   /**
-	 * Sends the session info to the server
-	 */
-  export function sendSession()
+   * Returns the current state of the devtools
+   */
+  export var devtools: {
+    open: boolean,
+    orientation: null | 'horizontal' | 'vertical'
+  }
+
+  /**
+   * Starts the devtools listener
+   */
+  export function DevtoolsListener(enable?: boolean): void
 
   /**
 	 * Returns whether Injectify was loaded in debugging mode or not.
@@ -87,7 +104,9 @@ export namespace Injectify {
       timed: {
         active: boolean
         prevState: string | JSON
-      }
+      },
+      devtools: any
+      websocket: any
     },
     windowInjection: boolean,
     commandHistory: string[]
@@ -130,11 +149,6 @@ export namespace Injectify {
    * @param auth Inject websocket token to use
 	 */
   export function auth(token?: string)
-
-  /**
-   * Returns whether the Injectify core is the available or not
-   */
-  export var present: true
 
   /**
 	 * Logs messages to the InjectJS console
