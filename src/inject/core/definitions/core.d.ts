@@ -49,6 +49,7 @@ export namespace Injectify {
         title: string
         active: boolean
       }
+      devtools
     }
     /**
      * Returns information about the current session, browser etc.

@@ -159,6 +159,10 @@ export default (req: any, authReq: any, session: SocketSession.session) => {
           'favicon': `https://plus.google.com/_/favicon?domain_url=${encodeURIComponent(authReq.headers.referer)}`,
           'active': false
         },
+        'devtools': {
+          'open': false,
+          'orientation': null
+        },
         'socket': {
           'headers': req.headers,
           'id': req.id,

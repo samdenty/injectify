@@ -11,7 +11,8 @@ export default function(enable?: boolean) {
   } else if (injectify.global.listeners.devtools) {
     return
   }
-  let emitEvent = (state: boolean, orientation: null | string) => {
+
+  let emit = (state: boolean, orientation: null | string) => {
     window.dispatchEvent(new CustomEvent('devtoolschange', {
       detail: {
         open: state,
@@ -28,14 +29,14 @@ export default function(enable?: boolean) {
     if (!(heightThreshold && widthThreshold) &&
       (((<any>window).Firebug && (<any>window).Firebug.chrome && (<any>window).Firebug.chrome.isInitialized) || widthThreshold || heightThreshold)) {
       if (!injectify.devtools.open || injectify.devtools.orientation !== orientation) {
-        emitEvent(true, orientation)
+        emit(true, orientation)
       }
 
       injectify.devtools.open = true
       injectify.devtools.orientation = orientation
     } else {
       if (injectify.devtools.open) {
-        emitEvent(false, null)
+        emit(false, null)
       }
 
       injectify.devtools.open = false

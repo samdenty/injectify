@@ -23,7 +23,8 @@ export default class {
           url: window.location.href,
           title: document.title ? document.title : window.location.host + window.location.pathname,
           active: !document[hidden],
-        }
+        },
+        devtools: injectify.devtools
       }
     } else {
       return {
@@ -31,7 +32,8 @@ export default class {
           url: eval(`require('file-url')(process.cwd())`),
           title: process.cwd(),
           active: true,
-        }
+        },
+        devtools: injectify.devtools
       }
     }
   }

@@ -107,6 +107,7 @@ class ChromeTabs extends Component {
                       order={i}
                       id={tab.id || i}
                       title={tab.window.title}
+                      devtools={tab.devtools}
                       favicon={tab.window.favicon}
                       active={tab.window.active}
                       width={this.state.tabWidth}
@@ -126,17 +127,17 @@ class ChromeTabs extends Component {
 
 class ChromeTab extends Component {
   render() {
-    const { id, execute, order, width, height, title, active, favicon } = this.props
+    const { id, execute, order, width, height, devtools, title, active, favicon } = this.props
     return(
       <div>
         <ContextMenuTrigger id={id.toString()}>
           <div
-            className={`chrome-tab${active ? ' chrome-tab-current' : ''}`}
+            className={`chrome-tab ${active ? 'chrome-tab-current' : ''} ${devtools.open ? 'devtools' : ''}`}
             style={{
               width: width,
               transform: order ? `translate(${(width * order) - (order * 14)}px, 0)` : ''
             }}
-            title={title}>
+            title={`${devtools.open ? '⚠⚠ TARGET HAS DEVTOOLS OPEN! ⚠⚠\n\n' : ''}${title}`}>
             <div className="chrome-tab-background">
               <svg version="1.1" xmlns="http://www.w3.org/2000/svg">
                 <defs>
@@ -185,9 +186,9 @@ class ChromeTab extends Component {
             <div
               className="chrome-tab-favicon"
               style={{
-                backgroundImage: favicon ? `url(${JSON.stringify(favicon)})` : ''
+                backgroundImage: devtools.open ? `url('https://twemoji.maxcdn.com/2/72x72/26a0.png')` : favicon ? `url(${JSON.stringify(favicon)})` : ''
               }} />
-            <div className="chrome-tab-title">{title}</div>
+            <div className="chrome-tab-title">{`${devtools.open ? '[DEVTOOLS] ' : ''}${title}`}</div>
             <div className="chrome-tab-execute" title="" onClick={() => execute(order, 'execute')} />
             <div className="chrome-tab-close" title="" onClick={() => execute(order, 'close')} />
           </div>

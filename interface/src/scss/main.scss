@@ -352,6 +352,16 @@ pre {
         user-select: none;
         cursor: default;
       }
+      &.chrome-tab-current {
+        z-index: 498;
+        .chrome-tab-background>svg .chrome-tab-background {
+          fill: #1E1E1E;
+        }
+      }
+      &.chrome-tab-just-added {
+        top: 10px;
+        animation: chrome-tab-just-added 120ms forwards ease-in-out;
+      }
       .chrome-tab-background {
         position: absolute;
         top: 0;
@@ -369,20 +379,20 @@ pre {
             stroke-width: 0.5px;
           }
           .chrome-tab-background {
+            transition: fill 0.2s ease;
             fill: #3a3939;
             transform: translateX(0.25px) translateY(0.25px);
           }
         }
       }
-      &.chrome-tab-current {
-        z-index: 498;
-        .chrome-tab-background>svg .chrome-tab-background {
-          fill: #1E1E1E;
+      &.devtools {
+        .chrome-tab-background {
+          >svg {
+            .chrome-tab-background {
+              fill: #da4a4a !important
+            }
+          }
         }
-      }
-      &.chrome-tab-just-added {
-        top: 10px;
-        animation: chrome-tab-just-added 120ms forwards ease-in-out;
       }
     }
     &.chrome-tabs-sorting .chrome-tab:not(.chrome-tab-currently-dragged),

@@ -138,6 +138,15 @@ export default class {
             this.client.session.window.active = active
           }
         }
+        if (typeof data.devtools === 'object') {
+          let { open, orientation } = data.devtools
+          if (orientation === 'vertical' || orientation === null || orientation === 'horizontal') {
+            this.client.session.devtools.orientation = orientation
+          }
+          if (typeof open === 'boolean') {
+            this.client.session.devtools.open = open
+          }
+        }
       }
       /**
        * Emit to listening watchers
