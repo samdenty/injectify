@@ -76,7 +76,7 @@ export default class {
     p: data => {
       if (data && data instanceof Object) {
         if (global.inject.clients[this.project.id][this.token] && global.inject.clients[this.project.id][this.token].watchers) {
-          if (data.dom) {
+          if (data.dom && global.config.compression) {
             try {
               let minfied = minify(data.dom, {
                 removeAttributeQuotes: true,

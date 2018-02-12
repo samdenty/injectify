@@ -63,6 +63,7 @@
     "mongodb": "^3.0.1",
     "node-yaml": "^3.1.1",
     "octonode": "^0.9.1",
+    "pako": "^1.0.6",
     "ps-node": "^0.1.6",
     "request": "^2.83.0",
     "reverse-string": "0.0.6",

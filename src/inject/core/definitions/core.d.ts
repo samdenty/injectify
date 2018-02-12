@@ -31,6 +31,7 @@ export namespace Injectify {
       zip: number
     }
     headers: any
+    compression: boolean
     'user-agent': any
   }
 

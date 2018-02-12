@@ -11,6 +11,7 @@ const atob = require('atob')
 const getIP = require('../lib/getIP.js')
 const uuidv4 = require('uuid/v4')
 const WebSocket = require('ws')
+const pako = require('pako')
 
 export default class {
   db: any
@@ -117,6 +118,15 @@ class Session {
       t: topic,
       d: data
     })
+    if (global.config.compression && !this.session.debug && !(/^core|auth$/.test(topic))) {
+      json = pako.deflate(JSON.stringify({
+        t: topic,
+        d: data
+      }), {
+        to: 'string'
+      })
+      json = '#' + json
+    }
     try {
       this.socket.send(json)
     } catch(error) {
@@ -142,11 +152,52 @@ class Session {
       let topic: string
       let data: any
       try {
-        raw = JSON.parse(raw)
+        /**
+         * Compression
+         */
+        if (raw.charAt(0) === '#') {
+          if (global.config.compression) {
+            try {
+              raw = pako.inflate(raw.substr(1), { to: 'string' })
+            } catch(e) {
+              if (global.config.debug) {
+                console.error(
+                  chalk.redBright('[inject/compression] ') +
+                  chalk.yellowBright(`Failed to decompress a Websocket message from client ${this.client.client.ip.query}`)
+                )
+              }
+              return
+            }
+          } else {
+            if (global.config.debug) {
+              console.error(
+                chalk.redBright('[inject/compression] ') +
+                chalk.yellowBright(`Dropped a Websocket message from client ${this.client.client.ip.query}, because server set to no compression`)
+              )
+            }
+            return
+          }
+        }
+        try {
+          raw = JSON.parse(raw)
+        } catch(e) {
+          if (global.config.debug)
+            console.error(
+              chalk.redBright('[inject/client] ') +
+              chalk.yellowBright(`Failed to parse JSON string from client ${this.client.client.ip.query}`)
+            )
+          return
+        }
         if (typeof raw.t !== 'string') return
         topic = raw.t
         data = raw.d
       } catch (e) {
+        if (global.config.debug)
+          console.error(
+            chalk.redBright('[inject/client] ') +
+            chalk.yellowBright(`Server threw an error whilst handling client ${this.client.client.ip.query}`),
+            e
+          )
         return
       }
       if (tokens) {
@@ -246,6 +297,7 @@ class Session {
       .replace('client.headers', JSON.stringify(socketHeaders))
       .replace('client.platform', JSON.stringify(client.platform))
       .replace('client.os', JSON.stringify(client.os))
+      .replace('client.compression', this.session.debug ? false : !!global.config.compression)
       this.send('core', core)
 
       /**

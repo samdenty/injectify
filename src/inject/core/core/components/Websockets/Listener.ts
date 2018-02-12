@@ -1,11 +1,16 @@
 import { Injectify } from '../../../definitions/core'
 declare const injectify: typeof Injectify
 declare const ws: WebSocket
+const pako = require('pako')
 
 export default function(callback: Function) {
   ws.onmessage = message => {
     try {
-      let data = JSON.parse(message.data)
+      let raw = message.data
+      if (raw.charAt(0) === '#') {
+        raw = pako.inflate(message.data.substr(1), { to: 'string' })
+      }
+      let data = JSON.parse(raw)
       if (data.t && injectify.global.listeners.websocket[data.t]) {
         /**
          * Pre-process some topic's data

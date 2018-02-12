@@ -47,6 +47,11 @@ module.exports = {
     },
 
     /**
+     * Enable compression - can be disabled to reduce cpu usage
+     */
+    compression: true,
+
+    /**
      * Rate limiting
      */
     rateLimiting: {

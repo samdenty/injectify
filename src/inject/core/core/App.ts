@@ -56,7 +56,7 @@ window['injectify'] = class Injectify {
       /**
        * Create, append & remove a script tag
        */
-      var script = document.createElement('script')
+      let script = document.createElement('script')
       script.innerHTML = func
       element.appendChild(script)
       element.removeChild(script)

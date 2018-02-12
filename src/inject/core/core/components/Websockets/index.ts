@@ -4,6 +4,7 @@ import Listener from './Listener'
 import Topics from './Topics'
 declare const injectify: typeof Injectify
 declare const ws: WebSocket
+const pako = require('pako')
 
 export default class {
   static send(topic: string, data?: any) {
@@ -12,10 +13,16 @@ export default class {
      */
     if (ws.readyState !== ws.OPEN) return
     try {
-      ws.send(JSON.stringify(new Decycle({
-        t: topic,
-        d: data,
-      })))
+      let json = JSON.stringify(
+        new Decycle({
+          t: topic,
+          d: data,
+        })
+      )
+      if (injectify.info.compression) {
+        json = '#' + pako.deflate(json, {to: 'string'})
+      }
+      ws.send(json)
     } catch (e) {
       if (injectify.debug) console.error(e)
       injectify.error(e.stack)

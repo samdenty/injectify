@@ -15,8 +15,7 @@ export function Info(): Injectify.info {
    * Parse the server URL from the websocket url
    */
   let url = ws.url.split('/')
-  let protocol = 'https://'
-  if (url[0] === 'ws:') protocol = 'http://'
+  let protocol = `http${url[0] === 'wss:' ? 's' : ''}://`
   let server = protocol + url[2]
 
   return {
@@ -32,6 +31,7 @@ export function Info(): Injectify.info {
     'os': client.os,
     'ip': client.ip,
     'headers': client.headers,
-    'user-agent': client.agent
+    'user-agent': client.agent,
+    'compression': client.compression
   }
 }
