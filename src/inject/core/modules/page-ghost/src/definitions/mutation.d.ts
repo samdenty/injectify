@@ -10,6 +10,7 @@ export namespace Mutation {
     type: 'childList'
     data: Array<{
       type: 'addition' | 'removal'
+      replace?: boolean
       html: string
     }> | Array<{
       id: string

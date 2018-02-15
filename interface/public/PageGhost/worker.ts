@@ -226,8 +226,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (data.mutation.data instanceof Array) {
               (<any>data.mutation.data).forEach(change => {
                 if (change.type === 'addition') {
-                  let { type, html } = change
-                  element.appendChild(htmlToElement(html))
+                  let { type, html, replace } = change
+                  if (replace) {
+                    element.innerHTML = html
+                  } else {
+                    element.appendChild(htmlToElement(html))
+                  }
                 } else if (change.type === 'removal') {
                   let { type, id } = change
                   let target = element.querySelector(`[_-_=${JSON.stringify(id)}]`)

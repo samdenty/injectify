@@ -35,10 +35,18 @@ export default class {
           let nodes = mutationEvent.addedNodes
           for (let i = 0; i < nodes.length; i++) {
             let node = <HTMLElement>nodes[i]
-            mutation.data.push({
-              type: 'addition',
-              html: node.outerHTML
-            })
+            if (node instanceof Text) {
+              mutation.data.push({
+                type: 'addition',
+                replace: true,
+                html: this.escapeHtml(node.data)
+              })
+            } else {
+              mutation.data.push({
+                type: 'addition',
+                html: node.outerHTML
+              })
+            }
           }
         }
         if (mutationEvent.removedNodes.length) {
@@ -128,6 +136,15 @@ export default class {
       node.setAttribute('_-_', id)
       return id
     }
+  }
+
+  escapeHtml(unsafe: string): string {
+    return unsafe
+         .replace(/&/g, "&amp;")
+         .replace(/</g, "&lt;")
+         .replace(/>/g, "&gt;")
+         .replace(/"/g, "&quot;")
+         .replace(/'/g, "&#039;")
   }
 
   disconnect() {

@@ -180,8 +180,13 @@ document.addEventListener('DOMContentLoaded', function () {
                             if (data.mutation.data instanceof Array) {
                                 data.mutation.data.forEach(function (change) {
                                     if (change.type === 'addition') {
-                                        var type = change.type, html = change.html;
-                                        element_1.appendChild(htmlToElement(html));
+                                        var type = change.type, html = change.html, replace = change.replace;
+                                        if (replace) {
+                                            element_1.innerHTML = html;
+                                        }
+                                        else {
+                                            element_1.appendChild(htmlToElement(html));
+                                        }
                                     }
                                     else if (change.type === 'removal') {
                                         var type = change.type, id_1 = change.id;
