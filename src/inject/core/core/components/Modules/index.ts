@@ -44,7 +44,7 @@ export default class {
         `https://cdnjs.cloudflare.com/ajax/libs/react/16.2.0/umd/react.${type}`,
         `https://cdnjs.cloudflare.com/ajax/libs/react-dom/16.2.0/umd/react-dom.${type}`
       ]).then(() => {
-        this.loadModule(name, params).then(resolve).catch(reject)
+        injectify.module(<any>name, params).then(resolve).catch(reject)
       }).catch(error => {
         injectify.error(error)
         reject(error)

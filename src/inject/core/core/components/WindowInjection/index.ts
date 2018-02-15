@@ -49,7 +49,11 @@ export default class {
   }
 
   hookParent() {
-    if (window.opener) this.hook(window.opener, 'parent')
+    try {
+      if (window.opener) this.hook(window.opener, 'parent')
+    } catch(e) {
+
+    }
   }
 
   hookChildren() {
