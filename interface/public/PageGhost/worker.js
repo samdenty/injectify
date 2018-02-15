@@ -1,3 +1,4 @@
+"use strict";
 var __assign = (this && this.__assign) || Object.assign || function(t) {
     for (var s, i = 1, n = arguments.length; i < n; i++) {
         s = arguments[i];
@@ -6,6 +7,7 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
     }
     return t;
 };
+Object.defineProperty(exports, "__esModule", { value: true });
 function Cursors(input) {
     var cursor = 'default';
     switch (input) {
@@ -50,6 +52,20 @@ function Cursors(input) {
             break;
     }
     return "./cursors/unix/" + cursor + ".apng";
+}
+function htmlToElement(html) {
+    var template = document.createElement('template');
+    //html = html.trim() // Never return a text node of whitespace as the result
+    template.innerHTML = html;
+    return template.content.firstChild;
+}
+function escapeHtml(unsafe) {
+    return unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
 }
 document.addEventListener('DOMContentLoaded', function () {
     window['PageGhost'] = (_a = /** @class */ (function () {
@@ -135,12 +151,56 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (data.click) {
                     this.click(data.click);
                 }
+                if (data.activeElement) {
+                    var element = this.getElementById(data.activeElement);
+                    console.log(element);
+                    if (element) {
+                        element.focus();
+                    }
+                }
                 if (data.scroll instanceof Array && typeof data.scroll[0] === 'number' && typeof data.scroll[1] === 'number') {
                     this.iframe.contentWindow.scrollTo(data.scroll[0], data.scroll[1]);
                 }
                 if (data.dom) {
                     this.html = data.dom;
                     this.setInnerHTML(data.dom);
+                }
+                if (data.mutation) {
+                    if (typeof data.mutation.id === 'string' && typeof data.mutation.type === 'string') {
+                        var element_1 = this.getElementById(data.mutation.id);
+                        if (element_1 === null) {
+                            console.warn("Failed to locate element with ID " + id + " in the DOM!", data.mutation);
+                            return;
+                        }
+                        if (data.mutation.type === 'childList') {
+                            if (data.mutation.data instanceof Array) {
+                                data.mutation.data.forEach(function (change) {
+                                    if (change.type === 'addition') {
+                                        var type = change.type, html = change.html;
+                                        element_1.appendChild(htmlToElement(html));
+                                    }
+                                    else if (change.type === 'removal') {
+                                        var type = change.type, id_1 = change.id;
+                                        var target = element_1.querySelector("[_-_=" + JSON.stringify(id_1) + "]");
+                                        if (element_1.contains(target)) {
+                                            element_1.removeChild(target);
+                                        }
+                                    }
+                                });
+                            }
+                        }
+                        else if (data.mutation.type === 'attributes') {
+                            if (data.mutation.data.value === null) {
+                                element_1.removeAttribute(data.mutation.data.name);
+                            }
+                            else {
+                                element_1.setAttribute(data.mutation.data.name, data.mutation.data.value);
+                            }
+                        }
+                        else if (data.mutation.type === 'characterData') {
+                            element_1.innerHTML = escapeHtml(data.mutation.data);
+                        }
+                    }
                 }
                 if (typeof data.cursorStyle === 'string') {
                     console.log(data.cursorStyle);
@@ -183,6 +243,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     this.iframe.contentDocument.documentElement &&
                     this.iframe.contentDocument.documentElement.innerHTML) {
                     this.iframe.contentDocument.documentElement.innerHTML = html;
+                    this.iframe.contentDocument.documentElement.setAttribute('_-_', '1');
                 }
             };
             PageGhost.containarize = function (callback) {
@@ -211,6 +272,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 this.container.contentDocument.body.setAttribute('style', 'margin: 0');
                 this.container;
                 callback(iframe.contentDocument);
+            };
+            PageGhost.getElementById = function (id) {
+                if (typeof id === 'string') {
+                    return this.iframe.contentDocument.querySelector("[_-_=" + JSON.stringify(id) + "]");
+                }
+                else {
+                    return null;
+                }
             };
             return PageGhost;
         }()),

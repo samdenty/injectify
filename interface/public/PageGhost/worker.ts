@@ -1,3 +1,5 @@
+import { Mutation } from '../../../src/inject/core/modules/page-ghost/src/definitions/mutation'
+
 function Cursors(input?: string) {
   let cursor = 'default'
   switch (input) {
@@ -30,7 +32,7 @@ function Cursors(input?: string) {
     case 'help':
     case 'n-resize':
     case 'no-drop':
-    case  'not-allowed':
+    case 'not-allowed':
     case 'pointer':
     case 'progress':
     case 'wait':
@@ -42,6 +44,22 @@ function Cursors(input?: string) {
       break
   }
   return `./cursors/unix/${cursor}.apng`
+}
+
+function htmlToElement(html) {
+  let template = document.createElement('template')
+  //html = html.trim() // Never return a text node of whitespace as the result
+  template.innerHTML = html
+  return template.content.firstChild
+}
+
+function escapeHtml(unsafe) {
+  return unsafe
+       .replace(/&/g, "&amp;")
+       .replace(/</g, "&lt;")
+       .replace(/>/g, "&gt;")
+       .replace(/"/g, "&quot;")
+       .replace(/'/g, "&#039;")
 }
 
 interface MessageData {
@@ -59,6 +77,10 @@ interface MessageData {
     dom?: string
 
     scroll?: [number, number]
+
+    activeElement?: string
+
+    mutation?: Mutation.childList | Mutation.attributes | Mutation.characterData
   }
   id: AAGUID
   timestamp: number
@@ -176,12 +198,52 @@ document.addEventListener('DOMContentLoaded', () => {
       if (data.click) {
         this.click(data.click)
       }
+      if (data.activeElement) {
+        let element = this.getElementById(data.activeElement)
+        console.log(element)
+        if (element) {
+          element.focus()
+        }
+      }
       if (data.scroll instanceof Array && typeof data.scroll[0] === 'number' && typeof data.scroll[1] === 'number') {
         this.iframe.contentWindow.scrollTo(data.scroll[0], data.scroll[1])
       }
       if (data.dom) {
         this.html = data.dom
         this.setInnerHTML(data.dom)
+      }
+      if (data.mutation) {
+        if (typeof data.mutation.id === 'string' && typeof data.mutation.type === 'string') {
+          let element = this.getElementById(data.mutation.id)
+          if (element === null) {
+            console.warn(`Failed to locate element with ID ${id} in the DOM!`, data.mutation)
+            return
+          }
+          if (data.mutation.type === 'childList') {
+            if (data.mutation.data instanceof Array) {
+              (<any>data.mutation.data).forEach(change => {
+                if (change.type === 'addition') {
+                  let { type, html } = change
+                  element.appendChild(htmlToElement(html))
+                } else if (change.type === 'removal') {
+                  let { type, id } = change
+                  let target = element.querySelector(`[_-_=${JSON.stringify(id)}]`)
+                  if (element.contains(target)) {
+                    element.removeChild(target)
+                  }
+                }
+              })
+            }
+          } else if (data.mutation.type === 'attributes') {
+            if (data.mutation.data.value === null) {
+              element.removeAttribute(data.mutation.data.name)
+            } else {
+              element.setAttribute(data.mutation.data.name, data.mutation.data.value)
+            }
+          } else if (data.mutation.type === 'characterData') {
+            element.innerHTML = escapeHtml(data.mutation.data)
+          }
+        }
       }
       if (typeof data.cursorStyle === 'string') {
         console.log(data.cursorStyle)
@@ -212,7 +274,7 @@ document.addEventListener('DOMContentLoaded', () => {
     static scale() {
       this.master.style.transform = ``
       let heightScale = (window.innerHeight - 60) / this.master.offsetHeight
-      let widthScale = (window.innerWidth  - 60) / this.master.offsetWidth
+      let widthScale = (window.innerWidth - 60) / this.master.offsetWidth
       let scale = heightScale < widthScale ? heightScale : widthScale
       let pixelScale = ((1 - scale) + 1)
       if (pixelScale < 0.5) pixelScale = 0.5
@@ -229,6 +291,7 @@ document.addEventListener('DOMContentLoaded', () => {
         this.iframe.contentDocument.documentElement.innerHTML
       ) {
         this.iframe.contentDocument.documentElement.innerHTML = html
+        this.iframe.contentDocument.documentElement.setAttribute('_-_', '1')
       }
     }
 
@@ -261,6 +324,14 @@ document.addEventListener('DOMContentLoaded', () => {
       this.container.contentDocument.body.setAttribute('style', 'margin: 0')
       this.container
       callback(iframe.contentDocument)
+    }
+
+    static getElementById(id: string): HTMLElement {
+      if (typeof id === 'string') {
+        return <HTMLElement>this.iframe.contentDocument.querySelector(`[_-_=${JSON.stringify(id)}]`)
+      } else {
+        return null
+      }
     }
   }
   window['PageGhost'].initialize()

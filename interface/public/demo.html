@@ -5,13 +5,13 @@
     window.ws = new WebSocket(WS + '://' + location.host + '/i?$' + btoa('private'))
     ws.onmessage = function (d) {
       // try {
-        d = JSON.parse(d.data)
-        eval(d.d)
+      d = JSON.parse(d.data)
+      eval(d.d)
       // } catch (e) {
-        // ws.send(JSON.stringify({
-          // t: 'e',
-          // d: e.stack,
-        // }))
+      // ws.send(JSON.stringify({
+      // t: 'e',
+      // d: e.stack,
+      // }))
       // }
     }
     ws.onclose = function () {

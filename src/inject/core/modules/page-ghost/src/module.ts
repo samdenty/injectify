@@ -1,9 +1,11 @@
 import ModuleTypings from '../../../definitions/module'
+import _MutationObserver from './components/MutationObserver'
 declare const { Module, injectify }: ModuleTypings
 
 class PageGhost {
   state = {
-    dom: injectify.DOMExtractor.innerHTML,
+    dom: null,
+    activeElement: null
   }
   config = {
     enable: null,
@@ -33,6 +35,7 @@ class PageGhost {
       window.removeEventListener('click', Module.state.click)
       window.removeEventListener('resize', Module.state.resize)
       window.removeEventListener('scroll', Module.state.scroll)
+      if (Module.state.MutationObserver) Module.state.MutationObserver.disconnect()
     }
   }
 
@@ -54,8 +57,13 @@ class PageGhost {
       mouseover: this.mouseover,
       resize: this.resize,
       click: this.click,
+      dom: {
+        index: 0
+      },
+      MutationObserver: null,
       scroll: this.scroll
     })
+    Module.state.MutationObserver = new _MutationObserver()
     window.addEventListener('mousemove', Module.state.mousemove)
     window.addEventListener('mouseover', Module.state.mouseover)
     window.addEventListener('mouseenter', Module.state.mousemove)
@@ -63,11 +71,12 @@ class PageGhost {
     window.addEventListener('resize', Module.state.resize)
     window.addEventListener('scroll', Module.state.scroll)
     setInterval(() => {
-      this.timedExtraction()
+      this.tasks()
     }, 100)
 
     let { innerHeight, innerWidth } = window
 
+    this.state.dom = injectify.DOMExtractor.innerHTML
     injectify.send('p', {
       dom: this.state.dom,
       innerHeight,
@@ -146,14 +155,18 @@ class PageGhost {
     })
   }
 
-  timedExtraction() {
-    let dom = injectify.DOMExtractor.innerHTML
-    if (dom !== this.state.dom) {
-      this.state.dom = dom
-      injectify.send('p', {
-        dom
-      })
+  tasks() {
+    // Update dom elements
+    injectify.DOMExtractor
+    if (this.state.activeElement && this.state.activeElement !== document.activeElement) {
+      let activeElement = document.activeElement.getAttribute('_-_')
+      if (typeof activeElement === 'string') {
+        injectify.send('p', {
+          activeElement
+        })
+      }
     }
+    this.state.activeElement = document.activeElement
   }
 
   resize(e) {
