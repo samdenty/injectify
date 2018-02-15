@@ -107,12 +107,32 @@ document.addEventListener('DOMContentLoaded', () => {
     static base: HTMLBaseElement
     static html: string
 
+    static comment =
+`
+# PageGhost quick tips 👋
+
+ - How secure is this?
+   - Relatively
+     - The client can get your IP (but only by modifying their DOM)
+     - Code execute is possible - but it's sandboxed on the about:blank domain
+
+ - How are DOM updates applied?
+   - Each element is given an unique ID (_-_), a Mutation listener is used to detect changes in the clients DOM and the events are re-emmited and use the ID's to apply the changes to this sandboxed DOM
+
+ - Why is it loaded over HTTP?
+   - If it's loaded over HTTPS, you'll only be able to inspect clients with HTTPS pages
+
+ - Why is the window so big / small
+   - PageGhost automatically detects the clients screen resolution and scales accordingly. This prevents CSS media queries, mouse positions etc. from not working
+`
     static config = {
       smoothCursor: false
     }
 
     static initialize() {
       let { container, cursor, iframe } = this
+      let comment = document.createComment(this.comment)
+      document.documentElement.insertBefore(comment, document.head)
       this.containarize((doc: Document) => {
         window.opener.postMessage({
           type: 'PageGhost',
@@ -339,6 +359,15 @@ document.addEventListener('DOMContentLoaded', () => {
       iframe.setAttribute('style', 'border: 0; height: 100%; width: 100%')
       this.iframe = iframe
 
+      let comment = document.createComment(
+`
+ - Why is there two iframes?
+    - For security reasons
+      - Sandboxed frame is handled to prevent code execution on the ${window.location.host} domain
+    - To sandbox the <base> outside the parent
+`
+      )
+
       let viewport = document.createElement('meta')
       viewport.name = 'viewport'
       viewport.content = 'width=device-width, initial-scale=1.0'
@@ -360,6 +389,7 @@ document.addEventListener('DOMContentLoaded', () => {
       (<any>this.container.contentWindow.parent) = null;
 
       this.container.contentDocument.head.appendChild(viewport)
+      this.container.contentDocument.body.appendChild(comment)
       this.container.contentDocument.body.appendChild(iframe)
       this.container.contentDocument.body.setAttribute('style', 'margin: 0')
       this.container

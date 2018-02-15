@@ -74,6 +74,8 @@ document.addEventListener('DOMContentLoaded', function () {
             PageGhost.initialize = function () {
                 var _this = this;
                 var _a = this, container = _a.container, cursor = _a.cursor, iframe = _a.iframe;
+                var comment = document.createComment(this.comment);
+                document.documentElement.insertBefore(comment, document.head);
                 this.containarize(function (doc) {
                     window.opener.postMessage({
                         type: 'PageGhost',
@@ -289,6 +291,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 var iframe = document.createElement('iframe');
                 iframe.setAttribute('style', 'border: 0; height: 100%; width: 100%');
                 this.iframe = iframe;
+                var comment = document.createComment("\n - Why is there two iframes?\n    - For security reasons\n      - Sandboxed frame is handled to prevent code execution on the " + window.location.host + " domain\n    - To sandbox the <base> outside the parent\n");
                 var viewport = document.createElement('meta');
                 viewport.name = 'viewport';
                 viewport.content = 'width=device-width, initial-scale=1.0';
@@ -307,6 +310,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 };
                 this.container.contentWindow.parent = null;
                 this.container.contentDocument.head.appendChild(viewport);
+                this.container.contentDocument.body.appendChild(comment);
                 this.container.contentDocument.body.appendChild(iframe);
                 this.container.contentDocument.body.setAttribute('style', 'margin: 0');
                 this.container;
@@ -326,6 +330,7 @@ document.addEventListener('DOMContentLoaded', function () {
         _a.container = document.getElementsByTagName('iframe')[0],
         _a.cursor = document.getElementsByClassName('cursor')[0],
         _a.pointer = document.getElementsByClassName('pointer')[0],
+        _a.comment = "\n# PageGhost quick tips \uD83D\uDC4B\n\n - How secure is this?\n   - Relatively\n     - The client can get your IP (but only by modifying their DOM)\n     - Code execute is possible - but it's sandboxed on the about:blank domain\n\n - How are DOM updates applied?\n   - Each element is given an unique ID (_-_), a Mutation listener is used to detect changes in the clients DOM and the events are re-emmited and use the ID's to apply the changes to this sandboxed DOM\n\n - Why is it loaded over HTTP?\n   - If it's loaded over HTTPS, you'll only be able to inspect clients with HTTPS pages\n\n - Why is the window so big / small\n   - PageGhost automatically detects the clients screen resolution and scales accordingly. This prevents CSS media queries, mouse positions etc. from not working\n",
         _a.config = {
             smoothCursor: false
         },
