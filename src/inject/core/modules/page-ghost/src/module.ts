@@ -12,7 +12,7 @@ class PageGhost {
     mouse: true,
     values: true
   }
-  intervalTimer: null
+  intervalTimer: any
 
   constructor() {
     if (Module.params instanceof Object) {
@@ -70,7 +70,7 @@ class PageGhost {
     window.addEventListener('click', Module.state.click)
     window.addEventListener('resize', Module.state.resize)
     window.addEventListener('scroll', Module.state.scroll)
-    setInterval(() => {
+    this.intervalTimer = setInterval(() => {
       this.tasks()
     }, 100)
 

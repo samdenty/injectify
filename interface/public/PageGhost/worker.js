@@ -77,7 +77,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 this.containarize(function (doc) {
                     window.opener.postMessage({
                         type: 'PageGhost',
-                        id: decodeURIComponent(window.location.search.substr(1))
+                        id: decodeURIComponent(window.location.search.substr(1)),
+                        event: 'refresh'
                     }, '*');
                     _this.setConfig();
                     // this.fadeCursor(10, 0)
@@ -153,9 +154,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
                 if (data.activeElement) {
                     var element = this.getElementById(data.activeElement);
-                    console.log(element);
+                    console.log("Focused element " + data.activeElement);
                     if (element) {
                         element.focus();
+                        // @ts-ignore
+                        if (element.select)
+                            element.select();
                     }
                 }
                 if (data.scroll instanceof Array && typeof data.scroll[0] === 'number' && typeof data.scroll[1] === 'number') {
@@ -203,7 +207,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                 }
                 if (typeof data.cursorStyle === 'string') {
-                    console.log(data.cursorStyle);
+                    console.log("Switched cursor to " + data.cursorStyle);
                     this.pointer.style.backgroundImage = "url('" + Cursors(data.cursorStyle) + "')";
                 }
                 if (typeof data.clientX !== 'undefined' && typeof data.clientY !== 'undefined') {
@@ -221,9 +225,38 @@ document.addEventListener('DOMContentLoaded', function () {
                     document.getElementsByClassName('cursor')[0].removeChild(clicker);
                 }, 750);
             };
+            PageGhost.clickJack = function (event) {
+                event.preventDefault();
+                var id = event.toElement.getAttribute('_-_');
+                console.log("You clicked on element " + id);
+                var config = {
+                    element: "document.querySelector('[_-_=" + JSON.stringify(id) + "]')",
+                    type: event.type,
+                    cancelable: event.cancelable,
+                    detail: event.detail,
+                    screenX: event.screenX,
+                    screenY: event.screenY,
+                    clientX: event.clientX,
+                    clientY: event.clientY,
+                    ctrlKey: event.ctrlKey,
+                    altKey: event.altKey,
+                    shiftKey: event.shiftKey,
+                    metaKey: event.metaKey,
+                    button: event.button,
+                };
+                this.execute("injectify.module('click', " + JSON.stringify(config) + ")");
+            };
             PageGhost.resize = function (width, height) {
                 this.master.setAttribute('style', "width: " + width + "px; height: " + height + "px");
                 this.scale();
+            };
+            PageGhost.execute = function (code) {
+                window.opener.postMessage({
+                    type: 'PageGhost',
+                    id: decodeURIComponent(window.location.search.substr(1)),
+                    event: 'execute',
+                    data: code
+                }, '*');
             };
             PageGhost.scale = function () {
                 this.master.style.transform = "";
@@ -259,6 +292,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         // Prevent window hijacking
                         _this.container.contentWindow.parent = null;
                         _this.iframe.contentWindow.parent = null;
+                        _this.iframe.contentWindow.onclick = _this.clickJack.bind(_this);
                         // Reload HTML
                         if (_this.html) {
                             _this.setInnerHTML(_this.html);

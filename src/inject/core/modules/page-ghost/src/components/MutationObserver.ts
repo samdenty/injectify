@@ -45,6 +45,8 @@ export default class {
           let nodes = mutationEvent.removedNodes
           for (let i = 0; i < nodes.length; i++) {
             let node = <HTMLElement>nodes[i]
+            // This is bound to break things, but until I find a better solution it's gonna have to be
+            if (node instanceof Text) break
             mutation.data.push({
               type: 'removal',
               id: node.getAttribute('_-_')
@@ -60,7 +62,6 @@ export default class {
           },
         }
       } else if (mutation.type === 'characterData') {
-        console.dir(mutation, mutationEvent)
         mutation = <Mutation.characterData>{
           ...mutation,
           data: (<any>mutation.element).data

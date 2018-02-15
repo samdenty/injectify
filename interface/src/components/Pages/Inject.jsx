@@ -234,14 +234,15 @@ import { injectify, window } from 'injectify'
         return
       }
       if (typeof data === 'object' && data.type === 'PageGhost') {
-        let { id } = data
+        let { id, event } = data
         if (window.pageGhost[id]) {
-          if (window.pageGhost[id].dom) {
-            window.pageGhost[id].win.postMessage({
-              dom: window.pageGhost[id].dom
-            }, '*')
-          } else {
-            window.pageGhost[id].refresh()
+          switch (event) {
+            case 'refresh':
+              window.pageGhost[id].refresh()
+              break
+            case 'execute':
+              window.pageGhost[id].execute(data.data)
+              break
           }
         }
       }

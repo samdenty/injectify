@@ -1,0 +1,35 @@
+name: [click, clickspoof, clickjack]
+description: >
+  Fakes a window click event on an element
+author: samdenty99
+minify: true
+
+# Typescript typings for the module's parameters
+params:
+  # Whether the parameters should be optional or required
+  optional: true
+  # Information about the params
+  info: |
+    The element to click (evalled as a string)
+  # Typescript d.ts typings, used in the interface's code editor
+  typings: |
+    string | {
+      /**
+       * The element to click (evalled as a string)
+       */
+      element?: string
+      type?: string
+      canBubble?: boolean
+      cancelable?: boolean
+      detail?: number
+      screenX?: number
+      screenY?: number
+      clientX?: number
+      clientY?: number
+      ctrlKey?: boolean
+      altKey?: boolean
+      shiftKey?: boolean
+      metaKey?: boolean
+      button?: number
+      relatedTarget?: any
+    }

