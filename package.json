@@ -83,10 +83,10 @@
   "nodemonConfig": {
     "ext": "js,json,yml",
     "ignore": [
-      "interface/**/*",
-      "ci/**/*",
-      "database/**/*",
-      "src/inject/core/modules/*/src"
+      "./interface/**/*",
+      "./ci/**/*",
+      "./database/**/*",
+      "./src/inject/core/modules/*/src"
     ]
   }
 }

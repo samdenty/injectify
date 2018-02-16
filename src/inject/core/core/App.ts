@@ -9,6 +9,7 @@ import Console from './components/Console'
 import DOMExtractor from './components/DOMExtractor'
 import DevtoolsListener from './components/Devtools/Listener'
 import Websockets from './components/Websockets'
+import DataRecorder from './components/DataRecorder'
 import { Info, SessionInfo } from './components/Info'
 
 // Libraries
@@ -28,6 +29,11 @@ window['injectify'] = class Injectify {
   static result = Console.result
   static table = Console.table
   static console = Console.hook
+
+  /**
+   * Data recorder
+   */
+  static record = DataRecorder.record
 
   /**
    * Devtools monitoring

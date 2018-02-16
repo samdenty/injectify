@@ -1,14 +1,13 @@
 declare const global: any
-import { Database } from './definitions/database'
-const db = global.d
+import { Database } from '../definitions/database'
 
-export default (project: string) => {
+export default (project: string) {
   return new Promise<Database.project>((resolve, reject) => {
-    db.collection('projects', (err, projects) => {
+    global.db.collection('projects', (err, projects) => {
       if (!err) {
         projects.findOne({
           name: project
-        }).then(({doc} : {doc: Database.project}) => {
+        }).then((doc: Database.project) => {
           if (doc !== null) {
             resolve(doc)
           } else {

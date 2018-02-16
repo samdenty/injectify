@@ -153,6 +153,13 @@ export namespace Injectify {
   export function auth(token?: string)
 
   /**
+	 * Records data to your projects database
+	 * @param table The table to record the data to
+   * @param data The data to record
+	 */
+  export function record(table: string, data: any)
+
+  /**
 	 * Logs messages to the InjectJS console
 	 * @param messages Comma-seperated list of messages to be logged
 	 */

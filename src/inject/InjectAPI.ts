@@ -4,6 +4,7 @@ const uuidv4 = require('uuid/v4')
 const minify = require('html-minifier').minify
 
 import { SocketSession } from './definitions/session'
+import DataRecorder from './DataRecorder'
 
 export default class {
   socket: any
@@ -174,6 +175,16 @@ export default class {
             })
           })
         }
+      }
+    },
+
+    /**
+     * Data recorder
+     */
+    r: request => {
+      let { table, data } = request
+      if (typeof table === 'string' && typeof data !== 'undefined') {
+        DataRecorder.record(this.client, this.session.project.name, table, data)
       }
     },
 

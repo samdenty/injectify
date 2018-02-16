@@ -31,73 +31,13 @@ export namespace Database {
     inject: {
       autoexecute: string
     }
-    passwords: Array<Passwords>
-    keylogger: Array<Keylogger>
-  }
-
-  interface Record {
-    timestamp: string
-    url: {
-        title: string
-        href: string
+    records: {
+      [table: string]: {
+        url: string
+        ip: string
+        timestamp: number
+        data: any
+      }[]
     }
-    ip: {
-      as: string
-      city: string
-      country: string
-      countryCode: string
-      isp: string
-      lat: number
-      lon: number
-      org: string
-      query: string
-      region: string
-      regionName: string
-      status: string
-      timezone: string
-      zip: string
-    }
-    browser: {
-        width: number
-        height: number
-        usergent: {
-            browser: {
-                name: string
-                version: string
-                major: string
-            }
-            engine: {
-                name: string
-                version: string
-            }
-            os: {
-                name: string
-                version: string
-            }
-            device: {
-                model: string
-                vendor: string
-                type: string
-            }
-            cpu: {
-                architecture: string
-            }
-        }
-        headers: any
-    }
-  }
-  
-  export interface Passwords extends Record, Array<Passwords> {
-    username: string
-    password: string
-    storage: {
-      local: any
-      session: any
-      cookies: any
-    }
-  }
-
-  export interface Keylogger extends Record, Array<Keylogger> {
-    keys: string[]
   }
 }
