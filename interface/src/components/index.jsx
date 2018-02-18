@@ -47,8 +47,8 @@ class Injectify extends React.Component {
           <Header key="header" />
           <Navigation key="navigation" />
           <div key="content" className={classes.content}>
-            <Link to='/'>Home</Link>
-            <Link to='/projects/asds/overview'>Overview</Link>
+            {/* <Link to='/'>Home</Link>
+            <Link to='/projects/asds/overview'>Overview</Link> */}
             <Switch>
               <Route exact path='/' component={Home} />
               <Route path='/settings' component={Settings} />

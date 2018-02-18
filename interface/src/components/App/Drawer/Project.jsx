@@ -32,19 +32,16 @@ const styles = theme => ({
 class Project extends React.Component {
   switchProject = project => {
     let { dispatch } = this.props
-    dispatch(switchProject({
-      name: project
-    }))
+    dispatch(switchProject(project))
   }
 
   render() {
-    const { classes, project, selectedProject, settings, denied } = this.props
-    const selected = selectedProject.name === project
+    const { classes, project, selected, settings, denied, section } = this.props
 
     return (
       <MenuItem
         button
-        selected={selected}
+        selected={(denied || section === 'projects') && selected}
         onClick={() => { this.switchProject(project) }}
         classes={{
           selected: denied ? classes.deniedIcon : settings.dark ? classes.selectedDark : classes.selectedLight
@@ -60,10 +57,10 @@ class Project extends React.Component {
             )}
           </ListItemIcon>
         )}
-        <ListItemText inset primary={project} />
+        <ListItemText inset primary={project.name} />
       </MenuItem>
     )
   }
 }
 
-export default connect(({ injectify: {project, settings} }) => ({ selectedProject: project, settings }))(withStyles(styles)(Project))
+export default connect(({ injectify: {settings, section} }) => ({ settings, section }))(withStyles(styles)(Project))

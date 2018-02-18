@@ -76,6 +76,21 @@ body {
   height: 100%;
   width: 100%;
   overflow: hidden;
+  background-color: #303030;
+}
+
+body {
+  opacity: 0;
+  transition: opacity 1s ease-in-out, transform 1s ease-in-out, margin 0.6s ease-in-out, border-radius 1s ease-in-out;
+  transform: scale(0.95);
+  margin-top: 50px;
+  border-radius: 10px;
+  &.fade-in {
+    opacity: 1;
+    margin-top: 0;
+    border-radius: 0;
+    transform: initial
+  }
 }
 
 * {
@@ -829,23 +844,6 @@ pre {
         background-color: #5a5a5a !important;
       }
     }
-  }
-}
-
-/**
- * Crate
- */
-
-.crate {
-  .crate-toggle {
-    bottom: 15px !important;
-    right: 85px !important;
-  }
-}
-
-@media (max-width: 670px) {
-  .crate.widgetbot.io.WidgetBot__expand .WidgetBot__toggle {
-    right: 15px !important;
   }
 }
 

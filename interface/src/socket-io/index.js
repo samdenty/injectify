@@ -1,34 +1,45 @@
 import queryString from "query-string"
 import url from "url"
+import _ from "lodash"
 const query = queryString.parse(location.search)
 const development = process.env.NODE_ENV == 'development' ? true : false
 
+import * as Actions from '../actions'
 
 /**
  * Socket.io handler
  */
 export default (socket, store, history) => {
-  const { dispatch } = store
+  const { dispatch, getState } = store
+  const state = getState().injectify
+
+  /**
+   * Log in with last used account
+   */
+  if (state.accounts.length) {
+    let lastUsedAccount = _.maxBy(state.accounts, o => {return o.lastUsed}) || state.accounts[0]
+    if (lastUsedAccount && lastUsedAccount.token) {
+      socket.emit(`auth:github/token`, lastUsedAccount.token)
+    }
+  }
 
   if (query.token) {
-    localStorage.setItem(`token`, query.token)
-    history.push(location.href.split('?')[0])
+    socket.emit(`auth:github/token`, query.token)
+    history.push(location.pathname.split('?')[0])
   }
 
   if (query.code) {
     if (query.state && url.parse(query.state).hostname && window.location.hostname !== url.parse(query.state).hostname) {
       location = location.href.replace(window.location.origin, `${url.parse(query.state).protocol}/\/${url.parse(query.state).host}`)
     } else {
-      socket.emit(`auth:github`, loc)
-      history.push(location.href.split('?')[0])
+      socket.emit(`auth:github`, query)
+      history.push(location.pathname.split('?')[0])
     }
   }
 
   socket.on(`server:info`, server => {
     let { github, discord } = server
-    this.setState({
-      server: server
-    })
+    dispatch(Actions.setServer(server))
     /**
      * Append widgetbot widget if the screen width is greater than 400
      */
@@ -48,109 +59,40 @@ export default (socket, store, history) => {
   })
 
   socket.on(`auth:github`, data => {
-    this.setState(data)
-    if (window.crate) {
-      crate.config({
-        username: `@${data.user.login}`
-      })
-    } else {
-      let timer = setInterval(() => {
-        if (window.crate) {
-          clearInterval(timer)
-          crate.config({
-            username: `@${data.user.login}`
-          })
-        }
-      }, 1000)
-    }
     if (data.success && data.token) {
-      localStorage.setItem(`token`, data.token)
-      let accounts = localStorage.getItem(`accounts`)
-      if (!accounts) {
-        accounts = [
-          {
-            token: data.token,
-            user: {
-              login: data.user.login,
-              id: data.user.id,
-            }
-          }
-        ]
+      if (window.crate) {
+        crate.config({
+          username: `@${data.user.login}`
+        })
       } else {
-        try {
-          accounts = JSON.parse(accounts)
-        } catch (e) {
-          accounts = [
-            {
-              token: data.token,
-              user: {
-                login: data.user.login,
-                id: data.user.id,
-              }
-            }
-          ]
-        }
-        let replaceIndex = false
-        accounts.forEach((account, i) => {
-          if (account.user.id == data.user.id) replaceIndex = i
-        })
-        if (replaceIndex == false) {
-          accounts[replaceIndex] = {
-            token: data.token,
-            user: {
-              login: data.user.login,
-              id: data.user.id,
-            }
+        let timer = setInterval(() => {
+          if (window.crate) {
+            clearInterval(timer)
+            crate.config({
+              username: `@${data.user.login}`
+            })
           }
-        } else {
-          accounts.push({
-            token: data.token,
-            user: {
-              login: data.user.login,
-              id: data.user.id,
-            }
-          })
-        }
+        }, 1000)
       }
-      localStorage.setItem(`accounts`, JSON.stringify(accounts))
-      token = data.token
-      this.setState({
-        agreeOpen: true
-      })
+      dispatch(Actions.authAccount(data.token, data.user))
     }
-    if (window.location.pathname.toLowerCase().slice(0, 10) == `/projects/`) {
-      let project = window.location.pathname.slice(10).split(`/`)[0]
-
-      let page = `overview`
-      let tab = 0
-      if (window.location.href.endsWith(`/passwords`)) { page = `passwords`; tab = 1 }
-      if (window.location.href.endsWith(`/keylogger`)) { page = `keylogger`; tab = 2 }
-      if (window.location.href.endsWith(`/inject`)) { page = `inject`; tab = 3 }
-      if (window.location.href.endsWith(`/config`)) { page = `config`; tab = 4 }
-
-      if (project) {
-        socket.emit(`project:read`, {
-          project: decodeURIComponent(project),
-          page: page
-        })
-        this.setState({
-          tab: tab
-        })
-      }
-    }
+    // socket.emit(`project:read`, {
+    //   project: decodeURIComponent(project),
+    //   page: page
+    // })
     console.log(`%c[websocket] ` + `%cauth:github =>`, `color: #ef5350`, `color:  #FF9800`, data)
   })
 
   socket.on(`auth:github/stale`, data => {
     console.log(`%c[websocket] ` + `%cauth:github/stale =>`, `color: #ef5350`, `color:  #FF9800`, data)
-    localStorage.removeItem(`token`)
+    dispatch(Actions.removeAccount({
+      token: data.token
+    }))
   })
 
   socket.on(`user:projects`, data => {
     console.log(`%c[websocket] ` + `%cuser:projects =>`, `color: #ef5350`, `color:  #FF9800`, data)
-    this.setState({
-      projects: data
-    })
+    dispatch(Actions.setProjects(data))
   })
 
   socket.on(`project:read`, data => {

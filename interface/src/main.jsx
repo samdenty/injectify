@@ -58,6 +58,7 @@ const render = App => {
     </Provider>,
     document.getElementsByTagName('react')[0]
   )
+  if (document.body) document.body.classList.add('fade-in')
 }
 
 render(Injectify)

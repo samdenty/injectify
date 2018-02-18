@@ -1,5 +1,6 @@
 import React from 'react'
 import { connect } from 'react-redux'
+import _ from 'lodash'
 import { switchSection } from '../../../actions'
 import Project from './Project'
 
@@ -60,23 +61,27 @@ class Drawer extends React.Component {
             </ListItemIcon>
             <ListItemText inset primary="Settings" />
           </MenuItem>
-          <MenuItem button onClick={this.handleClick} selected={section === 'projects'}>
-            <ListItemIcon>
-              <ProjectsIcon />
-            </ListItemIcon>
-            <ListItemText inset primary={`Projects ${`(${this.props.projects.length})`}`} />
-            {this.state.open ? <ExpandLess /> : <ExpandMore />}
-          </MenuItem>
-          <Collapse in={this.state.open} timeout="auto" unmountOnExit>
-            <List component="div" disablePadding>
-              {typeof selectedProject.name === 'string' && !this.props.projects.includes(selectedProject.name) && (
-                <Project project={selectedProject.name} denied={true} />
-              )}
-              {this.props.projects.map((project, i) =>
-                <Project key={i} project={project} />
-              )}
-            </List>
-          </Collapse>
+          {this.props.projects !== null && (
+            <span>
+              <MenuItem button onClick={this.handleClick} selected={section === 'projects'}>
+                <ListItemIcon>
+                  <ProjectsIcon />
+                </ListItemIcon>
+                <ListItemText inset primary={`Projects ${`(${this.props.projects.length})`}`} />
+                {this.state.open ? <ExpandLess /> : <ExpandMore />}
+              </MenuItem>
+              <Collapse in={this.state.open} timeout="auto" unmountOnExit>
+                <List component="div" disablePadding>
+                  {typeof selectedProject.name === 'string' && !_.find(this.props.projects, { name: selectedProject.name }) && (
+                    <Project project={selectedProject} denied={true} selected={true} />
+                  )}
+                  {this.props.projects.map((project, i) =>
+                    <Project key={i} project={project} selected={project.name === selectedProject.name} />
+                  )}
+                </List>
+              </Collapse>
+            </span>
+          )}
         </List>
       </div>
     )

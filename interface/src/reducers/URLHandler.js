@@ -24,7 +24,7 @@ export default (store, history) => {
             break
         }
         if (url && decodeURIComponent(history.location.pathname) !== decodeURIComponent(url)) {
-          console.debug(`Pushing from ${history.location.pathname} to ${url}`)
+          console.debug(`Pushing from "${history.location.pathname}" to "${decodeURIComponent(url)}"`)
           history.push(url)
         }
       }
@@ -32,17 +32,25 @@ export default (store, history) => {
   })
 
   function updateHistory(section, project, page) {
+    let data = {
+      section,
+    }
+    if (section === 'projects') {
+      data = {
+        ...data,
+        project,
+        page
+      }
+    }
     store.dispatch({
       type: 'BROWSER_HISTORY',
-      section,
-      project,
-      page
+      ...data
     })
   }
 
   function checkURL(location = window.location) {
     let url = location.pathname.split('/').splice(1)
-    updateHistory(decodeURIComponent(url[0]), url[1], url[2])
+    updateHistory(decodeURIComponent(url[0]), decodeURIComponent(url[1]), url[2])
   }
 
   history.listen((location, action) => {

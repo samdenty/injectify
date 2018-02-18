@@ -531,7 +531,8 @@ MongoClient.connect(config.mongodb, (err, client) => {
           console.log(chalk.redBright('[auth:github/token] '), error.message)
           socket.emit('auth:github/stale', {
             title: error.title.toString(),
-            message: error.message.toString()
+            message: error.message.toString(),
+            token
           })
         })
       }

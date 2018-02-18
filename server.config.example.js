@@ -145,6 +145,10 @@ module.exports = {
         colors: {
           toggle: '#3F51B5'
         },
+        position: {
+          x: 'left',
+          y: 'bottom'
+        },
         style: 'material',
         beta: false
       }

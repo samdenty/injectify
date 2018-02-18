@@ -4,8 +4,12 @@ import { connect } from 'react-redux'
 import { withStyles } from 'material-ui/styles'
 import Typography from 'material-ui/Typography'
 import { switchSection } from '../../../actions'
+import Accounts from '../Accounts'
 
 const styles = theme => ({
+  root: {
+    display: 'contents'
+  },
   header: {
     flex: '1',
     cursor: 'pointer',
@@ -42,17 +46,20 @@ class Header extends React.Component {
     const { classes } = this.props
 
     return (
-      <Typography
-        variant="title"
-        color="inherit"
-        noWrap
-        onClick={this.returnHome.bind(this)}
-        className={classes.header}>
-        <img src="/assets/logo/injectify.svg" className={classes.logo} />
-        <span className={classes.title}>
-          Injectify
-        </span>
-      </Typography>
+      <div className={classes.root}>
+        <Typography
+          variant="title"
+          color="inherit"
+          noWrap
+          onClick={this.returnHome.bind(this)}
+          className={classes.header}>
+          <img src="/assets/logo/injectify.svg" className={classes.logo} />
+          <span className={classes.title}>
+            Injectify
+          </span>
+        </Typography>
+        <Accounts />
+      </div>
     )
   }
 }
