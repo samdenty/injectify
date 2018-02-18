@@ -26,7 +26,7 @@ $drawer: 240px;
   ::-webkit-scrollbar-corner {
     background-color: transparent
   }
-  app.dark {
+  .app.dark {
     main {
       &::-webkit-scrollbar {
         background: #303030;
@@ -75,6 +75,7 @@ body {
   margin: 0;
   height: 100%;
   width: 100%;
+  overflow: hidden;
 }
 
 * {
@@ -82,7 +83,7 @@ body {
   box-sizing: border-box;
 }
 
-app {
+.app {
   height: 100%;
   width: 100%;
   display: block;
@@ -100,24 +101,6 @@ app {
       &:disabled {
         >span {
           opacity: 0.3;
-        }
-      }
-    }
-    li {
-      div {
-        h3 {
-          color: rgba(255, 255, 255, 0.6);
-        }
-      }
-      &.active {
-        background-color: rgba(255, 255, 255, 0.15);
-        &:hover {
-          background-color: rgba(255, 255, 255, 0.2);
-        }
-        div {
-          h3 {
-            color: #f1f1f1
-          }
         }
       }
     }

@@ -61,6 +61,8 @@ import Dialog, {
   DialogTitle,
 } from 'material-ui/Dialog';
 import Table, { TableBody, TableCell, TableHead, TableRow } from 'material-ui/Table';
+import { Route } from 'react-router-dom'
+
 
 import { Inject } from './components/Pages/Inject'
 
@@ -689,9 +691,8 @@ class PersistentDrawer extends Component {
                 scrollButtons="auto"
               >
                 {this.tab('Overview', <TimelineIcon />)}
-                {this.tab('Passwords', <LockIcon />)}
-                {this.tab('Keylogger', <KeyboardIcon />)}
-                {this.tab('Inject', <CodeIcon />)}
+                {this.tab('Console', <CodeIcon />)}
+                {this.tab('Data', <CodeIcon />)}
                 {this.tab('Project config', <SettingsIcon />)}
               </Tabs>
             ) : null
@@ -732,361 +733,18 @@ class PersistentDrawer extends Component {
               })} ${classes.tabsContent} ${tab === 3 ? classes.injectMain : ''} ${loading && classes.loadingMain}`}
               ref={main => { this.main = main }}
             >
-              {tab === 0 &&
+              <Route exact path="/projects/private/keylogger" component={test} />
+              {/* {tab === 0 &&
                 <div>
                   Overview
                 </div>
               }
-              {tab === 1 &&
-                <span>
-                  <Paper className={classes.paper}>
-                    <Table>
-                      <TableHead>
-                        <TableRow>
-                          <TableCell className={classes.tableCell}>
-                            Time
-                          </TableCell>
-                          <TableCell className={classes.tableCell}>
-                            Username
-                          </TableCell>
-                          <TableCell className={classes.tableCell}>
-                            Password
-                          </TableCell>
-                          <TableCell className={`${classes.tableCell} ${classes.center}`} width={64}>
-                            Details
-                          </TableCell>
-                        </TableRow>
-                      </TableHead>
-                      {this.state.currentProject.passwords &&
-                        <TableBody>
-                          {this.state.currentProject.passwords.map((record, i) => {
-                            return (
-                              <TableRow key={i}>
-                                <TableCell className={classes.tableCell}>
-                                  <Timestamp
-                                    time={record.timestamp}
-                                    format='ago'
-                                    precision={this.props.parentState.width > 700 ? 2 : 1}
-                                    autoUpdate={5}
-                                  />
-                                </TableCell>
-                                <TableCell className={classes.tableCell}>
-                                  {record.username}
-                                </TableCell>
-                                <TableCell className={classes.tableCell}>
-                                  {record.password}
-                                </TableCell>
-                                <TableCell className={classes.tableCell} numeric>
-                                  <Tooltip
-                                    placement="left"
-                                    disableTriggerFocus
-                                    disableTriggerTouch
-                                    title={
-                                      <span>
-                                        {record.url.href && url.parse(record.url.href).hostname && record.url.title ? (
-                                          <span>
-                                            {url.parse(record.url.href).hostname} ({record.url.title})
-                                            <br />
-                                          </span>
-                                        ) : null}
-                                        {record.ip.query && record.ip.country ? (
-                                          <span>
-                                            {record.ip.query} ({record.ip.country})
-                                            <br />
-                                          </span>
-                                        ) : null}
-                                      </span>
-                                    }
-                                  >
-                                    <Button color="primary" dense onClick={() => { this.handleRecordOpen(record, i) }}>
-                                      More
-                                    </Button>
-                                  </Tooltip>
-                                </TableCell>
-                              </TableRow>
-                            )
-                          })}
-                        </TableBody>
-                      }
-                    </Table>
-                  </Paper>
-                  <br />
-                  <Javascript parentState={this.state} notify={this.props.notify} classes={classes} />
-                  {this.state.recordOpen ? (
-                    <span>
-                      <Dialog
-                        fullScreen
-                        open={this.state.recordOpen || false}
-                        onClose={this.handleRecordClose}
-                        transition={Transition}
-                        className={`record ${dark ? 'dark' : ''}`}
-                      >
-                        <AppBar>
-                          <Toolbar>
-                            <IconButton color="contrast" onClick={this.handleRecordClose} aria-label="Close">
-                              <CloseIcon />
-                            </IconButton>
-                            <Typography type="title" color="inherit" className={classes.flex}>
-                              Password record for {this.state.currentProject.name}
-                            </Typography>
-                            <Button color="contrast" onClick={this.spoofOpen.bind(this)}>
-                              Spoof
-                            </Button>
-                          </Toolbar>
-                        </AppBar>
-                        <List className={classes.recordContent}>
-                          <CopyToClipboard text={this.state.record.timestamp}
-                            onCopy={() => this.props.notify({
-                              title: "Copied to clipboard!",
-                              message: this.state.record.timestamp
-                            })}>
-                            <ListItem button>
-                              <ListItemText primary="Timestamp" secondary={<Timestamp time={this.state.record.timestamp} format='full' />} />
-                            </ListItem>
-                          </CopyToClipboard>
-                          <Divider />
-                          <CopyToClipboard text={this.state.record.username}
-                            onCopy={() => this.props.notify({
-                              title: "Copied to clipboard!",
-                              message: this.state.record.username
-                            })}>
-                            <ListItem button>
-                              <ListItemText primary="Username" secondary={this.state.record.username} />
-                            </ListItem>
-                          </CopyToClipboard>
-                          <Divider />
-                          <CopyToClipboard text={this.state.record.password}
-                            onCopy={() => this.props.notify({
-                              title: "Copied to clipboard!",
-                              message: this.state.record.password
-                            })}>
-                            <ListItem button>
-                              <ListItemText primary="Password" secondary={this.state.record.password} />
-                            </ListItem>
-                          </CopyToClipboard>
-                          <Divider />
-                          {this.state.record.url.href ? (
-                            <span>
-                              <ListItem button onClick={() => { window.open(this.state.record.url.href).bind }}>
-                                <ListItemText primary="Capture URL" secondary={this.state.record.url.href} />
-                              </ListItem>
-                              <Divider />
-                            </span>
-                          ) : null
-                          }
-                          <ListItem button onClick={() => { window.open(`https://tools.keycdn.com/geo?host=${this.state.record.ip.query}`) }}>
-                            <ListItemText primary="IP Address" secondary={`${this.state.record.ip.query}${this.state.record.ip.country ? ` (${this.state.record.ip.city} - ${this.state.record.ip.country})` : ""}`} />
-                          </ListItem>
-                          <Divider />
-                          <CopyToClipboard text={`${this.state.record.browser.height}x${this.state.record.browser.width}px`}
-                            onCopy={() => this.props.notify({
-                              title: "Copied to clipboard!",
-                              message: `${this.state.record.browser.height}x${this.state.record.browser.width}px`
-                            })}>
-                            <ListItem button>
-                              <ListItemText primary="Screen resolution" secondary={`${this.state.record.browser.height}x${this.state.record.browser.width}px`} />
-                            </ListItem>
-                          </CopyToClipboard>
-                          <Divider />
-                          <br />
-                          <ListItem>
-                            <ReactJson
-                              src={this.state.record}
-                              theme={dark ? 'monokai' : 'rjv-default'}
-                              enableClipboard={true}
-                              iconStyle="circle" />
-                          </ListItem>
-                        </List>
-                      </Dialog>
-                      {this.state.spoof.open &&
-                        <Request
-                          url={this.state.spoof.url}
-                          method='get'
-                          verbose={true}
-                        >
-                          {
-                            ({ error, result, loading }) => {
-                              if (loading) {
-                                return (
-                                  <Dialog open={this.state.spoof.modalOpen || false} classes={{ paper: classes.transparent }}>
-                                    <CircularProgress size={60} style={{ color: indigo[50] }} />
-                                  </Dialog>
-                                )
-                              } else {
-                                return (
-                                  <div>
-                                    <Dialog open={this.state.spoof.modalOpen || false} onClose={this.spoofClose} classes={{ paper: this.props.classes.codeDialog }}>
-                                      <SyntaxHighlighter showLineNumbers language='javascript' style={atomOneDark} height={200} className={classes.code}>
-                                        {result.text}
-                                      </SyntaxHighlighter>
-                                      <DialogActions>
-                                        <Button onClick={this.spoofClose.bind(this)} color="contrast">
-                                          Back
-                                        </Button>
-                                        <Button onClick={() => window.open(this.state.spoof.url)} color="contrast">
-                                          Raw
-                                        </Button>
-                                        <CopyToClipboard text={result.text}
-                                          onCopy={() => this.props.notify({
-                                            title: "Copied to clipboard!",
-                                            message: "Go onto the target site, and paste it into DevTools"
-                                          })}>
-                                          <Button color="contrast">
-                                            Copy
-                                          </Button>
-                                        </CopyToClipboard>
-                                      </DialogActions>
-                                    </Dialog>
-                                  </div>
-                                )
-                              }
-                            }
-                          }
-                        </Request>
-                      }
-                    </span>
-                  ) : null
-                  }
-                </span>
-              }
-              {tab === 2 &&
-                <span>
-                  <Paper className={classes.paper}>
-                    <Table>
-                      <TableHead>
-                        <TableRow>
-                          <TableCell className={classes.tableCell}>
-                            Time
-                          </TableCell>
-                          <TableCell className={classes.tableCell}>
-                            Keystrokes
-                          </TableCell>
-                          <TableCell className={classes.tableCell}>
-                            IP Address
-                          </TableCell>
-                          <TableCell className={`${classes.tableCell} ${classes.center}`} width={64}>
-                            Details
-                          </TableCell>
-                        </TableRow>
-                      </TableHead>
-                      {this.state.currentProject.keylogger &&
-                        <TableBody>
-                          {this.state.currentProject.keylogger.map((record, i) => {
-                            return (
-                              <TableRow key={i}>
-                                <TableCell className={classes.tableCell}>
-                                  <Timestamp
-                                    time={record.timestamp}
-                                    format='ago'
-                                    precision={this.props.parentState.width > 700 ? 2 : 1}
-                                    autoUpdate={5}
-                                  />
-                                </TableCell>
-                                <TableCell className={classes.tableCell}>
-                                  {Math.round(record.keys.length / 2)}
-                                </TableCell>
-                                <TableCell className={classes.tableCell}>
-                                  {record.ip.query}
-                                </TableCell>
-                                <TableCell className={classes.tableCell} numeric>
-                                  <Tooltip
-                                    title={
-                                      <span>
-                                        {record.url.href && url.parse(record.url.href).hostname && record.url.title ? (
-                                          <span>
-                                            {url.parse(record.url.href).hostname} ({record.url.title})
-                                            <br />
-                                          </span>
-                                        ) : null}
-                                        {record.ip.query && record.ip.country ? (
-                                          <span>
-                                            {record.ip.query} ({record.ip.country})
-                                            <br />
-                                          </span>
-                                        ) : null}
-                                      </span>
-                                    }
-                                    placement="left"
-                                    disableTriggerFocus
-                                    disableTriggerTouch
-                                  >
-                                    <Button color="primary" dense onClick={() => { this.handleRecordOpen(record) }}>
-                                      More
-                                    </Button>
-                                  </Tooltip>
-                                </TableCell>
-                              </TableRow>
-                            )
-                          })}
-                        </TableBody>
-                      }
-                    </Table>
-                  </Paper>
-                  {this.state.recordOpen ? (
-                    <Dialog
-                      fullScreen
-                      open={this.state.recordOpen || false}
-                      onClose={this.handleRecordClose}
-                      transition={Transition}
-                      className={`record ${dark ? 'dark' : ''}`}
-                    >
-                      <AppBar>
-                        <Toolbar>
-                          <IconButton color="contrast" onClick={this.handleRecordClose} aria-label="Close">
-                            <CloseIcon />
-                          </IconButton>
-                          <Typography type="title" color="inherit" className={classes.flex}>
-                            Keylogger record for {this.state.currentProject.name}
-                          </Typography>
-                          {/* <Button color="contrast" onClick={this.handleRecordClose}>
-                            save
-                          </Button> */}
-                        </Toolbar>
-                      </AppBar>
-                      <List className={classes.recordContent}>
-                        <CopyToClipboard text={this.state.record.timestamp}
-                          onCopy={() => this.props.notify({
-                            title: "Copied to clipboard!",
-                            message: this.state.record.timestamp
-                          })}>
-                          <ListItem button>
-                            <ListItemText primary="Timestamp" secondary={<Timestamp time={this.state.record.timestamp} format='full' />} />
-                          </ListItem>
-                        </CopyToClipboard>
-                        <Divider />
-                        {this.state.record.url.href ? (
-                          <span>
-                            <ListItem button onClick={() => { window.open(this.state.record.url.href).bind }}>
-                              <ListItemText primary="Capture URL" secondary={this.state.record.url.href} />
-                            </ListItem>
-                            <Divider />
-                          </span>
-                        ) : null
-                        }
-                        <ListItem button onClick={() => { window.open(`https://tools.keycdn.com/geo?host=${this.state.record.ip.query}`) }}>
-                          <ListItemText primary="IP Address" secondary={`${this.state.record.ip.query}${this.state.record.ip.country ? ` (${this.state.record.ip.city} - ${this.state.record.ip.country})` : ""}`} />
-                        </ListItem>
-                        <Divider />
-                        <br />
-                        <ListItem>
-                          <ReactJson
-                            src={this.state.record}
-                            theme={dark ? 'monokai' : 'rjv-default'}
-                            enableClipboard={true}
-                            iconStyle="circle" />
-                        </ListItem>
-                      </List>
-                    </Dialog>
-                  ) : null
-                  }
-                </span>
-              }
-              {tab === 3 && !this.state.hideMonaco &&
+              {tab === 3 &&
                 <Inject classes={classes} w={this.main ? this.main.offsetWidth : null} h={this.main ? this.main.offsetHeight : null} socket={this.props.socket} project={this.state.currentProject.name} ref={instance => { this.inject = instance }} />
               }
               {tab === 4 &&
                 <ProjectConfig classes={classes} project={this.state.currentProject} loggedInUser={this.props.parentState.user} emit={this.props.emit} loading={this.loading} socket={this.props.socket} loading={this.loading} token={this.props.token} />
-              }
+              } */}
               <Tooltip title="New project" placement="top">
                 <Button fab color="primary" aria-label="add" className={classes.newProject} onClick={this.props.newProject}>
                   <AddIcon />
@@ -1151,6 +809,14 @@ class PersistentDrawer extends Component {
           </div>
         </Dialog>
       </div>
+    )
+  }
+}
+
+class test extends Component {
+  render() {
+    return (
+      <div>test</div>
     )
   }
 }

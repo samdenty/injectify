@@ -1699,7 +1699,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
     })
     app.use('/*', (req, res) => {
       if (req.url.substr(0, 9) === '/cdn-cgi/') return
-      if (req.originalUrl === '/config') req.originalUrl = '/'
+      if (req.originalUrl === '/settings') req.originalUrl = '/'
       request('http://localhost:8080' + req.originalUrl).pipe(res)
     })
   } else {
@@ -1716,7 +1716,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
         res.sendFile(path.join(__dirname, '../interface/public/index.html'))
       }
     })
-    app.use('/config', (req, res) => {
+    app.use('/settings', (req, res) => {
       res.sendFile(path.join(__dirname, '../interface/public/index.html'))
     })
     app.use(express.static(path.join(__dirname, '../interface/public')))
