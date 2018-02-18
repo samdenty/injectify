@@ -1,10 +1,21 @@
 import ReactDOM, { render } from 'react-dom'
 import React from 'react'
+import { connect } from 'react-redux'
+import { withStyles } from 'material-ui/styles'
+import { switchSection } from '../../../actions'
 
-export default class extends React.Component {
+const styles = theme => ({
+
+})
+
+class Overview extends React.Component {
   render() {
+    const { classes } = this.props
+
     return (
       <div>Overview</div>
     )
   }
 }
+
+export default connect(({ injectify: {section} }) => ({ section }))(withStyles(styles)(Overview))
