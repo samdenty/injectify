@@ -72,7 +72,8 @@ console.log(
 \\_/\\_/  \\|\\____/\\____\\\\____/  \\_/  \\_/\\_/   /_/`,
 `color: #ef5350; font-weight: bold`)
 console.log({
-  environment: process.env.NODE_ENV
+  environment: process.env.NODE_ENV,
+  react: React.version
 })
 //#endregion
 

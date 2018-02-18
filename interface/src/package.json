@@ -49,6 +49,7 @@
     ]
   },
   "dependencies": {
+    "autosuggest-highlight": "^3.1.1",
     "babel-inline-import-loader": "^0.0.5",
     "babel-plugin-inline-import": "^2.0.6",
     "copy-webpack-plugin": "^4.3.1",
@@ -58,12 +59,13 @@
     "material-ui-icons": "^1.0.0-beta.17",
     "moment": "^2.20.1",
     "query-string": "^5.0.1",
-    "react": "16.0.0",
+    "react": "^16.2.0",
+    "react-autosuggest": "^9.3.4",
     "react-codemirror": "^1.0.0",
     "react-contenteditable": "^2.0.5",
     "react-contextmenu": "^2.9.2",
     "react-copy-to-clipboard": "^5.0.1",
-    "react-dom": "16.0.0",
+    "react-dom": "^16.2.0",
     "react-draggable": "^3.0.5",
     "react-easy-chart": "^1.0.0",
     "react-http-request": "^1.0.3",

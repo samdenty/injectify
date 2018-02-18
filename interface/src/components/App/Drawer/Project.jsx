@@ -51,6 +51,11 @@ const styles = theme => ({
   deniedIcon: {
     backgroundColor: 'rgba(0, 0, 0, 0.71) !important'
   },
+
+  highlight: {
+    backgroundColor: 'rgba(103, 127, 255, 0.7)',
+    fontWeight: 500,
+  }
 })
 
 class Project extends React.Component {
@@ -60,7 +65,9 @@ class Project extends React.Component {
   }
 
   render() {
-    const { classes, project, account, selected, settings, denied, section } = this.props
+    const { classes, parts, project, selectedProject, account, settings, denied, section } = this.props
+
+    const selected = denied || project.name === selectedProject.name
 
     return (
       <MenuItem
@@ -71,6 +78,7 @@ class Project extends React.Component {
           selected: denied ? classes.deniedIcon : settings.dark ? classes.selectedDark : classes.selectedLight
         }}
         disabled={denied}
+        component="span"
       >
         {denied ? (
           <ListItemIcon>
@@ -97,10 +105,22 @@ class Project extends React.Component {
             </Tooltip>
           </ListItemIcon>
         ) : null}
-        <ListItemText inset primary={project.name} />
+        <ListItemText inset primary={
+          parts.map((part, index) => {
+            return part.highlight ? (
+              <span key={String(index)} className={classes.highlight}>
+                {part.text}
+              </span>
+            ) : (
+              <span key={String(index)}>
+                {part.text}
+              </span>
+            )
+          })
+        } />
       </MenuItem>
     )
   }
 }
 
-export default connect(({ injectify: {settings, account, section} }) => ({ settings, account, section }))(withStyles(styles)(Project))
+export default connect(({ injectify: {settings, account, section, project} }) => ({ settings, account, section, selectedProject: project }))(withStyles(styles)(Project))

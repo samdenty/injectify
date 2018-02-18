@@ -8,7 +8,8 @@ import Accounts from '../Accounts'
 
 const styles = theme => ({
   root: {
-    display: 'contents'
+    display: 'flex',
+    width: '100%'
   },
   header: {
     flex: '1',
@@ -44,9 +45,8 @@ class Header extends React.Component {
 
   render() {
     const { classes } = this.props
-
     return (
-      <div className={classes.root}>
+      <React.Fragment>
         <Typography
           variant="title"
           color="inherit"
@@ -59,7 +59,7 @@ class Header extends React.Component {
           </span>
         </Typography>
         <Accounts />
-      </div>
+      </React.Fragment>
     )
   }
 }

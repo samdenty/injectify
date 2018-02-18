@@ -3,6 +3,7 @@ import { connect } from 'react-redux'
 import _ from 'lodash'
 import { switchSection } from '../../../actions'
 import Project from './Project'
+import Search from './Search'
 
 import PropTypes from 'prop-types'
 import { withStyles } from 'material-ui/styles'
@@ -72,11 +73,9 @@ class Drawer extends React.Component {
               </MenuItem>
               <Collapse in={this.state.open} timeout="auto" unmountOnExit>
                 <List component="div" disablePadding>
+                  <Search />
                   {typeof selectedProject.name === 'string' && !_.find(this.props.projects, { name: selectedProject.name }) && (
-                    <Project project={selectedProject} denied={true} selected={true} />
-                  )}
-                  {this.props.projects.map((project, i) =>
-                    <Project key={i} project={project} selected={project.name === selectedProject.name} />
+                    <Project project={selectedProject} denied={true} />
                   )}
                 </List>
               </Collapse>
