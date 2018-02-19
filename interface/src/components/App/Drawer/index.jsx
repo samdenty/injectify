@@ -62,7 +62,7 @@ class Drawer extends React.Component {
             </ListItemIcon>
             <ListItemText inset primary="Settings" />
           </MenuItem>
-          {this.props.projects !== null && (
+          {this.props.account && this.props.projects !== null && (
             <span>
               <MenuItem button onClick={this.handleClick} selected={section === 'projects'}>
                 <ListItemIcon>
@@ -74,9 +74,6 @@ class Drawer extends React.Component {
               <Collapse in={this.state.open} timeout="auto" unmountOnExit>
                 <List component="div" disablePadding>
                   <Search />
-                  {typeof selectedProject.name === 'string' && !_.find(this.props.projects, { name: selectedProject.name }) && (
-                    <Project project={selectedProject} denied={true} />
-                  )}
                 </List>
               </Collapse>
             </span>
@@ -91,4 +88,4 @@ Drawer.propTypes = {
   classes: PropTypes.object.isRequired,
 }
 
-export default connect(({ injectify: {section, projects, project} }) => ({ section, projects, selectedProject: project }))(withStyles(styles)(Drawer))
+export default connect(({ injectify: {section, account, projects, project} }) => ({ section, account, projects, selectedProject: project }))(withStyles(styles)(Drawer))

@@ -17,9 +17,18 @@ import BluetoothIcon from 'material-ui-icons/Bluetooth'
 
 const styles = theme => ({
   root: {
-    width: `calc(100% - ${theme.spacing.unit * 6}px)`,
-    margin: theme.spacing.unit * 3,
+    margin: theme.spacing.unit * 4,
     backgroundColor: theme.palette.background.paper,
+  },
+  '@media (max-width: 700px)': {
+    root: {
+      margin: theme.spacing.unit * 2,
+    }
+  },
+  '@media (max-width: 500px)': {
+    root: {
+      margin: theme.spacing.unit,
+    }
   },
   content: {
     padding: '5px 16px',

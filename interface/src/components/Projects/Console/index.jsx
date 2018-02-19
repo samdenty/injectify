@@ -10,12 +10,12 @@ const styles = theme => ({
 
 class Console extends React.Component {
   render() {
-    const { classes } = this.props
+    const { classes, project } = this.props
 
     return (
-      <div>Console</div>
+      <div>{JSON.stringify(project)}</div>
     )
   }
 }
 
-export default connect(({ injectify: {section} }) => ({ section }))(withStyles(styles)(Console))
+export default connect(({ injectify: {section, project} }) => ({ section, project }))(withStyles(styles)(Console))

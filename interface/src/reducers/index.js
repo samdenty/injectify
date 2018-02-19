@@ -1,4 +1,5 @@
 import _ from 'lodash'
+import NProgress from 'nprogress'
 
 const config = {
   sections: ['home', 'settings', 'projects'],
@@ -8,6 +9,7 @@ const config = {
 const initialState = {
   section: 'home',
   page: 'overview',
+  loading: true,
 
   server: {
     github: {
@@ -43,6 +45,8 @@ const initialState = {
   account: null
 }
 
+NProgress.start()
+
 try {
   let settings = localStorage.getItem('settings')
   if (settings) initialState.settings = {
@@ -62,7 +66,23 @@ try {
 
 export default (state = initialState, action) => {
   switch (action.type) {
+    case 'LOADING': {
+      let loading = !!action.loading
+      if (loading) {
+        NProgress.start()
+      } else {
+        NProgress.done()
+      }
+      return {
+        ...state,
+        loading
+      }
+    }
+
     case 'SWITCH_SECTION': {
+      setTimeout(() => {
+        NProgress.done()
+      })
       document.title = `${_.capitalize(action.section)} - Injectify`
       return {
         ...state,
@@ -88,6 +108,7 @@ export default (state = initialState, action) => {
     }
 
     case 'BROWSER_HISTORY': {
+      NProgress.start()
       let data = {}
       if (typeof action.page !== 'undefined') {
         data.page = config.pages.includes(action.page) ? action.page : 'overview'
@@ -173,6 +194,33 @@ export default (state = initialState, action) => {
       return {
         ...state,
         projects: action.projects
+      }
+    }
+
+    case 'SET_PROJECT': {
+      let data = {
+        project: action.project
+      }
+      if (config.pages.includes(action.page)) data.page = action.page
+      if (state.project.name === action.project.name) {
+        data.project = {
+          ...state.project,
+          ...action.project
+        }
+      }
+
+      // Update in the projects collection
+      let projects = state.projects
+      let index = _.findIndex(projects, { name: data.project.name })
+      if (index > -1) {
+        projects[index] = data.project
+        data.projects = projects
+      }
+
+
+      return {
+        ...state,
+        ...data
       }
     }
 

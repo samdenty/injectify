@@ -1,7 +1,9 @@
+import { project as switchProject } from '../actions'
 export default (store, history) => {
   let currentState = store.getState().injectify
   let currentPath = null
   store.subscribe(() => {
+    const { socket } = window
     let previousState = currentState
     let previousPath = currentPath
     currentState = store.getState().injectify
@@ -28,6 +30,16 @@ export default (store, history) => {
           history.push(url)
         }
       }
+    }
+    if (currentState.project !== previousState.project) {
+      console.debug(`Project changed from`, previousState.project, `to`, currentState.project)
+    } else if (currentState.page !== previousState.page) {
+      console.debug(`Page changed from`, previousState.page, `to`, currentState.page)
+      if (currentState.section === 'projects' && currentState.project && currentState.project.name) {
+        store.dispatch(switchProject(currentState.project, currentState.page))
+      }
+    } else if (currentState.section !== previousState.section) {
+      console.debug(`Section changed from`, previousState.section, `to`, currentState.section)
     }
   })
 

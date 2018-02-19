@@ -1,6 +1,6 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import { switchProject } from '../../../actions'
+import { project as switchProject } from '../../../actions'
 
 import { withStyles } from 'material-ui/styles'
 import DeniedIcon from 'material-ui-icons/NotInterested'
@@ -106,7 +106,7 @@ class Project extends React.Component {
           </ListItemIcon>
         ) : null}
         <ListItemText inset primary={
-          parts.map((part, index) => {
+          parts ? parts.map((part, index) => {
             return part.highlight ? (
               <span key={String(index)} className={classes.highlight}>
                 {part.text}
@@ -116,7 +116,7 @@ class Project extends React.Component {
                 {part.text}
               </span>
             )
-          })
+          }) : project.name
         } />
       </MenuItem>
     )

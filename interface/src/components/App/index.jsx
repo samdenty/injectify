@@ -64,6 +64,8 @@ const styles = theme => ({
     left: 15
   },
   content: {
+    position: 'relative',
+    overflowY: 'scroll',
     width: '100%',
     flexGrow: 1,
     backgroundColor: theme.palette.background.default,

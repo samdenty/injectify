@@ -1,3 +1,5 @@
+import NProgress from 'nprogress'
+
 // export function switchPage(page) {
 //   return (dispatch, getState) => {
 //     let state = getState().injectify
@@ -29,10 +31,34 @@ export function updateSettings(settings) {
   }
 }
 
-export function switchProject(project) {
+export function project(project, page) {
+  const { socket } = window
+  return (dispatch, getState) => {
+    if (!page) page = getState().injectify.page
+    socket.emit('project:read', {
+      project: project.name,
+      page
+    })
+    NProgress.start()
+    dispatch({
+      type: 'SWITCH_PROJECT',
+      project
+    })
+  }
+}
+
+export function loading(state) {
   return {
-    type: 'SWITCH_PROJECT',
-    project
+    type: 'LOADING',
+    loading: !!state
+  }
+}
+
+export function setProject(project, page) {
+  return {
+    type: 'SET_PROJECT',
+    project,
+    page
   }
 }
 

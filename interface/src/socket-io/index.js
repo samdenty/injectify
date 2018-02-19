@@ -1,6 +1,7 @@
-import queryString from "query-string"
-import url from "url"
-import _ from "lodash"
+import queryString from 'query-string'
+import NProgress from 'nprogress'
+import url from 'url'
+import _ from 'lodash'
 const query = queryString.parse(location.search)
 const development = process.env.NODE_ENV == 'development' ? true : false
 
@@ -14,31 +15,41 @@ export default (socket, store, history) => {
   const state = getState().injectify
 
   /**
-   * Log in with last used account
+   * Auto-login
    */
-  if (state.accounts.length) {
-    let lastUsedAccount = _.maxBy(state.accounts, o => {return o.lastUsed}) || state.accounts[0]
-    if (lastUsedAccount && lastUsedAccount.token) {
-      socket.emit(`auth:github/token`, lastUsedAccount.token)
-    }
-  }
-
-  if (query.token) {
-    socket.emit(`auth:github/token`, query.token)
-    history.push(location.pathname.split('?')[0])
-  }
-
   if (query.code) {
+    /**
+     * Log in with GitHub callback
+     */
     if (query.state && url.parse(query.state).hostname && window.location.hostname !== url.parse(query.state).hostname) {
       location = location.href.replace(window.location.origin, `${url.parse(query.state).protocol}/\/${url.parse(query.state).host}`)
     } else {
       socket.emit(`auth:github`, query)
       history.push(location.pathname.split('?')[0])
     }
+  } else if (query.token) {
+    /**
+     * Log in with token query
+     */
+    socket.emit(`auth:github/token`, query.token)
+    history.push(location.pathname.split('?')[0])
+  } else if (state.accounts.length) {
+    /**
+     * Log in with last used account
+     */
+    let lastUsedAccount = _.maxBy(state.accounts, o => {return o.lastUsed}) || state.accounts[0]
+    if (lastUsedAccount && lastUsedAccount.token) {
+      socket.emit(`auth:github/token`, lastUsedAccount.token)
+    }
+  } else {
+    setTimeout(() => {
+      NProgress.done()
+    }, 3000)
   }
 
   socket.on(`server:info`, server => {
     let { github, discord } = server
+    NProgress.inc()
     dispatch(Actions.setServer(server))
     /**
      * Append widgetbot widget if the screen width is greater than 400
@@ -81,6 +92,13 @@ export default (socket, store, history) => {
     //   page: page
     // })
     console.log(`%c[websocket] ` + `%cauth:github =>`, `color: #ef5350`, `color:  #FF9800`, data)
+    NProgress.inc()
+    if (state.project.name && state.page) {
+      socket.emit(`project:read`, {
+        project: state.project.name,
+        page: state.page
+      })
+    }
   })
 
   socket.on(`auth:github/stale`, data => {
@@ -88,49 +106,39 @@ export default (socket, store, history) => {
     dispatch(Actions.removeAccount({
       token: data.token
     }))
+    NProgress.done()
   })
 
   socket.on(`user:projects`, data => {
     console.log(`%c[websocket] ` + `%cuser:projects =>`, `color: #ef5350`, `color:  #FF9800`, data)
     dispatch(Actions.setProjects(data))
+    if (!(state.project.name && state.page)) {
+      NProgress.done()
+    }
   })
 
   socket.on(`project:read`, data => {
     let { page, doc } = data
     console.log(`%c[websocket] ` + `%cproject:read =>`, `color: #ef5350`, `color:  #FF9800`, data)
-    this.loading(true)
-    this.setState({
-      project: {
-        ...this.state.project,
-        ...doc
-      }
-    })
-
-    let tab = 0
-    if (page === `passwords`) tab = 1
-    if (page === `keylogger`) tab = 2
-    if (page === `inject`) tab = 3
-    if (page === `config`) tab = 4
-    this.setState({
-      tab: tab
-    })
+    dispatch(Actions.setProject(data.doc, page))
+    NProgress.done()
   })
 
-  socket.on(`project:switch`, data => {
-    console.log(`%c[websocket] ` + `%cproject:switch =>`, `color: #ef5350`, `color:  #FF9800`, data)
+  // socket.on(`project:switch`, data => {
+  //   console.log(`%c[websocket] ` + `%cproject:switch =>`, `color: #ef5350`, `color:  #FF9800`, data)
 
-    let page = `overview`
-    if (window.location.href.endsWith(`/passwords`)) page = `passwords`
-    if (window.location.href.endsWith(`/keylogger`)) page = `keylogger`
-    if (window.location.href.endsWith(`/inject`)) page = `inject`
-    if (window.location.href.endsWith(`/config`)) page = `config`
+  //   let page = `overview`
+  //   if (window.location.href.endsWith(`/passwords`)) page = `passwords`
+  //   if (window.location.href.endsWith(`/keylogger`)) page = `keylogger`
+  //   if (window.location.href.endsWith(`/inject`)) page = `inject`
+  //   if (window.location.href.endsWith(`/config`)) page = `config`
 
-    window.history.pushState(``, `${data.project} - Injectify`, `/projects/${encodeURIComponent(data.project)}/${page !== `overview` ? page : ``}`)
-    socket.emit(`project:read`, {
-      project: data.project,
-      page: page
-    })
-  })
+  //   window.history.pushState(``, `${data.project} - Injectify`, `/projects/${encodeURIComponent(data.project)}/${page !== `overview` ? page : ``}`)
+  //   socket.emit(`project:read`, {
+  //     project: data.project,
+  //     page: page
+  //   })
+  // })
 
   socket.on(`err`, error => {
     console.error(`%c[websocket] ` + `%cerr =>`, `color: #ef5350`, `color:  #FF9800`, error)
@@ -138,6 +146,7 @@ export default (socket, store, history) => {
       notify: error,
       notifyOpen: true
     })
+    NProgress.done()
   })
 
   socket.on(`notify`, message => {

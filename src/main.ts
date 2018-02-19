@@ -609,7 +609,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
         project,
         page
       } = data
-      let pages = ['overview', 'passwords', 'keylogger', 'inject', 'config']
+      let pages = ['overview', 'console', 'data', 'config']
 
       if (globalToken) {
         if (project && page && pages.includes(page)) {

@@ -10,12 +10,12 @@ const styles = theme => ({
 
 class Data extends React.Component {
   render() {
-    const { classes } = this.props
+    const { classes, project } = this.props
 
     return (
-      <div>Data</div>
+      <div>{JSON.stringify(project)}</div>
     )
   }
 }
 
-export default connect(({ injectify: {section} }) => ({ section }))(withStyles(styles)(Data))
+export default connect(({ injectify: {section, project} }) => ({ section, project }))(withStyles(styles)(Data))

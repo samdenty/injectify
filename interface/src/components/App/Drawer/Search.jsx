@@ -1,7 +1,7 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
-import Autosuggest from 'react-autosuggest'
+import Autosuggest from './Autosuggest'
 import match from 'autosuggest-highlight/match'
 import parse from 'autosuggest-highlight/parse'
 import TextField from 'material-ui/TextField'
@@ -29,43 +29,12 @@ const styles = theme => ({
   },
 })
 
-function renderInput(inputProps) {
-  const { classes, ref, ...other } = inputProps
-
-  return (
-    <MenuItem
-      button={false}
-      className={classes.search}
-    >
-      <TextField
-        fullWidth
-        inputRef={ref}
-        InputProps={{
-          classes: {
-            input: classes.input,
-          },
-          ...other,
-        }}
-      />
-    </MenuItem>
-  )
-}
-
 function renderProject(project, { query, isHighlighted }) {
   const matches = match(project.name, query)
   const parts = parse(project.name, matches)
 
   return (
     <Project project={project} parts={parts} />
-  )
-}
-
-function renderProjectsContainer(options) {
-  const { children, containerProps } = options
-  return (
-    <span {...containerProps}>
-      {children}
-    </span>
   )
 }
 
@@ -77,6 +46,41 @@ class Search extends React.Component {
   state = {
     value: '',
     suggestions: this.props.projects,
+  }
+
+  renderInput = (inputProps) => {
+    const { classes, ref, ...other } = inputProps
+
+    return (
+      <MenuItem
+        button={false}
+        className={classes.search}
+      >
+        <TextField
+          fullWidth
+          inputRef={ref}
+          InputProps={{
+            classes: {
+              input: classes.input,
+            },
+            ...other,
+          }}
+        />
+      </MenuItem>
+    )
+  }
+
+  renderProjectsContainer = (options) => {
+    const { selectedProject } = this.props
+    const { children, containerProps } = options
+    return (
+      <span {...containerProps}>
+        {typeof selectedProject.name === 'string' && !_.find(this.props.projects, { name: selectedProject.name }) && (
+          <Project project={selectedProject} denied={true} />
+        )}
+        {children}
+      </span>
+    )
   }
 
   getSuggestions = (value) => {
@@ -119,10 +123,10 @@ class Search extends React.Component {
           suggestionsList: classes.suggestionsList,
           suggestion: classes.suggestion,
         }}
-        renderInputComponent={renderInput}
+        renderInputComponent={this.renderInput}
         suggestions={this.state.suggestions}
         onSuggestionsFetchRequested={this.handleSuggestionsFetchRequested}
-        renderSuggestionsContainer={renderProjectsContainer}
+        renderSuggestionsContainer={this.renderProjectsContainer}
         getSuggestionValue={getSuggestionValue}
         alwaysRenderSuggestions={true}
         renderSuggestion={renderProject}
@@ -141,4 +145,4 @@ Search.propTypes = {
   classes: PropTypes.object.isRequired,
 }
 
-export default connect(({ injectify: { projects } }) => ({ projects }))(withStyles(styles)(Search))
+export default connect(({ injectify: { projects, project } }) => ({ projects, selectedProject: project }))(withStyles(styles)(Search))

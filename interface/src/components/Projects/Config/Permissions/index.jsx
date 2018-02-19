@@ -1,0 +1,114 @@
+import ReactDOM, { render } from 'react-dom'
+import React from 'react'
+import { connect } from 'react-redux'
+import _ from 'lodash'
+import { withStyles } from 'material-ui/styles'
+import Typography from 'material-ui/Typography'
+import Button from 'material-ui/Button'
+import Chip from 'material-ui/Chip'
+import Divider from 'material-ui/Divider'
+
+import UserChip from './UserChip'
+
+const styles = theme => ({
+  header: {
+    flexGrow: 1,
+  },
+  group: {
+    marginBottom: 0,
+    marginTop: '1em',
+    fontWeight: 500,
+    display: 'flex',
+    paddingBottom: 9,
+    lineHeight: '32px',
+  },
+  row: {
+    display: 'flex',
+    justifyContent: 'center',
+    flexWrap: 'wrap',
+    minHeight: 58,
+    background: 'rgba(0, 0, 0, 0.07)',
+    padding: '8px 0',
+  },
+  divider: {
+    margin: '0.5em 0'
+  },
+  noneAdded: {
+    background: 'none',
+    height: 42,
+  },
+  leftIcon: {
+    marginRight: theme.spacing.unit,
+  },
+})
+
+class Permissions extends React.Component {
+  canModify = () => {
+    const { project, account, group } = this.props
+    const requiredPermission = (() => {switch (group) {
+      case 'owners':
+        return 3
+      case 'admins':
+        return 2
+      default:
+        return 1
+    }})()
+    let permission = (() => {
+      if (project.permissions.owners.includes(account.user.id)) {
+        return 3
+      } else if (project.permissions.admins.includes(account.user.id)) {
+        return 2
+      } else {
+        return 1
+      }
+    })()
+    /**
+     * Admins can't add admins, users can't add users
+     */
+    if (
+      (permission === 2 && requiredPermission === 2) ||
+      (permission === 1 && requiredPermission === 1)
+    ) permission = -1
+    return permission >= requiredPermission
+  }
+
+  render() {
+    const { classes, group, project, variant } = this.props
+    const permissions = project.permissions[group]
+    const modifiable = this.canModify()
+
+    return (
+      <React.Fragment>
+        <Typography type="subheading" gutterBottom className={classes.group}>
+          <span className={classes.header}>
+            {_.capitalize(variant)}s:
+          </span>
+          {modifiable ? (
+            <Button size="small" className={classes.buttonSecondary}>
+              Add {variant}
+            </Button>
+          ) : null}
+        </Typography>
+        {permissions.length > 0 ? (
+          <div className={classes.row}>
+            {permissions.map((id, i) => {
+              return (
+                <UserChip key={i} id={id} group={group} />
+              )
+            })}
+          </div>
+        ) : (
+            <div className={classes.row}>
+              <Chip
+                label={`No ${variant}s added`}
+                className={classes.noneAdded}
+              />
+            </div>
+          )}
+        <Divider light className={classes.divider} />
+      </React.Fragment>
+    )
+  }
+}
+
+export default connect(({ injectify: {account, project} }) => ({ account, project }))(withStyles(styles)(Permissions))

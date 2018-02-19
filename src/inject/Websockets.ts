@@ -303,9 +303,9 @@ class Session {
       /**
        * Send the auto-execute script
        */
-      if (this.session.project.inject) {
-        if (this.session.project.inject.autoexecute) {
-          this.send('execute', this.session.project.inject.autoexecute)
+      if (this.session.project.console) {
+        if (this.session.project.console.autoexecute) {
+          this.send('execute', this.session.project.console.autoexecute)
         }
       }
     })
