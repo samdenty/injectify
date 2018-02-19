@@ -126,12 +126,21 @@ class App extends React.Component {
     open: window.innerWidth > 700,
   }
 
+  triggerResize = () => {
+    let resizeEvent = new Event('resize')
+    setTimeout(() => {
+      window.dispatchEvent(resizeEvent)
+    }, 250)
+  }
+
   handleDrawerOpen = () => {
     this.setState({ open: true })
+    this.triggerResize()
   }
 
   handleDrawerClose = () => {
     this.setState({ open: false })
+    this.triggerResize()
   }
 
   getComponent(key) {

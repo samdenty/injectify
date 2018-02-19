@@ -90,3 +90,56 @@ export function setProjects(projects) {
     projects
   }
 }
+
+export function setClients(project, clients) {
+  return {
+    type: 'SET_CLIENTS',
+    project,
+    clients
+  }
+}
+
+export function addClient(project, token, client) {
+  return {
+    type: 'ADD_CLIENT',
+    project,
+    token,
+    client
+  }
+}
+
+export function removeClient(project, token, id) {
+  return {
+    type: 'REMOVE_CLIENT',
+    project,
+    token,
+    id
+  }
+}
+
+export function selectClient(project, token) {
+  return {
+    type: 'SELECT_CLIENT',
+    project,
+    token
+  }
+}
+
+export function updateClient(client) {
+  return {
+    type: 'UPDATE_CLIENT',
+    project,
+    client
+  }
+}
+
+export function console(log) {
+  return {
+    type: 'CONSOLE',
+    log
+  }
+}
+
+// export function execute() {
+
+// }

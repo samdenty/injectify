@@ -42,7 +42,63 @@ const initialState = {
   // All accounts
   accounts: [],
   // Selected account
-  account: null
+  account: null,
+
+  console: {
+    clients: {},
+    selected: {},
+    graph: [
+      [
+      ]
+    ],
+    code: localStorage.getItem('injectScript') || `// Import types to enable intellisense\nimport { injectify, window } from 'injectify'\n\n// Type your code here`,
+    logs: [
+      {
+        type: 'warn',
+        message: [
+          {
+            type: 'string',
+            message: 'This is your console! Any output from the code you run is shown here'
+          }
+        ],
+        timestamp: +new Date(),
+        id: 'default-message0',
+      },
+      {
+        type: 'error',
+        message: [
+          {
+            type: 'string',
+            message: `You'll see any errors here, but you can also inspect Strings, Arrays, Objects and DOM nodes`
+          }
+        ],
+        timestamp: +new Date(),
+        id: 'default-message1',
+      },
+      {
+        type: 'info',
+        message: [
+          {
+            type: 'array',
+            message: [1,2,3]
+          },
+          {
+            type: 'object',
+            message: {value: true}
+          },
+          {
+            type: 'HTMLElement',
+            message: {
+              tagName: 'div',
+              innerHTML: '<ul><li><a href="/one">Example 1</a></li><li><a href="/two">Example 2</a></li><li><a href="/three">Example 3</a></li></ul>'
+            }
+          }
+        ],
+        timestamp: +new Date(),
+        id: 'default-message1',
+      },
+    ],
+  }
 }
 
 NProgress.start()
@@ -103,7 +159,7 @@ export default (state = initialState, action) => {
       return {
         ...state,
         section: 'projects',
-        project: action.project
+        project: action.project,
       }
     }
 
@@ -208,7 +264,6 @@ export default (state = initialState, action) => {
           ...action.project
         }
       }
-
       // Update in the projects collection
       let projects = state.projects
       let index = _.findIndex(projects, { name: data.project.name })
@@ -216,11 +271,108 @@ export default (state = initialState, action) => {
         projects[index] = data.project
         data.projects = projects
       }
-
-
       return {
         ...state,
         ...data
+      }
+    }
+
+    case 'SET_CLIENTS': {
+      return {
+        ...state,
+        console: {
+          ...state.console,
+          clients: action.clients
+        }
+      }
+    }
+
+    case 'ADD_CLIENT': {
+      let clients = state.console.clients
+      clients[action.token] = action.client
+      return {
+        ...state,
+        console: {
+          ...state.console,
+          clients
+        }
+      }
+    }
+
+    case 'REMOVE_CLIENT': {
+      let { clients, selected } = state.console
+      if (clients[action.token]) {
+        if (clients[action.token].sessions.length === 1) {
+          /**
+           * Last remaining session removed from client
+           */
+          delete clients[action.token]
+        } else {
+          /**
+           * A session was removed but the client contains other sessions
+           */
+          clients[action.token].sessions = _.reject(clients[action.token].sessions, {
+            id: action.id
+          })
+        }
+        /**
+         * If they're selected, deselect them
+         */
+        if (selected.token === action.token) {
+          selected.client = clients[action.token]
+        }
+      }
+
+      return {
+        ...state,
+        console: {
+          ...state.console,
+          selected,
+          clients
+        }
+      }
+    }
+
+    case 'SELECT_CLIENT': {
+      return {
+        ...state,
+        console: {
+          ...state.console,
+          clients: {
+            ...state.console.clients,
+            [action.token]: action.client
+          }
+        }
+      }
+    }
+
+    case 'UPDATE_CLIENT': {
+      return {
+        ...state,
+        console: {
+          ...state.console,
+          clients: {
+            ...state.console.clients,
+            [state.console.selected.token]: action.client
+          },
+          selected: {
+            ...state.console.selected,
+            client: action.client
+          }
+        }
+      }
+    }
+
+    case 'CONSOLE': {
+      return {
+        ...state,
+        console: {
+          ...state.console,
+          logs: [
+            ...state.console.logs,
+            action.log
+          ]
+        }
       }
     }
 

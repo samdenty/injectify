@@ -56,6 +56,10 @@ module.exports = {
 	},
 	devServer: {
 		contentBase: '../public/',
-		hot: true
+		hot: true,
+		overlay: {
+			errors: true,
+			warnings: true
+		}
 	}
 }

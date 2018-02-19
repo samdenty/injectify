@@ -1,21 +1,143 @@
-import ReactDOM, { render } from 'react-dom'
 import React from 'react'
 import { connect } from 'react-redux'
-import { withStyles } from 'material-ui/styles'
-import { switchSection } from '../../../actions'
+import Inspector, { DOMInspector, chromeDark } from 'react-inspector'
+import Rnd from 'react-rnd'
+import Linkify from 'react-linkify'
+import { ContextMenu, MenuItem, ContextMenuTrigger } from 'react-contextmenu'
+import copy from 'copy-to-clipboard'
 
-const styles = theme => ({
+import Sidebar from './Sidebar'
+import Editor from './Editor'
 
-})
+import { LineChart } from 'react-easy-chart'
+import Tooltip from 'material-ui/Tooltip'
+import List, { ListItem, ListItemIcon, ListItemText } from 'material-ui/List'
+import ListSubheader from 'material-ui/List/ListSubheader'
+import ComputerIcon from 'material-ui-icons/Computer'
+import moment from 'moment'
+import Button from 'material-ui/Button';
 
-class Console extends React.Component {
+
+class Inject extends React.Component {
+  state = {
+    open: false
+  }
+
+  componentDidMount() {
+    let project = this.props.project.name
+    let { socket } = window
+    this._mounted = true
+
+    let pageGhostMessages = ({ data }) => {
+      if (!this._mounted) {
+        window.removeEventListener('message', pageGhostMessages)
+        return
+      }
+      if (typeof data === 'object' && data.type === 'PageGhost') {
+        let { id, event } = data
+        if (window.pageGhost[id]) {
+          switch (event) {
+            case 'refresh':
+              window.pageGhost[id].refresh()
+              break
+            case 'execute':
+              window.pageGhost[id].execute(data.data)
+              break
+          }
+        }
+      }
+    }
+    window.addEventListener('message', pageGhostMessages)
+
+    socket.emit('inject:clients', {
+      project: project
+    })
+  }
+
+  componentWillUnmount() {
+    let { socket } = window
+    this._mounted = false
+
+    socket.emit('inject:close')
+  }
+
+  toggleMenu = (value) => {
+    this.setState({
+      open: typeof value !== 'undefined' ? value : !this.state.open
+    })
+  }
+
+  // execute = (token, id, script) => {
+  //   let project = this.props.project.name
+  //   let { socket } = window
+
+  //   if (token === '*') {
+  //     socket.emit('inject:execute', {
+  //       project: project,
+  //       recursive: true,
+  //       script: script || this.state.code && this.state.code.replace(/^\s*import .*\n/gm, ``)
+  //     })
+  //   } else if (id === '*') {
+  //     socket.emit('inject:execute', {
+  //       project: project,
+  //       token: token,
+  //       script: script || this.state.code && this.state.code.replace(/^\s*import .*/gm, ``)
+  //     })
+  //   } else {
+  //     socket.emit('inject:execute', {
+  //       project: project,
+  //       token: token,
+  //       id: id,
+  //       script: script || this.state.code && this.state.code.replace(/^\s*import .*/gm, ``)
+  //     })
+  //   }
+  // }
+
+  // executeSession = (id, data) => {
+  //   let { token, client } = this.state.selectedClient
+  //   let session = client.sessions[id]
+  //   if (data === 'execute') {
+  //     this.execute(token, session.id)
+  //   } else if (data === 'close') {
+  //     this.execute(token, session.id, 'window.close()')
+  //   } else if (data === 'open') {
+  //     window.open(session.window.url)
+  //   } else if (data === 'reload') {
+  //     this.execute(token, session.id, 'window.location.reload()')
+  //   } else {
+  //     this.execute(token, session.id, data)
+  //   }
+  // }
+
+  // switchClient = (token) => {
+  //   let { socket, project } = this.props
+
+  //   this.toggleMenu(false)
+
+  //   this.setState({
+  //     selectedClient: {
+  //       token: token,
+  //       client: this.state.clients[token]
+  //     }
+  //   })
+
+  //   /**
+  //    * Subscribe to client updates
+  //    */
+  //   socket.emit('inject:client', {
+  //     project: project,
+  //     client: token
+  //   })
+  // }
+
   render() {
-    const { classes, project } = this.props
-
     return (
-      <div>{JSON.stringify(project)}</div>
+      <div className={`inject ${this.state.open ? 'inject-list-open' : ''}`}>
+        <Sidebar />
+        <Editor />
+      </div>
     )
   }
 }
 
-export default connect(({ injectify: {section, project} }) => ({ section, project }))(withStyles(styles)(Console))
+export default connect(({ injectify: {inject, project} }) => ({ inject, project }))(Inject)

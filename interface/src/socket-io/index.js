@@ -11,8 +11,8 @@ import * as Actions from '../actions'
  * Socket.io handler
  */
 export default (socket, store, history) => {
-  const { dispatch, getState } = store
-  const state = getState().injectify
+  store = {...store, get state() { return store.getState().injectify }}
+  const { dispatch, state } = store
 
   /**
    * Auto-login
@@ -37,7 +37,9 @@ export default (socket, store, history) => {
     /**
      * Log in with last used account
      */
-    let lastUsedAccount = _.maxBy(state.accounts, o => {return o.lastUsed}) || state.accounts[0]
+    let lastUsedAccount = _.maxBy(state.accounts, o => {
+      return o.lastUsed
+    }) || state.accounts[0]
     if (lastUsedAccount && lastUsedAccount.token) {
       socket.emit(`auth:github/token`, lastUsedAccount.token)
     }
@@ -48,7 +50,10 @@ export default (socket, store, history) => {
   }
 
   socket.on(`server:info`, server => {
-    let { github, discord } = server
+    let {
+      github,
+      discord
+    } = server
     NProgress.inc()
     dispatch(Actions.setServer(server))
     /**
@@ -123,6 +128,75 @@ export default (socket, store, history) => {
     dispatch(Actions.setProject(data.doc, page))
     NProgress.done()
   })
+
+
+  /**
+   * Clients listener
+   */
+  socket.on(`inject:clients`, data => {
+    console.log('%c[websocket] ' + '%cinject:clients =>', 'color: #ef5350', 'color:  #FF9800', data)
+    let { event, session, clients, project } = data
+    /**
+     * Parse data
+     */
+    if (event == 'list') {
+      dispatch(Actions.setClients(project, clients))
+    } else {
+      if (event == 'connect') {
+        dispatch(Actions.addClient(project, session.token, session.data))
+        /**
+         * If they reconnect, re-select them
+         */
+        if (state.console.selected.token === session.token) {
+          if (!state.console.selected.client) {
+            socket.emit('inject:client', {
+              project,
+              client: session.token
+            })
+          }
+          dispatch(Actions.selectClient(project, session.token))
+        }
+      }
+
+      if (event == 'disconnect') {
+        dispatch(Actions.removeClient(project, session.token, session.id))
+      }
+    }
+  })
+
+  /**
+   * Client listener
+   */
+  socket.on(`inject:client`, client => {
+    console.log('Client emitted an update', client)
+    dispatch(Actions.updateClient(client))
+  })
+
+  /**
+   * Console listener
+   */
+  socket.on(`inject:log`, (log) => {
+    dispatch(Actions.console(log))
+
+    let { type, message } = log
+    if (type === 'return') {
+      console.log.apply(this, message)
+    } else {
+      console[type].apply(this, message)
+    }
+  })
+
+  /**
+   * PageGhost
+   */
+  socket.on(`inject:pageghost`, data => {
+    if (!window.pageGhost) window.pageGhost = {}
+    if (window.pageGhost[data.sender.id]) {
+      // if (data.dom) window.pageGhost[data.sender.id].dom = data.dom
+      window.pageGhost[data.sender.id].win.postMessage(data, '*')
+    }
+  })
+
 
   // socket.on(`project:switch`, data => {
   //   console.log(`%c[websocket] ` + `%cproject:switch =>`, `color: #ef5350`, `color:  #FF9800`, data)

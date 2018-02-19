@@ -1,9 +1,10 @@
-import React, { Component } from "react";
-import MenuIcon from 'material-ui-icons/Menu';
-import Measure from 'react-measure';
+import React, { Component } from "react"
+import MenuIcon from 'material-ui-icons/Menu'
+import Measure from 'react-measure'
 import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu"
+import { connect } from 'react-redux'
 
-class ChromeTabs extends Component {
+class Tabs extends Component {
   state = {
     dimensions: {
       width: -1,
@@ -102,7 +103,7 @@ class ChromeTabs extends Component {
                 ref={measureRef} >
                 {this.props.tabs && this.props.tabs.map((tab, i) => {
                   return tab.window ? (
-                    <ChromeTab
+                    <Tab
                       key={tab.id || i}
                       order={i}
                       id={tab.id || i}
@@ -125,7 +126,7 @@ class ChromeTabs extends Component {
   }
 }
 
-class ChromeTab extends Component {
+class Tab extends Component {
   render() {
     const { id, execute, order, width, height, devtools, title, active, favicon } = this.props
     return(
@@ -233,4 +234,4 @@ class ChromeTab extends Component {
   }
 }
 
-export default ChromeTabs;
+export default connect(({ injectify: {console} }) => ({ state: console }))(Tabs)
