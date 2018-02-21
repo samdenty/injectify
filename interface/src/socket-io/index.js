@@ -11,8 +11,10 @@ import * as Actions from '../actions'
  * Socket.io handler
  */
 export default (socket, store, history) => {
-  store = {...store, get state() { return store.getState().injectify }}
-  const { dispatch, state } = store
+  const { dispatch } = store
+  const state = () => {
+    return store.getState().injectify
+  }
 
   /**
    * Auto-login
@@ -33,13 +35,13 @@ export default (socket, store, history) => {
      */
     socket.emit(`auth:github/token`, query.token)
     history.push(location.pathname.split('?')[0])
-  } else if (state.accounts.length) {
+  } else if (state().accounts.length) {
     /**
      * Log in with last used account
      */
-    let lastUsedAccount = _.maxBy(state.accounts, o => {
+    let lastUsedAccount = _.maxBy(state().accounts, o => {
       return o.lastUsed
-    }) || state.accounts[0]
+    }) || state().accounts[0]
     if (lastUsedAccount && lastUsedAccount.token) {
       socket.emit(`auth:github/token`, lastUsedAccount.token)
     }
@@ -98,12 +100,6 @@ export default (socket, store, history) => {
     // })
     console.log(`%c[websocket] ` + `%cauth:github =>`, `color: #ef5350`, `color:  #FF9800`, data)
     NProgress.inc()
-    if (state.project.name && state.page) {
-      socket.emit(`project:read`, {
-        project: state.project.name,
-        page: state.page
-      })
-    }
   })
 
   socket.on(`auth:github/stale`, data => {
@@ -117,7 +113,12 @@ export default (socket, store, history) => {
   socket.on(`user:projects`, data => {
     console.log(`%c[websocket] ` + `%cuser:projects =>`, `color: #ef5350`, `color:  #FF9800`, data)
     dispatch(Actions.setProjects(data))
-    if (!(state.project.name && state.page)) {
+    if (state().project.name && state().page) {
+      socket.emit(`project:read`, {
+        project: state().project.name,
+        page: state().page
+      })
+    } else {
       NProgress.done()
     }
   })
@@ -147,8 +148,8 @@ export default (socket, store, history) => {
         /**
          * If they reconnect, re-select them
          */
-        if (state.console.selected.token === session.token) {
-          if (!state.console.selected.client) {
+        if (state().project.console.state.selected.token === session.token) {
+          if (!state().project.console.state.selected.client) {
             socket.emit('inject:client', {
               project,
               client: session.token
@@ -169,14 +170,14 @@ export default (socket, store, history) => {
    */
   socket.on(`inject:client`, client => {
     console.log('Client emitted an update', client)
-    dispatch(Actions.updateClient(client))
+    dispatch(Actions.updateClient(project, client))
   })
 
   /**
    * Console listener
    */
   socket.on(`inject:log`, (log) => {
-    dispatch(Actions.console(log))
+    dispatch(Actions.log(log))
 
     let { type, message } = log
     if (type === 'return') {

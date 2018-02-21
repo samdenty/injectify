@@ -70,7 +70,7 @@ class Editor extends React.Component {
         ) : (
           <CodeMirror value={code} onChange={this.onChange} options={options} />
         )}
-        {/* <Console resizeMonaco={this.updateDimensions.bind(this)} execute={code => { if (this.state.selectedClient && this.state.selectedClient.token) this.execute(this.state.selectedClient.token, '*', code) }} /> */}
+        <Console /*execute={code => { if (this.state.selectedClient && this.state.selectedClient.token) this.execute(this.state.selectedClient.token, '*', code) }}*/ />
       </div>
     )
   }

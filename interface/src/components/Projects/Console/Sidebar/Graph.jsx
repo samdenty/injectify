@@ -1,60 +1,180 @@
-import ReactDOM, { render } from 'react-dom'
 import React from 'react'
 import { connect } from 'react-redux'
+import _ from 'lodash'
 
 import { LineChart } from 'react-easy-chart'
+import { ContextMenu, MenuItem, ContextMenuTrigger } from 'react-contextmenu'
+import Tooltip from 'material-ui/Tooltip'
+import copy from 'copy-to-clipboard'
+import { updateGraph } from '../../../../actions'
 
 class Graph extends React.Component {
+  state = {
+    graph: [
+      [],
+      []
+    ],
+    tooltip: {
+      open: false,
+      title: ''
+    }
+  }
+  timer = null
+  times = 100
+
+  componentDidMount() {
+    this._mounted = true
+    this.refreshGraph()
+  }
+
+  componentWillUnmount() {
+    this._mounted = false
+  }
+
+  stub = (type) => {
+    let stub = []
+    for (let i = 0; i < this.times; i++) {
+      stub.push({
+        x: i + 1,
+        y: 0,
+        t: type
+      })
+    }
+    return stub
+  }
+
   refreshGraph = () => {
-    const { state } = this.props
-    const { graph } = clients.console
+    let { dispatch, project } = this.props
+
     if (this._mounted) {
-      let totaltime = 100
-      let array = []
-      if (graph[0].length === 0) {
-        for (var i = 0; i < totaltime; i++) {
-          array[i] = {
-            x: i + 1,
-            y: 0
+      let graph = this.state.graph
+
+      /**
+       * Fill the graph with blank data
+       */
+      if (graph[0].length === 0) graph[0] = this.stub(0)
+      if (graph[1].length === 0) graph[1] = this.stub(1)
+
+      graph[0].forEach((point, i) => {
+        graph[0][i] = {
+          ...graph[0][i],
+          x: i + 1
+        }
+      })
+
+      graph[1].forEach((point, i) => {
+        graph[1][i] = {
+          ...graph[1][i],
+          x: i + 1
+        }
+      })
+
+      let totalSessions = 0
+      let totalClients = 0
+      if (project.console.state.clients) {
+        totalClients = _(project.console.state.clients).size()
+        _.forEach(project.console.state.clients, client => {
+          if (client.sessions) {
+            totalSessions += client.sessions.length
           }
-        }
+        })
       }
-      if (!array.length) array = graph[0]
-      array = array.slice(1)
-      array.forEach((entry, index) => {
-        array[index] = {
-          x: index + 1,
-          y: entry.y
-        }
+
+      graph[0].push({
+        x: this.times,
+        y: totalClients,
+        t: 0
       })
-      array.push({
-        x: totaltime,
-        y: this.state.clients && Object.keys(this.state.clients).length
+
+      graph[1].push({
+        x: this.times,
+        y: totalSessions,
+        t: 1
       })
-      this.setState({
-        clientsGraph: [
-          array
-        ]
-      })
+
+      graph[0] = graph[0].slice(1)
+      graph[1] = graph[1].slice(1)
+
+      if (this._mounted) {
+        this.setState({
+          graph
+        })
+      }
+
       setTimeout(this.refreshGraph, 1000)
     }
   }
 
-  render() {
-    const { state } = this.props
+  mouseOverHandler = (point) => {
+    clearTimeout(this.timer)
+    this.setState({
+      tooltip: {
+        open: true,
+        title: `${point.y} ${point.t === 0 ? `online client` : `total tab`}${point.y !== 1 ? 's' : ''}`
+      }
+    })
+  }
 
+  mouseOutHandler = (point) => {
+    this.timer = setTimeout(() => {
+      this.setState({
+        tooltip: {
+          ...this.state.tooltip,
+          open: false
+        }
+      })
+    }, 1000)
+  }
+
+  mouseMoveHandler = (point) => {
+    clearTimeout(this.timer)
+    this.setState({
+      tooltip: {
+        open: true,
+        title: `${point.y} ${point.t === 0 ? `online client` : `total tab`}${point.y !== 1 ? 's' : ''}`
+      }
+    })
+  }
+
+  render() {
+    const { width } = this.props
     return (
-      <LineChart
-        axes
-        xTicks={-1}
-        yTicks={5}
-        axisLabels={{ x: 'Time', y: 'Clients' }}
-        width={210}
-        lineColors={['cyan']}
-        data={state.console.graph} />
+      <React.Fragment>
+        <ContextMenuTrigger id={'graph'}>
+          <Tooltip
+            id="graph-tooltip"
+            title={this.state.tooltip.title}
+            open={this.state.tooltip.open}
+            placement="right"
+          >
+            <div className="chart">
+              <LineChart
+                axes
+                xTicks={-1}
+                yTicks={5}
+                dataPoints
+                axisLabels={{ x: 'Time', y: 'Clients' }}
+                width={width - 10}
+                lineColors={['orange', 'red']}
+                mouseOverHandler={this.mouseOverHandler}
+                mouseOutHandler={this.mouseOutHandler}
+                mouseMoveHandler={this.mouseMoveHandler}
+                data={this.state.graph} />
+              </div>
+          </Tooltip>
+        </ContextMenuTrigger>
+        <ContextMenu id={'graph'}>
+          <MenuItem onClick={() => this.setState({ graph: [] })}>
+            Clear graph
+          </MenuItem>
+          <MenuItem divider />
+          <MenuItem onClick={() => copy(JSON.stringify(this.state.graph))}>
+            Copy graph data
+          </MenuItem>
+        </ContextMenu>
+      </React.Fragment>
     )
   }
 }
 
-
-export default connect(({ injectify }) => ({ state: injectify }))(Graph)
+export default connect(({ injectify: {project} }) => ({ project }))(Graph)

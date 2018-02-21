@@ -3,6 +3,7 @@ import React from 'react'
 import { connect } from 'react-redux'
 
 import { ContextMenu, MenuItem, ContextMenuTrigger } from 'react-contextmenu'
+import ContainerDimensions from 'react-container-dimensions'
 import copy from 'copy-to-clipboard'
 import Rnd from 'react-rnd'
 import Tooltip from 'material-ui/Tooltip'
@@ -12,13 +13,20 @@ import ComputerIcon from 'material-ui-icons/Computer'
 import Graph from './Graph'
 
 class Sidebar extends React.Component {
-  triggerResize = () => {
-    let resizeEvent = new Event('resize')
-    window.dispatchEvent(resizeEvent)
+  triggerResize = (state = false) => {
+    if (state) {
+      this.dynamicResize = setInterval(() => {
+        window.dispatchEvent(new Event('resize'))
+      }, 50)
+    } else {
+      clearInterval(this.dynamicResize)
+      window.dispatchEvent(new Event('resize'))
+    }
   }
 
   render() {
-    const { state } = this.props
+    const { project } = this.props
+    const { state } = project.console
     const { clients } = state
 
     return (
@@ -35,33 +43,29 @@ class Sidebar extends React.Component {
           bottomLeft: false,
           topLeft: false
         }}
-        onResizeStop={this.triggerResize.bind(this)}
+        onResizeStart={() => this.triggerResize(true)}
+        onResizeStop={() => this.triggerResize(false)}
         disableDragging={true}
         className='inject-list-container'
-        minWidth={198}
-        maxWidth={350}
+        minWidth={180}
+        maxWidth={550}
         resizeHandleClasses={{ right: 'resizer light' }}
       >
         <ListSubheader className='inject-list-header'>
-          <ComputerIcon /> Online clients {clients ? `(${Object.keys(clients).length})` : ''}
+          <ComputerIcon /> Online clients ({clients ? Object.keys(clients).length : 0})
         </ListSubheader>
-        <ContextMenuTrigger id={'graph'}>
-          {/* <Graph /> */}
-          <Tooltip title='Execute code on all clients' placement='top'>
-            <Button /*onClick={() => this.execute('*')} className='execute-all'*/>
-              Execute all
-            </Button>
-          </Tooltip>
-        </ContextMenuTrigger>
-        <ContextMenu id={'graph'}>
-          <MenuItem /*onClick={() => this.setState({ clientsGraph: [[]] })}*/>
-            Clear graph
-          </MenuItem>
-          <MenuItem divider />
-          <MenuItem onClick={() => copy(JSON.stringify(state.graph))}>
-            Copy graph data
-          </MenuItem>
-        </ContextMenu>
+        <ContainerDimensions>
+          {({ width }) => (
+            <div className="graph">
+              <Graph width={width} />
+              <Tooltip title='Execute code on all clients' placement='top'>
+                <Button /*onClick={() => this.execute('*')}*/ className='execute-all'>
+                  Execute all
+                </Button>
+              </Tooltip>
+            </div>
+          )}
+        </ContainerDimensions>
         <List>
           {clients && Object.keys(clients).map((token, i) => {
             const client = clients[token]
@@ -107,4 +111,4 @@ class Sidebar extends React.Component {
 }
 
 
-export default connect(({ injectify: { console } }) => ({ state: console }))(Sidebar)
+export default connect(({ injectify: { project } }) => ({ project }))(Sidebar)

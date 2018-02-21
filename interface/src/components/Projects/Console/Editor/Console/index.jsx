@@ -2,34 +2,52 @@ import ReactDOM, { render } from 'react-dom'
 import React from 'react'
 import { connect } from 'react-redux'
 
+import Rnd from 'react-rnd'
+import Linkify from 'react-linkify'
+import Inspector, { DOMInspector, chromeDark } from 'react-inspector'
+import moment from 'moment'
+import { ContextMenu, MenuItem, ContextMenuTrigger } from 'react-contextmenu'
+
 function download(filename, text) {
-  var pom = document.createElement('a');
-  pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
-  pom.setAttribute('download', filename);
+  let pom = document.createElement('a')
+  pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text))
+  pom.setAttribute('download', filename)
 
   if (document.createEvent) {
-    var event = document.createEvent('MouseEvents');
-    event.initEvent('click', true, true);
-    pom.dispatchEvent(event);
-  }
-  else {
-    pom.click();
+    let event = document.createEvent('MouseEvents')
+    event.initEvent('click', true, true)
+    pom.dispatchEvent(event)
+  } else {
+    pom.click()
   }
 }
 
 class Console extends React.Component {
   logs = 0
 
+  triggerResize = (state = false) => {
+    if (state) {
+      this.dynamicResize = setInterval(() => {
+        window.dispatchEvent(new Event('resize'))
+      }, 50)
+    } else {
+      clearInterval(this.dynamicResize)
+      window.dispatchEvent(new Event('resize'))
+    }
+  }
+
   componentDidMount() {
     this.hookConsole()
   }
 
   componentWillUpdate(nextProps) {
+    const { project } = this.props
+    const { logs } = project.console.state
     /**
      * Scroll to bottom
      */
-    if (this.props.logs.length !== this.logs) {
-      this.logs = this.props.logs.length
+    if (logs.length !== this.logs) {
+      this.logs = logs.length
       if (this.console) {
         if (this.console.scrollHeight - this.console.scrollTop === this.console.clientHeight) {
           setTimeout(() => {
@@ -69,7 +87,9 @@ class Console extends React.Component {
   }
 
   render() {
-    let { logs, resizeMonaco, execute } = this.props
+    const { project } = this.props
+    const { logs } = project.console.state
+
     return (
       <Rnd
         bounds="parent"
@@ -84,10 +104,12 @@ class Console extends React.Component {
           bottomLeft: false,
           topLeft: false
         }}
-        onResizeStop={resizeMonaco.bind(this)}
+        onResizeStart={() => this.triggerResize(true)}
+        onResizeStop={() => this.triggerResize(false)}
         disableDragging={true}
         className="inject-console"
         minHeight={60}
+        maxHeight="100%"
         resizeHandleClasses={{ top: 'resizer' }}
       >
         <ContextMenuTrigger id={'console'}>
@@ -99,7 +121,7 @@ class Console extends React.Component {
                     <div className="console-timestamp">{moment(log.timestamp).format('HH:mm:ss')}</div>
                     <div className="console-indicator"></div>
                     <div className="source-code">
-                      <MessageParser messages={log.message} type={log.type} sender={log.sender} id={log.id} execute={execute.bind(this)} />
+                      <MessageParser messages={log.message} type={log.type} sender={log.sender} id={log.id} /*execute={execute.bind(this)}*/ />
                     </div>
                   </div>
                 </div>
@@ -273,4 +295,4 @@ class MessageParser extends React.Component {
 }
 
 
-export default connect(({ injectify: {console} }) => ({ state: console }))(Console)
+export default connect(({ injectify: {project} }) => ({ project }))(Console)

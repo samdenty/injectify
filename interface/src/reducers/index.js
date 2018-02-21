@@ -3,13 +3,15 @@ import NProgress from 'nprogress'
 
 const config = {
   sections: ['home', 'settings', 'projects'],
-  pages: ['overview', 'console', 'data', 'config'],
+  pages: ['overview', 'console', 'data', 'config']
 }
 
 const initialState = {
   section: 'home',
   page: 'overview',
   loading: true,
+
+  drawerOpen: window.innerWidth >= 960,
 
   server: {
     github: {
@@ -29,7 +31,7 @@ const initialState = {
   },
 
   settings: {
-    dark: true,
+    dark: true
   },
 
   // ALl projects
@@ -42,86 +44,92 @@ const initialState = {
   // All accounts
   accounts: [],
   // Selected account
-  account: null,
+  account: null
+}
 
-  console: {
-    clients: {},
-    selected: {},
-    graph: [
-      [
-      ]
-    ],
-    code: localStorage.getItem('injectScript') || `// Import types to enable intellisense\nimport { injectify, window } from 'injectify'\n\n// Type your code here`,
-    logs: [
-      {
-        type: 'warn',
-        message: [
-          {
-            type: 'string',
-            message: 'This is your console! Any output from the code you run is shown here'
+const initialConsole = {
+  clients: {},
+  selected: {},
+  // graph: [],
+  code: window.localStorage.getItem('injectScript') || `// Import types to enable intellisense\nimport { injectify, window } from 'injectify'\n\n// Type your code here`,
+  logs: [
+    {
+      type: 'warn',
+      message: [
+        {
+          type: 'string',
+          message: 'This is your console! Any output from the code you run is shown here'
+        }
+      ],
+      timestamp: +new Date(),
+      id: 'default-message0'
+    },
+    {
+      type: 'error',
+      message: [
+        {
+          type: 'string',
+          message: `You'll see any errors here, but you can also inspect Strings, Arrays, Objects and DOM nodes`
+        }
+      ],
+      timestamp: +new Date(),
+      id: 'default-message1'
+    },
+    {
+      type: 'info',
+      message: [
+        {
+          type: 'array',
+          message: [1, 2, 3]
+        },
+        {
+          type: 'object',
+          message: {value: true}
+        },
+        {
+          type: 'HTMLElement',
+          message: {
+            tagName: 'div',
+            innerHTML: '<ul><li><a href="/one">Example 1</a></li><li><a href="/two">Example 2</a></li><li><a href="/three">Example 3</a></li></ul>'
           }
-        ],
-        timestamp: +new Date(),
-        id: 'default-message0',
-      },
-      {
-        type: 'error',
-        message: [
-          {
-            type: 'string',
-            message: `You'll see any errors here, but you can also inspect Strings, Arrays, Objects and DOM nodes`
-          }
-        ],
-        timestamp: +new Date(),
-        id: 'default-message1',
-      },
-      {
-        type: 'info',
-        message: [
-          {
-            type: 'array',
-            message: [1,2,3]
-          },
-          {
-            type: 'object',
-            message: {value: true}
-          },
-          {
-            type: 'HTMLElement',
-            message: {
-              tagName: 'div',
-              innerHTML: '<ul><li><a href="/one">Example 1</a></li><li><a href="/two">Example 2</a></li><li><a href="/three">Example 3</a></li></ul>'
-            }
-          }
-        ],
-        timestamp: +new Date(),
-        id: 'default-message1',
-      },
-    ],
-  }
+        }
+      ],
+      timestamp: +new Date(),
+      id: 'default-message1'
+    }
+  ]
 }
 
 NProgress.start()
 
 try {
-  let settings = localStorage.getItem('settings')
-  if (settings) initialState.settings = {
-    ...initialState.settings,
-    ...JSON.parse(settings)
+  let settings = window.localStorage.getItem('settings')
+  if (settings) {
+    initialState.settings = {
+      ...initialState.settings,
+      ...JSON.parse(settings)
+    }
   }
-} catch(e) {
-  localStorage.removeItem('settings')
+} catch (e) {
+  window.localStorage.removeItem('settings')
 }
 
 try {
-  let accounts = localStorage.getItem('accounts')
+  let accounts = window.localStorage.getItem('accounts')
   if (accounts) initialState.accounts = JSON.parse(accounts)
-} catch(e) {
-  localStorage.removeItem('accounts')
+} catch (e) {
+  window.localStorage.removeItem('accounts')
 }
 
 export default (state = initialState, action) => {
   switch (action.type) {
+    case 'TOGGLE_DRAWER': {
+      return {
+        ...state,
+        drawerOpen: action.open
+      }
+    }
+
     case 'LOADING': {
       let loading = !!action.loading
       if (loading) {
@@ -134,6 +142,15 @@ export default (state = initialState, action) => {
         loading
       }
     }
+
+    // case 'UPDATE_GRAPH': {
+    //   let project = _.cloneDeep(state.project)
+    //   project.console.graph = action.graph
+    //   return {
+    //     ...state,
+    //     project
+    //   }
+    // }
 
     case 'SWITCH_SECTION': {
       setTimeout(() => {
@@ -155,11 +172,11 @@ export default (state = initialState, action) => {
     }
 
     case 'SWITCH_PROJECT': {
-      document.title = `${action.project.name} - ${_.capitalize(state.page)} • Injectify`
+      document.title = `${action.name} - ${_.capitalize(state.page)} • Injectify`
       return {
         ...state,
         section: 'projects',
-        project: action.project,
+        project: _.find(state.projects, { name: action.name })
       }
     }
 
@@ -189,7 +206,7 @@ export default (state = initialState, action) => {
         ...state.settings,
         ...action.settings
       }
-      localStorage.setItem('settings', JSON.stringify(settings))
+      window.localStorage.setItem('settings', JSON.stringify(settings))
       return {
         ...state,
         settings: settings
@@ -204,20 +221,29 @@ export default (state = initialState, action) => {
     }
 
     case 'AUTH_ACCOUNT': {
-      let accounts = state.accounts
-      let account = _.find(accounts, { user: { id: action.user.id } })
-      if (!account) {
-        account = {}
-        accounts.push(account)
+      let data = {
+        accounts: _.cloneDeep(state.accounts),
+        account: {}
       }
-      account.lastUsed = +new Date()
-      account.token = action.token
-      account.user = action.user
-      localStorage.setItem('accounts', JSON.stringify(accounts))
+
+      let index = _.findIndex(data.accounts, { user: { id: action.user.id } })
+      if (index > -1) {
+        data.account = data.accounts[index]
+      } else {
+        index = data.accounts.push(data.account)
+      }
+
+      data.accounts[index] = data.account = {
+        ...data.account,
+        lastUsed: +new Date(),
+        token: action.token,
+        user: action.user
+      }
+
+      window.localStorage.setItem('accounts', JSON.stringify(data.accounts))
       return {
         ...state,
-        accounts,
-        account
+        ...data
       }
     }
 
@@ -239,7 +265,8 @@ export default (state = initialState, action) => {
           section: 'home'
         }
       }
-      localStorage.setItem('accounts', JSON.stringify(data.accounts))
+
+      window.localStorage.setItem('accounts', JSON.stringify(data.accounts))
       return {
         ...state,
         ...data
@@ -257,20 +284,20 @@ export default (state = initialState, action) => {
       let data = {
         project: action.project
       }
+      // Set the initial console state
+      if (data.project.console && !data.project.console.state) data.project.console.state = initialConsole
+      // Switch to the correct page
       if (config.pages.includes(action.page)) data.page = action.page
-      if (state.project.name === action.project.name) {
-        data.project = {
-          ...state.project,
-          ...action.project
-        }
-      }
+
       // Update in the projects collection
-      let projects = state.projects
+      let projects = _.cloneDeep(state.projects)
       let index = _.findIndex(projects, { name: data.project.name })
       if (index > -1) {
+        data.project = _.merge(projects[index], data.project)
         projects[index] = data.project
         data.projects = projects
       }
+
       return {
         ...state,
         ...data
@@ -278,58 +305,91 @@ export default (state = initialState, action) => {
     }
 
     case 'SET_CLIENTS': {
+      let data = {
+        projects: _.cloneDeep(state.projects)
+      }
+
+      // Update in the projects collection
+      let index = _.findIndex(data.projects, { name: action.project })
+      if (index > -1) {
+        let newState = data.projects[index].console.state
+        newState.clients = action.clients
+
+        // Update the selected client
+        if (state.project.name === action.project) {
+          data.project = data.projects[index]
+        }
+      }
+
       return {
         ...state,
-        console: {
-          ...state.console,
-          clients: action.clients
-        }
+        ...data
       }
     }
 
     case 'ADD_CLIENT': {
-      let clients = state.console.clients
-      clients[action.token] = action.client
+      let data = {
+        projects: _.cloneDeep(state.projects)
+      }
+
+      // Update in the projects collection
+      let index = _.findIndex(data.projects, { name: action.project })
+      if (index > -1) {
+        let newState = data.projects[index].console.state
+        newState.clients[action.token] = action.client
+
+        // Update the selected client
+        if (state.project.name === action.project) {
+          data.project = data.projects[index]
+        }
+      }
+
       return {
         ...state,
-        console: {
-          ...state.console,
-          clients
-        }
+        ...data
       }
     }
 
     case 'REMOVE_CLIENT': {
-      let { clients, selected } = state.console
-      if (clients[action.token]) {
-        if (clients[action.token].sessions.length === 1) {
+      let data = {
+        projects: _.cloneDeep(state.projects)
+      }
+
+      // Update in the projects collection
+      let index = _.findIndex(data.projects, { name: action.project })
+      if (index > -1) {
+        let { clients, selected } = data.projects[index].console.state
+        if (clients[action.token]) {
+          if (clients[action.token].sessions.length === 1) {
+            /**
+             * Last remaining session removed from client
+             */
+            delete clients[action.token]
+          } else {
+            /**
+             * A session was removed but the client contains other sessions
+             */
+            clients[action.token].sessions = _.reject(clients[action.token].sessions, {
+              id: action.id
+            })
+          }
           /**
-           * Last remaining session removed from client
+           * If they're selected, deselect them
            */
-          delete clients[action.token]
-        } else {
-          /**
-           * A session was removed but the client contains other sessions
-           */
-          clients[action.token].sessions = _.reject(clients[action.token].sessions, {
-            id: action.id
-          })
+          if (selected.token === action.token) {
+            selected.client = clients[action.token]
+          }
         }
-        /**
-         * If they're selected, deselect them
-         */
-        if (selected.token === action.token) {
-          selected.client = clients[action.token]
+
+        // Update the selected client
+        if (state.project.name === action.project) {
+          data.project = data.projects[index]
         }
       }
 
       return {
         ...state,
-        console: {
-          ...state.console,
-          selected,
-          clients
-        }
+        ...data
       }
     }
 

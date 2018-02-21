@@ -48,10 +48,7 @@ class Inject extends React.Component {
       }
     }
     window.addEventListener('message', pageGhostMessages)
-
-    socket.emit('inject:clients', {
-      project: project
-    })
+    this.addListener()
   }
 
   componentWillUnmount() {
@@ -59,6 +56,20 @@ class Inject extends React.Component {
     this._mounted = false
 
     socket.emit('inject:close')
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.project.name !== this.props.project.name) {
+      this.addListener(nextProps.project.name)
+    }
+  }
+
+  addListener = (project = this.props.project.name) => {
+    socket.emit('inject:close')
+    socket.emit('inject:clients', {
+      project: project
+    })
+    console.debug(`Listening for client events for project ${project}`)
   }
 
   toggleMenu = (value) => {

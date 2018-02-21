@@ -6,6 +6,7 @@ import { SocketSession } from './definitions/session'
 import ClientInfo from './ClientInfo'
 import InjectAPI from './InjectAPI'
 import chalk from 'chalk'
+import _ from 'lodash'
 const { RateLimiter } = require('limiter')
 const atob = require('atob')
 const getIP = require('../lib/getIP.js')
@@ -237,7 +238,6 @@ class Session {
     this.socket.on('close', () => this.close())
     this.socket.on('error', () => {
       if (this.socket.readyState !== WebSocket.OPEN) {
-        this.close()
         this.socket.close()
       }
     })

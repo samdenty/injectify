@@ -1,4 +1,3 @@
-import ReactDOM, { render } from 'react-dom'
 import React from 'react'
 import { connect } from 'react-redux'
 import { Switch, Route } from 'react-router-dom'
@@ -13,7 +12,7 @@ import Data from './Data'
 import Config from './Config'
 
 class ProjectScreen extends React.Component {
-  render() {
+  render () {
     const { project } = this.props
 
     return (

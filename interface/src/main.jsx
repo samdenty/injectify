@@ -58,7 +58,14 @@ const render = App => {
     </Provider>,
     document.getElementsByTagName('react')[0]
   )
-  if (document.body) document.body.classList.add('fade-in')
+  if (!document.body.classList.contains('fade-in')) {
+    document.body.classList.add('fade-in')
+    // Force resize event as the transform messed up initial viewport
+    setTimeout(() => {
+      let resizeEvent = new Event('resize')
+      window.dispatchEvent(resizeEvent)
+    }, 1000)
+  }
 }
 
 render(Injectify)

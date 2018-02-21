@@ -1,6 +1,6 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import { project as switchProject } from '../../../actions'
+import { project as switchProject, toggleDrawer } from '../../../actions'
 
 import { withStyles } from 'material-ui/styles'
 import DeniedIcon from 'material-ui-icons/NotInterested'
@@ -59,9 +59,10 @@ const styles = theme => ({
 })
 
 class Project extends React.Component {
-  switchProject = project => {
-    let { dispatch } = this.props
-    dispatch(switchProject(project))
+  switchProject = () => {
+    let { dispatch, project } = this.props
+    dispatch(switchProject(project.name))
+    dispatch(toggleDrawer(false, true))
   }
 
   render() {
@@ -73,7 +74,7 @@ class Project extends React.Component {
       <MenuItem
         button
         selected={(denied || section === 'projects') && selected}
-        onClick={() => { this.switchProject(project) }}
+        onClick={this.switchProject.bind(this)}
         classes={{
           selected: denied ? classes.deniedIcon : settings.dark ? classes.selectedDark : classes.selectedLight
         }}
@@ -123,4 +124,4 @@ class Project extends React.Component {
   }
 }
 
-export default connect(({ injectify: {settings, account, section, project} }) => ({ settings, account, section, selectedProject: project }))(withStyles(styles)(Project))
+export default connect(({ injectify: {settings, account, section, project, projects} }) => ({ settings, account, section, selectedProject: project, projects }))(withStyles(styles)(Project))

@@ -13,6 +13,8 @@ import MenuIcon from 'material-ui-icons/Menu'
 import ChevronLeftIcon from 'material-ui-icons/ChevronLeft'
 import SvgIcon from 'material-ui/SvgIcon'
 
+import { toggleDrawer } from '../../actions'
+
 const drawerWidth = 240
 
 const styles = theme => ({
@@ -40,15 +42,22 @@ const styles = theme => ({
     backgroundColor: '#3F51B5',
     color: '#fff',
   },
+  gutters: {
+    paddingRight: '24px !important',
+  },
   menuButton: {
     marginLeft: 12,
     marginRight: 20,
   },
   hide: {
-    display: 'none',
+    [theme.breakpoints.up('md')]: {
+      display: 'none',
+    }
   },
   drawerPaper: {
-    position: 'relative',
+    [theme.breakpoints.up('md')]: {
+      position: 'relative',
+    },
     height: '100%',
     width: drawerWidth,
   },
@@ -65,7 +74,7 @@ const styles = theme => ({
   },
   content: {
     position: 'relative',
-    overflowY: 'scroll',
+    overflowY: 'auto',
     width: '100%',
     flexGrow: 1,
     backgroundColor: theme.palette.background.default,
@@ -74,21 +83,15 @@ const styles = theme => ({
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.leavingScreen,
     }),
-    height: 'calc(100% - 56px)',
-    marginTop: 56,
-    [theme.breakpoints.up('sm')]: {
-      height: 'calc(100% - 64px)',
-      marginTop: 64,
+    height: 'calc(100% - 64px)',
+    marginTop: 64,
+    [theme.breakpoints.up('md')]: {
+      marginLeft: -drawerWidth,
     },
-    marginLeft: -drawerWidth,
   },
   contentWithTabs: {
-    height: 'calc(100% - 120px)',
-    marginTop: 120,
-    [theme.breakpoints.up('sm')]: {
-      height: 'calc(100% - 136px)',
-      marginTop: 136,
-    },
+    height: 'calc(100% - 136px)',
+    marginTop: 136,
   },
   contentShift: {
     transition: theme.transitions.create('margin', {
@@ -97,24 +100,15 @@ const styles = theme => ({
     }),
     marginLeft: 0,
   },
-  '@media (min-width: 700px)': {
-    appBarShift: {
+  appBarShift: {
+    [theme.breakpoints.up('md')]: {
       width: `calc(100% - ${drawerWidth}px)`,
-      transition: theme.transitions.create(['margin', 'width'], {
-        easing: theme.transitions.easing.easeOut,
-        duration: theme.transitions.duration.enteringScreen,
-      }),
-      marginLeft: drawerWidth,
     },
-  },
-  '@media (max-width: 700px)': {
-    content: {
-      marginLeft: -drawerWidth,
-    },
-    drawerPaper: {
-      flex: 'none',
-      width: '256px !important',
-    },
+    transition: theme.transitions.create(['margin', 'width'], {
+      easing: theme.transitions.easing.easeOut,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+    marginLeft: drawerWidth,
   },
   leftIcon: {
     marginRight: theme.spacing.unit,
@@ -123,23 +117,42 @@ const styles = theme => ({
 
 class App extends React.Component {
   state = {
-    open: window.innerWidth > 700,
+    mobile: window.innerWidth <= 960
+  }
+
+  componentWillMount() {
+    this.resizeListener = this.handleResize.bind(this)
+    window.addEventListener('resize', this.resizeListener)
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('resize', this.resizeListener)
   }
 
   triggerResize = () => {
-    let resizeEvent = new Event('resize')
+    this.dynamicResize = setInterval(() => {
+      window.dispatchEvent(new Event('resize'))
+    }, 50)
     setTimeout(() => {
-      window.dispatchEvent(resizeEvent)
-    }, 250)
+      clearInterval(this.dynamicResize)
+    }, 300)
+  }
+
+  handleResize = () => {
+    this.setState({
+      mobile: window.innerWidth <= 960
+    })
   }
 
   handleDrawerOpen = () => {
-    this.setState({ open: true })
+    const { dispatch } = this.props
+    dispatch(toggleDrawer(true))
     this.triggerResize()
   }
 
   handleDrawerClose = () => {
-    this.setState({ open: false })
+    const { dispatch } = this.props
+    dispatch(toggleDrawer(false))
     this.triggerResize()
   }
 
@@ -152,23 +165,22 @@ class App extends React.Component {
   }
 
   render() {
-    const { classes, theme, section, settings } = this.props
-    const { open } = this.state
+    const { classes, theme, section, drawerOpen, settings } = this.props
 
     return (
       <div className={`app ${settings.dark ? 'dark' : ''} ${classes.appFrame}`}>
         <div className={`main ${settings.dark ? `${classes.appFrameDark}` : ''} ${classes.appFrame}`}>
           <AppBar
             className={classNames(classes.appBar, {
-              [classes.appBarShift]: open,
+              [classes.appBarShift]: drawerOpen,
             })}
           >
-            <Toolbar disableGutters={!open}>
+            <Toolbar disableGutters={this.state.mobile || !drawerOpen} classes={{ root: classes.gutters }}>
               <IconButton
                 color="inherit"
                 aria-label="open drawer"
                 onClick={this.handleDrawerOpen}
-                className={classNames(classes.menuButton, open && classes.hide)}
+                className={classNames(classes.menuButton, drawerOpen && classes.hide)}
               >
                 <MenuIcon />
               </IconButton>
@@ -177,11 +189,15 @@ class App extends React.Component {
             {this.getComponent('navigation')}
           </AppBar>
           <Drawer
-            variant="persistent"
+            variant={this.state.mobile ? "temporary" : "persistent"}
             classes={{
               paper: classes.drawerPaper,
             }}
-            open={open}
+            open={drawerOpen}
+            onClose={this.handleDrawerClose}
+            ModalProps={{
+              keepMounted: true,
+            }}
           >
             <div className={classes.drawerInner}>
               <div className={classes.drawerHeader}>
@@ -200,7 +216,7 @@ class App extends React.Component {
           </Drawer>
           <main
             className={classNames(classes.content, {
-              [classes.contentShift]: open,
+              [classes.contentShift]: drawerOpen,
               [classes.contentWithTabs]: this.props.section === 'projects',
             })}
           >
@@ -217,4 +233,4 @@ App.propTypes = {
   theme: PropTypes.object.isRequired,
 }
 
-export default connect(({ injectify: {section, settings} }) => ({ section, settings }))(withStyles(styles, { withTheme: true })(App))
+export default connect(({ injectify: {section, drawerOpen, settings} }) => ({ section, drawerOpen, settings }))(withStyles(styles, { withTheme: true })(App))

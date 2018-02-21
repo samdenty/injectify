@@ -3,7 +3,6 @@ export default (store, history) => {
   let currentState = store.getState().injectify
   let currentPath = null
   store.subscribe(() => {
-    const { socket } = window
     let previousState = currentState
     let previousPath = currentPath
     currentState = store.getState().injectify
@@ -31,21 +30,21 @@ export default (store, history) => {
         }
       }
     }
-    if (currentState.project !== previousState.project) {
+    if (currentState.project.name !== previousState.project.name) {
       console.debug(`Project changed from`, previousState.project, `to`, currentState.project)
     } else if (currentState.page !== previousState.page) {
       console.debug(`Page changed from`, previousState.page, `to`, currentState.page)
       if (currentState.section === 'projects' && currentState.project && currentState.project.name) {
-        store.dispatch(switchProject(currentState.project, currentState.page))
+        store.dispatch(switchProject(currentState.project.name, currentState.page))
       }
     } else if (currentState.section !== previousState.section) {
       console.debug(`Section changed from`, previousState.section, `to`, currentState.section)
     }
   })
 
-  function updateHistory(section, project, page) {
+  function updateHistory (section, project, page) {
     let data = {
-      section,
+      section
     }
     if (section === 'projects') {
       data = {
@@ -60,7 +59,7 @@ export default (store, history) => {
     })
   }
 
-  function checkURL(location = window.location) {
+  function checkURL (location = window.location) {
     let url = location.pathname.split('/').splice(1)
     updateHistory(decodeURIComponent(url[0]), decodeURIComponent(url[1]), url[2])
   }

@@ -1,7 +1,7 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import _ from 'lodash'
-import { switchSection } from '../../../actions'
+import { switchSection, toggleDrawer } from '../../../actions'
 import Project from './Project'
 import Search from './Search'
 
@@ -36,6 +36,7 @@ class Drawer extends React.Component {
   section = (section) => {
     let { dispatch } = this.props
     dispatch(switchSection(section))
+    dispatch(toggleDrawer(false, true))
   }
 
   handleClick = () => {
@@ -47,9 +48,7 @@ class Drawer extends React.Component {
 
     return (
       <div className={classes.root}>
-        <List
-          component="nav"
-        >
+        <List component="nav">
           <MenuItem button onClick={() => this.section('home')} selected={section === 'home'}>
             <ListItemIcon>
               <HomeIcon />
