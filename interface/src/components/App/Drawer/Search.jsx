@@ -71,12 +71,12 @@ class Search extends React.Component {
   }
 
   renderProjectsContainer = (options) => {
-    const { selectedProject } = this.props
+    const { projects, selectedProject } = this.props
     const { children, containerProps } = options
     return (
       <span {...containerProps}>
-        {typeof selectedProject.name === 'string' && !_.find(this.props.projects, { name: selectedProject.name }) && (
-          <Project project={selectedProject} denied={true} />
+        {selectedProject.index === -1 && (
+          <Project project={projects[selectedProject.index]} denied={true} />
         )}
         {children}
       </span>
@@ -145,4 +145,4 @@ Search.propTypes = {
   classes: PropTypes.object.isRequired,
 }
 
-export default connect(({ injectify: { projects, project } }) => ({ projects, selectedProject: project }))(withStyles(styles)(Search))
+export default connect(({ injectify: { projects, selectedProject } }) => ({ projects, selectedProject }))(withStyles(styles)(Search))

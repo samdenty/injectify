@@ -66,7 +66,7 @@ class Project extends React.Component {
   }
 
   render() {
-    const { classes, parts, project, selectedProject, account, settings, denied, section } = this.props
+    const { classes, parts, project, projects, selectedProject, account, settings, denied, section } = this.props
 
     const selected = denied || project.name === selectedProject.name
 
@@ -124,4 +124,4 @@ class Project extends React.Component {
   }
 }
 
-export default connect(({ injectify: {settings, account, section, project, projects} }) => ({ settings, account, section, selectedProject: project, projects }))(withStyles(styles)(Project))
+export default connect(({ injectify: {settings, account, section, selectedProject, projects} }) => ({ settings, account, section, selectedProject, projects }))(withStyles(styles)(Project))

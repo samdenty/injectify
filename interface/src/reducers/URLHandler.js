@@ -11,11 +11,11 @@ export default (store, history) => {
      * If the section / project / page changed push state
      */
     if (previousPath === currentPath) {
-      if (currentState.page !== previousState.page || currentState.section !== previousState.section || currentState.project !== previousState.project) {
+      if (currentState.page !== previousState.page || currentState.section !== previousState.section || currentState.selectedProject.name !== previousState.selectedProject.name) {
         let url
         switch (currentState.section) {
           case 'projects':
-            url = `/${currentState.section}/${encodeURIComponent(currentState.project.name)}/${currentState.page}`
+            url = `/${currentState.section}/${encodeURIComponent(currentState.selectedProject.name)}/${currentState.page}`
             break
           case 'home':
             url = `/`
@@ -30,12 +30,12 @@ export default (store, history) => {
         }
       }
     }
-    if (currentState.project.name !== previousState.project.name) {
-      console.debug(`Project changed from`, previousState.project, `to`, currentState.project)
+    if (currentState.selectedProject.name !== previousState.selectedProject.name) {
+      console.debug(`Project changed from`, previousState.selectedProject.name, `to`, currentState.selectedProject.name)
     } else if (currentState.page !== previousState.page) {
       console.debug(`Page changed from`, previousState.page, `to`, currentState.page)
-      if (currentState.section === 'projects' && currentState.project && currentState.project.name) {
-        store.dispatch(switchProject(currentState.project.name, currentState.page))
+      if (currentState.section === 'projects' && currentState.selectedProject.name) {
+        store.dispatch(switchProject(currentState.selectedProject.name, currentState.page))
       }
     } else if (currentState.section !== previousState.section) {
       console.debug(`Section changed from`, previousState.section, `to`, currentState.section)

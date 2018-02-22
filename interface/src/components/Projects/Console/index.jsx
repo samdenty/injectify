@@ -24,7 +24,6 @@ class Inject extends React.Component {
   }
 
   componentDidMount() {
-    let project = this.props.project.name
     let { socket } = window
     this._mounted = true
 
@@ -59,12 +58,12 @@ class Inject extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (nextProps.project.name !== this.props.project.name) {
-      this.addListener(nextProps.project.name)
+    if (nextProps.selectedProject.name !== this.props.selectedProject.name) {
+      this.addListener(nextProps.selectedProject.name)
     }
   }
 
-  addListener = (project = this.props.project.name) => {
+  addListener = (project = this.props.selectedProject.name) => {
     socket.emit('inject:close')
     socket.emit('inject:clients', {
       project: project
@@ -142,8 +141,9 @@ class Inject extends React.Component {
   // }
 
   render() {
+    const { clientsListOpen } = this.props
     return (
-      <div className={`inject ${this.state.open ? 'inject-list-open' : ''}`}>
+      <div className={`inject ${clientsListOpen ? 'open' : ''}`}>
         <Sidebar />
         <Editor />
       </div>
@@ -151,4 +151,4 @@ class Inject extends React.Component {
   }
 }
 
-export default connect(({ injectify: {inject, project} }) => ({ inject, project }))(Inject)
+export default connect(({ injectify: {clientsListOpen, projects, selectedProject} }) => ({ clientsListOpen, projects, selectedProject }))(Inject)

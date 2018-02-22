@@ -18,7 +18,7 @@ const styles = theme => ({
 
 class Loading extends React.Component {
   render() {
-    const { classes, project } = this.props
+    const { classes } = this.props
 
     return (
       <div className={classes.container}>
@@ -28,4 +28,4 @@ class Loading extends React.Component {
   }
 }
 
-export default connect(({ injectify: {section, project} }) => ({ section, project }))(withStyles(styles)(Loading))
+export default connect(({ injectify: {section} }) => ({ section }))(withStyles(styles)(Loading))

@@ -33,6 +33,12 @@ const styles = theme => ({
 class Drawer extends React.Component {
   state = { open: true }
 
+  shouldComponentUpdate(nextProps, nextState) {
+    return nextProps.section !== this.props.section ||
+      nextProps.projects.length !== this.props.projects.length ||
+      nextState.open !== this.state.open
+  }
+
   section = (section) => {
     let { dispatch } = this.props
     dispatch(switchSection(section))
@@ -44,7 +50,7 @@ class Drawer extends React.Component {
   }
 
   render() {
-    const { classes, section, selectedProject, projects } = this.props
+    const { classes, section, projects, account } = this.props
 
     return (
       <div className={classes.root}>
@@ -61,8 +67,8 @@ class Drawer extends React.Component {
             </ListItemIcon>
             <ListItemText inset primary="Settings" />
           </MenuItem>
-          {this.props.account && this.props.projects !== null && (
-            <span>
+          {account && (
+            <React.Fragment>
               <MenuItem button onClick={this.handleClick} selected={section === 'projects'}>
                 <ListItemIcon>
                   <ProjectsIcon />
@@ -75,7 +81,7 @@ class Drawer extends React.Component {
                   <Search />
                 </List>
               </Collapse>
-            </span>
+            </React.Fragment>
           )}
         </List>
       </div>
@@ -87,4 +93,4 @@ Drawer.propTypes = {
   classes: PropTypes.object.isRequired,
 }
 
-export default connect(({ injectify: {section, account, projects, project} }) => ({ section, account, projects, selectedProject: project }))(withStyles(styles)(Drawer))
+export default connect(({ injectify: {section, account, projects} }) => ({ section, account, projects }))(withStyles(styles)(Drawer))

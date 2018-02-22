@@ -1,7 +1,7 @@
 declare const global: any
 import { Database } from '../definitions/database'
 
-export default (project: string) {
+export default (project: string) => {
   return new Promise<Database.project>((resolve, reject) => {
     global.db.collection('projects', (err, projects) => {
       if (!err) {

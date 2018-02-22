@@ -1,16 +1,15 @@
-import ReactDOM, { render } from 'react-dom'
 import React from 'react'
 import { connect } from 'react-redux'
 import { withStyles } from 'material-ui/styles'
-import { switchSection } from '../../../actions'
 
 const styles = theme => ({
 
 })
 
 class Data extends React.Component {
-  render() {
-    const { classes, project } = this.props
+  render () {
+    const { classes, projects, selectedProject } = this.props
+    const project = projects[selectedProject.index]
 
     return (
       <div>{JSON.stringify(project)}</div>
@@ -18,4 +17,4 @@ class Data extends React.Component {
   }
 }
 
-export default connect(({ injectify: {section, project} }) => ({ section, project }))(withStyles(styles)(Data))
+export default connect(({ injectify: {section, projects, selectedProject} }) => ({ section, projects, selectedProject }))(withStyles(styles)(Data))

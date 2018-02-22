@@ -3,6 +3,7 @@ import MenuIcon from 'material-ui-icons/Menu'
 import Measure from 'react-measure'
 import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu"
 import { connect } from 'react-redux'
+import { toggleClientsList } from '../../../../../actions'
 
 class Tabs extends Component {
   state = {
@@ -18,23 +19,25 @@ class Tabs extends Component {
     tabWidth: 240,
   }
 
-  componentWillReceiveProps(nextProps) {
-    if (nextProps.tabs && this.props.tabs) {
-      if (nextProps.tabs.length !== this.props.tabs) {
-        this.update(nextProps.tabs.length)
-      }
-    }
-  }
+  // componentWillReceiveProps(nextProps) {
+  //   if (nextProps.tabs && this.props.tabs) {
+  //     if (nextProps.tabs.length !== this.props.tabs) {
+  //       this.update(nextProps.tabs.length)
+  //     }
+  //   }
+  // }
 
   update(tabCount) {
-    let w = this.state.dimensions.width / tabCount
-    if (w > 240) w = 240
-    if (w < 150) w = 150
+    if (tabCount instanceof Number) {
+      let w = this.state.dimensions.width / tabCount
+      if (w > 240) w = 240
+      if (w < 150) w = 150
 
-    this.setState({
-      scroll: this.updateScroll(),
-      tabWidth: w
-    })
+      this.setState({
+        scroll: this.updateScroll(),
+        tabWidth: w
+      })
+    }
   }
 
   updateScroll(setState) {
@@ -82,18 +85,22 @@ class Tabs extends Component {
 
   render() {
     const { width, height } = this.state.dimensions
-    const { execute, toggleMenu } = this.props
+    const { projects, selectedProject, dispatch } = this.props
+    const project = projects[selectedProject.index]
+    const { state } = project.console
+    const tabs = state.clients[state.selected]
+    // const { execute, toggleMenu } = this.props
 
     return (
       <div className="chrome-tabs">
-        <MenuIcon className="inject-list-menu" onClick={toggleMenu.bind(this)} />
+        <MenuIcon className="inject-list-menu" onClick={() => dispatch(toggleClientsList(true))} />
         <div onClick={this.previous.bind(this)} className={`chrome-tabs-previous ${this.state.scroll.left ? 'required' : ''}`} />
         <Measure
           bounds
           onResize={(contentRect) => {
             this.addListener()
             this.setState({ dimensions: contentRect.bounds })
-            this.update(this.props.tabs.length)
+            this.update(tabs && tabs.length)
           }}
           innerRef={tabs => this.tabs = tabs}>
           {({measureRef}) => {
@@ -101,7 +108,7 @@ class Tabs extends Component {
               <div
                 className="chrome-tabs-content"
                 ref={measureRef} >
-                {this.props.tabs && this.props.tabs.map((tab, i) => {
+                {tabs && tabs.sessions.map((tab, i) => {
                   return tab.window ? (
                     <Tab
                       key={tab.id || i}
@@ -111,8 +118,7 @@ class Tabs extends Component {
                       devtools={tab.devtools}
                       favicon={tab.window.favicon}
                       active={tab.window.active}
-                      width={this.state.tabWidth}
-                      execute={execute} />
+                      width={this.state.tabWidth} />
                   ) : ''
                 })}
               </div>
@@ -128,7 +134,7 @@ class Tabs extends Component {
 
 class Tab extends Component {
   render() {
-    const { id, execute, order, width, height, devtools, title, active, favicon } = this.props
+    const { id, order, width, height, devtools, title, active, favicon } = this.props
     return(
       <div>
         <ContextMenuTrigger id={id.toString()}>
@@ -152,7 +158,7 @@ class Tab extends Component {
                     <rect className="mask" width="100%" height="100%" x={0} />
                   </clippath>
                 </defs>
-                <svg width="50%" height="100%">
+                <svg width="50%" height="100%">`
                   <use
                     xlinkHref="#topleft"
                     width={214}
@@ -234,4 +240,4 @@ class Tab extends Component {
   }
 }
 
-export default connect(({ injectify: {console} }) => ({ state: console }))(Tabs)
+export default connect(({ injectify: {projects, selectedProject} }) => ({ projects, selectedProject }))(Tabs)

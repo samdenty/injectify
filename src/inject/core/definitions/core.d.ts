@@ -106,11 +106,12 @@ export namespace Injectify {
       timed: {
         active: boolean
         prevState: string | JSON
-      },
+        timer: any
+      }
       devtools: any
       websocket: any
-    },
-    windowInjection: boolean,
+    }
+    windowInjection: boolean
     commandHistory: string[]
     modules: {
       states: any

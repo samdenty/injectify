@@ -1,5 +1,6 @@
 import _ from 'lodash'
 import NProgress from 'nprogress'
+import update from 'immutability-helper'
 
 const config = {
   sections: ['home', 'settings', 'projects'],
@@ -12,6 +13,7 @@ const initialState = {
   loading: true,
 
   drawerOpen: window.innerWidth >= 960,
+  clientsListOpen: window.innerWidth >= 960,
 
   server: {
     github: {
@@ -35,10 +37,11 @@ const initialState = {
   },
 
   // ALl projects
-  projects: null,
+  projects: [],
   // Selected project
-  project: {
-    name: null
+  selectedProject: {
+    name: null,
+    index: null
   },
 
   // All accounts
@@ -49,8 +52,7 @@ const initialState = {
 
 const initialConsole = {
   clients: {},
-  selected: {},
-  // graph: [],
+  selected: null,
   code: window.localStorage.getItem('injectScript') || `// Import types to enable intellisense\nimport { injectify, window } from 'injectify'\n\n// Type your code here`,
   logs: [
     {
@@ -130,6 +132,16 @@ export default (state = initialState, action) => {
       }
     }
 
+    case 'TOGGLE_CLIENTS_LIST': {
+      if (typeof action.open !== 'boolean') {
+        action.open = !state.clientsListOpen
+      }
+      return {
+        ...state,
+        clientsListOpen: action.open
+      }
+    }
+
     case 'LOADING': {
       let loading = !!action.loading
       if (loading) {
@@ -164,7 +176,7 @@ export default (state = initialState, action) => {
     }
 
     case 'SWITCH_PAGE': {
-      document.title = `${state.project.name} - ${_.capitalize(action.page)} • Injectify`
+      document.title = `${state.selectedProject.name} - ${_.capitalize(action.page)} • Injectify`
       return {
         ...state,
         page: action.page
@@ -176,7 +188,10 @@ export default (state = initialState, action) => {
       return {
         ...state,
         section: 'projects',
-        project: _.find(state.projects, { name: action.name })
+        selectedProject: {
+          name: action.name,
+          index: _.findIndex(state.projects, { name: action.name })
+        }
       }
     }
 
@@ -189,9 +204,10 @@ export default (state = initialState, action) => {
       if (typeof action.section !== 'undefined') {
         data.section = config.sections.includes(action.section) ? action.section : 'home'
       }
-      if (typeof action.project !== 'undefined' && state.project.name !== action.project) {
-        data.project = {
-          name: action.project
+      if (typeof action.project !== 'undefined' && state.selectedProject.name !== action.project) {
+        data.selectedProject = {
+          name: action.project,
+          index: _.findIndex(state.projects, { name: action.project })
         }
       }
 
@@ -223,21 +239,22 @@ export default (state = initialState, action) => {
     case 'AUTH_ACCOUNT': {
       let data = {
         accounts: _.cloneDeep(state.accounts),
-        account: {}
+        account: {
+          lastUsed: +new Date(),
+          token: action.token,
+          user: action.user
+        }
       }
 
       let index = _.findIndex(data.accounts, { user: { id: action.user.id } })
       if (index > -1) {
-        data.account = data.accounts[index]
+        data.account = {
+          ...data.accounts[index],
+          ...data.account
+        }
+        data.accounts[index] = data.account
       } else {
-        index = data.accounts.push(data.account)
-      }
-
-      data.accounts[index] = data.account = {
-        ...data.account,
-        lastUsed: +new Date(),
-        token: action.token,
-        user: action.user
+        data.accounts.push(data.account)
       }
 
       window.localStorage.setItem('accounts', JSON.stringify(data.accounts))
@@ -259,8 +276,9 @@ export default (state = initialState, action) => {
           ...data,
           account: null,
           projects: [],
-          project: {
-            name: null
+          selectedProject: {
+            name: null,
+            index: null
           },
           section: 'home'
         }
@@ -274,29 +292,31 @@ export default (state = initialState, action) => {
     }
 
     case 'SET_PROJECTS': {
+      let selectedProject = state.selectedProject
+      if (selectedProject.name) {
+        selectedProject.index = _.findIndex(action.projects, { name: selectedProject.name })
+      }
       return {
         ...state,
+        selectedProject,
         projects: action.projects
       }
     }
 
     case 'SET_PROJECT': {
       let data = {
-        project: action.project
+        projects: _.cloneDeep(state.projects)
       }
-      // Set the initial console state
-      if (data.project.console && !data.project.console.state) data.project.console.state = initialConsole
       // Switch to the correct page
       if (config.pages.includes(action.page)) data.page = action.page
 
-      // Update in the projects collection
-      let projects = _.cloneDeep(state.projects)
-      let index = _.findIndex(projects, { name: data.project.name })
+      let index = _.findIndex(data.projects, { name: action.project.name })
       if (index > -1) {
-        data.project = _.merge(projects[index], data.project)
-        projects[index] = data.project
-        data.projects = projects
+        action.project = _.merge(data.projects[index], action.project)
+        data.projects[index] = action.project
       }
+
+      if (action.project.console && !action.project.console.state) action.project.console.state = initialConsole
 
       return {
         ...state,
@@ -314,11 +334,6 @@ export default (state = initialState, action) => {
       if (index > -1) {
         let newState = data.projects[index].console.state
         newState.clients = action.clients
-
-        // Update the selected client
-        if (state.project.name === action.project) {
-          data.project = data.projects[index]
-        }
       }
 
       return {
@@ -337,11 +352,6 @@ export default (state = initialState, action) => {
       if (index > -1) {
         let newState = data.projects[index].console.state
         newState.clients[action.token] = action.client
-
-        // Update the selected client
-        if (state.project.name === action.project) {
-          data.project = data.projects[index]
-        }
       }
 
       return {
@@ -373,17 +383,6 @@ export default (state = initialState, action) => {
               id: action.id
             })
           }
-          /**
-           * If they're selected, deselect them
-           */
-          if (selected.token === action.token) {
-            selected.client = clients[action.token]
-          }
-        }
-
-        // Update the selected client
-        if (state.project.name === action.project) {
-          data.project = data.projects[index]
         }
       }
 
@@ -394,36 +393,51 @@ export default (state = initialState, action) => {
     }
 
     case 'SELECT_CLIENT': {
+      let data = {
+        projects: _.cloneDeep(state.projects)
+      }
+
+      let index = _.findIndex(data.projects, { name: action.project })
+      data.projects[index].console.state.selected = action.token
       return {
         ...state,
-        console: {
-          ...state.console,
-          clients: {
-            ...state.console.clients,
-            [action.token]: action.client
-          }
-        }
+        ...data
       }
     }
 
     case 'UPDATE_CLIENT': {
-      return {
-        ...state,
-        console: {
-          ...state.console,
-          clients: {
-            ...state.console.clients,
-            [state.console.selected.token]: action.client
-          },
-          selected: {
-            ...state.console.selected,
-            client: action.client
+      let index = _.findIndex(state.projects, { name: action.project })
+      return update(state, {
+        projects: {
+          [index]: {
+            console: {
+              state: {
+                clients: {
+                  [state.projects[index].console.state.selected]: {
+                    $set: action.client
+                  }
+                }
+              }
+            }
           }
         }
-      }
+      })
     }
 
-    case 'CONSOLE': {
+    case 'CONSOLE_LOG': {
+      return update(state, {
+        projects: {
+          [state.selectedProject.index]: {
+            console: {
+              state: {
+                logs: {
+                  $push: [action.log]
+                }
+              }
+            }
+          }
+        }
+      })
       return {
         ...state,
         console: {

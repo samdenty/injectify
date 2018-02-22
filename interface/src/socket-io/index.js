@@ -113,9 +113,9 @@ export default (socket, store, history) => {
   socket.on(`user:projects`, data => {
     console.log(`%c[websocket] ` + `%cuser:projects =>`, `color: #ef5350`, `color:  #FF9800`, data)
     dispatch(Actions.setProjects(data))
-    if (state().project.name && state().page) {
+    if (state().selectedProject.name && state().page) {
       socket.emit(`project:read`, {
-        project: state().project.name,
+        project: state().selectedProject.name,
         page: state().page
       })
     } else {
@@ -148,14 +148,11 @@ export default (socket, store, history) => {
         /**
          * If they reconnect, re-select them
          */
-        if (state().project.console.state.selected.token === session.token) {
-          if (!state().project.console.state.selected.client) {
-            socket.emit('inject:client', {
-              project,
-              client: session.token
-            })
+        if (state().projects[state().selectedProject.index].console.state.selected === session.token) {
+          // If only one session is currently active
+          if (state().projects[state().selectedProject.index].console.state.clients[session.token].sessions.length === 1) {
+            dispatch(Actions.selectClient(project, session.token))
           }
-          dispatch(Actions.selectClient(project, session.token))
         }
       }
 
@@ -169,8 +166,8 @@ export default (socket, store, history) => {
    * Client listener
    */
   socket.on(`inject:client`, client => {
-    console.log('Client emitted an update', client)
-    dispatch(Actions.updateClient(project, client))
+    console.debug('Client emitted an update', client)
+    dispatch(Actions.updateClient(state().selectedProject.name, client))
   })
 
   /**

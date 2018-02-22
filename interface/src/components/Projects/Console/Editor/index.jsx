@@ -5,6 +5,7 @@ import { connect } from 'react-redux'
 
 import Tabs from './Tabs'
 import Console from './Console'
+import { toggleClientsList } from '../../../../actions'
 
 import MonacoEditor from 'react-monaco-editor'
 import CodeMirror from 'react-codemirror'
@@ -45,7 +46,7 @@ class Editor extends React.Component {
   }
 
   render() {
-    const { state } = this.props
+    const { state, dispatch } = this.props
     const options = {
       selectOnLineNumbers: true,
       lineNumbers: true,
@@ -58,8 +59,8 @@ class Editor extends React.Component {
     }
 
     return (
-      <div className='inject-editor-container' /*onClick={() => this.state.open && this.toggleMenu()}*/>
-        {/* <Tabs tabs={(state.console.selected && state.console.selected.client && state.console.selected.sessions) || []} /> */}
+      <div className='inject-editor-container' onClick={() => { state.clientsListOpen && dispatch(toggleClientsList(false, true)) }}>
+        <Tabs />
         {window.innerWidth >= 650 ? (
           <MonacoEditor
             language={(state.code && /^\s*import /m.test(state.code)) ? 'typescript' : 'javascript'}
@@ -68,7 +69,7 @@ class Editor extends React.Component {
             onChange={this.onChange}
             editorDidMount={this.editorDidMount} />
         ) : (
-          <CodeMirror value={code} onChange={this.onChange} options={options} />
+          <CodeMirror value={state.code} onChange={this.onChange} options={options} />
         )}
         <Console /*execute={code => { if (this.state.selectedClient && this.state.selectedClient.token) this.execute(this.state.selectedClient.token, '*', code) }}*/ />
       </div>

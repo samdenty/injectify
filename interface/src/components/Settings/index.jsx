@@ -13,7 +13,6 @@ import List, {
 import Card, { CardContent } from 'material-ui/Card'
 import Switch from 'material-ui/Switch'
 import DarkIcon from 'material-ui-icons/InvertColors'
-import BluetoothIcon from 'material-ui-icons/Bluetooth'
 
 const styles = theme => ({
   root: {

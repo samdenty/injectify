@@ -44,6 +44,7 @@
     "atob": "^2.0.3",
     "btoa": "^1.1.2",
     "chalk": "^2.3.0",
+    "circular-json": "^0.5.1",
     "concurrently": "^3.5.1",
     "cookie-parser": "^1.4.3",
     "country-emoji": "^1.2.0",

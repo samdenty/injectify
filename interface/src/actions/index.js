@@ -11,6 +11,17 @@ export function toggleDrawer (open, onlyOnMobile) {
   }
 }
 
+export function toggleClientsList (open, onlyOnMobile) {
+  return (dispatch) => {
+    if (!(onlyOnMobile && window.innerWidth >= 650)) {
+      dispatch({
+        type: 'TOGGLE_CLIENTS_LIST',
+        open
+      })
+    }
+  }
+}
+
 // export function updateGraph (graph) {
 //   return {
 //     type: 'UPDATE_GRAPH',
@@ -103,7 +114,7 @@ export function setClients (project, clients) {
   return {
     type: 'SET_CLIENTS',
     project,
-    clients
+    clients: clients || []
   }
 }
 
@@ -126,14 +137,21 @@ export function removeClient (project, token, id) {
 }
 
 export function selectClient (project, token) {
-  return {
-    type: 'SELECT_CLIENT',
-    project,
-    token
+  return (dispatch) => {
+    const { socket } = window
+    socket.emit('inject:client', {
+      project: project,
+      client: token
+    })
+    dispatch({
+      type: 'SELECT_CLIENT',
+      project,
+      token
+    })
   }
 }
 
-export function updateClient (client) {
+export function updateClient (project, client) {
   return {
     type: 'UPDATE_CLIENT',
     project,
@@ -143,7 +161,7 @@ export function updateClient (client) {
 
 export function log (log) {
   return {
-    type: 'CONSOLE',
+    type: 'CONSOLE_LOG',
     log
   }
 }

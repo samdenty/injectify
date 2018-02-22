@@ -12,6 +12,8 @@ import List, { ListItem, ListItemIcon, ListItemText, ListSubheader } from 'mater
 import ComputerIcon from 'material-ui-icons/Computer'
 import Graph from './Graph'
 
+import { selectClient, toggleClientsList } from '../../../../actions'
+
 class Sidebar extends React.Component {
   triggerResize = (state = false) => {
     if (state) {
@@ -24,8 +26,15 @@ class Sidebar extends React.Component {
     }
   }
 
+  selectClient = (token) => {
+    const { dispatch, selectedProject } = this.props
+    dispatch(selectClient(selectedProject.name, token))
+    dispatch(toggleClientsList(false, true))
+  }
+
   render() {
-    const { project } = this.props
+    const { projects, selectedProject } = this.props
+    const project = projects[selectedProject.index]
     const { state } = project.console
     const { clients } = state
 
@@ -66,17 +75,18 @@ class Sidebar extends React.Component {
             </div>
           )}
         </ContainerDimensions>
-        <List>
+        <List className="inject-clients">
           {clients && Object.keys(clients).map((token, i) => {
             const client = clients[token]
             return (
               <div key={token}>
                 <ContextMenuTrigger id={token}>
                   <ListItem
-                    button
+                    button={state.selected !== token}
                     dense
-                    // onClick={() => this.switchClient(token)}
-                    className={state.selected.token === token ? 'active' : ''}>
+                    component="li"
+                    onClick={() => this.selectClient(token)}
+                    className={state.selected === token ? 'active' : ''}>
                     <ListItemIcon>
                       <img src={client.images.country} />
                     </ListItemIcon>
@@ -111,4 +121,4 @@ class Sidebar extends React.Component {
 }
 
 
-export default connect(({ injectify: { project } }) => ({ project }))(Sidebar)
+export default connect(({ injectify: { projects, selectedProject } }) => ({ projects, selectedProject }))(Sidebar)

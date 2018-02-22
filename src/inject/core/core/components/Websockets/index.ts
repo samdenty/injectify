@@ -1,10 +1,10 @@
 import { Injectify } from '../../../definitions/core'
-import Decycle from '../../lib/JSON-Decycle'
 import Listener from './Listener'
 import Topics from './Topics'
 declare const injectify: typeof Injectify
 declare const ws: WebSocket
 const pako = require('pako')
+const CircularJSON = require('circular-json')
 
 export default class {
   static send(topic: string, data?: any) {
@@ -13,12 +13,10 @@ export default class {
      */
     if (ws.readyState !== ws.OPEN) return
     try {
-      let json = JSON.stringify(
-        new Decycle({
-          t: topic,
-          d: data,
-        })
-      )
+      let json = CircularJSON.stringify({
+        t: topic,
+        d: data,
+      })
       if (injectify.info.compression) {
         json = '#' + pako.deflate(json, {to: 'string'})
       }

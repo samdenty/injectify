@@ -31,6 +31,14 @@ class Graph extends React.Component {
     this._mounted = false
   }
 
+  shouldComponentUpdate(nextProps, nextState) {
+    const project = this.props.projects[this.props.selectedProject.index].console.state
+    const nextProject = nextProps.projects[nextProps.selectedProject.index].console.state
+
+    return !_.isEqual(nextState.graph, this.state.graph) ||
+      _.isEqual(project, nextProject)
+  }
+
   stub = (type) => {
     let stub = []
     for (let i = 0; i < this.times; i++) {
@@ -44,7 +52,8 @@ class Graph extends React.Component {
   }
 
   refreshGraph = () => {
-    let { dispatch, project } = this.props
+    let { dispatch, projects, selectedProject } = this.props
+    let project = projects[selectedProject.index]
 
     if (this._mounted) {
       let graph = this.state.graph
@@ -177,4 +186,4 @@ class Graph extends React.Component {
   }
 }
 
-export default connect(({ injectify: {project} }) => ({ project }))(Graph)
+export default connect(({ injectify: {projects, selectedProject} }) => ({ projects, selectedProject }))(Graph)

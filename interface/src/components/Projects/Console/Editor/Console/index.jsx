@@ -1,6 +1,7 @@
 import ReactDOM, { render } from 'react-dom'
 import React from 'react'
 import { connect } from 'react-redux'
+import _ from 'lodash'
 
 import Rnd from 'react-rnd'
 import Linkify from 'react-linkify'
@@ -25,23 +26,20 @@ function download(filename, text) {
 class Console extends React.Component {
   logs = 0
 
-  triggerResize = (state = false) => {
-    if (state) {
-      this.dynamicResize = setInterval(() => {
-        window.dispatchEvent(new Event('resize'))
-      }, 50)
-    } else {
-      clearInterval(this.dynamicResize)
-      window.dispatchEvent(new Event('resize'))
-    }
-  }
-
   componentDidMount() {
     this.hookConsole()
   }
 
+  shouldComponentUpdate(nextProps) {
+    const project = this.props.projects[this.props.selectedProject.index]
+    const nextProject = nextProps.projects[nextProps.selectedProject.index]
+
+    return !_.isEqual(project.console.state.logs, nextProject.console.state.logs)
+  }
+
   componentWillUpdate(nextProps) {
-    const { project } = this.props
+    const { projects, selectedProject } = this.props
+    const project = projects[selectedProject.index]
     const { logs } = project.console.state
     /**
      * Scroll to bottom
@@ -55,6 +53,17 @@ class Console extends React.Component {
           }, 0)
         }
       }
+    }
+  }
+
+  triggerResize = (state = false) => {
+    if (state) {
+      this.dynamicResize = setInterval(() => {
+        window.dispatchEvent(new Event('resize'))
+      }, 100)
+    } else {
+      clearInterval(this.dynamicResize)
+      window.dispatchEvent(new Event('resize'))
     }
   }
 
@@ -87,7 +96,8 @@ class Console extends React.Component {
   }
 
   render() {
-    const { project } = this.props
+    const { projects, selectedProject } = this.props
+    const project = projects[selectedProject.index]
     const { logs } = project.console.state
 
     return (
@@ -295,4 +305,4 @@ class MessageParser extends React.Component {
 }
 
 
-export default connect(({ injectify: {project} }) => ({ project }))(Console)
+export default connect(({ injectify: {projects, selectedProject} }) => ({ projects, selectedProject }))(Console)

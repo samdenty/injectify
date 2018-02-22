@@ -44,7 +44,8 @@ const styles = theme => ({
 
 class Permissions extends React.Component {
   canModify = () => {
-    const { project, account, group } = this.props
+    const { projects, selectedProject, account, group } = this.props
+    const project = projects[selectedProject.index]
     const requiredPermission = (() => {switch (group) {
       case 'owners':
         return 3
@@ -73,7 +74,8 @@ class Permissions extends React.Component {
   }
 
   render() {
-    const { classes, group, project, variant } = this.props
+    const { classes, group, projects, selectedProject, variant } = this.props
+    const project = projects[selectedProject.index]
     const permissions = project.permissions[group]
     const modifiable = this.canModify()
 
@@ -111,4 +113,4 @@ class Permissions extends React.Component {
   }
 }
 
-export default connect(({ injectify: {account, project} }) => ({ account, project }))(withStyles(styles)(Permissions))
+export default connect(({ injectify: {account, projects, selectedProject} }) => ({ account, projects, selectedProject }))(withStyles(styles)(Permissions))
