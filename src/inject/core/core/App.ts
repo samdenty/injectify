@@ -15,6 +15,11 @@ import { Info, SessionInfo } from './components/Info'
 // Libraries
 import LoadJS from './lib/LoadJS'
 
+if (!window['injectify']) {
+  setTimeout(() => {
+    window.dispatchEvent(new CustomEvent('injectify'))
+  }, 500)
+}
 /**
  * Injectify core API
  * @class

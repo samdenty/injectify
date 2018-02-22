@@ -9,6 +9,7 @@ import Card, { CardContent } from 'material-ui/Card'
 import Button from 'material-ui/Button'
 import Tooltip from 'material-ui/Tooltip'
 import Switch from 'material-ui/Switch'
+import Divider from 'material-ui/Divider'
 import copy from 'copy-to-clipboard'
 import List, {
   ListItem,
@@ -19,6 +20,7 @@ import List, {
 } from 'material-ui/List'
 import DebugIcon from 'material-ui-icons/DeveloperMode'
 import CheckIcon from 'material-ui-icons/Check'
+import TestIcon from 'material-ui-icons/Launch'
 import CopyIcon from 'material-ui-icons/ContentCopy'
 
 const styles = theme => ({
@@ -91,6 +93,13 @@ class Overview extends React.Component {
     }, 2000)
   }
 
+  test() {
+    const { selectedProject } = this.props
+    let win = window.open(`/demo/project/?${encodeURIComponent(selectedProject.name)}`)
+    // Disable page hopping
+    win.opener = null
+  }
+
   render() {
     const { classes, settings, selectedProject } = this.props
 
@@ -100,7 +109,7 @@ class Overview extends React.Component {
     return (
       <Card className={classes.root}>
         <CardContent className={`${classes.content} ${classes.code} ${settings.dark ? classes.codeDark : classes.codeLight}`}>
-          <List subheader={<ListSubheader>Installation code</ListSubheader>}>
+          <List subheader={<ListSubheader>JavaScript payload</ListSubheader>}>
             <SyntaxHighlighter
               language='javascript'
               style={settings.dark ? syntaxDark : syntaxLight}
@@ -129,6 +138,15 @@ class Overview extends React.Component {
                   checked={this.state.debug}
                 />
               </ListItemSecondaryAction>
+            </ListItem>
+          </List>
+          <Divider />
+          <List>
+            <ListItem button onClick={this.test.bind(this)}>
+              <ListItemIcon>
+                <TestIcon />
+              </ListItemIcon>
+              <ListItemText primary="Test it out on a demo page" />
             </ListItem>
           </List>
         </CardContent>
