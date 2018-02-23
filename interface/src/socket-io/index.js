@@ -174,25 +174,28 @@ export default (socket, store, history) => {
    * Console listener
    */
   socket.on(`inject:log`, (log) => {
-    dispatch(Actions.log(log))
-
     let { type, message } = log
     if (type === 'return') {
       console.log.apply(this, message)
     } else {
       console[type].apply(this, message)
     }
+
+    dispatch(Actions.log(log))
   })
 
   /**
    * PageGhost
    */
   socket.on(`inject:pageghost`, data => {
-    if (!window.pageGhost) window.pageGhost = {}
-    if (window.pageGhost[data.sender.id]) {
-      // if (data.dom) window.pageGhost[data.sender.id].dom = data.dom
-      window.pageGhost[data.sender.id].win.postMessage(data, '*')
-    }
+    let event = new CustomEvent('PageGhost')
+    event.data = data
+    window.dispatchEvent(event)
+    // if (!window.pageGhost) window.pageGhost = {}
+    // if (window.pageGhost[data.sender.id]) {
+    //   // if (data.dom) window.pageGhost[data.sender.id].dom = data.dom
+    //   window.pageGhost[data.sender.id].win.postMessage(data, '*')
+    // }
   })
 
 

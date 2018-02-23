@@ -438,16 +438,32 @@ export default (state = initialState, action) => {
           }
         }
       })
-      return {
-        ...state,
-        console: {
-          ...state.console,
-          logs: [
-            ...state.console.logs,
-            action.log
-          ]
+    }
+
+    case 'CONSOLE_CLEAR': {
+      return update(state, {
+        projects: {
+          [state.selectedProject.index]: {
+            console: {
+              state: {
+                logs: {
+                  $set: [
+                    {
+                      type: 'info',
+                      timestamp: +new Date(),
+                      id: (+new Date()).toString(),
+                      message: [{
+                        type: 'broadcast',
+                        message: 'Console was cleared'
+                      }]
+                    }
+                  ]
+                }
+              }
+            }
+          }
         }
-      }
+      })
     }
 
     default: {

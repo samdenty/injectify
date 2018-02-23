@@ -8,8 +8,10 @@ import Linkify from 'react-linkify'
 import Inspector, { DOMInspector, chromeDark } from 'react-inspector'
 import moment from 'moment'
 import { ContextMenu, MenuItem, ContextMenuTrigger } from 'react-contextmenu'
+import { execute, clearConsole } from '../../../../../actions'
 
 function download(filename, text) {
+  console.debug(`Downloading "${text}" as "${filename}" from Console component`)
   let pom = document.createElement('a')
   pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text))
   pom.setAttribute('download', filename)
@@ -68,22 +70,11 @@ class Console extends React.Component {
   }
 
   hookConsole = () => {
+    const { dispatch } = this.props
     let Console = console
     if (console.Console) Console = console.Console
     const clear = () => {
-      this.setState({
-        logs: [
-          {
-            type: 'info',
-            timestamp: +new Date(),
-            id: (+new Date()).toString(),
-            message: [{
-              type: 'broadcast',
-              message: 'Console was cleared'
-            }]
-          }
-        ]
-      })
+      dispatch(clearConsole())
     }
     console = {
       ...Console,
@@ -93,6 +84,12 @@ class Console extends React.Component {
       },
       Console: Console
     }
+  }
+
+  execute = (code) => {
+    const { dispatch } = this.props
+    console.debug(`Executing "${code}" from Console component`)
+    dispatch(execute(code))
   }
 
   render() {
@@ -131,7 +128,7 @@ class Console extends React.Component {
                     <div className="console-timestamp">{moment(log.timestamp).format('HH:mm:ss')}</div>
                     <div className="console-indicator"></div>
                     <div className="source-code">
-                      <MessageParser messages={log.message} type={log.type} sender={log.sender} id={log.id} /*execute={execute.bind(this)}*/ />
+                      <MessageParser messages={log.message} type={log.type} sender={log.sender} id={log.id} execute={this.execute.bind(this)} />
                     </div>
                   </div>
                 </div>
@@ -144,7 +141,7 @@ class Console extends React.Component {
             Clear console
           </MenuItem>
           <MenuItem divider />
-          <MenuItem onClick={() => { execute(`console.clear()`); }}>
+          <MenuItem onClick={() => { this.execute(`console.clear()`); }} attributes={{ className: 'requires-active' }}>
             Clear target's console
           </MenuItem>
         </ContextMenu>
@@ -172,7 +169,7 @@ class MessageParser extends React.Component {
               Clear console
             </MenuItem>
             <MenuItem divider />
-            <MenuItem onClick={() => { execute(`console.clear()`); }}>
+            <MenuItem onClick={() => { execute(`console.clear()`); }} attributes={{ className: 'requires-active' }}>
               Clear target's console
             </MenuItem>
           </ContextMenu>
@@ -184,7 +181,7 @@ class MessageParser extends React.Component {
               return (
                 <span key={i}>
                   {type === 'string' ? (
-                    this.string(message, messages[0].type !== 'string')
+                    this.string(message, this.props.type === 'return' || messages[0].type !== 'string')
                   ) : /^undefined|null$/.test(type) ? (
                     this.literal(type)
                   ) : type === 'boolean' ? (
@@ -221,7 +218,7 @@ class MessageParser extends React.Component {
   object(object) {
     let { id, execute } = this.props
     return (
-      <span>
+      <React.Fragment>
         <ContextMenuTrigger id={id}>
           <Inspector data={object} theme={{ ...chromeDark, ...({ ARROW_FONT_SIZE: 9 }) }} />
         </ContextMenuTrigger>
@@ -234,11 +231,11 @@ class MessageParser extends React.Component {
             Clear console
           </MenuItem>
           <MenuItem divider />
-          <MenuItem onClick={() => { execute(`console.clear()`); }}>
+          <MenuItem onClick={() => { execute(`console.clear()`); }} attributes={{ className: 'requires-active' }}>
             Clear target's console
           </MenuItem>
         </ContextMenu>
-      </span>
+      </React.Fragment>
     )
   }
 
@@ -273,7 +270,7 @@ class MessageParser extends React.Component {
         let element = document.createElement(tagName)
         element.innerHTML = innerHTML
         return (
-          <span>
+          <React.Fragment>
             <ContextMenuTrigger id={id}>
               <DOMInspector data={element} theme={{ ...chromeDark, ...({ ARROW_FONT_SIZE: 9 }) }} />
             </ContextMenuTrigger>
@@ -289,11 +286,11 @@ class MessageParser extends React.Component {
                 Clear console
               </MenuItem>
               <MenuItem divider />
-              <MenuItem onClick={() => { execute(`console.clear()`); }}>
+              <MenuItem onClick={() => { execute(`console.clear()`); }} attributes={{ className: 'requires-active' }}>
                 Clear target's console
               </MenuItem>
             </ContextMenu>
-          </span>
+          </React.Fragment>
         )
       } catch (e) {
         return this.object(message)

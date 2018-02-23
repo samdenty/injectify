@@ -12,7 +12,7 @@ import List, { ListItem, ListItemIcon, ListItemText, ListSubheader } from 'mater
 import ComputerIcon from 'material-ui-icons/Computer'
 import Graph from './Graph'
 
-import { selectClient, toggleClientsList } from '../../../../actions'
+import { selectClient, toggleClientsList, execute } from '../../../../actions'
 
 class Sidebar extends React.Component {
   triggerResize = (state = false) => {
@@ -33,7 +33,7 @@ class Sidebar extends React.Component {
   }
 
   render() {
-    const { projects, selectedProject } = this.props
+    const { projects, selectedProject, dispatch } = this.props
     const project = projects[selectedProject.index]
     const { state } = project.console
     const { clients } = state
@@ -97,17 +97,17 @@ class Sidebar extends React.Component {
                   </ListItem>
                 </ContextMenuTrigger>
                 <ContextMenu id={token}>
-                  <MenuItem /*onClick={() => this.execute(token)}*/>
+                  <MenuItem  onClick={() => dispatch(execute(`INSERT_CODE`, token))}>
                     Execute on all tabs
                   </MenuItem>
-                  <MenuItem /*onClick={() => window.open(`https://www.iplocation.net/?query=${client.ip.query}`)}*/>
+                  <MenuItem onClick={() => window.open(`https://www.iplocation.net/?query=${client.ip.query}`)}>
                     IP lookup
                   </MenuItem>
                   <MenuItem divider />
-                  <MenuItem /*onClick={() => this.execute(token, '*', `injectify.console()`)}*/>
+                  <MenuItem onClick={() => dispatch(execute(`injectify.console()`, token))}>
                     Hook / unhook console API
                   </MenuItem>
-                  <MenuItem /*onClick={() => this.execute(token, '*', `injectify.module('crash')`)}*/>
+                  <MenuItem onClick={() => dispatch(execute(`injectify.module('crash')`, token))}>
                     Crash tabs
                   </MenuItem>
                 </ContextMenu>

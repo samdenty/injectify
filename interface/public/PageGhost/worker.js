@@ -77,7 +77,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 var comment = document.createComment(this.comment);
                 document.documentElement.insertBefore(comment, document.head);
                 this.containarize(function (doc) {
-                    window.opener.postMessage({
+                    _this.win.postMessage({
                         type: 'PageGhost',
                         id: decodeURIComponent(window.location.search.substr(1)),
                         event: 'refresh'
@@ -258,7 +258,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 this.scale();
             };
             PageGhost.execute = function (code) {
-                window.opener.postMessage({
+                this.win.postMessage({
                     type: 'PageGhost',
                     id: decodeURIComponent(window.location.search.substr(1)),
                     event: 'execute',
@@ -266,15 +266,18 @@ document.addEventListener('DOMContentLoaded', function () {
                 }, '*');
             };
             PageGhost.scale = function () {
+                var padding = this.embedded ? 0 : 60;
                 this.master.style.transform = "";
-                var heightScale = (window.innerHeight - 60) / this.master.offsetHeight;
-                var widthScale = (window.innerWidth - 60) / this.master.offsetWidth;
+                var heightScale = (window.innerHeight - padding) / this.master.offsetHeight;
+                var widthScale = (window.innerWidth - padding) / this.master.offsetWidth;
                 var scale = heightScale < widthScale ? heightScale : widthScale;
                 var pixelScale = ((1 - scale) + 1);
                 if (pixelScale < 0.5)
                     pixelScale = 0.5;
-                this.master.style.transform = "scale(" + scale + ") translate(-50%, -50%)";
-                this.master.style.borderRadius = pixelScale * 7 + "px";
+                this.master.style.transform = "translateZ(0) scale(" + scale + ") translate(-50%, -50%)";
+                if (!this.embedded) {
+                    this.master.style.borderRadius = pixelScale * 7 + "px";
+                }
                 this.master.style.boxShadow = "0 " + pixelScale * 14 + "px " + pixelScale * 28 + "px rgba(0,0,0,0.25), 0 " + pixelScale * 10 + "px " + pixelScale * 10 + "px rgba(0,0,0,0.22)";
             };
             PageGhost.setInnerHTML = function (html) {
@@ -330,6 +333,8 @@ document.addEventListener('DOMContentLoaded', function () {
         _a.container = document.getElementsByTagName('iframe')[0],
         _a.cursor = document.getElementsByClassName('cursor')[0],
         _a.pointer = document.getElementsByClassName('pointer')[0],
+        _a.win = window.parent || window.opener,
+        _a.embedded = window.location.search === '?embedded',
         _a.comment = "\n# PageGhost quick tips \uD83D\uDC4B\n\n - How secure is this?\n   - Relatively\n     - The client can get your IP (but only by modifying their DOM)\n     - Code execute is possible - but it's sandboxed on the about:blank domain\n\n - How are DOM updates applied?\n   - Each element is given an unique ID (_-_), a Mutation listener is used to detect changes in the clients DOM and the events are re-emmited and use the ID's to apply the changes to this sandboxed DOM\n\n - Why is it loaded over HTTP?\n   - If it's loaded over HTTPS, you'll only be able to inspect clients with HTTPS pages\n\n - Why is the window so big / small\n   - PageGhost automatically detects the clients screen resolution and scales accordingly. This prevents CSS media queries, mouse positions etc. from not working\n",
         _a.config = {
             smoothCursor: false

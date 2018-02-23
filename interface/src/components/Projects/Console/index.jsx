@@ -27,26 +27,26 @@ class Inject extends React.Component {
     let { socket } = window
     this._mounted = true
 
-    let pageGhostMessages = ({ data }) => {
-      if (!this._mounted) {
-        window.removeEventListener('message', pageGhostMessages)
-        return
-      }
-      if (typeof data === 'object' && data.type === 'PageGhost') {
-        let { id, event } = data
-        if (window.pageGhost[id]) {
-          switch (event) {
-            case 'refresh':
-              window.pageGhost[id].refresh()
-              break
-            case 'execute':
-              window.pageGhost[id].execute(data.data)
-              break
-          }
-        }
-      }
-    }
-    window.addEventListener('message', pageGhostMessages)
+    // let pageGhostMessages = ({ data }) => {
+    //   if (!this._mounted) {
+    //     window.removeEventListener('message', pageGhostMessages)
+    //     return
+    //   }
+    //   if (typeof data === 'object' && data.type === 'PageGhost') {
+    //     let { id, event } = data
+    //     if (window.pageGhost[id]) {
+    //       switch (event) {
+    //         case 'refresh':
+    //           window.pageGhost[id].refresh()
+    //           break
+    //         case 'execute':
+    //           window.pageGhost[id].execute(data.data)
+    //           break
+    //       }
+    //     }
+    //   }
+    // }
+    // window.addEventListener('message', pageGhostMessages)
     this.addListener()
   }
 
@@ -141,9 +141,18 @@ class Inject extends React.Component {
   // }
 
   render() {
-    const { clientsListOpen } = this.props
+    const { projects, selectedProject, clientsListOpen } = this.props
+    const { selected } = projects[selectedProject.index].console.state
+    let activeClient = false
+
+    if (selected) {
+      if (projects[selectedProject.index].console.state.clients[selected]) {
+        activeClient = true
+      }
+    }
+
     return (
-      <div className={`inject ${clientsListOpen ? 'open' : ''}`}>
+      <div className={`inject ${clientsListOpen ? 'open' : ''} ${activeClient ? 'active-client' : ''}`}>
         <Sidebar />
         <Editor />
       </div>

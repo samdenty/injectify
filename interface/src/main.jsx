@@ -34,6 +34,8 @@ const store = createStore(
   composeEnhancers(applyMiddleware(thunk), applyMiddleware(middleware))
 )
 
+window.store = store
+
 /**
  * Window URL & history handler
  */
