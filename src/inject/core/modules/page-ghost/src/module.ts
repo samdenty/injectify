@@ -34,7 +34,7 @@ class PageGhost {
       window.removeEventListener('mouseenter', Module.state.mousemove)
       window.removeEventListener('click', Module.state.click)
       window.removeEventListener('resize', Module.state.resize)
-      window.removeEventListener('scroll', Module.state.scroll)
+      window.removeEventListener('scroll', Module.state.scroll, true)
       if (Module.state.MutationObserver) Module.state.MutationObserver.disconnect()
     }
   }
@@ -69,7 +69,7 @@ class PageGhost {
     window.addEventListener('mouseenter', Module.state.mousemove)
     window.addEventListener('click', Module.state.click)
     window.addEventListener('resize', Module.state.resize)
-    window.addEventListener('scroll', Module.state.scroll)
+    window.addEventListener('scroll', Module.state.scroll, true)
     this.intervalTimer = setInterval(() => {
       this.tasks()
     }, 100)
@@ -140,16 +140,20 @@ class PageGhost {
     })
   }
 
-  scroll(e?: Event) {
-    let scroll: [Number, Number]
-    if (window.pageYOffset !== undefined) {
-      scroll = [pageXOffset, pageYOffset]
-    } else {
-      let sx, sy, d = document, r = d.documentElement, b = d.body
-      sx = r.scrollLeft || b.scrollLeft || 0
-      sy = r.scrollTop || b.scrollTop || 0
-      scroll = [sx, sy]
+  scroll(e?: any) {
+    if (!e) return
+    let element = e.target === document ? document.documentElement : e.target
+
+    let id = element.getAttribute('_-_') || '1'
+
+    let scroll: [Number, Number, Number]
+    let x = element.scrollLeft || 0
+    let y = element.scrollTop || 0
+    scroll = [x, y, id]
+    if (injectify.global.scroll.x === x && injectify.global.scroll.y === y && injectify.global.scroll.id === id) {
+      return
     }
+
     injectify.send('p', {
       scroll: scroll
     })

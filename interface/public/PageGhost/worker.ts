@@ -141,6 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
           id: decodeURIComponent(window.location.search.substr(1)),
           event: 'refresh'
         }, '*')
+
         this.setConfig()
         // this.fadeCursor(10, 0)
         // setTimeout(() => {
@@ -159,6 +160,28 @@ document.addEventListener('DOMContentLoaded', () => {
       window.addEventListener('resize', () => {
         this.scale()
       })
+    }
+
+    static scroll(e?: Event) {
+      if (window.shouldNotScroll) {
+        window.shouldNotScroll = false
+        return
+      }
+      if (!e) return
+      if (!window.sO) window.sO = 0
+      window.sO++
+      let element = e.target === this.iframe.contentDocument ? this.iframe.contentDocument.body : e.target
+
+      let id = element === this.iframe.contentDocument.body ? '1' : element.getAttribute('_-_') || '1'
+
+      let x = element.scrollLeft || 0
+      let y = element.scrollTop || 0
+
+      if (window.lS && window.lS[0] === x && window.lS[1] === y && window.lS[2] === id) {
+        return
+      }
+
+      this.sendScroll([x, y, id, window.sO])
     }
 
     static linkify(url: string) {
@@ -231,7 +254,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
       if (data.scroll instanceof Array && typeof data.scroll[0] === 'number' && typeof data.scroll[1] === 'number') {
-        this.iframe.contentWindow.scrollTo(data.scroll[0], data.scroll[1])
+        window.shouldNotScroll = true
+        let body = this.iframe.contentDocument.body.getAttribute('_-_')
+        let id = data.scroll[2] || body
+        // Fix document.documentElement scrolling messed up
+        if (id === '1') id = body
+        let element = this.getElementById(id)
+        element.scrollLeft = data.scroll[0]
+        element.scrollTop = data.scroll[1]
+        window.lS = [data.scroll[0], data.scroll[1], id]
       }
       if (data.dom) {
         this.html = data.dom
@@ -332,6 +363,15 @@ document.addEventListener('DOMContentLoaded', () => {
       }, '*')
     }
 
+    static sendScroll(array) {
+      this.win.postMessage({
+        type: 'PageGhost',
+        id: decodeURIComponent(window.location.search.substr(1)),
+        event: 'scroll',
+        data: array
+      }, '*')
+    }
+
     static scale() {
       let padding = this.embedded ? 0 : 60
       this.master.style.transform = ``
@@ -385,6 +425,9 @@ document.addEventListener('DOMContentLoaded', () => {
           (<any>this.iframe.contentWindow.parent) = null;
           this.iframe.contentWindow.onclick = this.clickJack.bind(this)
 
+          // Sync scroll events with parent
+          this.iframe.contentWindow.addEventListener('scroll', this.scroll.bind(this), true)
+
           // Reload HTML
           if (this.html) {
             this.setInnerHTML(this.html)
@@ -402,6 +445,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     static getElementById(id: string): HTMLElement {
+      if (typeof id === 'number') id = id.toString()
       if (typeof id === 'string') {
         return <HTMLElement>this.iframe.contentDocument.querySelector(`[_-_=${JSON.stringify(id)}]`)
       } else {

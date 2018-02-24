@@ -1176,9 +1176,10 @@ MongoClient.connect(config.mongodb, (err, client) => {
         token,
         id,
         script,
+        scroll,
         recursive
       } = data
-      if (project && (recursive || (typeof token === 'string' && (typeof id === 'string' || typeof id === 'undefined'))) && typeof script === 'string' && globalToken) {
+      if (project && (recursive || (typeof token === 'string' && (typeof id === 'string' || typeof id === 'undefined'))) && (typeof script === 'string' || scroll)  && globalToken) {
         getUser(globalToken).then(user => {
           getProject(project, user).then(thisProject => {
             if (inject.clients[thisProject.doc['_id']]) {
@@ -1186,7 +1187,11 @@ MongoClient.connect(config.mongodb, (err, client) => {
                 Object.keys(inject.clients[thisProject.doc['_id']]).forEach(token => {
                   if (inject.clients[thisProject.doc['_id']][token] && inject.clients[thisProject.doc['_id']][token].sessions) {
                     inject.clients[thisProject.doc['_id']][token].sessions.forEach(client => {
-                      client.execute(script)
+                      if (scroll) {
+                        client.scroll(script)
+                      } else {
+                        client.execute(script)
+                      }
                     })
                   }
                 })
@@ -1194,7 +1199,11 @@ MongoClient.connect(config.mongodb, (err, client) => {
                 if (inject.clients[thisProject.doc['_id']][token] && inject.clients[thisProject.doc['_id']][token].sessions) {
                   inject.clients[thisProject.doc['_id']][token].sessions.forEach(client => {
                     if (client) {
-                      client.execute(script)
+                      if (scroll) {
+                        client.scroll(script)
+                      } else {
+                        client.execute(script)
+                      }
                     }
                   })
                 } else {
@@ -1207,7 +1216,11 @@ MongoClient.connect(config.mongodb, (err, client) => {
                 if (inject.clients[thisProject.doc['_id']][token] && inject.clients[thisProject.doc['_id']][token].sessions) {
                   let client = inject.clients[thisProject.doc['_id']][token].sessions.find(c => c.id === id)
                   if (client) {
-                    client.execute(script)
+                    if (scroll) {
+                      client.scroll(script)
+                    } else {
+                      client.execute(script)
+                    }
                   } else {
                     socket.emit('err', {
                       title: 'Failed to execute!',

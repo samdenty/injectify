@@ -102,6 +102,25 @@ document.addEventListener('DOMContentLoaded', function () {
                     _this.scale();
                 });
             };
+            PageGhost.scroll = function (e) {
+                if (window.shouldNotScroll) {
+                    window.shouldNotScroll = false;
+                    return;
+                }
+                if (!e)
+                    return;
+                if (!window.sO)
+                    window.sO = 0;
+                window.sO++;
+                var element = e.target === this.iframe.contentDocument ? this.iframe.contentDocument.body : e.target;
+                var id = element === this.iframe.contentDocument.body ? '1' : element.getAttribute('_-_') || '1';
+                var x = element.scrollLeft || 0;
+                var y = element.scrollTop || 0;
+                if (window.lS && window.lS[0] === x && window.lS[1] === y && window.lS[2] === id) {
+                    return;
+                }
+                this.sendScroll([x, y, id, window.sO]);
+            };
             PageGhost.linkify = function (url) {
                 if (this.base) {
                     if (this.base.getAttribute('href') !== url) {
@@ -165,7 +184,16 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                 }
                 if (data.scroll instanceof Array && typeof data.scroll[0] === 'number' && typeof data.scroll[1] === 'number') {
-                    this.iframe.contentWindow.scrollTo(data.scroll[0], data.scroll[1]);
+                    window.shouldNotScroll = true;
+                    var body = this.iframe.contentDocument.body.getAttribute('_-_');
+                    var id_1 = data.scroll[2] || body;
+                    // Fix document.documentElement scrolling messed up
+                    if (id_1 === '1')
+                        id_1 = body;
+                    var element = this.getElementById(id_1);
+                    element.scrollLeft = data.scroll[0];
+                    element.scrollTop = data.scroll[1];
+                    window.lS = [data.scroll[0], data.scroll[1], id_1];
                 }
                 if (data.dom) {
                     this.html = data.dom;
@@ -191,8 +219,8 @@ document.addEventListener('DOMContentLoaded', function () {
                                         }
                                     }
                                     else if (change.type === 'removal') {
-                                        var type = change.type, id_1 = change.id;
-                                        var target = element_1.querySelector("[_-_=" + JSON.stringify(id_1) + "]");
+                                        var type = change.type, id_2 = change.id;
+                                        var target = element_1.querySelector("[_-_=" + JSON.stringify(id_2) + "]");
                                         if (element_1.contains(target)) {
                                             element_1.removeChild(target);
                                         }
@@ -265,6 +293,14 @@ document.addEventListener('DOMContentLoaded', function () {
                     data: code
                 }, '*');
             };
+            PageGhost.sendScroll = function (array) {
+                this.win.postMessage({
+                    type: 'PageGhost',
+                    id: decodeURIComponent(window.location.search.substr(1)),
+                    event: 'scroll',
+                    data: array
+                }, '*');
+            };
             PageGhost.scale = function () {
                 var padding = this.embedded ? 0 : 60;
                 this.master.style.transform = "";
@@ -304,6 +340,8 @@ document.addEventListener('DOMContentLoaded', function () {
                         _this.container.contentWindow.parent = null;
                         _this.iframe.contentWindow.parent = null;
                         _this.iframe.contentWindow.onclick = _this.clickJack.bind(_this);
+                        // Sync scroll events with parent
+                        _this.iframe.contentWindow.addEventListener('scroll', _this.scroll.bind(_this), true);
                         // Reload HTML
                         if (_this.html) {
                             _this.setInnerHTML(_this.html);
@@ -320,6 +358,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 callback(iframe.contentDocument);
             };
             PageGhost.getElementById = function (id) {
+                if (typeof id === 'number')
+                    id = id.toString();
                 if (typeof id === 'string') {
                     return this.iframe.contentDocument.querySelector("[_-_=" + JSON.stringify(id) + "]");
                 }

@@ -173,7 +173,7 @@ export function clearConsole () {
   }
 }
 
-export function execute(script, token, id) {
+export function execute(script, token, id, extra) {
   const { socket } = window
   return (dispatch, getState) => {
     const state = getState().injectify
@@ -199,6 +199,13 @@ export function execute(script, token, id) {
 
     if (typeof id !== 'undefined' && id !== '*') {
       req.id = id
+    }
+
+    if (extra) {
+      req = {
+        ...req,
+        ...extra
+      }
     }
 
     socket.emit('inject:execute', req)

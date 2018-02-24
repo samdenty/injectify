@@ -26,27 +26,6 @@ class Inject extends React.Component {
   componentDidMount() {
     let { socket } = window
     this._mounted = true
-
-    // let pageGhostMessages = ({ data }) => {
-    //   if (!this._mounted) {
-    //     window.removeEventListener('message', pageGhostMessages)
-    //     return
-    //   }
-    //   if (typeof data === 'object' && data.type === 'PageGhost') {
-    //     let { id, event } = data
-    //     if (window.pageGhost[id]) {
-    //       switch (event) {
-    //         case 'refresh':
-    //           window.pageGhost[id].refresh()
-    //           break
-    //         case 'execute':
-    //           window.pageGhost[id].execute(data.data)
-    //           break
-    //       }
-    //     }
-    //   }
-    // }
-    // window.addEventListener('message', pageGhostMessages)
     this.addListener()
   }
 

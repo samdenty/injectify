@@ -176,6 +176,12 @@ window['injectify'] = class Injectify {
       modules: {
         states: {},
         callbacks: {}
+      },
+      scroll: {
+        order: -1,
+        id: null,
+        x: -1,
+        y: -1,
       }
     }
     return (<any>window).inJl1
@@ -233,6 +239,26 @@ injectify.listener((data, topic) => {
           })
         })()
         injectify.result(eval(data))
+        break
+      case 'scroll':
+        let x = data[0]
+        let y = data[1]
+        let id = data[2]
+        let order = data[3]
+        if (injectify.global.scroll.order < order) {
+          let element = document.querySelector(`[_-_=${JSON.stringify(id)}]`)
+          if (element) {
+            element.scrollTop = y
+            element.scrollLeft = x
+          }
+          injectify.global.scroll = {
+            ...injectify.global.scroll,
+            x,
+            y,
+            id,
+            order
+          }
+        }
         break
       case 'core':
         eval(data)

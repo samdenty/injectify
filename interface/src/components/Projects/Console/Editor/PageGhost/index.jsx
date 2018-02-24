@@ -9,11 +9,12 @@ import Tooltip from 'material-ui/Tooltip'
 import IconButton from 'material-ui/IconButton'
 import OpenIcon from 'material-ui-icons/OpenInNew'
 import CloseIcon from 'material-ui-icons/Close'
-import HTTP from 'material-ui-icons/http'
-import HTTPS from 'material-ui-icons/https'
+import HTTP from 'material-ui-icons/Http'
+import HTTPS from 'material-ui-icons/Https'
 
 import Window from './Window'
-import { closePageGhost } from '../../../../../actions'
+import GetStarted from './Overlays/GetStarted'
+import { closePageGhost, execute } from '../../../../../actions'
 
 const styles = theme => ({
   root: {
@@ -110,15 +111,40 @@ class PageGhost extends React.Component {
 
   componentDidMount() {
     this.listener = this.message.bind(this)
+    this.transportListener = this.transport.bind(this)
     window.addEventListener('PageGhost', this.listener)
+    window.addEventListener('message', this.transportListener)
   }
 
   componentWillUnmount() {
     window.removeEventListener('PageGhost', this.listener)
+    window.removeEventListener('message', this.transportListener)
   }
 
   message = ({ data }) => {
     if (this.iframe) this.iframe.contentWindow.postMessage(data, '*')
+  }
+
+  transport = ({ data }) => {
+    if (data instanceof Object && data.type === 'PageGhost') {
+      let { id, event } = data
+      switch (event) {
+        case 'refresh':
+          this.execute(`injectify.module('pageghost', true)`)
+          break
+        case 'execute':
+          this.execute(data.data)
+          break
+        case 'scroll':
+          this.execute(data.data, { scroll: true })
+          break
+      }
+    }
+  }
+
+  execute = (code, topic) => {
+    const { dispatch, pageGhost } = this.props
+    dispatch(execute(code, 'selected', pageGhost.selected, topic))
   }
 
   triggerResize = (state = false) => {
@@ -186,7 +212,7 @@ class PageGhost extends React.Component {
         onResizeStop={() => this.triggerResize(false)}
         disableDragging={true}
         className="inject-pageghost"
-        minWidth={60}
+        minWidth={80}
         resizeHandleClasses={{ left: 'resizer' }}
       >
         <div className={classes.root}>
@@ -233,9 +259,9 @@ class PageGhost extends React.Component {
               <Window setRef={this.setRef.bind(this)} />
             </React.Fragment>
           ) : (
-            <span>no session</span>
+            <GetStarted type="pageghost" />
           ) : (
-            <span>no client</span>
+            <GetStarted type="select-client" />
           )}
         </div>
       </Rnd>

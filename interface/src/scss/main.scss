@@ -177,6 +177,7 @@ pre {
     z-index: 500;
     box-shadow: -10px 0 5px 10px #191919;
     background: #2A2A2A;
+    user-select: none !important;
     .inject-list-header {
       color: #fefeff;
       text-align: center;

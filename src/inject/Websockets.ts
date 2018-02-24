@@ -332,6 +332,12 @@ class Session {
       session.execute = script => {
         this.send('execute', script)
       }
+      /**
+       * Add a reference to the send method
+       */
+      session.scroll = array => {
+        this.send('scroll', array)
+      }
       global.inject.clients[this.project.id][this.token].sessions.push(session)
 
       resolve({

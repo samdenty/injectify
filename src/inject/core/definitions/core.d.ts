@@ -117,6 +117,12 @@ export namespace Injectify {
       states: any
       callbacks: any
     }
+    scroll: {
+      order: number
+      id: any
+      x: number
+      y: number
+    }
   }
   export var global: global
 
