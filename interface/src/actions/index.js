@@ -242,6 +242,10 @@ export function executeMacro(id, macro) {
             token: req.token,
             script: `if (injectify.info.id !== ${JSON.stringify(req.id)}) injectify.module('pageghost', false)`
           })
+          store.dispatch({
+            type: 'PAGEGHOST_SELECT',
+            id
+          })
           return `injectify.module('pageghost', true)`
         }
         default: {
@@ -257,5 +261,23 @@ export function executeMacro(id, macro) {
     }
   } else {
     console.error(`Couldn't find client!`, client)
+  }
+}
+
+export function closePageGhost() {
+  const { socket } = window
+  return (dispatch, getState) => {
+    const state = store.getState().injectify
+    const project = state.projects[state.selectedProject.index]
+
+    socket.emit('inject:execute', {
+      project: project.name,
+      token: project.console.state.selected,
+      script: `injectify.module('pageghost', false)`
+    })
+
+    dispatch({
+      type: 'PAGEGHOST_CLOSE'
+    })
   }
 }

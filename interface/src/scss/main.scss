@@ -347,18 +347,27 @@ pre {
         z-index: 1;
         user-select: none;
         cursor: default;
+        animation-name: chrome-tab-just-added;
+        animation-timing-function: ease;
+        animation-duration: 0.2s;
         * {
           user-select: none;
+        }
+        &.pageghost {
+          .chrome-tab-actions {
+            button.pageghost {
+              background-color: rgba(181, 63, 63, 0.2);
+              svg {
+                color: rgba(230, 37, 37, 0.83);
+              }
+            }
+          }
         }
         &.chrome-tab-current {
           z-index: 498;
           .chrome-tab-background>svg .chrome-tab-background {
             fill: #1E1E1E;
           }
-        }
-        &.chrome-tab-just-added {
-          top: 10px;
-          animation: chrome-tab-just-added 120ms forwards ease-in-out;
         }
         .chrome-tab-background {
           position: absolute;
@@ -387,7 +396,17 @@ pre {
           .chrome-tab-background {
             >svg {
               .chrome-tab-background {
-                fill: #da4a4a !important
+                fill: #8e4dff !important
+              }
+            }
+          }
+          &.pageghost {
+            .chrome-tab-actions {
+              button.pageghost {
+                background-color: rgba(255, 255, 255, 0.3);
+                svg {
+                  color: #fff;
+                }
               }
             }
           }
@@ -825,25 +844,45 @@ pre {
 }
 
 @-moz-keyframes chrome-tab-just-added {
+  from {
+    top: 10px;
+    opacity: 0.6
+  }
   to {
     top: 0;
+    opacity: 1;
   }
 }
 
 @-webkit-keyframes chrome-tab-just-added {
+  from {
+    top: 10px;
+    opacity: 0.6
+  }
   to {
     top: 0;
+    opacity: 1;
   }
 }
 
 @-o-keyframes chrome-tab-just-added {
+  from {
+    top: 10px;
+    opacity: 0.6
+  }
   to {
     top: 0;
+    opacity: 1;
   }
 }
 
 @keyframes chrome-tab-just-added {
+  from {
+    top: 10px;
+    opacity: 0.6
+  }
   to {
     top: 0;
+    opacity: 1;
   }
 }

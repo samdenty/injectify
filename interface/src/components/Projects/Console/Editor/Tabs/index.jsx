@@ -90,7 +90,7 @@ class Tabs extends Component {
 
   render() {
     const { width, height } = this.state.dimensions
-    const { projects, selectedProject, dispatch } = this.props
+    const { projects, selectedProject, pageGhost, dispatch } = this.props
     const project = projects[selectedProject.index]
     const { state } = project.console
     const tabs = state.clients[state.selected]
@@ -122,6 +122,7 @@ class Tabs extends Component {
                       devtools={tab.devtools}
                       favicon={tab.window.favicon}
                       active={tab.window.active}
+                      pageGhost={pageGhost}
                       width={this.state.tabWidth} />
                   ) : ''
                 })}
@@ -138,13 +139,13 @@ class Tabs extends Component {
 
 class Tab extends Component {
   render() {
-    const { id, order, width, height, devtools, title, active, favicon } = this.props
+    const { id, order, width, height, devtools, title, active, favicon, pageGhost } = this.props
 
     return(
       <React.Fragment>
         <ContextMenuTrigger id={id.toString()}>
           <div
-            className={`chrome-tab ${active ? 'chrome-tab-current' : ''} ${devtools.open ? 'devtools' : ''}`}
+            className={`chrome-tab ${active ? 'chrome-tab-current' : ''} ${devtools.open ? 'devtools' : ''} ${pageGhost.selected === id ? 'pageghost' : ''}`}
             style={{
               width: width,
               transform: order ? `translate(${(width * order) - (order * 14)}px, 0)` : ''
@@ -246,4 +247,4 @@ class Tab extends Component {
   }
 }
 
-export default connect(({ injectify: {projects, selectedProject} }) => ({ projects, selectedProject }))(Tabs)
+export default connect(({ injectify: {projects, selectedProject, pageGhost} }) => ({ projects, selectedProject, pageGhost }))(Tabs)

@@ -47,7 +47,12 @@ const initialState = {
   // All accounts
   accounts: [],
   // Selected account
-  account: null
+  account: null,
+
+  // PageGhost
+  pageGhost: {
+    selected: null
+  }
 }
 
 const initialConsole = {
@@ -464,6 +469,26 @@ export default (state = initialState, action) => {
           }
         }
       })
+    }
+
+    case 'PAGEGHOST_SELECT': {
+      return update(state, {
+        pageGhost: {
+          selected: {
+            $set: action.id
+          }
+        }
+      })
+    }
+
+    case 'PAGEGHOST_CLOSE': {
+      return {
+        ...state,
+        pageGhost: {
+          ...state.pageGhost,
+          selected: null
+        }
+      }
     }
 
     default: {
