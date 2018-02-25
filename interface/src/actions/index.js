@@ -228,8 +228,7 @@ export function executeMacro(id, macro) {
     if (session) {
       req.script = (() => {switch (macro) {
         case 'execute': {
-          //
-          return null
+          return window.code && window.code.editor.getValue()
         }
         case 'close': {
           return 'window.close()'

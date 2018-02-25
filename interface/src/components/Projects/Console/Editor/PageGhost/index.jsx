@@ -35,7 +35,8 @@ const styles = theme => ({
     boxShadow: 'rgba(62, 61, 61, 0.71) 0px 1px 3px',
     width: '100%',
     boxSizing: 'border-box',
-    flexShrink: 0
+    flexShrink: 0,
+    zIndex: 1,
   },
   content: {
     display: 'flex',

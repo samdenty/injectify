@@ -12,6 +12,8 @@ const initialState = {
   page: 'overview',
   loading: true,
 
+  code: window.localStorage.getItem('code') || `// Type your code`,
+
   drawerOpen: window.innerWidth >= 960,
   clientsListOpen: window.innerWidth >= 960,
 
@@ -58,7 +60,6 @@ const initialState = {
 const initialConsole = {
   clients: {},
   selected: null,
-  code: window.localStorage.getItem('injectScript') || `// Import types to enable intellisense\nimport { injectify, window } from 'injectify'\n\n// Type your code here`,
   logs: [
     {
       type: 'warn',

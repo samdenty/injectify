@@ -1,7 +1,7 @@
 import ReactDOM, { render } from 'react-dom'
 import React from 'react'
 import { connect } from 'react-redux'
-
+import _ from 'lodash'
 
 import Tabs from './Tabs'
 import Console from './Console'
@@ -9,26 +9,48 @@ import PageGhost from './PageGhost'
 import { toggleClientsList } from '../../../../actions'
 
 import MonacoEditor from 'react-monaco-editor'
-import CodeMirror from 'react-codemirror'
+import {UnControlled as CodeMirror} from 'react-codemirror2'
 require('codemirror/mode/javascript/javascript')
-import Typings from '../../../../../../src/inject/core/definitions/core.d.ts'
+
 import ModuleTypings from '../../../../../../src/inject/core/definitions/modules.d.ts'
+import Typings from '../../../../../../src/inject/core/definitions/core.d.ts'
+const typings = Typings
+  .replace(/^\s*import /mg, `// import `)
+  .replace('export namespace Injectify', 'declare namespace injectify')
+  .replace('//#modules', ModuleTypings.replace('export interface Modules', 'interface Modules'))
 
 class Editor extends React.Component {
-  updateDimensions = () => {
-    if (this.editor) this.editor.layout()
+  interval = null
+
+  componentDidMount() {
+    this.interval = setInterval(this.saveToStorage, 1000)
   }
 
-  editorDidMount = (editor, monaco) => {
+  componentWillUnmount() {
+    clearInterval(this.interval)
+  }
+
+  updateDimensions = () => {
+    if (this.editor) {
+      switch (window.code.type) {
+        case 'monaco': {
+          this.editor.layout()
+          break
+        }
+      }
+    }
+  }
+
+  monacoDidMount = (editor, monaco) => {
     this.editor = editor
-    let typings = Typings
-      .replace(/^\s*import /mg, `// import `)
-      .replace('export namespace Injectify', `declare module 'injectify'`)
-      .replace('//1', 'export namespace injectify {')
-      .replace('//2', ModuleTypings.replace('export interface Modules', 'interface Modules'))
-      .replace('//3',
-        `}
-      export var window: any`)
+    window.code = {
+      ...window.code,
+      type: 'monaco',
+      editor
+    }
+    /**
+     * Set the theme
+     */
     monaco.editor.defineTheme('Injectify', {
       base: 'vs-dark',
       inherit: true,
@@ -39,11 +61,39 @@ class Editor extends React.Component {
       ],
     })
     monaco.editor.setTheme('Injectify')
+    /**
+     * Import typings
+     */
     try {
-      monaco.languages.typescript.typescriptDefaults.addExtraLib(typings, 'injectify.d.ts')
-    } catch (e) { }
+      monaco.languages.typescript.javascriptDefaults.addExtraLib(typings, `injectify.d.ts`)
+    } catch(e) {
+
+    }
+    /**
+     * Initialize
+     */
     editor.focus()
     window.addEventListener('resize', this.updateDimensions)
+  }
+
+  codemirrorDidMount = (editor) => {
+    console.log(editor)
+    this.editor = editor
+    window.code = {
+      ...window.code,
+      type: 'codemirror',
+      editor
+    }
+  }
+
+  saveToStorage = () => {
+    if (this.editor) {
+      try {
+        localStorage.setItem('code', this.editor.getValue())
+      } catch(e) {
+
+      }
+    }
   }
 
   render() {
@@ -51,9 +101,11 @@ class Editor extends React.Component {
     const options = {
       selectOnLineNumbers: true,
       lineNumbers: true,
+      dragAndDrop: true,
       mode: 'javascript',
       formatOnPaste: true,
       folding: true,
+      autoIndent: true,
       glyphMargin: false,
       fontLigatures: true,
       theme: 'panda-syntax'
@@ -66,13 +118,16 @@ class Editor extends React.Component {
           <div className="inject-editor">
             {window.innerWidth >= 650 ? (
               <MonacoEditor
-                language={(state.code && /^\s*import /m.test(state.code)) ? 'typescript' : 'javascript'}
+                language="javascript"
+                defaultValue={state.code}
+                options={options}
+                editorDidMount={this.monacoDidMount} />
+            ) : (
+              <CodeMirror
                 value={state.code}
                 options={options}
-                onChange={this.onChange}
-                editorDidMount={this.editorDidMount} />
-            ) : (
-              <CodeMirror value={state.code} onChange={this.onChange} options={options} />
+                editorDidMount={this.codemirrorDidMount}
+                onChange={(editor, data, value) => {}} />
             )}
             <Console />
           </div>

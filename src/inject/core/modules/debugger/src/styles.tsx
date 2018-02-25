@@ -88,6 +88,7 @@ export default (Module: ModuleTypings["Module"]) => {
     },
     'columnContent': {
       overflow: 'scroll',
+      overscrollBehaviorY: 'contain',
       flexGrow: 1,
       marginLeft: '10px',
       marginRight: '5px',

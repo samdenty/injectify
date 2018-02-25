@@ -7,8 +7,7 @@ import { Modules } from './modules'
  */
 
 export namespace Injectify {
-  //1
-  //2
+  //#modules
   interface info {
     project: string
     server: {
@@ -250,5 +249,4 @@ export namespace Injectify {
 	 * @param element element to execute the script under, defaults to document.head
 	 */
   export function exec(func: Function | string, element?: HTMLElement)
-  //3
 }
