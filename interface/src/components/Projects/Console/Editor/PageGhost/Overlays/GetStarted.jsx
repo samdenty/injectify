@@ -34,7 +34,7 @@ class Loading extends React.Component {
           <React.Fragment>
             <PageGhostIcon className={classes.icon} />
             <Typography variant="subheading" className={classes.content}>
-              Click on an eye symbol to see what's on their screen
+              Click on the eye symbol to see what's on their screen
             </Typography>
           </React.Fragment>
         ) : (

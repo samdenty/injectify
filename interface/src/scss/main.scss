@@ -729,6 +729,54 @@ pre {
   }
 }
 
+/**
+ * Data page
+ */
+.data {
+  .row {
+    cursor: pointer
+  }
+  .inspector {
+    * {
+      cursor: pointer
+    }
+  }
+}
+
+/**
+ * Data modal
+ */
+.data-modal {
+  ::-webkit-scrollbar {
+    width: 15px;
+    background: #151515;
+  }
+  ::-webkit-scrollbar-thumb {
+    background-color: #4b4b4b;
+    border: 2px solid #151515;
+    border-top: 4px solid #151515;
+    border-bottom: 4px solid #151515;
+    &:hover {
+      background-color: #5e5e5e;
+    }
+    &:active {
+      background-color: #464646;
+    }
+  }
+}
+
+/**
+ * Remove background from react-inspector
+ */
+.inspector {
+  > li {
+    overflow: hidden;
+  }
+  li {
+    background-color: transparent !important;
+  }
+}
+
 .resizer {
   transition: background-color 0.3s ease;
   z-index: 1000;

@@ -2,6 +2,35 @@
 # yarn lockfile v1
 
 
+"@devexpress/dx-core@1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@devexpress/dx-core/-/dx-core-1.0.1.tgz#0988c6446204a51deab5d9e153838c8cf8dd55aa"
+
+"@devexpress/dx-grid-core@1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@devexpress/dx-grid-core/-/dx-grid-core-1.0.1.tgz#df4ffaf42e1adaba54d8d2fee6a95a7fab82ca91"
+
+"@devexpress/dx-react-core@^1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@devexpress/dx-react-core/-/dx-react-core-1.0.1.tgz#8c59152470f9280f45f7657da88b4236b01b0f01"
+  dependencies:
+    "@devexpress/dx-core" "1.0.1"
+    prop-types "^15.6.0"
+
+"@devexpress/dx-react-grid-material-ui@^1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@devexpress/dx-react-grid-material-ui/-/dx-react-grid-material-ui-1.0.1.tgz#8b74fd53e2f6525e15cf42f5b6b9f5a1655b8db6"
+  dependencies:
+    classnames "^2.2.5"
+    prop-types "^15.6.0"
+
+"@devexpress/dx-react-grid@^1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@devexpress/dx-react-grid/-/dx-react-grid-1.0.1.tgz#3337342cfe3687945ca0e130c0a36a79b84b8cf2"
+  dependencies:
+    "@devexpress/dx-grid-core" "1.0.1"
+    prop-types "^15.6.0"
+
 "@types/jss@^9.3.0":
   version "9.3.0"
   resolved "https://registry.yarnpkg.com/@types/jss/-/jss-9.3.0.tgz#0f8484fd03ded206917be27b58217f274a0ad59f"
@@ -5434,9 +5463,9 @@ react-inspector@^2.2.2:
     babel-runtime "^6.26.0"
     is-dom "^1.0.9"
 
-react-json-view@^1.15.2:
-  version "1.16.0"
-  resolved "https://registry.yarnpkg.com/react-json-view/-/react-json-view-1.16.0.tgz#fa8f47bd4be59eb31e809c908cfd705369aae2b7"
+react-json-view@^1.16.1:
+  version "1.16.1"
+  resolved "https://registry.yarnpkg.com/react-json-view/-/react-json-view-1.16.1.tgz#ab81fc7db5af70135248704e37741cf097f46604"
   dependencies:
     flux "^3.1.3"
     react-base16-styling "^0.5.3"

@@ -56,69 +56,6 @@ class Inject extends React.Component {
     })
   }
 
-  // execute = (token, id, script) => {
-  //   let project = this.props.project.name
-  //   let { socket } = window
-
-  //   if (token === '*') {
-  //     socket.emit('inject:execute', {
-  //       project: project,
-  //       recursive: true,
-  //       script: script || this.state.code && this.state.code.replace(/^\s*import .*\n/gm, ``)
-  //     })
-  //   } else if (id === '*') {
-  //     socket.emit('inject:execute', {
-  //       project: project,
-  //       token: token,
-  //       script: script || this.state.code && this.state.code.replace(/^\s*import .*/gm, ``)
-  //     })
-  //   } else {
-  //     socket.emit('inject:execute', {
-  //       project: project,
-  //       token: token,
-  //       id: id,
-  //       script: script || this.state.code && this.state.code.replace(/^\s*import .*/gm, ``)
-  //     })
-  //   }
-  // }
-
-  // executeSession = (id, data) => {
-  //   let { token, client } = this.state.selectedClient
-  //   let session = client.sessions[id]
-  //   if (data === 'execute') {
-  //     this.execute(token, session.id)
-  //   } else if (data === 'close') {
-  //     this.execute(token, session.id, 'window.close()')
-  //   } else if (data === 'open') {
-  //     window.open(session.window.url)
-  //   } else if (data === 'reload') {
-  //     this.execute(token, session.id, 'window.location.reload()')
-  //   } else {
-  //     this.execute(token, session.id, data)
-  //   }
-  // }
-
-  // switchClient = (token) => {
-  //   let { socket, project } = this.props
-
-  //   this.toggleMenu(false)
-
-  //   this.setState({
-  //     selectedClient: {
-  //       token: token,
-  //       client: this.state.clients[token]
-  //     }
-  //   })
-
-  //   /**
-  //    * Subscribe to client updates
-  //    */
-  //   socket.emit('inject:client', {
-  //     project: project,
-  //     client: token
-  //   })
-  // }
-
   render() {
     const { projects, selectedProject, clientsListOpen } = this.props
     const { selected } = projects[selectedProject.index].console.state
