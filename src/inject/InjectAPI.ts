@@ -4,6 +4,7 @@ const uuidv4 = require('uuid/v4')
 const minify = require('html-minifier').minify
 
 import { SocketSession } from './definitions/session'
+import ModuleEval from './ModuleEval'
 import DataRecorder from './DataRecorder'
 
 export default class {
@@ -34,10 +35,19 @@ export default class {
         if (this.session.debug) js = global.inject.debugModules[data.name]
         if (js) {
           try {
-            if (!/^undefined|number|boolean$/.test(typeof data.params) && data.params !== null) {
-              data.params = JSON.stringify(data.params)
+            try {
+              js = ModuleEval(js)
+            } catch(e) {
+              this.send('module', {
+                name: data.name,
+                token: data.token,
+                error: {
+                  code: 'module-error',
+                  message: `Encountered an error whilst running server-side code for module "${data.name}"${this.session.debug ? `\n\n${e.stack}` : ''}`
+                }
+              })
+              return
             }
-            js = `Module.params=${data.params};${js}`
             this.send('module', {
               name: data.name,
               token: data.token,

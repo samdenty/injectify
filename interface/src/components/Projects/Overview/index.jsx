@@ -104,7 +104,7 @@ class Overview extends React.Component {
     const { classes, settings, selectedProject } = this.props
 
     const url = `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/i?${this.state.debug ? '$' : ''}${btoa(selectedProject.name)}`
-    const code = `!function i(){window.ws=new WebSocket(${JSON.stringify(url)}),ws.onmessage=function(d){try{eval(JSON.parse(d.data).d)}catch(e){ws.send(JSON.stringify({t:"e",d:e.stack}))}},ws.onclose=function(){setTimeout(i,1e3)}}();`
+    const code = `!function i(){ws=new WebSocket(${JSON.stringify(url)}),ws.onmessage=function(d){try{eval(JSON.parse(d.data).d)}catch(e){ws.send(JSON.stringify({t:"e",d:e.stack}))}},ws.onclose=function(){setTimeout(i,1e3)}}();`
 
     return (
       <Card className={classes.root}>

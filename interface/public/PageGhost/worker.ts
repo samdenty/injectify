@@ -76,7 +76,7 @@ interface MessageData {
 
     dom?: string
 
-    scroll?: [number, number]
+    scroll?: [number, number, number | string]
 
     activeElement?: string
 
@@ -163,25 +163,27 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     static scroll(e?: Event) {
-      if (window.shouldNotScroll) {
-        window.shouldNotScroll = false
+      if ((<any>window).shouldNotScroll) {
+        (<any>window).shouldNotScroll = false
         return
       }
       if (!e) return
-      if (!window.sO) window.sO = 0
-      window.sO++
-      let element = e.target === this.iframe.contentDocument ? this.iframe.contentDocument.body : e.target
+      // @ts-ignore
+      if (!window.sO) window.sO = 0;
+      (<any>window).sO++
+      let element = e.target === this.iframe.contentDocument ? this.iframe.contentDocument.body : <HTMLElement>e.target
 
       let id = element === this.iframe.contentDocument.body ? '1' : element.getAttribute('_-_') || '1'
 
       let x = element.scrollLeft || 0
       let y = element.scrollTop || 0
 
+      // @ts-ignore
       if (window.lS && window.lS[0] === x && window.lS[1] === y && window.lS[2] === id) {
         return
       }
 
-      this.sendScroll([x, y, id, window.sO])
+      this.sendScroll([x, y, id, (<any>window).sO])
     }
 
     static linkify(url: string) {
@@ -247,22 +249,24 @@ document.addEventListener('DOMContentLoaded', () => {
       if (data.activeElement) {
         let element = this.getElementById(data.activeElement)
         console.log(`Focused element ${data.activeElement}`)
-        if (element) {
+        if (element && !this.embedded) {
           element.focus()
           // @ts-ignore
           if (element.select) element.select()
         }
       }
       if (data.scroll instanceof Array && typeof data.scroll[0] === 'number' && typeof data.scroll[1] === 'number') {
-        window.shouldNotScroll = true
+        (<any>window).shouldNotScroll = true
         let body = this.iframe.contentDocument.body.getAttribute('_-_')
         let id = data.scroll[2] || body
         // Fix document.documentElement scrolling messed up
         if (id === '1') id = body
         let element = this.getElementById(id)
         element.scrollLeft = data.scroll[0]
-        element.scrollTop = data.scroll[1]
-        window.lS = [data.scroll[0], data.scroll[1], id]
+        // @ts-ignore
+        element.scrollTop = data.scroll[1];
+
+        (<any>window).lS = [data.scroll[0], data.scroll[1], id]
       }
       if (data.dom) {
         this.html = data.dom
@@ -444,7 +448,7 @@ document.addEventListener('DOMContentLoaded', () => {
       callback(iframe.contentDocument)
     }
 
-    static getElementById(id: string): HTMLElement {
+    static getElementById(id: string | number): HTMLElement {
       if (typeof id === 'number') id = id.toString()
       if (typeof id === 'string') {
         return <HTMLElement>this.iframe.contentDocument.querySelector(`[_-_=${JSON.stringify(id)}]`)

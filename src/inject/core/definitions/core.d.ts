@@ -114,7 +114,7 @@ export namespace Injectify {
     commandHistory: string[]
     modules: {
       states: any
-      callbacks: any
+      calls: any
     }
     scroll: {
       order: number

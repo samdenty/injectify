@@ -6,23 +6,25 @@ export default class {
     /**
      * Create the module object
      */
+    const call = injectify.global.modules.calls[data.token]
     var Module = {
       name: data.name,
       token: data.token,
+      params: call.params,
       resolve: (data?: any) => {
         Module.resolved = true
-        if (injectify.global.modules.callbacks[Module.token]) {
-          injectify.global.modules.callbacks[Module.token].resolve(data)
+        if (call) {
+          call.resolve(data)
         } else {
-          injectify.debugLog('module', 'error', `Failed to find injectify.global.modules.callbacks[${Module.token}], could not resolve Promise`)
+          injectify.debugLog('module', 'error', `Failed to find injectify.global.modules.calls[${Module.token}], could not resolve Promise`)
         }
       },
       reject: (data?: any) => {
         Module.resolved = true
-        if (injectify.global.modules.callbacks[Module.token]) {
-          injectify.global.modules.callbacks[Module.token].reject(data)
+        if (call) {
+          call.reject(data)
         } else {
-          injectify.debugLog('module', 'error', `Failed to find injectify.global.modules.callbacks[${Module.token}], could not reject Promise`)
+          injectify.debugLog('module', 'error', `Failed to find injectify.global.modules.calls[${Module.token}], could not reject Promise`)
         }
       },
       resolved: false,

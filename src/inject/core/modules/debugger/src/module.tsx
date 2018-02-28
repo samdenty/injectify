@@ -100,10 +100,8 @@ if (typeof Module.state !== 'undefined') {
   Module.setState(!Module.state)
 } else {
   let container
-  if (typeof Module.params === 'function') {
-    container = eval(`${Module.params}()`)
-  } else if (typeof Module.params === 'string') {
-    container = eval(Module.params)
+  if (Module.params instanceof HTMLElement) {
+    container = Module.params
   } else {
     container = document.createElement('div')
     if (document.body) {

@@ -2,7 +2,7 @@
  * Import the Typescript typings
  */
 import ModuleTypings from '../../../definitions/module'
-declare const { Module, injectify } : ModuleTypings
+declare const { Module, injectify, $ } : ModuleTypings
 
 /**
  * Place the Javascript here you want your module to execute
@@ -14,12 +14,26 @@ declare const { Module, injectify } : ModuleTypings
 /**
  * Gets details about the current module
  */
-console.log(module)
+console.log(Module)
 
 /**
- * Reject the modules promise
+ * Execute server-side code
  */
-Module.reject('error message')
+
+console.log(`Here's some info about the server:`, $($(`
+  return {
+    platform: process.platform,
+    uptime: process.uptime(),
+  }
+`)))
+
+console.log('Lodash example', $($(`
+return _.find([
+  { 'user': 'barney',  'age': 36, 'active': true },
+  { 'user': 'fred',    'age': 40, 'active': false },
+  { 'user': 'pebbles', 'age': 1,  'active': true }
+], 'active')`)))
+
 
 /**
  * Resolve the modules promise
@@ -27,9 +41,14 @@ Module.reject('error message')
 Module.resolve('returned value')
 
 /**
+ * Reject the modules promise
+ */
+// Module.reject('error message')
+
+/**
  * Load another module
  */
-injectify.module('example')
+// injectify.module('test')
 
 /**
  * Ping the server

@@ -37,4 +37,8 @@ export default class {
     resolved: boolean
   }
   injectify: typeof Injectify
+  /**
+   * Executes server-side code and replaced with the result
+   */
+  $: Function
 }

@@ -1,5 +1,6 @@
+import Promise from './Promise'
+
 export default function (urls: string | string[]) {
-  // @ts-ignore
   return new Promise((resolve, reject) => {
     if (typeof urls === 'string') urls = [urls]
     /**

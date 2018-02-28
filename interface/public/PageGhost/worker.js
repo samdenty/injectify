@@ -109,6 +109,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
                 if (!e)
                     return;
+                // @ts-ignore
                 if (!window.sO)
                     window.sO = 0;
                 window.sO++;
@@ -116,6 +117,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 var id = element === this.iframe.contentDocument.body ? '1' : element.getAttribute('_-_') || '1';
                 var x = element.scrollLeft || 0;
                 var y = element.scrollTop || 0;
+                // @ts-ignore
                 if (window.lS && window.lS[0] === x && window.lS[1] === y && window.lS[2] === id) {
                     return;
                 }
@@ -176,7 +178,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (data.activeElement) {
                     var element = this.getElementById(data.activeElement);
                     console.log("Focused element " + data.activeElement);
-                    if (element) {
+                    if (element && !this.embedded) {
                         element.focus();
                         // @ts-ignore
                         if (element.select)
@@ -192,6 +194,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         id_1 = body;
                     var element = this.getElementById(id_1);
                     element.scrollLeft = data.scroll[0];
+                    // @ts-ignore
                     element.scrollTop = data.scroll[1];
                     window.lS = [data.scroll[0], data.scroll[1], id_1];
                 }
