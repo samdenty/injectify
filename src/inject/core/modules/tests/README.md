@@ -1,12 +1,11 @@
-## `example` module
+## `tests` module
 
-Detailed description of what the module does
+Performs Injectify core unit tests
 
 ## Usage
 
 ```js
-// Examples of how to use your module
-injectify.module('example')
-// What it returns
-// undefined
+injectify.module('tests')
+// true
+// All 24 tests passed ✅
 ```

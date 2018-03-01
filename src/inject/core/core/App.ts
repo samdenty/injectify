@@ -20,12 +20,7 @@ import ErrorGuard from './lib/ErrorGuard'
 import Promise from './lib/Promise'
 
 ErrorGuard(() => {
-  // Injectify load event
-  if (!window['injectify']) {
-    setTimeout(() => {
-      window.dispatchEvent(new CustomEvent('injectify'))
-    }, 500)
-  }
+  let reconnected = !!window['injectify']
 
   /**
    * Injectify core API
@@ -147,6 +142,9 @@ ErrorGuard(() => {
       if (!this.debug) return
       let emoji = '📝'
       switch (internalName) {
+        case 'websockets':
+          emoji = '📶'
+          break
         case 'core':
           emoji = '⚡️'
           break
@@ -235,6 +233,19 @@ ErrorGuard(() => {
 
   // @ts-ignore
   let global = ((<any>window).global = injectify.global)
+
+  /**
+   * Re-connect events
+   */
+  if (reconnected) {
+    injectify.debugLog(
+      'websockets',
+      'info',
+      'Re-established a connection to the server ✅'
+    )
+  } else {
+    window.dispatchEvent(new CustomEvent('injectify'))
+  }
 
   /**
    * Debug helpers

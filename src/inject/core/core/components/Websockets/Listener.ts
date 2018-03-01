@@ -26,4 +26,7 @@ export default function(callback: Function) {
       callback(data.d, data.t)
     }
   }
+  ws.addEventListener('close', () => {
+    injectify.debugLog('websockets', 'error', 'Lost connection to the server! reconnecting...')
+  })
 }

@@ -20,19 +20,21 @@ console.log(Module)
  * Execute server-side code
  */
 
-console.log(`Here's some info about the server:`, $($(`
+console.log(`Here's some info about the server:`, $.FUNCTION(`
   return {
     platform: process.platform,
     uptime: process.uptime(),
   }
-`)))
+`))
 
-console.log('Lodash example', $($(`
-return _.find([
-  { 'user': 'barney',  'age': 36, 'active': true },
-  { 'user': 'fred',    'age': 40, 'active': false },
-  { 'user': 'pebbles', 'age': 1,  'active': true }
-], 'active')`)))
+console.log('Lodash example', $.FUNCTION(`
+  const _ = require('lodash')
+  return _.find([
+    { 'user': 'barney',  'age': 36, 'active': true },
+    { 'user': 'fred',    'age': 40, 'active': false },
+    { 'user': 'pebbles', 'age': 1,  'active': true }
+  ], 'active')
+`))
 
 
 /**

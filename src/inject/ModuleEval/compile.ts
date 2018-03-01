@@ -12,12 +12,12 @@ var esniff = require("esniff"),
 
 sOut = function(char) {
 	if (char === "\\") return sEscape
-	if (char === "$") return sAhead
+	if (char === "Δ") return sAhead
 	current += char
 	return sOut
 }
 sEscape = function(char) {
-	if (char !== "\\" && char !== "$") current += "\\"
+	if (char !== "\\" && char !== "Δ") current += "\\"
 	current += char
 	return sOut
 }
@@ -27,11 +27,11 @@ sAhead = function(char) {
 		current = ""
 		return sIn
 	}
-	if (char === "$") {
-		current += "$"
+	if (char === "Δ") {
+		current += "Δ"
 		return sAhead
 	}
-	current += "$" + char
+	current += "Δ" + char
 	return sOut
 }
 sIn = function(char) {
@@ -74,11 +74,11 @@ export default function(str) {
 	} else if (state === sEscape) {
 		literals.push(current + "\\")
 	} else if (state === sAhead) {
-		literals.push(current + "$")
+		literals.push(current + "Δ")
 	} else if (state === sIn) {
-		literals[literals.length - 1] += "injectify.SERVER_EXECUTE(" + current
+		literals[literals.length - 1] += "Δ(" + current
 	} else if (state === sInEscape) {
-		literals[literals.length - 1] += "injectify.SERVER_EXECUTE(" + current + "\\"
+		literals[literals.length - 1] += "Δ(" + current + "\\"
 	}
 	result = { literals: literals, substitutions: substitutions }
 	literals = substitutions = null

@@ -1,0 +1,9 @@
+{
+  "name": "injectify-tests",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "fast-deep-equal": "^1.1.0"
+  }
+}
