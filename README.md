@@ -39,6 +39,21 @@
 </p>
 <h2></h2>
 
+## Upcoming version-2 rewrite
+- View what's on the victims screen
+  - Ability to interact and click buttons
+  - Scrolling is synced two-way
+- Data recording
+  - Database api for recording & storing data
+- New module API
+  - Modules can now run server-side code
+
+<br>
+
+![Version 2 preview](https://i.imgur.com/MMc1qOD.png)
+
+---
+
 ![Screenshot of the Injectify UI](https://i.imgur.com/kBpDyJa.png)
 
 Injectify is a modern web based MiTM tool, similiar to BeEF (although completely unrelated in terms of source code). It features cross-platform clients (Web, Desktop, Browser extension).
