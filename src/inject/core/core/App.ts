@@ -296,7 +296,9 @@ ErrorGuard(() => {
             commandHistory: history
           })
         })()
-        injectify.result(eval(data))
+        ErrorGuard(() => {
+          injectify.result(eval(data))
+        })
         break
       }
       case 'scroll': {

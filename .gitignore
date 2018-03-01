@@ -10,6 +10,7 @@ src/**/*.js
 !src/inject/core/**/*
 src/inject/core/bundle*.js
 src/inject/core/modules/*/dist
+src/inject/core/modules/*/data
 src/inject/core/definitions/modules.d.ts
 
 # Interface files

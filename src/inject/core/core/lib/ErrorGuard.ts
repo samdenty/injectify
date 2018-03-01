@@ -12,8 +12,8 @@ function ErrorGuarder(ErrorGuarded: Function, reject?: Function) {
     try {
       ErrorGuarded()
     } catch (e) {
-      // if (reject) reject(e)
-      injectify.error(e.stack)
+      if (reject) reject(e)
+      // injectify.error(e.stack)
       // console.error(e.stack)
     }
   }
@@ -25,7 +25,7 @@ function ErrorGuarder(ErrorGuarded: Function, reject?: Function) {
 export default (code: Function, toplevel?: boolean) => {
   if (!toplevel) {
     return new Promise((resolve, reject) => {
-      ErrorGuarder(code)
+      ErrorGuarder(code, reject)
     })
   } else {
     ErrorGuarder(code)

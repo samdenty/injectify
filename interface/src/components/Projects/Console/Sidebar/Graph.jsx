@@ -173,7 +173,7 @@ class Graph extends React.Component {
           </Tooltip>
         </ContextMenuTrigger>
         <ContextMenu id={'graph'}>
-          <MenuItem onClick={() => this.setState({ graph: [] })}>
+          <MenuItem onClick={() => this.setState({ graph: [[], []] })}>
             Clear graph
           </MenuItem>
           <MenuItem divider />

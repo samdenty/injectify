@@ -1,4 +1,4 @@
-export default (script: string) => {
+export default (script: string, context: string) => {
   let escaped = /^'|"|`$/.test(script.charAt(0))
   try {
     try {
@@ -23,15 +23,14 @@ export default (script: string) => {
   }
 
   try {
-    let resolver = eval(script)
+    let resolver = eval(`${context};${script}`)
     if (escaped) {
       try {
         new Function(`return (${resolver})`)
       } catch(error) {
         resolver = `() => {${resolver}}`
       }
-      console.log(resolver)
-      resolver = eval(resolver)
+      resolver = eval(`${context};${resolver}`)
     }
     if (typeof resolver === 'function') resolver = resolver()
     return resolver

@@ -1,7 +1,7 @@
-export default (script: string) => {
+export default (script: string, context: string) => {
   let resolver
   try {
-    resolver = new Function(`return (${script})`)
+    resolver = new Function(`${context}; return (${script})`)
   } catch (e) {
   	throw new TypeError(
   		"Module snippet compilation failed!\n\tbody: " +
@@ -13,7 +13,9 @@ export default (script: string) => {
 
   try {
     let snippet = resolver()
-    if (typeof snippet === 'function') snippet = snippet()
+    if (typeof snippet === 'function') {
+			snippet = eval(`${context}; (${snippet.toString()})()`)
+		}
     return snippet
   } catch (e) {
   	throw new TypeError(

@@ -30,7 +30,8 @@ export default class {
        */
       injectify.send('module', {
         name,
-        token
+        token,
+        params
       })
     })
   }

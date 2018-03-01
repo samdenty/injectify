@@ -178,5 +178,16 @@ export default class {
      * true
      */
     BOOLEAN(data: boolean | string): boolean
+
+    /**
+     * Writes data to the servers filesystem
+     *
+     * This is ran server-side, invisible to the client.
+     *
+     * @example
+     * $.WRITE(`client-log-${injectify.info.ip.query}`, injectify.info)
+     * // No output
+     */
+    WRITE(filename: string, data: string): void
   }
 }

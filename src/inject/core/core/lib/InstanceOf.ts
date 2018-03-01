@@ -2,7 +2,7 @@
  * Returns a string-representation of a variables instance
  */
 export default function instanceOf(object: any) {
-  let type = typeof object
+  let type: string = typeof object
 
   if (type === 'undefined') {
     return 'undefined'
@@ -14,5 +14,10 @@ export default function instanceOf(object: any) {
     type = Object.prototype.toString.call(object).slice(8, -1)
   }
 
-  return type.toLowerCase()
+  type = type.toLowerCase()
+
+  if (object instanceof Object) {
+    if ('_state' in object && '_handled' in object && '_deferreds' in object) type = 'promise'
+  }
+  return type
 }

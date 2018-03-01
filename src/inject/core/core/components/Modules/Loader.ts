@@ -1,5 +1,6 @@
 import { Injectify } from '../../../definitions/core'
 declare const injectify: typeof Injectify
+import ErrorGuard from '../../lib/ErrorGuard'
 
 export default class {
   constructor(data) {
@@ -48,7 +49,9 @@ export default class {
       /**
        * Evaluate the script
        */
-      eval(data.script)
+      ErrorGuard(() => {
+        eval(data.script)
+      })
 
       /**
        * Display verbose output

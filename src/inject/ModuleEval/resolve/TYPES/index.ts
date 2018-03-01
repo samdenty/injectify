@@ -1,10 +1,10 @@
 import * as typeOf from 'typeof'
 
-export default (type: string, data: any) => {
+export default (type: string, data: any, context: string) => {
   let resolver
   let currentType
   try {
-    resolver = new Function(`return (${data})`)()
+    resolver = new Function(`${context}; return (${data})`)()
     currentType = typeOf(resolver)
     if (currentType !== type && currentType === 'string') {
       resolver = new Function(`return (${resolver})`)()

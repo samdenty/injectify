@@ -36,7 +36,25 @@ export default class {
         if (js) {
           try {
             try {
-              js = ModuleEval(js)
+              js = ModuleEval(js, {
+                Module: {
+                  name: data.name,
+                  token: data.token,
+                  params: data.params
+                },
+                injectify: {
+                  info: {
+                    ...this.client.session,
+                    project: this.session.project.name
+                    'user-agent': this.client.client['user-agent'],
+                    ip: this.client.client.ip,
+                  },
+                  devtools: {
+                    ...this.client.session.devtools
+                  },
+                  debug: this.client.session.debug,
+                }
+              })
             } catch(e) {
               this.send('module', {
                 name: data.name,

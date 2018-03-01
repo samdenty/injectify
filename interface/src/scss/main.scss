@@ -477,7 +477,7 @@ pre {
         width: 100%;
         height: 100%;
         .react-monaco-editor-container,
-        .ReactCodeMirror {
+        .react-codemirror2 {
           z-index: 499;
           overflow: hidden;
           background-color: #1E1E1E;
@@ -537,7 +537,7 @@ pre {
             color: #e0e0e0;
           }
         }
-        .ReactCodeMirror {
+        .react-codemirror2 {
           height: 100%;
           .CodeMirror {
             height: 100%;
