@@ -4,7 +4,7 @@ declare const { Module, injectify, $ }: ModuleTypings
 import * as isEqual from 'fast-deep-equal'
 
 let i = 0
-function test(result, spec, validIfStartsWith) {
+function test(result, spec, validIfStartsWith?: boolean) {
   i++
   if ((validIfStartsWith && result.startsWith(spec)) || (!isEqual(result, spec))) {
     throw {
