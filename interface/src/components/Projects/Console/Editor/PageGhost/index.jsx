@@ -183,7 +183,7 @@ class PageGhost extends React.Component {
     let warning = null
 
     if (client && session) {
-      if (url.protocol === 'http:' && location.procotol === 'https:') {
+      if (url.protocol === 'http:' && location.protocol === 'https:') {
         warning = ['#c12b2b', `Injectify is served over HTTPS but target site is using HTTP. The below page may not work correctly until it's opened in a new window.`]
       }
       if (session.devtools.open) {
