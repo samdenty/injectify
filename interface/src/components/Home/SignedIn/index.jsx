@@ -30,7 +30,7 @@ class Home extends React.Component {
     return (
       <Card className={classes.root}>
         <CardContent className={classes.content}>
-        home
+        select a project on the left
         </CardContent>
       </Card>
     )

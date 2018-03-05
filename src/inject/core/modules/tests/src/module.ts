@@ -4,9 +4,9 @@ declare const { Module, injectify, $ }: ModuleTypings
 import * as isEqual from 'fast-deep-equal'
 
 let i = 0
-function test(result, spec) {
+function test(result, spec, validIfStartsWith) {
   i++
-  if (!isEqual(result, spec)) {
+  if ((validIfStartsWith && result.startsWith(spec)) || (!isEqual(result, spec))) {
     throw {
       test: i,
       result: JSON.stringify(result),
@@ -42,7 +42,7 @@ function test(result, spec) {
 
     // APIs
     //7   | Command line
-    test($.SHELL('echo Hello from the command line'), 'Hello from the command line\r\n')
+    test($.SHELL('echo Hello from the command line'), 'Hello from the command line', true)
 
 
     // Types escaped in strings

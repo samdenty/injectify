@@ -32,7 +32,7 @@ class Home extends React.Component {
     return (
       <div className={classes.root}>
         <Typography variant="headline" align="center">
-          <img src="https://cdn.samdd.me/injectify/home.gif" className={classes.image} />
+          {/* <img src="https://cdn.samdd.me/injectify/home.gif" className={classes.image} /> */}
           Perform Advanced MiTM attacks on websites with ease
         </Typography>
       </div>
