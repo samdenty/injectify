@@ -126,7 +126,7 @@ export default (socket, store, history) => {
   socket.on(`project:read`, data => {
     let { page, doc } = data
     console.log(`%c[websocket] ` + `%cproject:read =>`, `color: #ef5350`, `color:  #FF9800`, data)
-    dispatch(Actions.setProject(data.doc, page))
+    dispatch(Actions.setProject(doc, page))
     NProgress.done()
   })
 
@@ -217,16 +217,25 @@ export default (socket, store, history) => {
 
   socket.on(`err`, error => {
     console.error(`%c[websocket] ` + `%cerr =>`, `color: #ef5350`, `color:  #FF9800`, error)
-    this.setState({
-      notify: error,
-      notifyOpen: true
-    })
+    let notification = new CustomEvent('notification')
+    notification.data = {
+      open: true,
+      type: 'error',
+      content: error
+    }
+    window.dispatchEvent(notification)
     NProgress.done()
   })
 
   socket.on(`notify`, message => {
     console.log(`%c[websocket] ` + `%cnotify =>`, `color: #ef5350`, `color:  #FF9800`, message)
-    this.notify(message)
+    let notification = new CustomEvent('notification')
+    notification.data = {
+      open: true,
+      type: 'message',
+      content: message
+    }
+    window.dispatchEvent(notification)
   })
 
   socket.on(`disconnect`, () => {

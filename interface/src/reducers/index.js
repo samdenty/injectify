@@ -3,7 +3,7 @@ import NProgress from 'nprogress'
 import update from 'immutability-helper'
 
 const config = {
-  sections: ['home', 'settings', 'projects'],
+  sections: ['home', 'documentation', 'settings', 'projects'],
   pages: ['overview', 'console', 'data', 'config']
 }
 
@@ -54,6 +54,12 @@ const initialState = {
   // PageGhost
   pageGhost: {
     selected: null
+  },
+
+  // Modal
+  modal: {
+    open: false,
+    type: null
   }
 }
 
@@ -66,7 +72,8 @@ const initialConsole = {
       message: [
         {
           type: 'string',
-          message: 'This is your console! Any output from the code you run is shown here'
+          message:
+            'This is your console! Any output from the code you run is shown here'
         }
       ],
       timestamp: +new Date(),
@@ -92,13 +99,14 @@ const initialConsole = {
         },
         {
           type: 'object',
-          message: {value: true}
+          message: { value: true }
         },
         {
           type: 'HTMLElement',
           message: {
             tagName: 'div',
-            innerHTML: '<ul><li><a href="/one">Example 1</a></li><li><a href="/two">Example 2</a></li><li><a href="/three">Example 3</a></li></ul>'
+            innerHTML:
+              '<ul><li><a href="/one">Example 1</a></li><li><a href="/two">Example 2</a></li><li><a href="/three">Example 3</a></li></ul>'
           }
         }
       ],
@@ -148,6 +156,19 @@ export default (state = initialState, action) => {
       }
     }
 
+    case 'TOGGLE_MODAL': {
+      let open = action.data !== null
+      let type = open ? action.data : state.modal.type
+      return {
+        ...state,
+        modal: {
+          ...state.modal,
+          open,
+          type
+        }
+      }
+    }
+
     case 'LOADING': {
       let loading = !!action.loading
       if (loading) {
@@ -182,7 +203,9 @@ export default (state = initialState, action) => {
     }
 
     case 'SWITCH_PAGE': {
-      document.title = `${state.selectedProject.name} - ${_.capitalize(action.page)} • Injectify`
+      document.title = `${state.selectedProject.name} - ${_.capitalize(
+        action.page
+      )} • Injectify`
       return {
         ...state,
         page: action.page
@@ -190,7 +213,9 @@ export default (state = initialState, action) => {
     }
 
     case 'SWITCH_PROJECT': {
-      document.title = `${action.name} - ${_.capitalize(state.page)} • Injectify`
+      document.title = `${action.name} - ${_.capitalize(
+        state.page
+      )} • Injectify`
       return {
         ...state,
         section: 'projects',
@@ -205,12 +230,19 @@ export default (state = initialState, action) => {
       NProgress.start()
       let data = {}
       if (typeof action.page !== 'undefined') {
-        data.page = config.pages.includes(action.page) ? action.page : 'overview'
+        data.page = config.pages.includes(action.page)
+          ? action.page
+          : 'overview'
       }
       if (typeof action.section !== 'undefined') {
-        data.section = config.sections.includes(action.section) ? action.section : 'home'
+        data.section = config.sections.includes(action.section)
+          ? action.section
+          : 'home'
       }
-      if (typeof action.project !== 'undefined' && state.selectedProject.name !== action.project) {
+      if (
+        typeof action.project !== 'undefined' &&
+        state.selectedProject.name !== action.project
+      ) {
         data.selectedProject = {
           name: action.project,
           index: _.findIndex(state.projects, { name: action.project })
@@ -300,7 +332,9 @@ export default (state = initialState, action) => {
     case 'SET_PROJECTS': {
       let selectedProject = state.selectedProject
       if (selectedProject.name) {
-        selectedProject.index = _.findIndex(action.projects, { name: selectedProject.name })
+        selectedProject.index = _.findIndex(action.projects, {
+          name: selectedProject.name
+        })
       }
       return {
         ...state,
@@ -314,15 +348,25 @@ export default (state = initialState, action) => {
         projects: _.cloneDeep(state.projects)
       }
       // Switch to the correct page
-      if (config.pages.includes(action.page)) data.page = action.page
+      // if (config.pages.includes(action.page)) data.page = action.page
 
       let index = _.findIndex(data.projects, { name: action.project.name })
       if (index > -1) {
-        action.project = _.merge(data.projects[index], action.project)
+        // Merge console data
+        if (action.project.console)
+          action.project.console = _.merge(
+            data.projects[index].console,
+            action.project.console
+          )
+        action.project = {
+          ...data.projects[index],
+          ...action.project
+        }
         data.projects[index] = action.project
       }
 
-      if (action.project.console && !action.project.console.state) action.project.console.state = initialConsole
+      if (action.project.console && !action.project.console.state)
+        action.project.console.state = initialConsole
 
       return {
         ...state,
@@ -385,9 +429,12 @@ export default (state = initialState, action) => {
             /**
              * A session was removed but the client contains other sessions
              */
-            clients[action.token].sessions = _.reject(clients[action.token].sessions, {
-              id: action.id
-            })
+            clients[action.token].sessions = _.reject(
+              clients[action.token].sessions,
+              {
+                id: action.id
+              }
+            )
           }
         }
       }
@@ -458,10 +505,12 @@ export default (state = initialState, action) => {
                       type: 'info',
                       timestamp: +new Date(),
                       id: (+new Date()).toString(),
-                      message: [{
-                        type: 'broadcast',
-                        message: 'Console was cleared'
-                      }]
+                      message: [
+                        {
+                          type: 'broadcast',
+                          message: 'Console was cleared'
+                        }
+                      ]
                     }
                   ]
                 }

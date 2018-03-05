@@ -6,43 +6,80 @@ export default (store, history) => {
     let previousState = currentState
     let previousPath = currentPath
     currentState = store.getState().injectify
-    currentPath = store.getState().router.location ? store.getState().router.location.pathname : null
+    currentPath = store.getState().router.location
+      ? store.getState().router.location.pathname
+      : null
     /**
      * If the section / project / page changed push state
      */
     if (previousPath === currentPath) {
-      if (currentState.page !== previousState.page || currentState.section !== previousState.section || currentState.selectedProject.name !== previousState.selectedProject.name) {
-        let url
-        switch (currentState.section) {
-          case 'projects':
-            url = `/${currentState.section}/${encodeURIComponent(currentState.selectedProject.name)}/${currentState.page}`
-            break
-          case 'home':
-            url = `/`
-            break
-          case 'settings':
-            url = `/settings`
-            break
-        }
-        if (url && decodeURIComponent(history.location.pathname) !== decodeURIComponent(url)) {
-          console.debug(`Pushing from "${history.location.pathname}" to "${decodeURIComponent(url)}"`)
+      if (
+        currentState.page !== previousState.page ||
+        currentState.section !== previousState.section ||
+        currentState.selectedProject.name !== previousState.selectedProject.name
+      ) {
+        let url = (() => {
+          switch (currentState.section) {
+            case 'projects':
+              return `/${currentState.section}/${encodeURIComponent(
+                currentState.selectedProject.name
+              )}/${currentState.page}`
+            case 'home':
+              return '/'
+            default:
+              return `/${currentState.section}`
+          }
+        })()
+
+        if (
+          url &&
+          decodeURIComponent(history.location.pathname) !==
+            decodeURIComponent(url)
+        ) {
+          console.debug(
+            `Pushing from "${
+              history.location.pathname
+            }" to "${decodeURIComponent(url)}"`
+          )
           history.push(url)
         }
       }
     }
-    if (currentState.selectedProject.name !== previousState.selectedProject.name) {
-      console.debug(`Project changed from`, previousState.selectedProject.name, `to`, currentState.selectedProject.name)
+    if (
+      currentState.selectedProject.name !== previousState.selectedProject.name
+    ) {
+      console.debug(
+        `Project changed from`,
+        previousState.selectedProject.name,
+        `to`,
+        currentState.selectedProject.name
+      )
     } else if (currentState.page !== previousState.page) {
-      console.debug(`Page changed from`, previousState.page, `to`, currentState.page)
-      if (currentState.section === 'projects' && currentState.selectedProject.name) {
-        store.dispatch(switchProject(currentState.selectedProject.name, currentState.page))
+      console.debug(
+        `Page changed from`,
+        previousState.page,
+        `to`,
+        currentState.page
+      )
+      if (
+        currentState.section === 'projects' &&
+        currentState.selectedProject.name
+      ) {
+        store.dispatch(
+          switchProject(currentState.selectedProject.name, currentState.page)
+        )
       }
     } else if (currentState.section !== previousState.section) {
-      console.debug(`Section changed from`, previousState.section, `to`, currentState.section)
+      console.debug(
+        `Section changed from`,
+        previousState.section,
+        `to`,
+        currentState.section
+      )
     }
   })
 
-  function updateHistory (section, project, page) {
+  function updateHistory(section, project, page) {
     let data = {
       section
     }
@@ -59,9 +96,13 @@ export default (store, history) => {
     })
   }
 
-  function checkURL (location = window.location) {
+  function checkURL(location = window.location) {
     let url = location.pathname.split('/').splice(1)
-    updateHistory(decodeURIComponent(url[0]), decodeURIComponent(url[1]), url[2])
+    updateHistory(
+      decodeURIComponent(url[0]),
+      decodeURIComponent(url[1]),
+      url[2]
+    )
   }
 
   history.listen((location, action) => {

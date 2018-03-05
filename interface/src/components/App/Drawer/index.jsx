@@ -13,8 +13,9 @@ import Menu, { MenuItem } from 'material-ui/Menu'
 import Collapse from 'material-ui/transitions/Collapse'
 
 import HomeIcon from 'material-ui-icons/Home'
-import ProjectsIcon from 'material-ui-icons/Tab'
+import DocumentationIcon from 'material-ui-icons/ChromeReaderMode'
 import SettingsIcon from 'material-ui-icons/Settings'
+import ProjectsIcon from 'material-ui-icons/Tab'
 
 import ExpandLess from 'material-ui-icons/ExpandLess'
 import ExpandMore from 'material-ui-icons/ExpandMore'
@@ -60,6 +61,12 @@ class Drawer extends React.Component {
               <HomeIcon />
             </ListItemIcon>
             <ListItemText inset primary="Home" />
+          </MenuItem>
+          <MenuItem button onClick={() => this.section('documentation')} selected={section === 'documentation'}>
+            <ListItemIcon>
+              <DocumentationIcon />
+            </ListItemIcon>
+            <ListItemText inset primary="Documentation" />
           </MenuItem>
           <MenuItem button onClick={() => this.section('settings')} selected={section === 'settings'}>
             <ListItemIcon>

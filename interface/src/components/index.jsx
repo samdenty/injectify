@@ -17,6 +17,7 @@ import App from './App'
 import Drawer from './App/Drawer'
 import Header from './App/Header'
 import Navigation from './App/Navigation'
+import Notifications from './Notifications'
 
 /**
  * Sections
@@ -24,6 +25,7 @@ import Navigation from './App/Navigation'
 import Home from './Home'
 import Settings from './Settings'
 import Projects from './Projects'
+import Documentation from './Documentation'
 
 NProgress.configure({
   template: `
@@ -85,6 +87,7 @@ class Injectify extends React.Component {
           primary: settings.dark ? grey : indigo,
         },
       })}>
+        <Notifications />
         <App>
           <Drawer key="drawer" />
           <Header key="header" />
@@ -95,6 +98,7 @@ class Injectify extends React.Component {
             <Switch>
               <Route exact path='/' component={Home} />
               <Route path='/settings' component={Settings} />
+              <Route path='/documentation' component={Documentation} />
               <Route path='/projects/**/*' component={Projects} />
             </Switch>
           </React.Fragment>

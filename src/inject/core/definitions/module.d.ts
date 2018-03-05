@@ -59,7 +59,7 @@ export default class {
      * @example
      * $.SHELL("echo Hello world")
      * // Compiles to
-     * "Hello world"
+     * "Hello world\r\n"
      * @returns {string} stdout of the command
      */
     SHELL(commands: String): String

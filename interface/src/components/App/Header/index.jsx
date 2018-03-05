@@ -3,10 +3,13 @@ import React from 'react'
 import { connect } from 'react-redux'
 import { withStyles } from 'material-ui/styles'
 import Typography from 'material-ui/Typography'
-import { switchSection } from '../../../actions'
+import IconButton from 'material-ui/IconButton'
+import Tooltip from 'material-ui/Tooltip'
+import NewProjectIcon from 'material-ui-icons/Add'
+import { toggleModal } from '../../../actions'
 import Accounts from '../Accounts'
 
-const styles = theme => ({
+const styles = (theme) => ({
   root: {
     display: 'flex',
     width: '100%'
@@ -15,12 +18,12 @@ const styles = theme => ({
     flex: '1',
     cursor: 'pointer',
     userSelect: 'none',
-    paddingLeft: 35,
+    paddingLeft: 35
   },
   logo: {
     position: 'absolute',
     marginLeft: -35,
-    height: 24,
+    height: 24
   },
   '@media (max-width: 380px)': {
     header: {
@@ -28,40 +31,47 @@ const styles = theme => ({
     },
     title: {
       visibility: 'hidden'
-    },
+    }
   },
   '@media (max-width: 270px)': {
     header: {
-      display: 'none',
+      display: 'none'
     }
-  },
+  }
 })
 
 class Header extends React.Component {
-  returnHome = () => {
+  newProject = () => {
     let { dispatch } = this.props
-    dispatch(switchSection('home'))
+    dispatch(toggleModal('newProject'))
   }
 
   render() {
-    const { classes } = this.props
+    const { classes, account } = this.props
     return (
       <React.Fragment>
         <Typography
           variant="title"
           color="inherit"
           noWrap
-          onClick={this.returnHome.bind(this)}
           className={classes.header}>
           <img src="/assets/logo/injectify.svg" className={classes.logo} />
-          <span className={classes.title}>
-            Injectify
-          </span>
+          <span className={classes.title}>Injectify</span>
         </Typography>
+        {account ? (
+          <Tooltip title="New project" placement="bottom">
+            <IconButton onClick={this.newProject}>
+              <NewProjectIcon />
+            </IconButton>
+          </Tooltip>
+        ) : null}
         <Accounts />
       </React.Fragment>
     )
   }
 }
 
-export default connect(({ injectify: {section} }) => ({ section }))(withStyles(styles)(Header))
+export default connect(({ injectify: { section, account } }) => ({
+  section,
+  account
+}))(withStyles(styles)(Header))

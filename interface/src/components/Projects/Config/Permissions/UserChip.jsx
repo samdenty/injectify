@@ -30,8 +30,13 @@ const styles = theme => ({
 })
 
 class UserChip extends React.Component {
+  remove() {
+
+  }
+
   render() {
-    const { classes, id, group, account } = this.props
+    const { classes, id, group, remove, modifiable, account } = this.props
+
     return (
       <Request
         url={`https://api.github.com/user/${id}?access_token=${encodeURIComponent(account.token)}`}
@@ -60,11 +65,8 @@ class UserChip extends React.Component {
                 <Chip
                   avatar={<Avatar src={`https://avatars1.githubusercontent.com/u/${id}?v=4&s=40`} />}
                   label={user.login}
-                  // onDelete={
-                  //   group == 'owners' ? permissions.owners.includes(user.id) ? removeUser(thisUser) : false :
-                  //     group == 'admins' ? permissions.admins.includes(user.id) || permissions.owners.includes(user.id) ? removeUser(thisUser) : false :
-                  //       group == 'readonly' ? permissions.admins.includes(user.id) || permissions.owners.includes(user.id) ? removeUser(thisUser) : false : false
-                  // }
+                  {...(modifiable ? {onDelete: () => remove(user)} : {})}
+                  onClick={() => window.open(`https://github.com/${encodeURIComponent(user.login)}`)}
                   className={`${classes.chip} ${user.id === account.user.id ? classes.current : ''} `}
                   classes={{
                     label: classes.label

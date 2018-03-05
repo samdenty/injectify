@@ -1,10 +1,23 @@
-import ReactDOM, { render } from 'react-dom'
 import React from 'react'
+import { connect } from 'react-redux'
 
-export default class extends React.Component {
+import SignedIn from './SignedIn'
+import SignedOut from './SignedOut'
+
+class HomeSwitcher extends React.Component {
   render() {
+    const { classes, account } = this.props
+
     return (
-      <div>Home</div>
+      <React.Fragment>
+        {account ? (
+          <SignedIn />
+        ) : (
+          <SignedOut />
+        )}
+      </React.Fragment>
     )
   }
 }
+
+export default connect(({ injectify: {account} }) => ({ account }))(HomeSwitcher)
