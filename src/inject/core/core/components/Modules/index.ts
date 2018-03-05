@@ -3,10 +3,10 @@ import Loader from './Loader'
 import LoadJS from '../../lib/LoadJS'
 declare const injectify: typeof Injectify
 const Guid = require('guid')
+import Promise from '../../lib/Promise'
 
 export default class {
   static loadModule(name: string, params?: any) {
-    // @ts-ignore
     return new Promise((resolve, reject) => {
       let token = Guid.create()
       /**
@@ -15,11 +15,12 @@ export default class {
       injectify.setState({
         modules: {
           ...injectify.global.modules,
-          callbacks: {
-            ...injectify.global.modules.callbacks,
+          calls: {
+            ...injectify.global.modules.calls,
             [token]: {
-              resolve: resolve,
-              reject: reject
+              resolve,
+              reject,
+              params
             }
           }
         }
@@ -28,15 +29,14 @@ export default class {
        * Emit to server
        */
       injectify.send('module', {
-        name: name,
-        token: token,
-        params: params
+        name,
+        token,
+        params
       })
     })
   }
 
   static loadApp(name: string, params?: any) {
-    // @ts-ignore
     return new Promise((resolve, reject) => {
       let type = 'production.min.js'
       if (injectify.debug) type = 'development.js'

@@ -76,7 +76,7 @@ interface MessageData {
 
     dom?: string
 
-    scroll?: [number, number]
+    scroll?: [number, number, number | string]
 
     activeElement?: string
 
@@ -106,6 +106,8 @@ document.addEventListener('DOMContentLoaded', () => {
     static iframe: HTMLIFrameElement
     static base: HTMLBaseElement
     static html: string
+    static win = window.parent || window.opener
+    static embedded = window.location.search === '?embedded'
 
     static comment =
 `
@@ -134,11 +136,12 @@ document.addEventListener('DOMContentLoaded', () => {
       let comment = document.createComment(this.comment)
       document.documentElement.insertBefore(comment, document.head)
       this.containarize((doc: Document) => {
-        window.opener.postMessage({
+        this.win.postMessage({
           type: 'PageGhost',
           id: decodeURIComponent(window.location.search.substr(1)),
           event: 'refresh'
         }, '*')
+
         this.setConfig()
         // this.fadeCursor(10, 0)
         // setTimeout(() => {
@@ -157,6 +160,30 @@ document.addEventListener('DOMContentLoaded', () => {
       window.addEventListener('resize', () => {
         this.scale()
       })
+    }
+
+    static scroll(e?: Event) {
+      if ((<any>window).shouldNotScroll) {
+        (<any>window).shouldNotScroll = false
+        return
+      }
+      if (!e) return
+      // @ts-ignore
+      if (!window.sO) window.sO = 0;
+      (<any>window).sO++
+      let element = e.target === this.iframe.contentDocument ? this.iframe.contentDocument.body : <HTMLElement>e.target
+
+      let id = element === this.iframe.contentDocument.body ? '1' : element.getAttribute('_-_') || '1'
+
+      let x = element.scrollLeft || 0
+      let y = element.scrollTop || 0
+
+      // @ts-ignore
+      if (window.lS && window.lS[0] === x && window.lS[1] === y && window.lS[2] === id) {
+        return
+      }
+
+      this.sendScroll([x, y, id, (<any>window).sO])
     }
 
     static linkify(url: string) {
@@ -222,14 +249,24 @@ document.addEventListener('DOMContentLoaded', () => {
       if (data.activeElement) {
         let element = this.getElementById(data.activeElement)
         console.log(`Focused element ${data.activeElement}`)
-        if (element) {
+        if (element && !this.embedded) {
           element.focus()
           // @ts-ignore
           if (element.select) element.select()
         }
       }
       if (data.scroll instanceof Array && typeof data.scroll[0] === 'number' && typeof data.scroll[1] === 'number') {
-        this.iframe.contentWindow.scrollTo(data.scroll[0], data.scroll[1])
+        (<any>window).shouldNotScroll = true
+        let body = this.iframe.contentDocument.body.getAttribute('_-_')
+        let id = data.scroll[2] || body
+        // Fix document.documentElement scrolling messed up
+        if (id === '1') id = body
+        let element = this.getElementById(id)
+        element.scrollLeft = data.scroll[0]
+        // @ts-ignore
+        element.scrollTop = data.scroll[1];
+
+        (<any>window).lS = [data.scroll[0], data.scroll[1], id]
       }
       if (data.dom) {
         this.html = data.dom
@@ -322,7 +359,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     static execute(code: string) {
-      window.opener.postMessage({
+      this.win.postMessage({
         type: 'PageGhost',
         id: decodeURIComponent(window.location.search.substr(1)),
         event: 'execute',
@@ -330,15 +367,27 @@ document.addEventListener('DOMContentLoaded', () => {
       }, '*')
     }
 
+    static sendScroll(array) {
+      this.win.postMessage({
+        type: 'PageGhost',
+        id: decodeURIComponent(window.location.search.substr(1)),
+        event: 'scroll',
+        data: array
+      }, '*')
+    }
+
     static scale() {
+      let padding = this.embedded ? 0 : 60
       this.master.style.transform = ``
-      let heightScale = (window.innerHeight - 60) / this.master.offsetHeight
-      let widthScale = (window.innerWidth - 60) / this.master.offsetWidth
+      let heightScale = (window.innerHeight - padding) / this.master.offsetHeight
+      let widthScale = (window.innerWidth - padding) / this.master.offsetWidth
       let scale = heightScale < widthScale ? heightScale : widthScale
       let pixelScale = ((1 - scale) + 1)
       if (pixelScale < 0.5) pixelScale = 0.5
-      this.master.style.transform = `scale(${scale}) translate(-50%, -50%)`
-      this.master.style.borderRadius = `${pixelScale * 7}px`
+      this.master.style.transform = `translateZ(0) scale(${scale}) translate(-50%, -50%)`
+      if (!this.embedded) {
+        this.master.style.borderRadius = `${pixelScale * 7}px`
+      }
       this.master.style.boxShadow = `0 ${pixelScale * 14}px ${pixelScale * 28}px rgba(0,0,0,0.25), 0 ${pixelScale * 10}px ${pixelScale * 10}px rgba(0,0,0,0.22)`
     }
 
@@ -380,6 +429,9 @@ document.addEventListener('DOMContentLoaded', () => {
           (<any>this.iframe.contentWindow.parent) = null;
           this.iframe.contentWindow.onclick = this.clickJack.bind(this)
 
+          // Sync scroll events with parent
+          this.iframe.contentWindow.addEventListener('scroll', this.scroll.bind(this), true)
+
           // Reload HTML
           if (this.html) {
             this.setInnerHTML(this.html)
@@ -396,7 +448,8 @@ document.addEventListener('DOMContentLoaded', () => {
       callback(iframe.contentDocument)
     }
 
-    static getElementById(id: string): HTMLElement {
+    static getElementById(id: string | number): HTMLElement {
+      if (typeof id === 'number') id = id.toString()
       if (typeof id === 'string') {
         return <HTMLElement>this.iframe.contentDocument.querySelector(`[_-_=${JSON.stringify(id)}]`)
       } else {

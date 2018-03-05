@@ -7,6 +7,7 @@
   "author": "samdenty99",
   "license": "MIT",
   "dependencies": {
+    "circular-json": "^0.5.1",
     "react-json-view": "^1.16.0",
     "react-syntax-highlighter": "^7.0.0"
   }

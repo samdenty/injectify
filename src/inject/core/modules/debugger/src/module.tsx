@@ -3,6 +3,7 @@ declare const { Module, injectify }: ModuleTypings
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 import ReactJson from 'react-json-view'
+const CircularJSON = require('circular-json')
 import SyntaxHighlighter from 'react-syntax-highlighter'
 import { monokai } from 'react-syntax-highlighter/styles/hljs'
 import jss from './styles'
@@ -72,7 +73,7 @@ class Panel extends React.Component {
           <h3 className={classes.columnHeader}>Variables</h3>
           <div className={classes.columnContent}>
             <ReactJson
-              src={data}
+              src={JSON.parse(CircularJSON.stringify(data))}
               theme="monokai"
               enableClipboard={true}
               name={false}
@@ -99,10 +100,8 @@ if (typeof Module.state !== 'undefined') {
   Module.setState(!Module.state)
 } else {
   let container
-  if (typeof Module.params === 'function') {
-    container = eval(`${Module.params}()`)
-  } else if (typeof Module.params === 'string') {
-    container = eval(Module.params)
+  if (Module.params instanceof HTMLElement) {
+    container = Module.params
   } else {
     container = document.createElement('div')
     if (document.body) {

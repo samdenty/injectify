@@ -83,10 +83,12 @@ export default (Module: ModuleTypings["Module"]) => {
       boxShadow: [
         '0 3px 9px 3px #272822'
       ],
+      flexShrink: 0,
       background: 'rgba(255,255,255,0.1)',
     },
     'columnContent': {
       overflow: 'scroll',
+      overscrollBehaviorY: 'contain',
       flexGrow: 1,
       marginLeft: '10px',
       marginRight: '5px',

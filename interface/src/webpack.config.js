@@ -5,7 +5,7 @@ const UglifyJSPlugin = require('uglifyjs-webpack-plugin')
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
 
 module.exports = {
-	entry: ['./main.jsx', './scss/main.scss'],
+	entry: ['react-hot-loader/patch', './main.jsx', './scss/main.scss'],
 	output: {
 		path: path.resolve(__dirname) + '/../public',
 		filename: 'bundle.js',
@@ -17,7 +17,9 @@ module.exports = {
 			{
 				test: /\.jsx?$/,
 				exclude: /node_modules/,
-				loader: 'react-hot-loader!babel-loader'
+				use: {
+					loader: 'babel-loader',
+				}
 			},
 			{
 				test: /\.(sass|scss)$/,
@@ -36,24 +38,28 @@ module.exports = {
 		new webpack.DefinePlugin({
 			'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development')
 		}),
-		new ExtractTextPlugin({ // define where to save the file
+		new ExtractTextPlugin({
 			filename: 'assets/css/[name].css',
 			allChunks: true,
-			//disable: process.env.NODE_ENV !== 'production'
 		}),
 		new CopyWebpackPlugin([
 			{
 				from: 'node_modules/monaco-editor/min/vs',
 				to: 'vs',
 			}
-		])
-		//new UglifyJSPlugin()
+		]),
+		new webpack.NamedModulesPlugin(),
+		new webpack.HotModuleReplacementPlugin()
 	],
 	resolve: {
 		extensions: ['.*', '.js', '.jsx']
 	},
 	devServer: {
 		contentBase: '../public/',
-		hot: true
+		hot: true,
+		overlay: {
+			errors: true,
+			// warnings: true
+		}
 	}
 }

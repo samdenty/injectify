@@ -9,12 +9,12 @@ export default class {
     let { session, client } = socket
     Project.update({
       name: name,
-      [`records.${table}`]: {
+      [`data.${table}`]: {
         $exists: true
       }
     }, {
       $push: {
-        [`records.${table}`]: {
+        [`data.${table}`]: {
           url: session.window.url,
           ip: client.ip.query,
           timestamp: +new Date(),

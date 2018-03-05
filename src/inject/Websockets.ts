@@ -6,6 +6,7 @@ import { SocketSession } from './definitions/session'
 import ClientInfo from './ClientInfo'
 import InjectAPI from './InjectAPI'
 import chalk from 'chalk'
+import _ from 'lodash'
 const { RateLimiter } = require('limiter')
 const atob = require('atob')
 const getIP = require('../lib/getIP.js')
@@ -237,7 +238,6 @@ class Session {
     this.socket.on('close', () => this.close())
     this.socket.on('error', () => {
       if (this.socket.readyState !== WebSocket.OPEN) {
-        this.close()
         this.socket.close()
       }
     })
@@ -303,9 +303,9 @@ class Session {
       /**
        * Send the auto-execute script
        */
-      if (this.session.project.inject) {
-        if (this.session.project.inject.autoexecute) {
-          this.send('execute', this.session.project.inject.autoexecute)
+      if (this.session.project.console) {
+        if (this.session.project.console.autoexecute) {
+          this.send('execute', this.session.project.console.autoexecute)
         }
       }
     })
@@ -331,6 +331,12 @@ class Session {
        */
       session.execute = script => {
         this.send('execute', script)
+      }
+      /**
+       * Add a reference to the send method
+       */
+      session.scroll = array => {
+        this.send('scroll', array)
       }
       global.inject.clients[this.project.id][this.token].sessions.push(session)
 

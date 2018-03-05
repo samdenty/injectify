@@ -15,10 +15,10 @@ params:
   optional: true
   # Information about the params
   info: |
-    HTMLElement to insert the panel into, element can't directly be passed - has to be returned in a function or eval'd from a string
+    HTMLElement to insert the panel into
   # Typescript d.ts typings, used in the interface's code editor
   typings: |
-    Function | string
+    string
 
 # Module callback
 returns: |

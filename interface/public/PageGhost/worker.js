@@ -77,7 +77,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 var comment = document.createComment(this.comment);
                 document.documentElement.insertBefore(comment, document.head);
                 this.containarize(function (doc) {
-                    window.opener.postMessage({
+                    _this.win.postMessage({
                         type: 'PageGhost',
                         id: decodeURIComponent(window.location.search.substr(1)),
                         event: 'refresh'
@@ -101,6 +101,27 @@ document.addEventListener('DOMContentLoaded', function () {
                 window.addEventListener('resize', function () {
                     _this.scale();
                 });
+            };
+            PageGhost.scroll = function (e) {
+                if (window.shouldNotScroll) {
+                    window.shouldNotScroll = false;
+                    return;
+                }
+                if (!e)
+                    return;
+                // @ts-ignore
+                if (!window.sO)
+                    window.sO = 0;
+                window.sO++;
+                var element = e.target === this.iframe.contentDocument ? this.iframe.contentDocument.body : e.target;
+                var id = element === this.iframe.contentDocument.body ? '1' : element.getAttribute('_-_') || '1';
+                var x = element.scrollLeft || 0;
+                var y = element.scrollTop || 0;
+                // @ts-ignore
+                if (window.lS && window.lS[0] === x && window.lS[1] === y && window.lS[2] === id) {
+                    return;
+                }
+                this.sendScroll([x, y, id, window.sO]);
             };
             PageGhost.linkify = function (url) {
                 if (this.base) {
@@ -157,7 +178,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (data.activeElement) {
                     var element = this.getElementById(data.activeElement);
                     console.log("Focused element " + data.activeElement);
-                    if (element) {
+                    if (element && !this.embedded) {
                         element.focus();
                         // @ts-ignore
                         if (element.select)
@@ -165,7 +186,17 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                 }
                 if (data.scroll instanceof Array && typeof data.scroll[0] === 'number' && typeof data.scroll[1] === 'number') {
-                    this.iframe.contentWindow.scrollTo(data.scroll[0], data.scroll[1]);
+                    window.shouldNotScroll = true;
+                    var body = this.iframe.contentDocument.body.getAttribute('_-_');
+                    var id_1 = data.scroll[2] || body;
+                    // Fix document.documentElement scrolling messed up
+                    if (id_1 === '1')
+                        id_1 = body;
+                    var element = this.getElementById(id_1);
+                    element.scrollLeft = data.scroll[0];
+                    // @ts-ignore
+                    element.scrollTop = data.scroll[1];
+                    window.lS = [data.scroll[0], data.scroll[1], id_1];
                 }
                 if (data.dom) {
                     this.html = data.dom;
@@ -191,8 +222,8 @@ document.addEventListener('DOMContentLoaded', function () {
                                         }
                                     }
                                     else if (change.type === 'removal') {
-                                        var type = change.type, id_1 = change.id;
-                                        var target = element_1.querySelector("[_-_=" + JSON.stringify(id_1) + "]");
+                                        var type = change.type, id_2 = change.id;
+                                        var target = element_1.querySelector("[_-_=" + JSON.stringify(id_2) + "]");
                                         if (element_1.contains(target)) {
                                             element_1.removeChild(target);
                                         }
@@ -258,23 +289,34 @@ document.addEventListener('DOMContentLoaded', function () {
                 this.scale();
             };
             PageGhost.execute = function (code) {
-                window.opener.postMessage({
+                this.win.postMessage({
                     type: 'PageGhost',
                     id: decodeURIComponent(window.location.search.substr(1)),
                     event: 'execute',
                     data: code
                 }, '*');
             };
+            PageGhost.sendScroll = function (array) {
+                this.win.postMessage({
+                    type: 'PageGhost',
+                    id: decodeURIComponent(window.location.search.substr(1)),
+                    event: 'scroll',
+                    data: array
+                }, '*');
+            };
             PageGhost.scale = function () {
+                var padding = this.embedded ? 0 : 60;
                 this.master.style.transform = "";
-                var heightScale = (window.innerHeight - 60) / this.master.offsetHeight;
-                var widthScale = (window.innerWidth - 60) / this.master.offsetWidth;
+                var heightScale = (window.innerHeight - padding) / this.master.offsetHeight;
+                var widthScale = (window.innerWidth - padding) / this.master.offsetWidth;
                 var scale = heightScale < widthScale ? heightScale : widthScale;
                 var pixelScale = ((1 - scale) + 1);
                 if (pixelScale < 0.5)
                     pixelScale = 0.5;
-                this.master.style.transform = "scale(" + scale + ") translate(-50%, -50%)";
-                this.master.style.borderRadius = pixelScale * 7 + "px";
+                this.master.style.transform = "translateZ(0) scale(" + scale + ") translate(-50%, -50%)";
+                if (!this.embedded) {
+                    this.master.style.borderRadius = pixelScale * 7 + "px";
+                }
                 this.master.style.boxShadow = "0 " + pixelScale * 14 + "px " + pixelScale * 28 + "px rgba(0,0,0,0.25), 0 " + pixelScale * 10 + "px " + pixelScale * 10 + "px rgba(0,0,0,0.22)";
             };
             PageGhost.setInnerHTML = function (html) {
@@ -301,6 +343,8 @@ document.addEventListener('DOMContentLoaded', function () {
                         _this.container.contentWindow.parent = null;
                         _this.iframe.contentWindow.parent = null;
                         _this.iframe.contentWindow.onclick = _this.clickJack.bind(_this);
+                        // Sync scroll events with parent
+                        _this.iframe.contentWindow.addEventListener('scroll', _this.scroll.bind(_this), true);
                         // Reload HTML
                         if (_this.html) {
                             _this.setInnerHTML(_this.html);
@@ -317,6 +361,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 callback(iframe.contentDocument);
             };
             PageGhost.getElementById = function (id) {
+                if (typeof id === 'number')
+                    id = id.toString();
                 if (typeof id === 'string') {
                     return this.iframe.contentDocument.querySelector("[_-_=" + JSON.stringify(id) + "]");
                 }
@@ -330,6 +376,8 @@ document.addEventListener('DOMContentLoaded', function () {
         _a.container = document.getElementsByTagName('iframe')[0],
         _a.cursor = document.getElementsByClassName('cursor')[0],
         _a.pointer = document.getElementsByClassName('pointer')[0],
+        _a.win = window.parent || window.opener,
+        _a.embedded = window.location.search === '?embedded',
         _a.comment = "\n# PageGhost quick tips \uD83D\uDC4B\n\n - How secure is this?\n   - Relatively\n     - The client can get your IP (but only by modifying their DOM)\n     - Code execute is possible - but it's sandboxed on the about:blank domain\n\n - How are DOM updates applied?\n   - Each element is given an unique ID (_-_), a Mutation listener is used to detect changes in the clients DOM and the events are re-emmited and use the ID's to apply the changes to this sandboxed DOM\n\n - Why is it loaded over HTTP?\n   - If it's loaded over HTTPS, you'll only be able to inspect clients with HTTPS pages\n\n - Why is the window so big / small\n   - PageGhost automatically detects the clients screen resolution and scales accordingly. This prevents CSS media queries, mouse positions etc. from not working\n",
         _a.config = {
             smoothCursor: false

@@ -52,6 +52,26 @@ module.exports = {
     compression: true,
 
     /**
+     * Server-side code execution in modules
+     */
+    serverExecution: {
+      /**
+       * Commands to enable, comment out to disable them
+       */
+      enabledCommands: [
+        '_',
+        'SHELL',
+        'FUNCTION',
+        'OBJECT',
+        'NUMBER',
+        'STRING',
+        'WRITE',
+        'BOOLEAN',
+        'ARRAY',
+      ]
+    },
+
+    /**
      * Rate limiting
      */
     rateLimiting: {
@@ -144,6 +164,10 @@ module.exports = {
         options: '0002',
         colors: {
           toggle: '#3F51B5'
+        },
+        position: {
+          x: 'left',
+          y: 'bottom'
         },
         style: 'material',
         beta: false

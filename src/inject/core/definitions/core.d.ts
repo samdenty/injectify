@@ -7,8 +7,7 @@ import { Modules } from './modules'
  */
 
 export namespace Injectify {
-  //1
-  //2
+  //#modules
   interface info {
     project: string
     server: {
@@ -106,15 +105,22 @@ export namespace Injectify {
       timed: {
         active: boolean
         prevState: string | JSON
-      },
+        timer: any
+      }
       devtools: any
       websocket: any
-    },
-    windowInjection: boolean,
+    }
+    windowInjection: boolean
     commandHistory: string[]
     modules: {
       states: any
-      callbacks: any
+      calls: any
+    }
+    scroll: {
+      order: number
+      id: any
+      x: number
+      y: number
     }
   }
   export var global: global
@@ -243,5 +249,4 @@ export namespace Injectify {
 	 * @param element element to execute the script under, defaults to document.head
 	 */
   export function exec(func: Function | string, element?: HTMLElement)
-  //3
 }

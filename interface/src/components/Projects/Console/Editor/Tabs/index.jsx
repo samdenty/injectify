@@ -1,9 +1,16 @@
-import React, { Component } from "react";
-import MenuIcon from 'material-ui-icons/Menu';
-import Measure from 'react-measure';
+import React, { Component } from "react"
+import MenuIcon from 'material-ui-icons/Menu'
+import Measure from 'react-measure'
 import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu"
+import { connect } from 'react-redux'
+import { toggleClientsList, executeMacro } from '../../../../../actions'
+import Tooltip from 'material-ui/Tooltip'
 
-class ChromeTabs extends Component {
+import PageGhostIcon from 'material-ui-icons/RemoveRedEye'
+import ExecuteIcon from 'material-ui-icons/Send'
+import IconButton from 'material-ui/IconButton'
+
+class Tabs extends Component {
   state = {
     dimensions: {
       width: -1,
@@ -17,23 +24,25 @@ class ChromeTabs extends Component {
     tabWidth: 240,
   }
 
-  componentWillReceiveProps(nextProps) {
-    if (nextProps.tabs && this.props.tabs) {
-      if (nextProps.tabs.length !== this.props.tabs) {
-        this.update(nextProps.tabs.length)
-      }
-    }
-  }
+  // componentWillReceiveProps(nextProps) {
+  //   if (nextProps.tabs && this.props.tabs) {
+  //     if (nextProps.tabs.length !== this.props.tabs) {
+  //       this.update(nextProps.tabs.length)
+  //     }
+  //   }
+  // }
 
   update(tabCount) {
-    let w = this.state.dimensions.width / tabCount
-    if (w > 240) w = 240
-    if (w < 150) w = 150
+    if (tabCount instanceof Number) {
+      let w = this.state.dimensions.width / tabCount
+      if (w > 240) w = 240
+      if (w < 150) w = 150
 
-    this.setState({
-      scroll: this.updateScroll(),
-      tabWidth: w
-    })
+      this.setState({
+        scroll: this.updateScroll(),
+        tabWidth: w
+      })
+    }
   }
 
   updateScroll(setState) {
@@ -81,18 +90,21 @@ class ChromeTabs extends Component {
 
   render() {
     const { width, height } = this.state.dimensions
-    const { execute, toggleMenu } = this.props
+    const { projects, selectedProject, pageGhost, dispatch } = this.props
+    const project = projects[selectedProject.index]
+    const { state } = project.console
+    const tabs = state.clients[state.selected]
 
     return (
       <div className="chrome-tabs">
-        <MenuIcon className="inject-list-menu" onClick={toggleMenu.bind(this)} />
+        <MenuIcon className="inject-list-menu" onClick={() => dispatch(toggleClientsList(true))} />
         <div onClick={this.previous.bind(this)} className={`chrome-tabs-previous ${this.state.scroll.left ? 'required' : ''}`} />
         <Measure
           bounds
           onResize={(contentRect) => {
             this.addListener()
             this.setState({ dimensions: contentRect.bounds })
-            this.update(this.props.tabs.length)
+            this.update(tabs && tabs.length)
           }}
           innerRef={tabs => this.tabs = tabs}>
           {({measureRef}) => {
@@ -100,9 +112,9 @@ class ChromeTabs extends Component {
               <div
                 className="chrome-tabs-content"
                 ref={measureRef} >
-                {this.props.tabs && this.props.tabs.map((tab, i) => {
+                {tabs && tabs.sessions.map((tab, i) => {
                   return tab.window ? (
-                    <ChromeTab
+                    <Tab
                       key={tab.id || i}
                       order={i}
                       id={tab.id || i}
@@ -110,8 +122,8 @@ class ChromeTabs extends Component {
                       devtools={tab.devtools}
                       favicon={tab.window.favicon}
                       active={tab.window.active}
-                      width={this.state.tabWidth}
-                      execute={execute} />
+                      pageGhost={pageGhost}
+                      width={this.state.tabWidth} />
                   ) : ''
                 })}
               </div>
@@ -125,14 +137,15 @@ class ChromeTabs extends Component {
   }
 }
 
-class ChromeTab extends Component {
+class Tab extends Component {
   render() {
-    const { id, execute, order, width, height, devtools, title, active, favicon } = this.props
+    const { id, order, width, height, devtools, title, active, favicon, pageGhost } = this.props
+
     return(
-      <div>
+      <React.Fragment>
         <ContextMenuTrigger id={id.toString()}>
           <div
-            className={`chrome-tab ${active ? 'chrome-tab-current' : ''} ${devtools.open ? 'devtools' : ''}`}
+            className={`chrome-tab ${active ? 'chrome-tab-current' : ''} ${devtools.open ? 'devtools' : ''} ${pageGhost.selected === id ? 'pageghost' : ''}`}
             style={{
               width: width,
               transform: order ? `translate(${(width * order) - (order * 14)}px, 0)` : ''
@@ -151,7 +164,7 @@ class ChromeTab extends Component {
                     <rect className="mask" width="100%" height="100%" x={0} />
                   </clippath>
                 </defs>
-                <svg width="50%" height="100%">
+                <svg width="50%" height="100%">`
                   <use
                     xlinkHref="#topleft"
                     width={214}
@@ -189,48 +202,49 @@ class ChromeTab extends Component {
                 backgroundImage: devtools.open ? `url('https://twemoji.maxcdn.com/2/72x72/26a0.png')` : favicon ? `url(${JSON.stringify(favicon)})` : ''
               }} />
             <div className="chrome-tab-title">{`${devtools.open ? '[DEVTOOLS] ' : ''}${title}`}</div>
-            <div className="chrome-tab-execute" title="" onClick={() => execute(order, 'execute')} />
-            <div className="chrome-tab-close" title="" onClick={() => execute(order, 'close')} />
+            <div className="chrome-tab-actions">
+              <Tooltip title="Page Ghost" placement="left" enterDelay={500}>
+                <IconButton className="pageghost" title="" onClick={() => executeMacro(id, 'pageghost')}>
+                  <PageGhostIcon />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Execute code" placement="left" enterDelay={500}>
+                <IconButton className="execute" title="" onClick={() => executeMacro(id, 'execute')}>
+                  <ExecuteIcon />
+                </IconButton>
+              </Tooltip>
+            </div>
+            {/* <Tooltip title="Close tab" placement="left">
+              <div className="chrome-tab-close" title="" onClick={() => executeMacro(id, 'close')} />
+            </Tooltip> */}
           </div>
         </ContextMenuTrigger>
 
         <ContextMenu id={id.toString()}>
-          <MenuItem onClick={() => execute(order, 'open')}>
+          <MenuItem onClick={() => executeMacro(id, 'open')}>
             Open in new tab
           </MenuItem>
-          <MenuItem onClick={() => execute(order, 'reload')}>
+          <MenuItem onClick={() => executeMacro(id, 'reload')}>
             Reload tab
           </MenuItem>
+          <MenuItem onClick={() => executeMacro(id, 'close')}>
+            Close tab
+          </MenuItem>
           <MenuItem divider />
-          <MenuItem onClick={() => this.pageGhost(order, id.toString())}>
+          <MenuItem onClick={() => executeMacro(id, 'pageghost')}>
             Page Ghost
           </MenuItem>
-          <MenuItem onClick={() => execute(order, `injectify.DOMExtractor`)}>
+          <MenuItem onClick={() => executeMacro(id, `injectify.DOMExtractor`)}>
             Extract DOM
           </MenuItem>
           <MenuItem divider />
-          <MenuItem onClick={() => execute(order, `injectify.console()`)}>
+          <MenuItem onClick={() => executeMacro(id, `injectify.console()`)}>
             Hook / unhook console API
           </MenuItem>
         </ContextMenu>
-      </div>
+      </React.Fragment>
     )
-  }
-
-  pageGhost(order, id) {
-    const { execute } = this.props
-    let pageGhost = window.pageGhost[id] = {
-      // HTTP so mixed content requests can be served
-      win: window.open(`http://${window.location.host}/PageGhost/?${id}`),
-      dom: null,
-      refresh: () => {
-        execute(order, `injectify.module('pageghost', true)`)
-      },
-      execute: code => {
-        execute(order, code)
-      }
-    }
   }
 }
 
-export default ChromeTabs;
+export default connect(({ injectify: {projects, selectedProject, pageGhost} }) => ({ projects, selectedProject, pageGhost }))(Tabs)

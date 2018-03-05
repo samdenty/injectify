@@ -1,6 +1,6 @@
 body {
   height: 100vh;
-  widows: 100vw;
+  width: 100vw;
   margin: 0;
   background: #111;
   background: radial-gradient(#111, #000);
@@ -11,6 +11,7 @@ body {
   position: absolute;
   overflow: hidden;
   display: inline-block;
+  backface-visibility: hidden;
   top: 50%;
   left: 50%;
   transform-origin: 0 0;
@@ -90,6 +91,8 @@ body {
 }
 
 .loader {
+  width: 200px;
+  height: 150px;
   top: 50%;
   left: 50%;
   transform-origin: 0 0;
@@ -100,36 +103,386 @@ body {
   font-weight: bold;
   font-size: 30vh;
   opacity: 0.8;
-  transition: opacity 0.2s ease;
+  transition: opacity 0.2s ease, transform 1s ease;
+}
+
+@media screen and (max-width: 350px), screen and (max-height: 250px) {
+  .loader {
+    transform: scale(0.7) translate(-50%, -50%);
+  }
+}
+
+@media screen and (max-width: 250px), screen and (max-height: 180px) {
+  .loader {
+    transform: scale(0.5) translate(-50%, -50%);
+  }
+}
+
+@media screen and (max-width: 150px), screen and (max-height: 150px) {
+  .loader {
+    transform: scale(0.3) translate(-50%, -50%);
+  }
+}
+
+@media screen and (max-width: 70px), screen and (max-height: 70px) {
+  .loader {
+    transform: scale(0.2) translate(-50%, -50%);
+  }
 }
 
 .loaded .loader {
   opacity: 0
 }
 
-.loader span {
-  display: inline-block;
-  -webkit-animation: pulse 0.4s alternate infinite ease-in-out;
-  animation: pulse 0.4s alternate infinite ease-in-out;
+.head {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  border-style: solid;
+  border-color: #111111;
+  border-top-right-radius: 77px;
+  border-top-left-radius: 97px;
+  border-bottom-right-radius: 70px;
+  border-bottom: 0px;
+  margin-left: 60px;
+  background: #fff;
+  animation: anim 1s linear infinite;
 }
 
-.loader span:nth-child(odd) {
-  -webkit-animation-delay: 0.4s;
-  animation-delay: 0.4s;
+.ghost {
+  position: absolute;
+  margin-top: 48px;
+  margin-left: 0.2em;
+  width: 100px;
+  height: 100px;
+  border-style: solid;
+  border-color: #111111;
+  border-bottom-right-radius: 358px;
+  border-top-left-radius: 200px;
+  border-top: 0px;
+  border-left: 0px;
+  margin-left: 63px;
+  background: #fff;
+  animation: anim 1s linear infinite;
 }
 
-@-webkit-keyframes pulse {
-  to {
-    -webkit-transform: scale(0.8);
-    transform: scale(0.8);
-    opacity: 0.5;
+.tent1 {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border-style: solid;
+  border-color: #fff;
+  margin-top: 122px;
+  margin-left: 50px;
+  border-right: 0px;
+  background: #fff;
+  animation: anim 1s linear infinite;
+}
+
+.tent2 {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border-style: solid;
+  border-color: #fff;
+  margin-top: 80px;
+  margin-left: 50px;
+  border-right: 0px;
+  background: #fff;
+  animation: anim 1s linear infinite;
+}
+
+.tent3 {
+  position: absolute;
+  width: 66px;
+  height: 10px;
+  border-radius: 22.3em;
+  border-color: #0E0E0E;
+  border-style: solid;
+  margin-top: 106px;
+  margin-left: 4px;
+  background: #0E0E0E;
+  animation: anim 1s linear infinite;
+}
+
+.eye1 {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: #000;
+  margin-left: 136px;
+  margin-top: 47px;
+  animation: anim 1s linear infinite;
+}
+
+.eye2 {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: #000;
+  margin-left: 117px;
+  margin-top: 47px;
+  animation: anim 1s linear infinite;
+}
+
+.head,
+.ghost,
+.tent1,
+.tent2,
+.tent3,
+.eye1,
+.eye2 {
+  z-index: 1;
+}
+
+.particle {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border-style: solid;
+  border-color: #fff;
+  margin-top: 122px;
+  margin-left: 50px;
+  border-right: 0px;
+  background: #fff;
+  animation: anim2 1s linear infinite;
+}
+
+.particle2 {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border-style: solid;
+  border-color: #fff;
+  margin-top: 80px;
+  margin-left: 50px;
+  border-right: 0px;
+  background: #fff;
+  animation: anim3 1s linear infinite;
+}
+
+.particle3 {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  margin-top: 122px;
+  margin-left: 250px;
+  border-right: 0px;
+  background: #a74ba8;
+  animation: anim4 1s linear infinite;
+}
+
+.particle4 {
+  position: absolute;
+  width: 10px;
+  height: 2.5px;
+  border-radius: 22.3em;
+  margin-top: 30px;
+  margin-left: 250px;
+  border-right: 0px;
+  background: #00d27f;
+  animation: anim5 1s ease-out infinite;
+}
+
+.particle4:before {
+  content: '';
+  position: absolute;
+  width: 10px;
+  height: 2.5px;
+  border-radius: 22.3em;
+  border-right: 0px;
+  background: #00d27f;
+  transform: rotate(90deg);
+}
+
+.particle5 {
+  position: absolute;
+  width: 13px;
+  height: 4px;
+  border-radius: 22.3em;
+  margin-top: 80px;
+  margin-left: 290px;
+  border-right: 0px;
+  background: #7bb3ff;
+  animation: anim6 1s linear infinite;
+}
+
+.particle5:before {
+  content: '';
+  position: absolute;
+  width: 13px;
+  height: 4px;
+  border-radius: 22.3em;
+  border-right: 0px;
+  background: #7bb3ff;
+  transform: rotate(90deg);
+}
+
+.particle6 {
+  position: absolute;
+  width: 10px;
+  height: 2.5px;
+  border-radius: 22.3em;
+  margin-top: 30px;
+  margin-left: 70px;
+  border-right: 0px;
+  background: #7bb3ff;
+  animation: anim6 1s linear infinite;
+}
+
+.particle6:before {
+  content: '';
+  position: absolute;
+  width: 10px;
+  height: 2.5px;
+  border-radius: 22.3em;
+  border-right: 0px;
+  background: #7bb3ff;
+  transform: rotate(90deg);
+}
+
+.particle7 {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  margin-top: 102px;
+  margin-left: 70px;
+  border-right: 0px;
+  background: #00d27f;
+  animation: anim4 1s linear infinite;
+}
+
+.wind1 {
+  position: absolute;
+  width: 50px;
+  height: 6px;
+  background: #7bb3ff;
+  border-radius: 22.3em;
+  margin-top: 60px;
+  margin-left: 70px;
+  transform: rotate(180deg);
+  animation: anim7 1s linear infinite;
+}
+
+.wind2 {
+  position: absolute;
+  width: 20px;
+  height: 6px;
+  background: #7bb3ff;
+  border-radius: 22.3em;
+  margin-top: 40px;
+  margin-left: 30px;
+  transform: rotate(180deg);
+  animation: anim8 1s linear infinite;
+}
+
+.wind3 {
+  position: absolute;
+  width: 40px;
+  height: 6px;
+  background: #7bb3ff;
+  border-radius: 22.3em;
+  margin-top: 40px;
+  margin-left: 60px;
+  transform: rotate(180deg);
+  animation: anim9 1s linear infinite;
+}
+
+@keyframes anim {
+  0% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(20px, 0);
+  }
+  100% {
+    transform: translate(0, 0);
   }
 }
-
-@keyframes pulse {
-  to {
-    -webkit-transform: scale(0.8);
-    transform: scale(0.8);
-    opacity: 0.5;
+@keyframes anim2 {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    transform: translate(-30px, 0) scale(0.02);
+  }
+}
+@keyframes anim3 {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    transform: translate(-20px, 0) scale(0.02);
+  }
+}
+@keyframes anim4 {
+  0% {
+    transform: translate(0, 0);
+  }
+  100% {
+    transform: translate(-130px, 0);
+  }
+}
+@keyframes anim5 {
+  0% {
+    transform: translate(0, 0);
+  }
+  100% {
+    transform: translate(-100px, 0) rotate(-180deg);
+  }
+}
+@keyframes anim6 {
+  0% {
+    transform: translate(0, 0);
+  }
+  100% {
+    transform: translate(-150px, 0) rotate(180deg);
+  }
+}
+@keyframes anim7 {
+  0% {
+    transform: translate(0, 0);
+    width: 0px;
+  }
+  50% {
+    width: 40px;
+  }
+  100% {
+    transform: translate(-70px, 0);
+    width: 0px;
+  }
+}
+@keyframes anim8 {
+  0% {
+    transform: translate(0, 0);
+    width: 10px;
+  }
+  50% {
+    width: 20px;
+  }
+  100% {
+    transform: translate(-70px, 0);
+    width: 0px;
+  }
+}
+@keyframes anim9 {
+  0% {
+    transform: translate(0, 0);
+    width: 0px;
+  }
+  50% {
+    width: 40px;
+  }
+  100% {
+    transform: translate(-70px, 0);
+    width: 0px;
   }
 }
