@@ -1,0 +1,53 @@
+# The module name, injectify.module('NAME')
+# To specify multiple different names use:
+# name: [example, demo, eg]
+name: [logout, signout, superlogout]
+# A brief description of what the module does.
+# This is visible in the interface's code editor
+description: >
+  Attempts the log the user out of all third-party websites
+# Your GitHub username
+author: samdenty99
+# If set to `true` then it will send the module uglify-js'd.
+# Only disable this if necessary! eg. it breaks something
+minify: true
+
+returns: |
+  {
+    aol: boolean | null
+    amazon: boolean | null
+    blogger: boolean | null
+    delicious: boolean | null
+    deviantart: boolean | null
+    dreamhost: boolean | null
+    dropbox: boolean | null
+    ebay: boolean | null
+    gandi: boolean | null
+    github: boolean | null
+    gmail: boolean | null
+    google: boolean | null
+    hulu: boolean | null
+    instapaper: boolean | null
+    linode: boolean | null
+    livejournal: boolean | null
+    myspace: boolean | null
+    netflix: boolean | null
+    newyorktimes: boolean | null
+    newegg: boolean | null
+    photobucket: boolean | null
+    skype: boolean | null
+    slashdot: boolean | null
+    soundcloud: boolean | null
+    steamcommunity: boolean | null
+    steamstore: boolean | null
+    thinkgeek: boolean | null
+    threadless: boolean | null
+    tumblr: boolean | null
+    vimeo: boolean | null
+    wikipedia: boolean | null
+    windowslive: boolean | null
+    woot: boolean | null
+    wordpress: boolean | null
+    yahoo: boolean | null
+    youtube: boolean | null
+  }

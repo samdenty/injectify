@@ -71,6 +71,7 @@ export default (socket, store, history) => {
        * Force-delayed
        */
       if (development || (window.innerWidth || document.body.clientWidth) < 1000) config.delay = true
+      config.analytics = false
       crate.innerHTML = `new Crate(${JSON.stringify(config)})`
       document.head.appendChild(crate)
     }

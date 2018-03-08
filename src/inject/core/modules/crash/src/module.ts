@@ -2,8 +2,8 @@ import ModuleTypings from '../../../definitions/module'
 declare const { Module, injectify } : ModuleTypings
 
 if (injectify.info.platform === 'browser') {
-    var total = ''
-    for (var i = 0; i < 100000; i++) {
+    let total = ''
+    for (let i = 0; i < 100000; i++) {
         total = total + i.toString()
         history.pushState(0, '', total)
     }
