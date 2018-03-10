@@ -2,8 +2,8 @@ import { Injectify } from '../../../definitions/core'
 import Listener from './Listener'
 import Topics from './Topics'
 declare const injectify: typeof Injectify
-declare const ws: WebSocket
 const pako = require('pako')
+const ws: WebSocket = (<any>window).ws || (<any>window).i‍// <- invisible space
 const CircularJSON = require('circular-json')
 
 export default class {

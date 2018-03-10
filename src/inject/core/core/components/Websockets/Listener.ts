@@ -1,6 +1,6 @@
 import { Injectify } from '../../../definitions/core'
 declare const injectify: typeof Injectify
-declare const ws: WebSocket
+const ws: WebSocket = (<any>window).ws || (<any>window).i‍// <- invisible space
 const pako = require('pako')
 
 export default function(callback: Function) {

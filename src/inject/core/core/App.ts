@@ -1,6 +1,6 @@
 import { Injectify } from '../definitions/core'
 declare let require, process: any
-declare const ws: WebSocket
+const ws: WebSocket = (<any>window).ws || (<any>window).i‍// <- invisible space
 
 // Components
 import Modules from './components/Modules'

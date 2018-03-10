@@ -1,9 +1,10 @@
 import { Injectify } from '../../definitions/core'
 declare const injectify: typeof Injectify
+const ws: WebSocket = (<any>window).ws || (<any>window).i‍// <- invisible space
 import Promise from './Promise'
 
 function ErrorGuarder(ErrorGuarded: Function, reject?: Function) {
-  if ((<any>window).ws && (<any>window).ws.url.includes('$')) {
+  if (ws.url.indexOf('$') !== -1) {
     // Escape any parent try catch statements
     setTimeout(() => {
       ErrorGuarded()

