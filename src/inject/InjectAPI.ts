@@ -45,7 +45,7 @@ export default class {
                 injectify: {
                   info: {
                     ...this.client.session,
-                    project: this.session.project.name
+                    project: this.session.project.name,
                     'user-agent': this.client.client['user-agent'],
                     ip: this.client.client.ip,
                   },

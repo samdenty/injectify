@@ -28,10 +28,10 @@ export namespace Database {
       }
       created_at: string
     }
-    inject: {
+    console: {
       autoexecute: string
     }
-    records: {
+    data: {
       [table: string]: {
         url: string
         ip: string

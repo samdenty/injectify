@@ -1,13 +1,12 @@
 declare var global: any
 import chalk from 'chalk'
-import Project from '../database/Project'
-import { escape } from 'mongo-escape'
+import { Update } from '../database/Project'
 import { Injectify } from './core/definitions/core'
 
 export default class {
   static record(socket: { session: Injectify.session.Info, client: any }, name: string, table: string, data: any) {
     let { session, client } = socket
-    Project.update({
+    Update({
       name: name,
       [`data.${table}`]: {
         $exists: true
@@ -18,7 +17,7 @@ export default class {
           url: session.window.url,
           ip: client.ip.query,
           timestamp: +new Date(),
-          data: escape(data)
+          data: JSON.stringify(data)
         }
       }
     }).then((result) => {

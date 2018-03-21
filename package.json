@@ -40,6 +40,8 @@
   },
   "homepage": "https://github.com/samdenty99/injectify#readme",
   "dependencies": {
+    "@types/express": "^4.11.1",
+    "@types/graphql": "^0.12.5",
     "@types/lodash": "^4.14.104",
     "@types/node": "^9.3.0",
     "@types/request": "^2.47.0",
@@ -56,10 +58,12 @@
     "es5-ext": "^0.10.39",
     "esniff": "^1.1.0",
     "express": "^4.16.2",
+    "express-graphql": "^0.6.12",
     "express-prettify": "0.0.10",
     "express-rate-limit": "^2.11.0",
     "fs-extra": "^5.0.0",
     "geoip-lite": "^1.2.1",
+    "graphql": "^0.13.2",
     "html-minifier": "^3.5.9",
     "js-beautify": "^1.7.5",
     "js-obfuscator": "^0.1.2",
@@ -89,7 +93,7 @@
     "nodemon": "^1.14.7"
   },
   "nodemonConfig": {
-    "ext": "js,json,yml",
+    "ext": "js,json,yml,gql",
     "ignore": [
       "./interface/**/*",
       "./ci/**/*",

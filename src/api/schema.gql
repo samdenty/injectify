@@ -1,0 +1,116 @@
+# type Project {
+#   name: String
+#   # tagline: String
+# }
+type Query {
+  "Retrieve data about a specified project"
+  project(name: String): Project
+  "Fetch the response from the GitHub user API"
+  user: User
+}
+
+type User {
+  "GitHub username"
+  login: String!
+  "GitHub user ID"
+  id: Int
+  "GitHub avatar URL"
+  avatar_url: String!
+  "GitHub gravatar ID"
+  gravatar_id: String!
+  "GitHub user API URL"
+  url: String!
+  "GitHub user profile URL"
+  html_url: String
+  "GitHub user followers URL"
+  followers_url: String
+  "GitHub user following URL"
+  following_url: String
+  gists_url: String
+  starred_url: String
+  subscriptions_url: String
+  organizations_url: String
+  repos_url: String
+  events_url: String
+  received_events_url: String
+  type: String
+  site_admin: Boolean
+  name: String
+  company: String
+  blog: String
+  location: String
+  email: String
+  hireable: Boolean
+  bio: String
+  public_repos: Int
+  public_gists: Int
+  followers: Int
+  following: Int
+  created_at: String
+  updated_at: String
+}
+
+type Project {
+  "Internal MongoDB collection ID"
+  _id: String
+  "Project name"
+  name: String
+  "Project permissions"
+  permissions: Permissions
+  "Project configuration"
+  config: Config
+  "Project console configuration"
+  console: Console
+  "Array of all the projects tables"
+  tables: [String]
+  "Project Data storage"
+  table(name: String!): [TableData]
+  "All connected clients"
+  clients: Clients
+  # clients: [Int]
+}
+
+type Permissions {
+  "Array of GitHub IDs containing users with the \"owner\" permission"
+  owners: [Int]
+  "Array of GitHub IDs containing users with the \"admin\" permission"
+  admins: [Int]
+  "Array of GitHub IDs containing users with the \"readonly\" permission"
+  readonly: [Int]
+}
+
+type Config {
+  "Domain filters"
+  filter: Filters
+  "Date of when the project was created"
+  created_at: String
+}
+
+  type Filters {
+    "The filter type, 'whitelist' or 'blacklist'"
+    type: String!
+    "The filter domains"
+    domains: [Domain]
+  }
+
+  type Domain {
+    "Whether the domain filter is enabled or not"
+    enabled: Boolean!
+    "What the domain filter should match"
+    match: String!
+  }
+
+type Console {
+  autoexecute: String
+}
+
+type TableData {
+  url: String
+  ip: String!
+  timestamp: Int!
+  data: String
+}
+
+type Clients {
+  a: String
+}

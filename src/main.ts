@@ -54,6 +54,8 @@ MongoClient.connect(config.mongodb, (err, client) => {
   let Inject = new injectHandler(server, db)
   let inject = global.inject = Inject.state
 
+  app.set('json spaces', 2)
+
   server.on('upgrade', (req, socket, head) => {
     if (req.url && req.url.startsWith('/i')) {
       Inject.server.handleUpgrade(req, socket, head, (ws) => {
@@ -1665,9 +1667,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
   /**
    * APIs
    */
-  app.get('/api/spoof/*', apiLimiter, (req, res) => api.spoof(req, res))
-  app.get('/api/payload/*', apiLimiter, (req, res) => api.payload(req, res))
-  app.get('/api/*', apiLimiter, (req, res) => api.json(req, res))
+  app.use('/api', apiLimiter, api.graphql())
 
   if (config.dev) {
     // Proxy through to webpack-dev-server if in development mode

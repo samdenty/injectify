@@ -1,10 +1,12 @@
 import chalk from 'chalk'
-import Spoof from './Spoof'
-import Payload from './Payload'
-import JSON from './JSON'
 
 import GithubUser from '../database/GithubUser'
 import UserPermissions from '../database/UserPermissions'
+import { Request, Response } from 'express'
+
+import * as graphqlHTTP from 'express-graphql'
+
+import { schema, root } from './GraphQL'
 
 export default class {
   db: any
@@ -13,45 +15,44 @@ export default class {
     this.db = mongodb
   }
 
-  spoof(req: any, res: any) {
-    let token: string = req.query.token
-    let index: number = parseInt(req.query.index)
-    let project: string = decodeURIComponent(req.path.substring(11))
-    /**
-     * Validate the token exists, the index is a number and the project param exists
-     */
-    if (token && !Number.isNaN(index) && project) {
-      GithubUser(token).then(user => {
-        let permissions = new UserPermissions(this.db)
-        permissions.query(project, user).then(({ doc }) => {
-          let api = new Spoof(this.db)
-          api.query(doc, index).then(data => {
-            res.json(data)
-          }).catch(error => {
-            res.json(error)
+  graphqlHTTP = graphqlHTTP({
+    schema,
+    rootValue: root,
+    graphiql: true
+  })
+
+  graphql() {
+    return (req: Request, res: Response) => {
+      const { token } = req.query
+
+      if (token) {
+        GithubUser(token)
+          .then((user) => {
+            ;(<any>req).user = user
+            this.graphqlHTTP(req, res)
           })
-        }).catch(error => {
-          res.status(403).json(error)
-        })
-      }).catch(error => {
-        res.status(401).json(error)
-      })
-    } else {
-      res.status(400).json({
-        title: 'Bad request',
-        message: 'Make sure you specify a project, index and token in the request',
-        format: `/api/spoof/${project || '$project'}?index=${index || '$index'}&token=${token || '$token'}`
-      })
+          .catch(({ title, message }) => {
+            return this.error(res, title, message)
+          })
+      } else {
+        return this.error(
+          res,
+          'Unauthorised request',
+          `All requests must contain your GitHub token as a query parameter`
+        )
+      }
     }
   }
 
-  payload(req: any, res: any) {
-    res.setHeader('Content-Type', 'application/javascript')
-
-    Payload(req.query).then(js => {
-      res.send(js)
-    }).catch(error => {
-      res.status(400).send(error)
+  error(res: Response, message: string, description?: string) {
+    return res.status(401).json({
+      errors: [
+        {
+          // type: 'GraphQL middleware',
+          message,
+          description
+        }
+      ]
     })
   }
 
@@ -59,44 +60,21 @@ export default class {
     let token: string = req.query.token
     let page: string = req.path.split('/')[2]
     let project: string = decodeURIComponent(req.path.split('/')[3])
-    if (token && project && (page === 'passwords' || page === 'keylogger' || page === 'inject')) {
-      GithubUser(token).then(user => {
-        let permissions = new UserPermissions(this.db)
-        permissions.query(project, user).then(({ doc }) => {
-          let api = new JSON(this.db)
-          api.query(doc, page).then((json: any) => {
-            res.setHeader('Content-Disposition', 'filename="Injectify_API_' + doc.name + '.json"')
-            if (typeof req.query.download === 'string') {
-              res.setHeader('Content-Type', 'application/octet-stream')
-            } else {
-              res.setHeader('Content-Type', 'application/json')
-            }
-            res.send(json)
-            console.log(
-              chalk.greenBright('[API/JSON] ') +
-              chalk.yellowBright('delivered ') +
-              chalk.magentaBright(page) +
-              chalk.yellowBright(' for project ') +
-              chalk.magentaBright(project) +
-              chalk.redBright(` (length=${json ? json.length : 0}) `) +
-              chalk.yellowBright('to ') +
-              chalk.magentaBright(user.login) +
-              chalk.redBright(' (' + user.id + ') ')
-            )
-          }).catch(error => {
-            res.status(500).json(error)
-          })
-        }).catch(error => {
-          res.status(403).json(error)
+    if (token && project && (page === 'clients' || page === 'data')) {
+      GithubUser(token)
+        .then((user) => {
+
         })
-      }).catch(error => {
-        res.status(401).json(error)
-      })
+        .catch((error) => {
+          res.status(401).json(error)
+        })
     } else {
       res.status(400).json({
         title: 'Bad request',
-        message: 'Make sure you specify a project, page and token in the request',
-        format: `/api/${page || '$page'}/${project || '$project'}?token=${token || '$token'}`
+        message:
+          'Make sure you specify a project, page and token in the request',
+        format: `/api/${page || '$page'}/${project ||
+          '$project'}?token=${token || '$token'}`
       })
     }
   }

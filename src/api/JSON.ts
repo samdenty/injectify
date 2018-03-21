@@ -10,13 +10,12 @@ export default class {
 
   query(doc: Database.project, page: string) {
     return new Promise((resolve, reject) => {
-      if (page === 'inject') {
-        resolve(JSON.stringify({
-          inject: doc.inject,
-          clients: global.inject.clients[doc._id] || {}
-        }, null, '    '))
-      } else if (doc.passwords && doc.keylogger) {
-        resolve(JSON.stringify(doc[page], null, '    '))
+      if (page === 'clients') {
+        resolve(
+          JSON.stringify(global.inject.clients[doc._id] || {}, null, '  ')
+        )
+      } else if (page === 'data') {
+        resolve(JSON.stringify(doc[page], null, '  '))
       } else {
         reject({
           title: 'Database error',

@@ -1,7 +1,2 @@
-import Fetch from './Fetch'
-import Update from './Update'
-
-export default class {
-  static fetch = Fetch
-  static update = Update
-}
+export { default as Fetch } from './Fetch'
+export { default as Update } from './Update'
