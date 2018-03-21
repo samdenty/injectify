@@ -1,6 +1,6 @@
 declare var global: any
 import chalk from 'chalk'
-import { Update } from '../database/Project'
+import Update from '../database/Project/Update'
 import { Injectify } from './core/definitions/core'
 
 export default class {
