@@ -41,7 +41,6 @@
   "homepage": "https://github.com/samdenty99/injectify#readme",
   "dependencies": {
     "@types/express": "^4.11.1",
-    "@types/graphql": "^0.12.5",
     "@types/lodash": "^4.14.104",
     "@types/node": "^9.3.0",
     "@types/request": "^2.47.0",

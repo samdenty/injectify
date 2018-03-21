@@ -12,16 +12,21 @@ const methods = [
   'STRING',
   'WRITE',
   'BOOLEAN',
-  'ARRAY',
+  'ARRAY'
 ]
 
-export default (code, context): string => {
-  let varContext = _.map(context, (data, variable) => {
-    let value = data !== null && data !== undefined ? CircularJSON.stringify(data) : data
-    return `var ${variable}=${value}`
-  }).join(';')
+export default (code, context?): string => {
+  let varContext = context
+    ? _.map(context, (data, variable) => {
+        let value =
+          data !== null && data !== undefined
+            ? CircularJSON.stringify(data)
+            : data
+        return `var ${variable}=${value}`
+      }).join(';')
+    : ''
 
-  methods.map(method => {
+  methods.map((method) => {
     code = code.split(`$.${method}(`).join(`Δ("${method}",`)
   })
   return resolve(compile(code), varContext)

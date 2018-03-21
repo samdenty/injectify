@@ -6,7 +6,6 @@ import { SocketSession } from './definitions/session'
 import ClientInfo from './ClientInfo'
 import InjectAPI from './InjectAPI'
 import chalk from 'chalk'
-import _ from 'lodash'
 const { RateLimiter } = require('limiter')
 const atob = require('atob')
 const getIP = require('../lib/getIP.js')
@@ -70,7 +69,7 @@ export default class {
                   project: {
                     id: doc['_id'],
                     name: doc.name,
-                    inject: doc.inject
+                    console: doc.console
                   },
                   id: uuidv4(),
                   debug: state.debug

@@ -3,7 +3,7 @@ export namespace SocketSession {
     project: {
       id: string
       name: string
-      inject: any
+      console: any
     }
     id: number
     debug: boolean
@@ -11,7 +11,7 @@ export namespace SocketSession {
   export class project {
     id: string
     name: string
-    inject: any
+    console: any
   }
   export class inject {
     on: Function

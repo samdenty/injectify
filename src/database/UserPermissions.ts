@@ -1,5 +1,5 @@
-import { GitHub } from "./definitions/github"
-import { Database } from "./definitions/database"
+import { GitHub } from './definitions/github'
+import { Database } from './definitions/database'
 
 export default class {
   db: any
@@ -9,67 +9,77 @@ export default class {
   }
 
   query(project: string, user: GitHub.authUser) {
-    return new Promise<{ permission: number, doc: Database.project }>((resolve, reject) => {
+    return new Promise<{
+      permission: {
+        level: number
+        group: null | 'readonly' | 'admins' | 'owners'
+      }
+      doc: Database.project
+    }>((resolve, reject) => {
       this.db.collection('projects', (err, projects) => {
         if (err) throw err
-        projects.findOne({
-          $or: [
-            {
-              'permissions.owners': user.id
-            },
-            {
-              'permissions.admins': user.id
-            },
-            {
-              'permissions.readonly': user.id
-            }
-          ],
-          $and: [{
-            'name': project
-          }]
-        }).then((doc: Database.project) => {
-          if (doc !== null) {
-            let { permissions } = doc
+        projects
+          .findOne({
+            $or: [
+              {
+                'permissions.owners': user.id
+              },
+              {
+                'permissions.admins': user.id
+              },
+              {
+                'permissions.readonly': user.id
+              }
+            ],
+            $and: [
+              {
+                name: project
+              }
+            ]
+          })
+          .then((doc: Database.project) => {
+            if (doc !== null) {
+              let { permissions } = doc
 
-            let permission = {
-              level: 0,
-              group: null
-            }
-            if (permissions.readonly.includes(user.id)) {
-              permission = {
-                level: 1,
-                group: 'readonly'
+              let permission = {
+                level: 0,
+                group: null
               }
-            } else if (permissions.admins.includes(user.id)) {
-              permission = {
-                level: 2,
-                group: 'admins'
+              if (permissions.readonly.includes(user.id)) {
+                permission = {
+                  level: 1,
+                  group: 'readonly'
+                }
+              } else if (permissions.admins.includes(user.id)) {
+                permission = {
+                  level: 2,
+                  group: 'admins'
+                }
+              } else if (permissions.owners.includes(user.id)) {
+                permission = {
+                  level: 1,
+                  group: 'owners'
+                }
               }
-            } else if (permissions.owners.includes(user.id)) {
-              permission = {
-                level: 1,
-                group: 'owners'
-              }
-            }
 
-            if (permission.group && permission.level) {
-              resolve({
-                permission: permission,
-                doc: doc
-              })
+              if (permission.group && permission.level) {
+                resolve({
+                  permission,
+                  doc
+                })
+              } else {
+                reject({
+                  title: 'Access denied',
+                  message: `You don't have permission to access project ${project}`
+                })
+              }
             } else {
               reject({
                 title: 'Access denied',
-                message: `You don't have permission to access project ${project}`
+                message: `Project ${project} doesn't exist`
               })
             }
-          } else {
-            reject({
-              title: 'Access denied',
-              message: `Project ${project} doesn't exist`
-            })
-          }
-        })
+          })
       })
     })
   }

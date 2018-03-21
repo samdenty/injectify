@@ -5,8 +5,7 @@
     "moduleResolution": "node",
     "lib": [
       "dom",
-      "es7",
-      "esnext.asynciterable"
+      "es7"
     ]
   },
   "exclude": [
