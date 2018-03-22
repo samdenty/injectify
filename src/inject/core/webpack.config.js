@@ -3,6 +3,7 @@ const glob = require('glob')
 const fs = require('fs')
 const webpack = require('webpack')
 const UnminifiedWebpackPlugin = require('unminified-webpack-plugin')
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
 const modules = glob.sync('./modules/*/')
 const extension = process.env.NODE_ENV === 'development' ? 'js' : 'min.js'
 
@@ -22,6 +23,8 @@ for (let i = 0; i < modules.length; i++) {
 }
 
 module.exports = {
+  mode: 'production',
+
   entry: {
     ...entry,
     [`bundle.${extension}`]: './core/App.ts'
@@ -36,25 +39,21 @@ module.exports = {
   },
 
   module: {
-    rules: [{
-      test: /\.tsx?$/,
-      loader: 'awesome-typescript-loader'
-    }]
+    rules: [
+      {
+        test: /\.tsx?$/,
+        use: 'awesome-typescript-loader'
+      }
+    ]
   },
 
-  plugins: process.env.NODE_ENV === 'development' ? [
-    new UnminifiedWebpackPlugin()
-  ] : [
-    new webpack.optimize.UglifyJsPlugin({
-      compress: {
-        warnings: false
-      }
-    }),
-    new UnminifiedWebpackPlugin()
-  ],
+  plugins:
+    process.env.NODE_ENV === 'development'
+      ? [new UnminifiedWebpackPlugin()]
+      : [new UglifyJsPlugin(), new UnminifiedWebpackPlugin()],
 
   externals: {
-    "react": "React",
-    "react-dom": "ReactDOM"
-  },
+    react: 'React',
+    'react-dom': 'ReactDOM'
+  }
 }

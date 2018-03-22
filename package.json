@@ -52,7 +52,6 @@
     "concurrently": "^3.5.1",
     "cookie-parser": "^1.4.3",
     "country-emoji": "^1.2.0",
-    "crypto-js": "^3.1.9-1",
     "ejs": "^2.5.7",
     "es5-ext": "^0.10.39",
     "esniff": "^1.1.0",
