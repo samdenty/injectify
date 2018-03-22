@@ -3,12 +3,20 @@ export namespace Module {
     name: string[]
     description: string
     author: string
-    minify: boolean
+    minify?: boolean
+    server_side?: boolean
     params?: {
       optional?: boolean
       info: string
       typings?: string
     }
-    returns: string
+    returns?: string
+  }
+
+  export interface Cache {
+    name: string[]
+    production_bundle: string
+    debug_bundle?: string
+    config: Module.yml
   }
 }

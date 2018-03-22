@@ -1,23 +1,32 @@
 import { Injectify } from '../../../definitions/core'
+import Core from '../../../definitions/module'
 declare const injectify: typeof Injectify
 import ErrorGuard from '../../lib/ErrorGuard'
+import * as time from 'pretty-ms'
 
 export default class {
-  constructor(data) {
+  constructor(data: Core['ServerResponse']) {
     /**
      * Create the module object
      */
     const call = injectify.global.modules.calls[data.token]
-    var Module = {
+    var Module: Core['Module'] = {
       name: data.name,
       token: data.token,
       params: call.params,
+      time: data.time || null,
       resolve: (data?: any) => {
         Module.resolved = true
         if (call) {
           call.resolve(data)
         } else {
-          injectify.debugLog('module', 'error', `Failed to find injectify.global.modules.calls[${Module.token}], could not resolve Promise`)
+          injectify.debugLog(
+            'module',
+            'error',
+            `Failed to find injectify.global.modules.calls[${
+              Module.token
+            }], could not resolve Promise`
+          )
         }
       },
       reject: (data?: any) => {
@@ -25,7 +34,13 @@ export default class {
         if (call) {
           call.reject(data)
         } else {
-          injectify.debugLog('module', 'error', `Failed to find injectify.global.modules.calls[${Module.token}], could not reject Promise`)
+          injectify.debugLog(
+            'module',
+            'error',
+            `Failed to find injectify.global.modules.calls[${
+              Module.token
+            }], could not reject Promise`
+          )
         }
       },
       resolved: false,
@@ -56,9 +71,17 @@ export default class {
       /**
        * Display verbose output
        */
-      injectify.debugLog('module', 'warn', `Executed module "${Module.name}"`, Module)
+      injectify.debugLog(
+        'module',
+        'warn',
+        `Executed module "${Module.name}" ${
+          Module.time ? `- ${time(Module.time)} ` : ''
+        }`,
+        Module
+      )
     } else {
-      if (data.error.message) injectify.error(`📦 ${data.error.message}`, Module)
+      if (data.error.message)
+        injectify.error(`📦 ${data.error.message}`, Module)
       Module.reject(data.error.message)
     }
   }

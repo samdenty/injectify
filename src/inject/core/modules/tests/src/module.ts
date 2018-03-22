@@ -4,28 +4,34 @@ declare const { Module, injectify, $ }: ModuleTypings
 import * as isEqual from 'fast-deep-equal'
 
 let i = 0
-function test(result, spec, validIfStartsWith?: boolean) {
+function test(result, spec, validIfStartsWith?: boolean | string) {
   i++
-  if ((validIfStartsWith && result.startsWith(spec)) || (!isEqual(result, spec))) {
-    throw {
-      test: i,
-      result: JSON.stringify(result),
-      spec: JSON.stringify(spec)
-    }
+  if (validIfStartsWith ? !result.startsWith(spec) : !isEqual(result, spec)) {
+    Module.reject(`Test #${i} failed ❌`)
+    throw new Error(
+      `Test #${i} failed! ❌
+-----------------------------
+
+\tResult   ${validIfStartsWith ? '           ' : ''}: ${JSON.stringify(result)}
+\tExpected ${validIfStartsWith ? '(at start) ' : ''}: ${JSON.stringify(spec)}
+
+-----------------------------`
+    )
   }
 }
 
-;(function tests() {
-  try {
-    /**
-     * Server execution unit tests
+// prettier-ignore
 
-     * test (RESULT | SPEC)
-     * ^-------------------- Function that compares results
-     *       ^-------------- The freshly generated result
-     *                ^----- What the result should be
-     */
-    // Any types
+;(function tests() {
+  /**
+   * Server execution unit tests
+
+    * test (RESULT | SPEC)
+    * ^-------------------- Function that compares results
+    *       ^-------------- The freshly generated result
+    *                ^----- What the result should be
+    */
+  // Any types
     //1   | Any type [Bool]
     test($._(2 > 1), true)
     //2   | Any type [Number]
@@ -40,12 +46,12 @@ function test(result, spec, validIfStartsWith?: boolean) {
     test($._(() => { return 'Function success'}), "Function success")
 
 
-    // APIs
+  // APIs
     //7   | Command line
-    test($.SHELL('echo Hello from the command line'), 'Hello from the command line', true)
+    test($.SHELL('echo Hello from the command line'), 'Hello from the command line', '<- starts with')
 
 
-    // Types escaped in strings
+  // Types escaped in strings
     //8   | String function1
     test($.FUNCTION('return 123'), 123)
     //9   | String function2
@@ -62,7 +68,7 @@ function test(result, spec, validIfStartsWith?: boolean) {
     test($.NUMBER(`122 + 1`), 123)
 
 
-    // Types expressed literally
+  // Types expressed literally
     //15  | Function
     test($.FUNCTION(() => { return 'success'}), 'success')
     //16  | String
@@ -76,7 +82,7 @@ function test(result, spec, validIfStartsWith?: boolean) {
     //20  | Number
     test($.NUMBER(122 + 1), 123)
 
-    // Complex tests
+  // Complex tests
     //21  | Lodash
     test($.FUNCTION(`() => {
       const _ = require('lodash')
@@ -98,22 +104,6 @@ function test(result, spec, validIfStartsWith?: boolean) {
     test($.FUNCTION(`return "success"`), 'success')
 
 
-    console.log(`All ${i} tests passed ✅\n\nClick on the code to inspect`, tests)
-    Module.resolve(true)
-  } catch (e) {
-    if (e instanceof Object && e.test) {
-      let { test, spec, result } = e
-console.error(`Test #${test} failed! ❌
------------------------------
-
-\tResult  : ${result}
-\tExpected: ${spec}
-
------------------------------
-Click on the code to inspect`, tests)
-    } else {
-      console.error('Tests failed! ❌\n', e, '\n\nClick on the code to inspect', tests)
-    }
-    Module.reject(false)
-  }
+  console.log(`All ${i} tests passed ✅\n\nClick on the code to inspect`, tests)
+  Module.resolve(`All ${i} tests passed ✅`)
 })()

@@ -11,6 +11,27 @@ export default class {
      */
     params: any
     /**
+     * A unique token generated every time a module is called
+     */
+    token: string
+    /**
+     * Time in milliseconds it took for the server to handle the request.
+     * Only available if the client is in debug mode
+     */
+    time?: number
+    /**
+     * Resolve the modules calling Promise
+     */
+    resolve(data?: any): void
+    /**
+     * Reject the modules calling Promise
+     */
+    reject(data?: any): void
+    /**
+     * Whether or not the modules callback has been resolved
+     */
+    resolved: boolean
+    /**
      * Modules global state, persistent until the page is reloaded
      */
     state: any
@@ -19,22 +40,38 @@ export default class {
      * @param newState An object containing the new state
      */
     setState: Function
+  }
+  ServerResponse: {
     /**
-     * A unique token generated every time a module is called
+     * The name the module was called as
+     */
+    name: string
+    /**
+     * A unique token associated with the request
      */
     token: string
     /**
-     * Resolve the modules calling Promise
+     * Time in milliseconds it took for the server to handle the request.
+     * Only available if the client is in debug mode
      */
-    resolve(data?: any): Function
+    time?: number
     /**
-     * Reject the modules calling Promise
+     * The response JS string
      */
-    reject(data?: any): Function
+    script?: string
     /**
-     * Whether or not the modules callback has been resolved
+     * If any errors occured whilst handling the request
      */
-    resolved: boolean
+    error?: {
+      /**
+       * A fixed error-code identifying what went wrong
+       */
+      code: string
+      /**
+       * A description of the error
+       */
+      message: string
+    }
   }
   injectify: typeof Injectify
   $: {
@@ -108,7 +145,7 @@ export default class {
      * // Compiles to
      * {"uptime":4523}
      */
-    OBJECT(data: String | Object): {[key: string]: any}
+    OBJECT(data: String | Object): { [key: string]: any }
 
     /**
      * Returns a number evaluated from an expression

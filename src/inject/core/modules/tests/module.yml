@@ -12,6 +12,9 @@ author: samdenty99
 # Only disable this if necessary! eg. it breaks something
 minify: true
 
+# Enable server-side snippets
+server_side: true
+
 # Typescript type of what the module promise returns, defaults to <any>
 returns: |
   boolean

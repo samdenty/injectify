@@ -46,10 +46,6 @@
     "@types/minimatch" "*"
     "@types/node" "*"
 
-"@types/graphql@^0.12.5":
-  version "0.12.5"
-  resolved "https://registry.yarnpkg.com/@types/graphql/-/graphql-0.12.5.tgz#24993f51177a8afa2c5d49bed1d8fb6bf8d06ded"
-
 "@types/lodash@^4.14.104":
   version "4.14.104"
   resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.104.tgz#53ee2357fa2e6e68379341d92eb2ecea4b11bb80"
@@ -2024,6 +2020,10 @@ performance-now@^0.2.0:
 performance-now@^2.1.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/performance-now/-/performance-now-2.1.0.tgz#6309f4e0e5fa913ec1c69307ae364b4b377c9e7b"
+
+perfy@^1.1.2:
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/perfy/-/perfy-1.1.2.tgz#e4a01247bc5a6fc99f3df1da0fd3a2d2553b4323"
 
 pify@2.3.0:
   version "2.3.0"
