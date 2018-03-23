@@ -1,7 +1,7 @@
 import { Injectify } from '../../../definitions/core'
 declare const injectify: typeof Injectify
-const ws: WebSocket = (<any>window).ws || (<any>window).i‍// <- invisible space
-declare const client: any
+const ws: WebSocket = (<any>window).ws || (<any>window).i‍ // <- invisible space
+declare const __client, __server: any
 
 export { default as SessionInfo } from './Session'
 
@@ -19,19 +19,21 @@ export function Info(): Injectify.info {
   let server = protocol + url[2]
 
   return {
-    'project': atob(project),
-    'server': {
-      'websocket': ws.url,
-      'url': server
+    project: atob(project),
+    server: {
+      websocket: ws.url,
+      url: server,
+      cached: __server.cached,
+      version: __server.version,
+      compression: __server.compression
     },
-    'id': client.id,
-    'platform': client.platform,
-    'duration': injectify.duration,
-    'debug': injectify.debug,
-    'os': client.os,
-    'ip': client.ip,
-    'headers': client.headers,
-    'user-agent': client.agent,
-    'compression': client.compression
+    id: __client.id,
+    platform: __client.platform,
+    duration: injectify.duration,
+    debug: injectify.debug,
+    os: __client.os,
+    ip: __client.ip,
+    headers: __client.headers,
+    'user-agent': __client.agent
   }
 }

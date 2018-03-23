@@ -13,6 +13,9 @@ export namespace Injectify {
     server: {
       websocket: string
       url: string
+      cached: boolean
+      compression: boolean
+      version: string
     }
     id: number
     platform: 'browser' | 'electron' | 'node'
@@ -30,7 +33,6 @@ export namespace Injectify {
       zip: number
     }
     headers: any
-    compression: boolean
     'user-agent': any
   }
 

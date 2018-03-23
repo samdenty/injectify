@@ -1,4 +1,3 @@
-console.log(document.currentScript)
 import { Injectify } from '../definitions/core'
 declare let require, process: any
 const ws: WebSocket = (<any>window).ws || (<any>window).i‍// <- invisible space
@@ -177,7 +176,7 @@ ErrorGuard(() => {
 
       if (internalName === 'core') {
         message = [
-          `%c %c${emoji} Injectify core.ts loaded! => https://github.com/samdenty99/injectify`,
+          `%c %c${emoji} Injectify core.ts loaded!${this.info.server.cached ? ' (FROM CACHE)' : ''}`,
           `padding: 3px 10px; line-height: 20px; background: url("https://github.com/samdenty99/injectify/blob/master/assets/injectify.png?raw=true"); background-repeat: no-repeat; background-size: 20px 20px; color: transparent;`,
           ``,
           injectify.info

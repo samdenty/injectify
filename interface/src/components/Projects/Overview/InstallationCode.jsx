@@ -121,9 +121,9 @@ class InstallationCode extends React.Component {
     const url = `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${
       location.host
     }/i?${this.state.debug ? '$' : ''}${btoa(selectedProject.name)}`
-    const code = `!function i‍‍(){var i=setTimeout;i‍=new WebSocket(${JSON.stringify(
+    const code = `!function i‍‍(){var i=setTimeout;self.i‍=new WebSocket(${JSON.stringify(
       url
-    )}),i‍.onmessage=function(d){try{i(JSON.parse(d.data).d)}catch(i‍‍‍){i‍.send(JSON.stringify({t:"e",d:i‍‍‍.stack}))}},i‍.onclose=function(){i(i‍‍,1e3)}}();`
+    )}),i‍.onmessage=function(d){try{i(d.data)}catch(i‍‍‍){i‍.send('e:'+JSON.stringify(i‍‍‍.stack))}},i‍.onclose=function(){i(i‍‍,1e3)}}();`
 
     return (
       <Card className={classes.root}>

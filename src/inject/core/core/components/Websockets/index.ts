@@ -3,7 +3,7 @@ import Listener from './Listener'
 import Topics from './Topics'
 declare const injectify: typeof Injectify
 const pako = require('pako')
-const ws: WebSocket = (<any>window).ws || (<any>window).i‍// <- invisible space
+const ws: WebSocket = (<any>window).ws || (<any>window).i‍ // <- invisible space
 const CircularJSON = require('circular-json')
 
 export default class {
@@ -12,18 +12,16 @@ export default class {
      * If the websocket is dead, return
      */
     if (ws.readyState !== ws.OPEN) return
-    let json = CircularJSON.stringify({
-      t: topic,
-      d: data,
-    })
-    if (injectify.info.compression) {
-      json = '#' + pako.deflate(json, {to: 'string'})
+    const json = CircularJSON.stringify(data)
+    let transport = `${topic}${json ? ':' + json : ''}`
+    if (injectify.info.server.compression) {
+      transport = '#' + pako.deflate(transport, { to: 'string' })
     }
-    ws.send(json)
+    ws.send(transport)
   }
 
   static ping(callback?: any) {
-    this.send('ping', + new Date())
+    this.send('ping', +new Date())
     if (callback) injectify.listen('pong', callback, true)
   }
 

