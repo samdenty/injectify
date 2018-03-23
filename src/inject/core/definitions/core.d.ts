@@ -107,6 +107,7 @@ export namespace Injectify {
         prevState: string | JSON
         timer: any
       }
+      pinger: any
       devtools: any
       websocket: any
     }

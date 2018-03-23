@@ -23,19 +23,20 @@ export default class {
   }
 
   initiate(ws: any, req: any) {
-    this.validate(req).then(project => {
-      new Session(ws, req, project)
-    }).catch((error: string | Error) => {
-      if (typeof error === 'string') {
-        if (global.config.verbose)
-          console.error(
-            chalk.redBright('[inject] ') +
-            chalk.yellowBright(error)
-          )
-      } else {
-        throw error
-      }
-    })
+    this.validate(req)
+      .then((project) => {
+        new Session(ws, req, project)
+      })
+      .catch((error: string | Error) => {
+        if (typeof error === 'string') {
+          if (global.config.verbose)
+            console.error(
+              chalk.redBright('[inject] ') + chalk.yellowBright(error)
+            )
+        } else {
+          throw error
+        }
+      })
   }
 
   validate(req: Request) {
@@ -56,28 +57,36 @@ export default class {
           try {
             state.project = atob(state.project)
           } catch (e) {
-            reject('websocket with invalid base64 encoded project name, terminating')
+            reject(
+              'websocket with invalid base64 encoded project name, terminating'
+            )
             return
           }
           this.db.collection('projects', (err, projects) => {
             if (err) throw err
-            projects.findOne({
-              'name': state.project
-            }).then((doc: Database.project) => {
-              if (doc !== null) {
-                resolve({
-                  project: {
-                    id: doc['_id'],
-                    name: doc.name,
-                    console: doc.console
-                  },
-                  id: uuidv4(),
-                  debug: state.debug
-                })
-              } else {
-                reject(`websocket connection to nonexistent project "${state.project}", terminating`)
-              }
-            })
+            projects
+              .findOne({
+                name: state.project
+              })
+              .then((doc: Database.project) => {
+                if (doc !== null) {
+                  resolve({
+                    project: {
+                      id: doc['_id'],
+                      name: doc.name,
+                      console: doc.console
+                    },
+                    id: uuidv4(),
+                    debug: state.debug
+                  })
+                } else {
+                  reject(
+                    `websocket connection to nonexistent project "${
+                      state.project
+                    }", terminating`
+                  )
+                }
+              })
           })
         } else {
           reject('websocket connection with invalid project name, terminating')
@@ -97,6 +106,7 @@ class Session {
   req: Request
   authReq: Request
   client: any
+  core: { bundle: string; hash: string }
 
   constructor(socket: any, req: any, session: SocketSession.session) {
     socket.id = uuidv4()
@@ -105,6 +115,12 @@ class Session {
     this.req = req
     this.session = session
     this.project = session.project
+    /**
+     * Select the correct Core
+     */
+    this.core = this.session.debug
+      ? global.inject.core.development
+      : global.inject.core.production
     /**
      * Give the client time to connect, or else they may be droppped
      */
@@ -118,35 +134,47 @@ class Session {
       t: topic,
       d: data
     })
-    if (global.config.compression && !this.session.debug && !(/^core|auth$/.test(topic))) {
-      json = pako.deflate(JSON.stringify({
-        t: topic,
-        d: data
-      }), {
-        to: 'string'
-      })
-      json = '#' + json
+    if (
+      global.config.compression &&
+      !this.session.debug &&
+      !/^core|auth$/.test(topic)
+    ) {
+      json =
+        '#' +
+        pako.deflate(json, {
+          to: 'string'
+        })
     }
     try {
       this.socket.send(json)
-    } catch(error) {
+    } catch (error) {
       if (this.socket.readyState !== WebSocket.OPEN) this.socket.close()
     }
   }
 
   auth(id: string) {
-    this.send('auth', `var X=(window.ws||window.i‍).url.split('/'),V='https://';'ws:'===X[0]&&(V='http://'),X=V+X[2];var M=new Image;M.src=X+'/a?id=${encodeURIComponent(id)}&z=${uuidv4()}',M.onload;`)
-    global.inject.authenticate[id] = (token: string, req) => this.authorized(token, req)
+    this.send(
+      'auth',
+      `var X=(window.ws||window.i‍).url.split('/'),V='https://';'ws:'===X[0]&&(V='http://'),X=V+X[2];var M=new Image;M.src=X+'/a?id=${encodeURIComponent(
+        id
+      )}&z=${uuidv4()}',M.onload;`
+    )
+    global.inject.authenticate[id] = (token: string, req) =>
+      this.authorized(token, req)
   }
 
   authorized(token: string, req) {
     this.token = token
     this.authReq = req
     let injectAPI
-    let limiter = new RateLimiter(global.config.rateLimiting.inject.websocket.max, global.config.rateLimiting.inject.websocket.windowMs, true)
+    let limiter = new RateLimiter(
+      global.config.rateLimiting.inject.websocket.max,
+      global.config.rateLimiting.inject.websocket.windowMs,
+      true
+    )
     let limiterLimiter = new RateLimiter(50, 15000, true)
 
-    this.socket.on('message', raw => {
+    this.socket.on('message', (raw) => {
       let { tokens } = global.config.rateLimiting.inject
       let token = 1
       let topic: string
@@ -159,11 +187,15 @@ class Session {
           if (global.config.compression) {
             try {
               raw = pako.inflate(raw.substr(1), { to: 'string' })
-            } catch(e) {
+            } catch (e) {
               if (global.config.debug) {
                 console.error(
                   chalk.redBright('[inject/compression] ') +
-                  chalk.yellowBright(`Failed to decompress a Websocket message from client ${this.client.client.ip.query}`)
+                    chalk.yellowBright(
+                      `Failed to decompress a Websocket message from client ${
+                        this.client.client.ip.query
+                      }`
+                    )
                 )
               }
               return
@@ -172,7 +204,11 @@ class Session {
             if (global.config.debug) {
               console.error(
                 chalk.redBright('[inject/compression] ') +
-                chalk.yellowBright(`Dropped a Websocket message from client ${this.client.client.ip.query}, because server set to no compression`)
+                  chalk.yellowBright(
+                    `Dropped a Websocket message from client ${
+                      this.client.client.ip.query
+                    }, because server set to no compression`
+                  )
               )
             }
             return
@@ -180,11 +216,15 @@ class Session {
         }
         try {
           raw = JSON.parse(raw)
-        } catch(e) {
+        } catch (e) {
           if (global.config.debug)
             console.error(
               chalk.redBright('[inject/client] ') +
-              chalk.yellowBright(`Failed to parse JSON string from client ${this.client.client.ip.query}`)
+                chalk.yellowBright(
+                  `Failed to parse JSON string from client ${
+                    this.client.client.ip.query
+                  }`
+                )
             )
           return
         }
@@ -195,7 +235,11 @@ class Session {
         if (global.config.debug)
           console.error(
             chalk.redBright('[inject/client] ') +
-            chalk.yellowBright(`Server threw an error whilst handling client ${this.client.client.ip.query}`),
+              chalk.yellowBright(
+                `Server threw an error whilst handling client ${
+                  this.client.client.ip.query
+                }`
+              ),
             e
           )
         return
@@ -251,10 +295,10 @@ class Session {
       if (global.config.debug) {
         console.log(
           chalk.greenBright('[inject] ') +
-          chalk.yellowBright('new websocket connection for project ') +
-          chalk.magentaBright(this.project.name) +
-          chalk.yellowBright(' from ') +
-          chalk.magentaBright(client.ip.query)
+            chalk.yellowBright('new websocket connection for project ') +
+            chalk.magentaBright(this.project.name) +
+            chalk.yellowBright(' from ') +
+            chalk.magentaBright(client.ip.query)
         )
       }
       /**
@@ -273,7 +317,7 @@ class Session {
        */
       if (global.inject.watchers[this.project.id]) {
         setTimeout(() => {
-          global.inject.watchers[this.project.id].forEach(watcher => {
+          global.inject.watchers[this.project.id].forEach((watcher) => {
             watcher.callback('connect', {
               token: this.token,
               data: global.inject.clients[this.project.id][this.token]
@@ -285,18 +329,19 @@ class Session {
       /**
        * Send the inject core
        */
-      let core = global.inject.core
-      if (this.session.debug) core = global.inject.debugCore
       let socketHeaders = this.req.headers
       delete socketHeaders['user-agent']
-      core = core
-      .replace('client.ip', JSON.stringify(client.ip))
-      .replace('client.id', JSON.stringify(session.id))
-      .replace('client.agent', JSON.stringify(client.agent))
-      .replace('client.headers', JSON.stringify(socketHeaders))
-      .replace('client.platform', JSON.stringify(client.platform))
-      .replace('client.os', JSON.stringify(client.os))
-      .replace('client.compression', this.session.debug ? false : !!global.config.compression)
+      let core = this.core.bundle
+        .replace('client.ip', JSON.stringify(client.ip))
+        .replace('client.id', JSON.stringify(session.id))
+        .replace('client.agent', JSON.stringify(client.agent))
+        .replace('client.headers', JSON.stringify(socketHeaders))
+        .replace('client.platform', JSON.stringify(client.platform))
+        .replace('client.os', JSON.stringify(client.os))
+        .replace(
+          'client.compression',
+          this.session.debug ? `false` : `${!!global.config.compression}`
+        )
       this.send('core', core)
 
       /**
@@ -318,43 +363,53 @@ class Session {
       global.inject.clients[this.project.id] = {}
     }
 
-    ClientInfo(this.req, this.authReq, this.session).then(({ client, session }) => {
-      /**
-       * Create an object for the client
-       */
-      if (!global.inject.clients[this.project.id][this.token]) {
-        global.inject.clients[this.project.id][this.token] = client
-      }
-      /**
-       * Add a reference to the send method
-       */
-      session.execute = script => {
-        this.send('execute', script)
-      }
-      /**
-       * Add a reference to the send method
-       */
-      session.scroll = array => {
-        this.send('scroll', array)
-      }
-      global.inject.clients[this.project.id][this.token].sessions.push(session)
+    ClientInfo(this.req, this.authReq, this.session).then(
+      ({ client, session }) => {
+        /**
+         * Create an object for the client
+         */
+        if (!global.inject.clients[this.project.id][this.token]) {
+          global.inject.clients[this.project.id][this.token] = client
+        }
+        /**
+         * Add a reference to the send method
+         */
+        session.execute = (script) => {
+          this.send('execute', script)
+        }
+        /**
+         * Add a reference to the send method
+         */
+        session.scroll = (array) => {
+          this.send('scroll', array)
+        }
+        global.inject.clients[this.project.id][this.token].sessions.push(
+          session
+        )
 
-      resolve({
-        client: client,
-        session: session
-      })
-    })
+        resolve({
+          client: client,
+          session: session
+        })
+      }
+    )
   }
 
   close() {
     /**
      * => NOTE: this line *may* cause trouble down the line \/
      */
-    if (global.inject.clients[this.project.id] && global.inject.clients[this.project.id][this.token] && global.inject.clients[this.project.id][this.token].sessions) {
+    if (
+      global.inject.clients[this.project.id] &&
+      global.inject.clients[this.project.id][this.token] &&
+      global.inject.clients[this.project.id][this.token].sessions
+    ) {
       /**
        * Remove them from the clients object
        */
-      if (global.inject.clients[this.project.id][this.token].sessions.length === 1) {
+      if (
+        global.inject.clients[this.project.id][this.token].sessions.length === 1
+      ) {
         /**
          * Only session left with their token, delete token
          */
@@ -363,14 +418,18 @@ class Session {
         /**
          * Other sessions exist with their token
          */
-        global.inject.clients[this.project.id][this.token].sessions = global.inject.clients[this.project.id][this.token].sessions.filter(session => session.id !== this.session.id)
+        global.inject.clients[this.project.id][
+          this.token
+        ].sessions = global.inject.clients[this.project.id][
+          this.token
+        ].sessions.filter((session) => session.id !== this.session.id)
       }
       /**
        * Callback to the Injectify users
        */
       if (global.inject.watchers[this.project.id]) {
         setTimeout(() => {
-          global.inject.watchers[this.project.id].forEach(watcher => {
+          global.inject.watchers[this.project.id].forEach((watcher) => {
             watcher.callback('disconnect', {
               token: this.token,
               id: this.session.id

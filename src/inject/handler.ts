@@ -7,16 +7,24 @@ import Websockets from './Websockets'
 const fs = require('fs')
 const UglifyJS = require('uglify-es')
 const WebSocket = require('ws')
-const minifiedCore = fs.readFileSync(`${__dirname}/core/bundle.min.js`, 'utf8')
-const unminifiedCore = fs.readFileSync(`${__dirname}/core/bundle.js`, 'utf8')
+const production_bundle = fs.readFileSync(`${__dirname}/core/bundle.min.js`, 'utf8')
+const development_bundle = fs.readFileSync(`${__dirname}/core/bundle.js`, 'utf8')
 
 export default class {
   db: any
   server: any // SockJS server
   Websockets
   state = {
-    core: <string>minifiedCore,
-    debugCore: <string>unminifiedCore,
+    core: {
+      production: {
+        bundle: <string>production_bundle,
+        hash: <string>require('crypto').createHash('md5').update(production_bundle).digest('hex')
+      },
+      development: {
+        bundle: <string>development_bundle,
+        hash: <string>require('crypto').createHash('md5').update(development_bundle).digest('hex')
+      }
+    },
     modules: [],
     clients: [],
     watchers: [],

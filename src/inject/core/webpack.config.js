@@ -43,10 +43,24 @@ module.exports = {
     rules: [
       {
         test: /\.tsx?$/,
-        use: 'awesome-typescript-loader'
+        use: [
+          { loader: 'awesome-typescript-loader' },
+          {
+            loader: 'ifdef-loader',
+            options: {
+              DEBUG: process.env.NODE_ENV === 'development',
+              PRODUCTION: process.env.NODE_ENV !== 'development'
+            }
+          }
+        ]
       }
     ]
   },
+
+  devtool:
+    process.env.NODE_ENV === 'development'
+      ? 'inline-cheap-module-source-map'
+      : false,
 
   plugins:
     process.env.NODE_ENV === 'development'
