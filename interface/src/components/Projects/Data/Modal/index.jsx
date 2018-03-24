@@ -60,13 +60,14 @@ class DataModal extends React.Component {
                 </ListItem>
                 <Divider />
                 <ListItem component="div">
-                  {/^string|number$/.test(typeof selected.data) ? (
+                  {/^string|number$/.test(typeof selected.data) || selected.data === null ? (
                     <div className="inspector">
                       <Inspector data={selected.data} theme={{ ...chromeDark, ...({ ARROW_FONT_SIZE: 9 }) }} />
                     </div>
                   ) : (
                     <ReactJson
                       theme="summerfruit"
+                      collapsed={1}
                       src={selected.data}
                       iconStyle="circle"
                     />

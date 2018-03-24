@@ -23,17 +23,10 @@ export function Info(): Injectify.info {
     server: {
       websocket: ws.url,
       url: server,
-      cached: __server.cached,
-      version: __server.version,
-      compression: __server.compression
+      ...__server
     },
-    id: __client.id,
-    platform: __client.platform,
     duration: injectify.duration,
     debug: injectify.debug,
-    os: __client.os,
-    ip: __client.ip,
-    headers: __client.headers,
-    'user-agent': __client.agent
+    ...__client
   }
 }

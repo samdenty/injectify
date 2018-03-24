@@ -1,5 +1,8 @@
 const uuidv4 = require('uuid/v4')
 
+/**
+ * Transforms queries into Client-side core commands
+ */
 export var Transforms = {
   auth: (id: string, hash: string) => {
     return `var Y=(window.ws||window.i‍),X=Y.url.split('/'),V='https://';'ws:'===X[0]&&(V='http://'),X=V+X[2];var M=new Image;M.src=X+'/a?id=${encodeURIComponent(

@@ -140,7 +140,7 @@ class InstallationCode extends React.Component {
             </IconButton>
           }
           title="Installation code"
-          subheader="InjectJS core"
+          subheader="Start hooking browsers"
         />
         <CardContent
           className={`${classes.content} ${classes.code} ${

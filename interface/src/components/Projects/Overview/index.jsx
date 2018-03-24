@@ -1,6 +1,7 @@
 import React from 'react'
 
 import InstallationCode from './InstallationCode'
+import Advanced from './Advanced'
 
 class Overview extends React.Component {
   render() {
@@ -9,6 +10,7 @@ class Overview extends React.Component {
     return (
       <React.Fragment>
         <InstallationCode />
+        <Advanced />
       </React.Fragment>
     )
   }

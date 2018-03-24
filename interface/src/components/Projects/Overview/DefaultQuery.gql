@@ -1,0 +1,20 @@
+# Click on `Docs` in the upper right, for the API usage.
+
+query($project: String!) {
+  # Access your user account
+  user {
+    login
+    id
+  }
+
+  # Access a project
+  project(name: $project) {
+    name
+    tables
+    passwords: table(name: "passwords") {
+      url
+      data
+      # ip
+    }
+  }
+}

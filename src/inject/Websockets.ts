@@ -341,7 +341,7 @@ class Session {
         __client: {
           ip: client.ip,
           id: session.id,
-          agent: client.agent,
+          'user-agent': client.agent,
           headers: {
             ...this.req.headers,
             'user-agent': undefined

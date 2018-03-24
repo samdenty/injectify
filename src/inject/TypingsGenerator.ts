@@ -4,7 +4,7 @@
  * ./core/definitions/modules.d.ts
  */
 import { Module } from './definitions/module'
-import { resolve } from 'url';
+import { resolve } from 'url'
 const fs = require('fs')
 const yaml = require('node-yaml')
 const chalk = require('chalk')
@@ -18,19 +18,26 @@ export class Generate {
       modules.forEach((module: string, index: number, array: string[]) => {
         let yml: Module.yml
         try {
-          yml = yaml.parse(fs.readFileSync(`${__dirname}/core/modules/${module}/module.yml`, 'utf8'))
+          yml = yaml.parse(
+            fs.readFileSync(
+              `${__dirname}/core/modules/${module}/module.yml`,
+              'utf8'
+            )
+          )
         } catch (error) {
           this.error('failed to load module ', module)
           err = true
         }
         if (!err) {
-          this.handleConfig(yml).then((typings: string) => {
-            this.typings.push(typings)
-            if (index + 1 === modules.length) this.writeToFile()
-          }).catch(error => {
-            this.error(error, module)
-            if (index + 1 === modules.length) this.writeToFile()
-          })
+          this.handleConfig(yml)
+            .then((typings: string) => {
+              this.typings.push(typings)
+              if (index + 1 === modules.length) this.writeToFile()
+            })
+            .catch((error) => {
+              this.error(error, module)
+              if (index + 1 === modules.length) this.writeToFile()
+            })
         } else {
           if (index + 1 === modules.length) this.writeToFile()
         }
@@ -40,24 +47,36 @@ export class Generate {
 
   writeToFile() {
     let N = '\n'
-    let typings =
-      `// This is an auto-generated file${
-      N}export interface Modules {${this.typings.join('')}}`
-    fs.writeFile(`${__dirname}/core/definitions/modules.d.ts`, typings, err => {
-      if (err) {
-        return this.error(`Failed to write to ${__dirname}/core/definitions/modules.d.ts`)
+    let typings = `// This is an auto-generated file${N}export interface Modules {${this.typings.join(
+      ''
+    )}}`
+    fs.writeFile(
+      `${__dirname}/core/definitions/modules.d.ts`,
+      typings,
+      (err) => {
+        if (err) {
+          return this.error(
+            `Failed to write to ${__dirname}/core/definitions/modules.d.ts`
+          )
+        }
+        console.error(
+          `${chalk.greenBright(
+            '[inject:module-generator] '
+          )}${chalk.yellowBright(`Saved to ./core/definitions/modules.d.ts`)}`
+        )
       }
-      console.error(`${chalk.greenBright('[inject:module-generator] ')}${chalk.yellowBright(`Saved to ./core/definitions/modules.d.ts`)}`)
-    })
+    )
   }
 
   handleConfig(yml: Module.yml) {
     return new Promise((resolve, reject) => {
-      this.typifyModule(yml).then(typings => {
-        resolve(typings)
-      }).catch(error => {
-        reject(error)
-      })
+      this.typifyModule(yml)
+        .then((typings) => {
+          resolve(typings)
+        })
+        .catch((error) => {
+          reject(error)
+        })
     })
   }
 
@@ -78,11 +97,13 @@ export class Generate {
           reject('names attribute empty for module ')
           return
         }
-        this.generateTypes(yml).then(typings => {
-          resolve(typings)
-        }).catch(error => {
-          reject(error)
-        })
+        this.generateTypes(yml)
+          .then((typings) => {
+            resolve(typings)
+          })
+          .catch((error) => {
+            reject(error)
+          })
       }
     })
   }
@@ -92,7 +113,7 @@ export class Generate {
       if (!yml.description) yml.description = `${yml.name[0]} module`
 
       let name: string = ''
-      for(let i=0; i < yml.name.length; i++){
+      for (let i = 0; i < yml.name.length; i++) {
         name += `${JSON.stringify(yml.name[i])}|`
       }
       name = name.slice(0, -1)
@@ -108,11 +129,16 @@ export class Generate {
         o = '?'
       }
 
-      let description = `\n${yml.description}`.replace(/\n$/, '').replace(/\n/gm, '\n* ').replace(/\n/, '')
+      let description = `\n${yml.description}`
+        .replace(/\n$/, '')
+        .replace(/\n/gm, '\n* ')
+        .replace(/\n/, '')
 
       let info = ''
       if (yml.params && yml.params.info) {
-        let commentedInfo = `\n${yml.params.info}`.replace(/\n$/, '').replace(/\n/gm, '\n* ')
+        let commentedInfo = `\n${yml.params.info}`
+          .replace(/\n$/, '')
+          .replace(/\n/gm, '\n* ')
         info = `\n/**${commentedInfo}*/\n`
       }
 
@@ -122,7 +148,11 @@ export class Generate {
   }
 
   error(error, module?: string) {
-    console.error(`${chalk.redBright('[inject:module-generator] ')}${chalk.yellowBright(error)}${module ? chalk.magentaBright(`./${module}/`) : ''}`)
+    console.error(
+      `${chalk.redBright('[inject:module-generator] ')}${chalk.yellowBright(
+        error
+      )}${module ? chalk.magentaBright(`./${module}/`) : ''}`
+    )
   }
 }
 

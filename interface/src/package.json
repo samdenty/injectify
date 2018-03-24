@@ -42,7 +42,8 @@
           "extensions": [
             ".ts",
             ".html",
-            ".css"
+            ".css",
+            ".gql"
           ]
         }
       ]
