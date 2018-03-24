@@ -321,7 +321,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
                               created_at: new Date()
                             },
                             console: {
-                              autoexecute: ''
+                              autoexecute: `injectify.module('passwords')`
                             },
                             data: {
                               passwords: []

