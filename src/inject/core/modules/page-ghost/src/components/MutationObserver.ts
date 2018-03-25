@@ -8,7 +8,9 @@ export default class {
   constructor() {
     this.disconnect()
     let docID = this.IDElements(document.documentElement)
+    /// #if DEBUG
     injectify.debugLog('page-ghost', 'debug', `Indexed document with ID ${docID}`)
+    /// #endif
     this.listener = new MutationObserver(this.observer.bind(this))
     this.listener.observe(document.documentElement, {
       childList: true,
@@ -83,7 +85,9 @@ export default class {
       injectify.send('p', {
         mutation
       })
+      /// #if DEBUG
       injectify.debugLog('page-ghost', 'debug', `Element with ID "${mutation.id}" performed a ${mutation.type} change`, mutation)
+      /// #endif
     })
   }
 

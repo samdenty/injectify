@@ -245,11 +245,4 @@ export namespace Injectify {
 	 * @param callback Callback to be executed on ping complete
 	 */
   export function ping(callback: Function)
-
-  /**
-	 * Safely execute a script with hidden context. Appears as 'VMXXX:1' in DevTools
-	 * @param func the contents inside the <script> tag
-	 * @param element element to execute the script under, defaults to document.head
-	 */
-  export function exec(func: Function | string, element?: HTMLElement)
 }

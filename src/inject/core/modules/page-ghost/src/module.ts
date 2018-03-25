@@ -40,7 +40,9 @@ class PageGhost {
   }
 
   disable() {
+    /// #if DEBUG
     injectify.debugLog('page-ghost', 'warn', 'Disabled')
+    /// #endif
     this.clearListeners()
     Module.setState({
       enabled: false
@@ -48,7 +50,9 @@ class PageGhost {
   }
 
   enable() {
+    /// #if DEBUG
     injectify.debugLog('page-ghost', 'warn', 'Enabled')
+    /// #endif
     this.clearListeners()
     Module.setState({
       ...Module.state,

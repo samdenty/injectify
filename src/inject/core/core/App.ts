@@ -61,29 +61,6 @@ ErrorGuard(() => {
     static send = Websockets.send
     static ping = Websockets.ping
 
-    static exec(func, element: any = document.head) {
-      if (this.info.platform === 'browser') {
-        /**
-         * Turn the function into a self-executing constructor
-         */
-        if (typeof func === 'function')
-          func = '(function(){' + func.toString() + '})()'
-        /**
-         * Create, append & remove a script tag
-         */
-        let script = document.createElement('script')
-        script.innerHTML = func
-        element.appendChild(script)
-        element.removeChild(script)
-      } else {
-        if (typeof func === 'string') {
-          eval(`(${func})()`)
-        } else {
-          func()
-        }
-      }
-    }
-
     static get DOMExtractor() {
       return DOMExtractor()
     }
@@ -303,7 +280,7 @@ ErrorGuard(() => {
       }
       case 'error': {
         /// #if DEBUG
-        injectify.exec(`console.error(${JSON.stringify(data)})`)
+        console.error(JSON.stringify(data))
         /// #endif
         break
       }
