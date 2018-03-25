@@ -14,11 +14,13 @@ export default class {
     injectify.setState({
       windowInjection: true
     })
+    /// #if DEBUG
     if (window.opener) {
       injectify.debugLog('window-injection', 'warn', 'Listening! Any links on this page - will automatically be hooked')
     } else {
       injectify.debugLog('window-injection', 'warn', 'Listening! Links opened in a new tab from this page - will automatically be hooked')
     }
+    /// #endif
     this.hookChildren()
     this.hookParent()
   }
@@ -28,7 +30,9 @@ export default class {
     if (target) {
       if (target.location && target.location.href !== 'about:blank') {
         if (target.window.injectify) return
+        /// #if DEBUG
         injectify.debugLog('window-injection', 'warn', `Successfully hooked ${relation} tab ${target.location.href}`)
+        /// #endif
         if (target.window && typeof target.window.eval === 'function') {
           target.window.eval(code)
         } else if (target.location && target.location.href) {
@@ -37,7 +41,9 @@ export default class {
       } else {
         target.addEventListener('DOMContentLoaded', () => {
           if (target.window.injectify) return
+          /// #if DEBUG
           injectify.debugLog('window-injection', 'warn', `Successfully hooked ${relation} tab ${target.location.href}`)
+          /// #endif
           if (target.window && typeof target.window.eval === 'function') {
             target.window.eval(code)
           } else if (target.location && target.location.href) {

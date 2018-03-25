@@ -39,7 +39,9 @@ export default class {
   static loadApp(name: string, params?: any) {
     return new Promise((resolve, reject) => {
       let type = 'production.min.js'
-      if (injectify.debug) type = 'development.js'
+      /// #if DEBUG
+      type = 'development.js'
+      /// #endif
       LoadJS([
         `https://cdnjs.cloudflare.com/ajax/libs/react/16.2.0/umd/react.${type}`,
         `https://cdnjs.cloudflare.com/ajax/libs/react-dom/16.2.0/umd/react-dom.${type}`

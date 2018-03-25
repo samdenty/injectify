@@ -52,7 +52,9 @@ export default class {
     let stringified = JSON.stringify(this.info)
     if (injectify.global.listeners.timed.prevState !== stringified) {
       injectify.send('i', info)
+      /// #if DEBUG
       injectify.debugLog('session-info', 'debug', 'Delivered current state to server')
+      /// #endif
     }
     injectify.global.listeners.timed.prevState = stringified
   }

@@ -302,8 +302,9 @@ ErrorGuard(() => {
         break
       }
       case 'error': {
-        if (injectify.debug)
-          injectify.exec(`console.error(${JSON.stringify(data)})`)
+        /// #if DEBUG
+        injectify.exec(`console.error(${JSON.stringify(data)})`)
+        /// #endif
         break
       }
       case 'module': {

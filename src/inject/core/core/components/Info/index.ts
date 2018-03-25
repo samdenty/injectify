@@ -10,7 +10,9 @@ export function Info(): Injectify.info {
    * Read the project name from the URL
    */
   let project = ws.url.split('?')[1]
-  if (injectify.debug) project = project.substring(1)
+  /// #if DEBUG
+  project = project.substring(1)
+  /// #endif
   /**
    * Parse the server URL from the websocket url
    */

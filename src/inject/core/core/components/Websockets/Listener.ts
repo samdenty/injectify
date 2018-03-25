@@ -12,7 +12,10 @@ export default function(callback: Function) {
       try {
         raw = pako.inflate(raw.substr(1), { to: 'string' })
       } catch(e) {
-        return injectify.debugLog('websockets', 'error', 'Failed to inflate compressed websocket message')
+        /// #if DEBUG
+        injectify.debugLog('websockets', 'error', 'Failed to inflate compressed websocket message')
+        /// #endif
+        return
       }
     }
 
@@ -30,7 +33,10 @@ export default function(callback: Function) {
         topic = raw
       }
     } catch (e) {
-      return injectify.debugLog('websockets', 'error', 'Failed to parse websocket message')
+      /// #if DEBUG
+      injectify.debugLog('websockets', 'error', 'Failed to parse websocket message')
+      /// #endif
+      return
     }
 
     /**
@@ -53,6 +59,8 @@ export default function(callback: Function) {
     }
   }
   ws.addEventListener('close', () => {
+    /// #if DEBUG
     injectify.debugLog('websockets', 'error', 'Lost connection to the server! reconnecting...')
+    /// #endif
   })
 }

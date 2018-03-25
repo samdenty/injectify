@@ -20,6 +20,7 @@ export default class {
         if (call) {
           call.resolve(data)
         } else {
+          /// #if DEBUG
           injectify.debugLog(
             'module',
             'error',
@@ -27,6 +28,7 @@ export default class {
               Module.token
             }], could not resolve Promise`
           )
+          /// #endif
         }
       },
       reject: (data?: any) => {
@@ -34,6 +36,7 @@ export default class {
         if (call) {
           call.reject(data)
         } else {
+          /// #if DEBUG
           injectify.debugLog(
             'module',
             'error',
@@ -41,6 +44,7 @@ export default class {
               Module.token
             }], could not reject Promise`
           )
+          /// #endif
         }
       },
       resolved: false,
@@ -71,6 +75,7 @@ export default class {
       /**
        * Display verbose output
        */
+      /// #if DEBUG
       injectify.debugLog(
         'module',
         'warn',
@@ -79,6 +84,7 @@ export default class {
         }`,
         Module
       )
+      /// #endif
     } else {
       if (data.error.message)
         injectify.error(`📦 ${data.error.message}`, Module)
