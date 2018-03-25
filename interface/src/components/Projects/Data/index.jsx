@@ -93,7 +93,7 @@ class Data extends React.Component {
       { columnName: 'timestamp', compare: timeSort },
       { columnName: 'data', compare: dataSort }
     ],
-    pageSizes: [5, 10, 15],
+    pageSizes: [8, 32, 64, 256, 512],
     selected: null,
     open: false
   }
@@ -201,10 +201,8 @@ class Data extends React.Component {
                 ]}
               />
 
-              <GroupingState
-                defaultGrouping={[{ columnName: 'table' }]}
-              />
-              <PagingState defaultCurrentPage={0} defaultPageSize={10} />
+              <GroupingState defaultGrouping={[{ columnName: 'table' }]} />
+              <PagingState defaultCurrentPage={0} defaultPageSize={8} />
 
               <IntegratedGrouping />
               <IntegratedFiltering columnExtensions={customFiltering} />

@@ -17,8 +17,10 @@ export default class {
   token: string
   project: SocketSession.project
   client: any
+  heartbeat = null
 
   constructor(that: any) {
+    this.pulse()
     this.socket = that.socket
     this.session = that.session
     this.send = that.send
@@ -303,10 +305,34 @@ export default class {
     },
 
     /**
-     * Get server ping time
+     * Client heartbeat
      */
     heartbeat: (data) => {
-      this.send('stay-alive')
+      // Acknowledge heartbeat
+      //this.send('stay-alive')
+
+      this.pulse()
     }
+  }
+
+  pulse = (seconds: number = 16) => {
+    clearTimeout(this.heartbeat)
+    this.heartbeat = setTimeout(() => this.heartAttack(), seconds * 1000)
+  }
+
+  heartAttack = () => {
+    /**
+     * Client has stopped sending heartbeats :O
+     * Attempt to give them CPR
+     */
+    this.send('cpr')
+    clearTimeout(this.heartbeat)
+
+    this.heartbeat = setTimeout(() => {
+      /**
+       * Client refused CPR attempt
+       */
+      this.socket.close()
+    }, 2 * 1000)
   }
 }

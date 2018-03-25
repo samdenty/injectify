@@ -244,6 +244,8 @@ export function executeMacro(id, macro) {
             return 'window.close()'
           }
           case 'open': {
+            let win = window.open(session.window.url)
+            win.opener = null
             return null
           }
           case 'reload': {

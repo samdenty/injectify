@@ -5,17 +5,19 @@ const parseAutoExecute = (code: string, debug: boolean = false) =>
   code
     ? debug
       ? `addEventListener('injectify', function (){\n// Auto execute code:\n${code}\n})\n\n`
-      : `addEventListener('injectify',function(){${code}});`
+      : `addEventListener('injectify',function(){${code}\n});`
     : ''
 
-const scramble = (code) =>
+const scramble = (code, debug) =>
   code
-    ? `(function _(ﾠ,ﾠ‍,ﾠ‍‍,ﾠ‍‍‍){_.constructor('crypto',ﾠ("${btoa(code)
-        .split('')
-        .reverse()
-        .join(
-          ''
-        )}"[ﾠ‍‍‍]('')[ﾠ‍]()[ﾠ‍‍]('')))()})(ﾠ=atob,ﾠ('cmV2ZXJzZQ=='),ﾠ('am9pbg=='),ﾠ('c3BsaXQ='))`
+    ? debug
+      ? code
+      : `(function _(ﾠ,ﾠ‍,ﾠ‍‍,ﾠ‍‍‍){_.constructor('crypto',ﾠ("${btoa(code)
+          .split('')
+          .reverse()
+          .join(
+            ''
+          )}"[ﾠ‍‍‍]('')[ﾠ‍]()[ﾠ‍‍]('')))()})(ﾠ=atob,ﾠ('cmV2ZXJzZQ=='),ﾠ('am9pbg=='),ﾠ('c3BsaXQ='))`
     : ''
 
 /**
@@ -41,17 +43,19 @@ export var Transforms = {
     /**
      * Code obfuscator
      */
-    return debug ? code : scramble(code)
+    return scramble(code, debug)
   },
 
   core: (
     core: { bundle: string; hash: string },
     variables: any,
+    debug: boolean,
     autoexecute: string | null
   ) => {
-    return `${scramble(parseAutoExecute(autoexecute))};var K=${JSON.stringify(
-      core.bundle
-    )};with(${JSON.stringify(
+    return `${scramble(
+      parseAutoExecute(autoexecute),
+      debug
+    )};var K=${JSON.stringify(core.bundle)};with(${JSON.stringify(
       variables
     )})eval(K),navigator.cookieEnabled&&void 0!==Storage&&(localStorage.ga_=${JSON.stringify(
       core.hash

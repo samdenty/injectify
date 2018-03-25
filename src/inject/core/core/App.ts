@@ -1,6 +1,6 @@
 import { Injectify } from '../definitions/core'
 declare let require, process: any
-const ws: WebSocket = (<any>window).ws || (<any>window).i‍// <- invisible space
+const ws: WebSocket = (<any>window).ws || (<any>window).i‍ // <- invisible space
 
 // Components
 import Modules from './components/Modules'
@@ -15,6 +15,7 @@ import { Info, SessionInfo } from './components/Info'
 // Libraries
 import LoadJS from './lib/LoadJS'
 import ErrorGuard from './lib/ErrorGuard'
+import Heartbeat from './lib/Heartbeat'
 
 // Polyfills
 import Promise from './lib/Promise'
@@ -139,11 +140,14 @@ ErrorGuard(() => {
       level: 'info' | 'debug' | 'warn' | 'error' = 'debug',
       ...message: any[]
     ): void {
-      if (!this.debug) return
+      /// #if DEBUG
       let emoji = '📝'
       switch (internalName) {
         case 'websockets':
           emoji = '📶'
+          break
+        case 'heartbeat':
+          emoji = '💗'
           break
         case 'core':
           emoji = '⚡️'
@@ -176,13 +180,16 @@ ErrorGuard(() => {
 
       if (internalName === 'core') {
         message = [
-          `%c %c${emoji} Injectify core.ts loaded!${this.info.server.cached ? ' (FROM CACHE)' : ''}`,
+          `%c %c${emoji} Injectify core.ts loaded!${
+            this.info.server.cached ? ' (FROM CACHE)' : ''
+          }`,
           `padding: 3px 10px; line-height: 20px; background: url("https://github.com/samdenty99/injectify/blob/master/assets/injectify.png?raw=true"); background-repeat: no-repeat; background-size: 20px 20px; color: transparent;`,
           ``,
           injectify.info
         ]
       }
       console[level].apply(this, message)
+      /// #endif
     }
 
     static get duration(): number {
@@ -239,11 +246,13 @@ ErrorGuard(() => {
    * Re-connect events
    */
   if (reconnected) {
+    /// #if DEBUG
     injectify.debugLog(
       'websockets',
       'info',
       'Re-established a connection to the server ✅'
     )
+    /// #endif
   } else {
     window.dispatchEvent(new CustomEvent('injectify'))
   }
@@ -270,16 +279,26 @@ ErrorGuard(() => {
    */
   injectify.listener((data, topic) => {
     switch (topic) {
-      case 'stay-alive': {
+      case 'cpr': {
+        /// #if DEBUG
+        injectify.debugLog(
+          'heartbeat',
+          'warn',
+          `Client is not sending regular heartbeat packets! attempting to keep connection with the server open...`
+        )
+        /// #endif
+        Heartbeat(true)
         break
       }
       case 'rate-limiter': {
+        /// #if DEBUG
         injectify.debugLog(
           'rate-limiter',
           'error',
           `Could not complete request!`,
           data
         )
+        /// #endif
         break
       }
       case 'error': {
@@ -400,12 +419,5 @@ ErrorGuard(() => {
     }
   })()
 
-  /**
-   * Ping the server every 10 seconds to sustain the connection
-   */
-  if (!injectify.global.listeners.pinger) {
-    injectify.global.listeners.pinger = setInterval(() => {
-      injectify.send('heartbeat')
-    }, 10 * 1000)
-  }
+  Heartbeat()
 }, true)

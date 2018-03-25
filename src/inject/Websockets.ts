@@ -396,6 +396,7 @@ class Session {
           Transforms.core(
             this.core,
             variables,
+            this.session.debug,
             this.session.project.config.autoexecute
           )
         )
