@@ -59,8 +59,6 @@ type Project {
   permissions: Permissions
   "Project configuration"
   config: Config
-  "Project console configuration"
-  console: Console
   "Array of all the projects tables"
   tables: [String]
   "Project Data storage"
@@ -80,6 +78,8 @@ type Permissions {
 }
 
 type Config {
+  "Code to autoexecute on the client"
+  autoexecute: String
   "Domain filters"
   filter: Filters
   "Date of when the project was created"
@@ -99,10 +99,6 @@ type Config {
     "What the domain filter should match"
     match: String!
   }
-
-type Console {
-  autoexecute: String
-}
 
 type TableData {
   url: String

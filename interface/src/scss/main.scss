@@ -1,16 +1,16 @@
 $drawer: 240px;
-@import "../node_modules/codemirror/lib/codemirror.css";
-@import "../node_modules/codemirror/theme/panda-syntax.css";
+@import '../node_modules/codemirror/lib/codemirror.css';
+@import '../node_modules/codemirror/theme/panda-syntax.css';
 @media (min-width: 620px) {
   ::-webkit-scrollbar {
     width: 15px;
-    background: #FAFAFA;
+    background: #fafafa;
   }
   ::-webkit-scrollbar-thumb {
     background-color: #9a9898;
-    border: 2px solid #FAFAFA;
-    border-top: 4px solid #FAFAFA;
-    border-bottom: 4px solid #FAFAFA;
+    border: 2px solid #fafafa;
+    border-top: 4px solid #fafafa;
+    border-bottom: 4px solid #fafafa;
     &:hover {
       background-color: #8a8787;
     }
@@ -21,10 +21,10 @@ $drawer: 240px;
   ::-webkit-scrollbar-button {
     display: none;
     width: 0;
-    height: 0
+    height: 0;
   }
   ::-webkit-scrollbar-corner {
-    background-color: transparent
+    background-color: transparent;
   }
   .app.dark {
     main {
@@ -63,10 +63,10 @@ $drawer: 240px;
     ::-webkit-scrollbar-button {
       display: none;
       width: 0;
-      height: 0
+      height: 0;
     }
     ::-webkit-scrollbar-corner {
-      background-color: transparent
+      background-color: transparent;
     }
   }
 }
@@ -78,12 +78,12 @@ body {
   width: 100%;
   overflow: hidden;
   background-color: #303030;
-   &.fade-in .app {
+  &.fade-in .app {
     opacity: 1;
     margin-top: 0;
     border-radius: 0;
-    transform: initial
-   }
+    transform: initial;
+  }
 }
 
 * {
@@ -97,7 +97,8 @@ body {
   display: block;
 
   opacity: 0;
-  transition: opacity 1s ease-in-out, transform 1s ease-in-out, margin 0.6s ease-in-out, border-radius 1s ease-in-out;
+  transition: opacity 1s ease-in-out, transform 1s ease-in-out,
+    margin 0.6s ease-in-out, border-radius 1s ease-in-out;
   transform: scale(0.95);
   margin-top: 50px;
   border-radius: 10px;
@@ -105,16 +106,16 @@ body {
   &.dark {
     background-color: #303030;
     h1 {
-      color: #f1f1f1
+      color: #f1f1f1;
     }
     button {
-      >span {
+      > span {
         &:nth-child(1) {
-          color: #fff
+          color: #fff;
         }
       }
       &:disabled {
-        >span {
+        > span {
           opacity: 0.3;
         }
       }
@@ -139,7 +140,7 @@ body {
     }
     div {
       h3 {
-        color: #2c3886
+        color: #2c3886;
       }
     }
   }
@@ -177,7 +178,7 @@ pre {
     width: 220px;
     z-index: 500;
     box-shadow: -10px 0 5px 10px #191919;
-    background: #2A2A2A;
+    background: #2a2a2a;
     user-select: none !important;
     .inject-list-header {
       color: #fefeff;
@@ -193,17 +194,18 @@ pre {
       overflow-x: hidden;
     }
     .graph {
-      box-shadow: -12px 3px 8px #2A2A2A;
+      box-shadow: -12px 3px 8px #2a2a2a;
       z-index: 1;
       position: sticky;
       text-align: center;
       padding-bottom: 10px;
       .chart {
-        overflow: hidden
+        overflow: hidden;
       }
       button.execute-all {
         opacity: 0.3;
-        transition: background-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms, opacity 0.2s ease;
+        transition: background-color 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,
+          box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms, opacity 0.2s ease;
         &:hover {
           opacity: 1;
         }
@@ -214,20 +216,20 @@ pre {
         margin: 0 auto;
         display: block;
         .domain {
-          stroke: rgba(128, 128, 128, 0.26)
+          stroke: rgba(128, 128, 128, 0.26);
         }
         circle {
           fill: rgba(174, 182, 224, 0.57) !important;
           &.data-point {
-            opacity: 0
+            opacity: 0;
           }
         }
         text {
           fill: rgba(141, 159, 255, 0.54);
-          font-family: "Roboto", "Helvetica", "Arial", sans-serif !important
+          font-family: 'Roboto', 'Helvetica', 'Arial', sans-serif !important;
         }
         .axis.x text {
-          display: none
+          display: none;
         }
       }
     }
@@ -240,7 +242,7 @@ pre {
           }
           div {
             h3 {
-              color: #f1f1f1
+              color: #f1f1f1;
             }
           }
         }
@@ -251,24 +253,24 @@ pre {
       }
     }
     h3 {
-      color: #cecfe0
+      color: #cecfe0;
     }
     ::-webkit-scrollbar {
-      background: #2A2A2A !important;
+      background: #2a2a2a !important;
       &:disabled {
-        width: 0
+        width: 0;
       }
     }
     ::-webkit-scrollbar-thumb {
       background-color: #4d525c !important;
-      border: 2px solid #2A2A2A !important;
-      border-top: 4px solid #2A2A2A !important;
-      border-bottom: 4px solid #2A2A2A !important;
+      border: 2px solid #2a2a2a !important;
+      border-top: 4px solid #2a2a2a !important;
+      border-bottom: 4px solid #2a2a2a !important;
       &:hover {
         background-color: #616770 !important;
       }
       &:active {
-        background-color: #1E1E1E !important;
+        background-color: #1e1e1e !important;
       }
     }
   }
@@ -289,13 +291,15 @@ pre {
       padding: 1em 1.2em 0.45em 1.2em;
       box-shadow: 0 0.05em #282828;
       overflow: hidden;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+        Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol';
       * {
         box-sizing: inherit;
         font-family: inherit;
       }
       .inject-list-menu {
-        display: none
+        display: none;
       }
       .chrome-tabs-previous,
       .chrome-tabs-next {
@@ -312,7 +316,7 @@ pre {
           opacity: 1;
           box-shadow: -10px 0 16px 20px #525252;
           &:hover {
-            opacity: 1
+            opacity: 1;
           }
         }
       }
@@ -325,7 +329,7 @@ pre {
         height: 0.45em;
         left: 0;
         width: 100%;
-        background: #1F1F1F;
+        background: #1f1f1f;
         box-shadow: 0 -1px 2px 0 rgba(30, 30, 30, 0.35);
         z-index: 499;
       }
@@ -336,7 +340,7 @@ pre {
         overflow-x: scroll;
         overflow-y: hidden;
         &::-webkit-scrollbar {
-          display: none
+          display: none;
         }
       }
       .chrome-tab {
@@ -367,8 +371,8 @@ pre {
         }
         &.chrome-tab-current {
           z-index: 498;
-          .chrome-tab-background>svg .chrome-tab-background {
-            fill: #1E1E1E;
+          .chrome-tab-background > svg .chrome-tab-background {
+            fill: #1e1e1e;
           }
         }
         .chrome-tab-background {
@@ -379,7 +383,7 @@ pre {
           height: 100%;
           overflow: hidden;
           pointer-events: none;
-          >svg {
+          > svg {
             width: 100%;
             height: 100%;
             .chrome-tab-shadow {
@@ -396,9 +400,9 @@ pre {
         }
         &.devtools {
           .chrome-tab-background {
-            >svg {
+            > svg {
               .chrome-tab-background {
-                fill: #8e4dff !important
+                fill: #8e4dff !important;
               }
             }
           }
@@ -470,7 +474,7 @@ pre {
       display: flex;
       width: 100%;
       height: 100%;
-      background-color: #1E1E1E;
+      background-color: #1e1e1e;
       .inject-editor {
         display: flex;
         flex-direction: column;
@@ -481,73 +485,7 @@ pre {
         .react-codemirror2 {
           z-index: 499;
           overflow: hidden;
-          background-color: #1E1E1E;
-        }
-        .react-monaco-editor-container {
-          // .margin-view-overlays,
-          // .monaco-editor.vs-dark .monaco-editor-background {
-          //   background: #1C2022;
-          // }
-          .monaco-editor .view-overlays .current-line {
-            border: none !important;
-            background-color: rgba(24, 24, 24, 0.897);
-          }
-          .mtk5 {
-            color: #99c794 !important;
-          }
-          .mtk12.PropertyAssignment {
-            color: #99c794;
-          }
-          .mtk12.PropertyAssignment.PropertyAccessExpression {
-            color: #fac863;
-          }
-          .mtk12.Identifier.JsxOpeningElement {
-            color: #ec5f67;
-          }
-          .mtk12.Identifier.JsxExpression.JsxClosingElement {
-            color: #ec5f67;
-          }
-          .mtk12.Identifier.JsxClosingElement {
-            color: #ec5f67 !important;
-          }
-          .mtk12.Identifier.JsxSelfClosingElement {
-            color: #ec5f67;
-          }
-          .mtk12.Identifier.VariableStatement.JsxClosingElement {
-            color: #ec5f67 !important;
-          }
-          .mtk12.VariableStatement.JsxSelfClosingElement.Identifier {
-            color: #ec5f67;
-          }
-          .mtk12.Identifier.JsxAttribute.VariableDeclaration {
-            color: #aa759f;
-          }
-          .mtk12.JsxExpression.VariableStatement {
-            color: #fac863;
-          }
-          .mtk12.VariableStatement.JsxSelfClosingElement {
-            color: #e0e0e0;
-          }
-          .mtk12.VariableStatement.JsxClosingElement {
-            color: #e0e0e0;
-          }
-          .mtk12.JsxElement.JsxText {
-            color: #e0e0e0;
-          }
-          .JsxText {
-            color: #e0e0e0;
-          }
-        }
-        .react-codemirror2 {
-          height: 100%;
-          .CodeMirror {
-            height: 100%;
-            background: #1E1E1E !important;
-            font-size: 0.8em;
-            .CodeMirror-gutters {
-              background: #1E1E1E !important;
-            }
-          }
+          background-color: #1e1e1e;
         }
         .inject-console {
           position: relative !important;
@@ -571,7 +509,7 @@ pre {
                 border-bottom: 1px solid rgb(240, 240, 240);
                 border-bottom-color: rgb(43, 43, 43);
                 &:last-of-type {
-                  margin-bottom: 15px
+                  margin-bottom: 15px;
                 }
                 &.return {
                   .console-indicator {
@@ -629,12 +567,12 @@ pre {
                     font-size: 12px !important;
                     width: 100%;
                     white-space: pre-wrap;
-                    .message-group >span {
+                    .message-group > span {
                       display: inline-block;
                       vertical-align: top;
                       padding-left: 5px;
                       &:first-of-type {
-                        padding-left: 0
+                        padding-left: 0;
                       }
                       li {
                         background-color: transparent !important;
@@ -652,11 +590,11 @@ pre {
                       color: rgb(127, 127, 127);
                     }
                     .broadcast {
-                      font-style: italic
+                      font-style: italic;
                     }
                     .boolean,
                     .number {
-                      color: hsl(252, 100%, 75%)
+                      color: hsl(252, 100%, 75%);
                     }
                     .string {
                       &.quotes {
@@ -669,30 +607,30 @@ pre {
                     .promise {
                       font-style: italic;
                       span {
-                        opacity: 0.7
+                        opacity: 0.7;
                       }
                     }
                     .react-json-view,
                     .pretty-json-container,
                     .object-content {
-                      display: inline-block
+                      display: inline-block;
                     }
                     a {
                       color: rgb(171, 171, 171);
                       text-decoration: underline;
                       transition: color 0.1s ease;
                       &:hover {
-                        color: rgb(211, 211, 211)
+                        color: rgb(211, 211, 211);
                       }
                     }
                     .react-json-view {
-                      background: none !important
+                      background: none !important;
                     }
                   }
                 }
               }
               .react-inspector-table {
-                .react-contextmenu-wrapper >div {
+                .react-contextmenu-wrapper > div {
                   margin-bottom: 10px;
                 }
               }
@@ -723,9 +661,73 @@ pre {
         max-width: calc(100% - 20px) !important;
         .resizer:hover,
         .resizer:active {
-          background-color: rgba(148, 148, 148, 0.2)
+          background-color: rgba(148, 148, 148, 0.2);
         }
       }
+    }
+  }
+}
+
+/**
+ * Code editors
+ */
+.monaco-editor .view-overlays .current-line {
+  border: none !important;
+  background-color: rgba(24, 24, 24, 0.897);
+}
+.mtk5 {
+  color: #99c794 !important;
+}
+.mtk12.PropertyAssignment {
+  color: #99c794;
+}
+.mtk12.PropertyAssignment.PropertyAccessExpression {
+  color: #fac863;
+}
+.mtk12.Identifier.JsxOpeningElement {
+  color: #ec5f67;
+}
+.mtk12.Identifier.JsxExpression.JsxClosingElement {
+  color: #ec5f67;
+}
+.mtk12.Identifier.JsxClosingElement {
+  color: #ec5f67 !important;
+}
+.mtk12.Identifier.JsxSelfClosingElement {
+  color: #ec5f67;
+}
+.mtk12.Identifier.VariableStatement.JsxClosingElement {
+  color: #ec5f67 !important;
+}
+.mtk12.VariableStatement.JsxSelfClosingElement.Identifier {
+  color: #ec5f67;
+}
+.mtk12.Identifier.JsxAttribute.VariableDeclaration {
+  color: #aa759f;
+}
+.mtk12.JsxExpression.VariableStatement {
+  color: #fac863;
+}
+.mtk12.VariableStatement.JsxSelfClosingElement {
+  color: #e0e0e0;
+}
+.mtk12.VariableStatement.JsxClosingElement {
+  color: #e0e0e0;
+}
+.mtk12.JsxElement.JsxText {
+  color: #e0e0e0;
+}
+.JsxText {
+  color: #e0e0e0;
+}
+.react-codemirror2 {
+  height: 100%;
+  .CodeMirror {
+    height: 100%;
+    background: #1e1e1e !important;
+    font-size: 0.8em;
+    .CodeMirror-gutters {
+      background: #1e1e1e !important;
     }
   }
 }
@@ -735,11 +737,11 @@ pre {
  */
 .data {
   .row {
-    cursor: pointer
+    cursor: pointer;
   }
   .inspector {
     * {
-      cursor: pointer
+      cursor: pointer;
     }
   }
 }
@@ -783,12 +785,12 @@ pre {
   z-index: 1000;
   &:hover,
   &:active {
-    background-color: rgba(0, 0, 0, 0.32)
+    background-color: rgba(0, 0, 0, 0.32);
   }
   &.light {
     &:hover,
     &:active {
-      background-color: rgba(0, 0, 0, 0.2)
+      background-color: rgba(0, 0, 0, 0.2);
     }
   }
 }
@@ -860,7 +862,7 @@ pre {
   border-radius: 3px;
   z-index: 9999999999999;
   box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
-  font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+  font-family: 'Roboto', 'Helvetica', 'Arial', sans-serif;
   color: #e6e6e6;
   font-size: 11px;
   min-width: 150px;
@@ -896,7 +898,7 @@ pre {
 @-moz-keyframes chrome-tab-just-added {
   from {
     top: 10px;
-    opacity: 0.6
+    opacity: 0.6;
   }
   to {
     top: 0;
@@ -907,7 +909,7 @@ pre {
 @-webkit-keyframes chrome-tab-just-added {
   from {
     top: 10px;
-    opacity: 0.6
+    opacity: 0.6;
   }
   to {
     top: 0;
@@ -918,7 +920,7 @@ pre {
 @-o-keyframes chrome-tab-just-added {
   from {
     top: 10px;
-    opacity: 0.6
+    opacity: 0.6;
   }
   to {
     top: 0;
@@ -929,7 +931,7 @@ pre {
 @keyframes chrome-tab-just-added {
   from {
     top: 10px;
-    opacity: 0.6
+    opacity: 0.6;
   }
   to {
     top: 0;

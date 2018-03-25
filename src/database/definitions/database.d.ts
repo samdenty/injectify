@@ -26,10 +26,8 @@ export namespace Database {
         type: 'whitelist' | 'blacklist'
         domains: Array<object>
       }
-      created_at: string
-    }
-    console: {
       autoexecute: string
+      created_at: string
     }
     data: {
       [table: string]: {

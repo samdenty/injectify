@@ -76,7 +76,7 @@ export default class {
                     project: {
                       id: doc['_id'],
                       name: doc.name,
-                      console: doc.console
+                      config: doc.config
                     },
                     id: uuidv4(),
                     debug: state.debug
@@ -356,6 +356,7 @@ class Session {
         }
       }
 
+
       /**
        * Deliver the Injectify Core
        */
@@ -364,21 +365,12 @@ class Session {
          * Client has the current version of the Core cached
          */
         variables.__server.cached = true
-        this.send('core', Transforms.cache(variables))
+        this.send('core', Transforms.cache(variables, this.session.debug, this.session.project.config.autoexecute))
       } else {
         /**
          * Core loader
          */
-        this.send('core', Transforms.core(this.core, variables))
-      }
-
-      /**
-       * Send the auto-execute script
-       */
-      if (this.session.project.console) {
-        if (this.session.project.console.autoexecute) {
-          this.send('execute', this.session.project.console.autoexecute)
-        }
+        this.send('core', Transforms.core(this.core, variables, this.session.project.config.autoexecute))
       }
     })
   }

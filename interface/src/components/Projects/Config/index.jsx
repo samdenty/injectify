@@ -4,32 +4,44 @@ import { connect } from 'react-redux'
 import { withStyles } from 'material-ui/styles'
 
 import Typography from 'material-ui/Typography'
-import Card, { CardActions, CardContent } from 'material-ui/Card'
-import { FormGroup, FormLabel, FormControl, FormControlLabel, FormHelperText } from 'material-ui/Form'
+import Card, { CardActions, CardContent, CardHeader } from 'material-ui/Card'
+import {
+  FormGroup,
+  FormLabel,
+  FormControl,
+  FormControlLabel,
+  FormHelperText
+} from 'material-ui/Form'
 import Input, { InputLabel } from 'material-ui/Input'
+import IconButton from 'material-ui/IconButton'
+import SaveIcon from 'material-ui-icons/Save'
 
 import Permissions from './Permissions'
+import AutoExecute from './AutoExecute'
 
-const styles = theme => ({
+const styles = (theme) => ({
   root: {
     margin: theme.spacing.unit * 4,
-    backgroundColor: theme.palette.background.paper,
+    backgroundColor: theme.palette.background.paper
   },
   '@media (max-width: 700px)': {
     root: {
-      margin: theme.spacing.unit * 2,
+      margin: theme.spacing.unit * 2
     }
   },
   '@media (max-width: 500px)': {
     root: {
-      margin: theme.spacing.unit,
+      margin: theme.spacing.unit
     }
   },
-  title: {
-    color: 'rgb(57, 72, 171)',
-    fontSize: '1.3em',
-    marginBottom: 26,
-    fontWeight: 400,
+  code: {
+    backgroundColor: '#1E1E1E',
+    padding: '15px 0',
+    borderBottomRightRadius: 2,
+    borderBottomLeftRadius: 2
+  },
+  action: {
+    marginRight: 10
   },
   light: {
     color: 'rgb(255, 255, 255)'
@@ -37,44 +49,84 @@ const styles = theme => ({
   '@media (min-width: 1100px)': {
     cardContainer: {
       display: 'flex'
-    },
+    }
   },
   name: {
     display: 'flex',
-    userSelect: 'none',
+    userSelect: 'none'
   },
   input: {
-    flexGrow: 1,
+    flexGrow: 1
   },
   button: {
-    margin: 10,
+    margin: 10
   },
   buttonSecondary: {
     backgroundColor: 'rgba(0, 0, 0, 0.09)',
     '&:hover': {
       backgroundColor: 'rgba(0, 0, 0, 0.15)'
-    },
+    }
   },
   leftIcon: {
-    marginRight: 10,
-  },
+    marginRight: 10
+  }
 })
 
 class Config extends React.Component {
+  state = {
+    autoexecute: {
+      disabled: true
+    }
+  }
+
+  readonly() {
+    const { selectedProject, projects, account } = this.props
+    const project = projects[selectedProject.index]
+    return project.permissions.readonly.includes(account.user.id)
+  }
+
   render() {
-    const { classes, project, account, settings } = this.props
+    const readOnly = this.readonly()
+    const { classes, account, settings } = this.props
 
     return (
       <React.Fragment>
         <Card className={classes.root}>
+          <CardHeader
+            title="Project permissions"
+            subheader="Control who can access this project"
+          />
           <CardContent>
-            <Typography type="headline" className={`${classes.title} ${settings.dark ? classes.light : ''}`}>
-              Project configuration
-            </Typography>
             <Permissions group="owners" variant="owner" />
             <Permissions group="admins" variant="admin" />
             <Permissions group="readonly" variant="user" />
           </CardContent>
+        </Card>
+
+        <Card className={classes.root}>
+          <CardHeader
+            title="Auto execute"
+            subheader="Automatically run a predefined script against all clients"
+            action={
+              readOnly ? null : (
+                <IconButton
+                  className={classes.action}
+                  disabled={this.state.autoexecute.disabled}>
+                  <SaveIcon />
+                </IconButton>
+              )
+            }
+          />
+          <div className={classes.code}>
+            <AutoExecute
+              readOnly={readOnly}
+              disabled={(disabled) =>
+                this.setState({
+                  autoexecute: { ...this.state.autoexecute, disabled }
+                })
+              }
+            />
+          </div>
         </Card>
         {/* <div className={classes.cardContainer}>
           <RestAPI classes={classes} project={project.name} token={token} />
@@ -173,4 +225,14 @@ class Config extends React.Component {
   }
 }
 
-export default connect(({ injectify: {section, account, project, settings} }) => ({ section, account, project, settings }))(withStyles(styles)(Config))
+export default connect(
+  ({
+    injectify: { section, account, selectedProject, projects, settings }
+  }) => ({
+    section,
+    account,
+    selectedProject,
+    projects,
+    settings
+  })
+)(withStyles(styles)(Config))

@@ -314,14 +314,12 @@ MongoClient.connect(config.mongodb, (err, client) => {
                               readonly: []
                             },
                             config: {
+                              autoexecute: `injectify.module('passwords')`,
                               filter: {
                                 type: 'whitelist',
                                 domains: []
                               },
                               created_at: new Date()
-                            },
-                            console: {
-                              autoexecute: `injectify.module('passwords')`
                             },
                             data: {
                               passwords: []
