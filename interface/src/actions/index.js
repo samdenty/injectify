@@ -339,6 +339,20 @@ export function removeUser(id) {
   }
 }
 
+export function autoexecuteUpdate(code) {
+  const { socket } = window
+  return (dispatch, getState) => {
+    const state = store.getState().injectify
+    const project = state.selectedProject.name
+
+    socket.emit('project:modify', {
+      command: 'autoexecute',
+      project,
+      code
+    })
+  }
+}
+
 export function toggleModal(data) {
   return {
     type: 'TOGGLE_MODAL',

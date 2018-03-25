@@ -14,18 +14,17 @@ const styles = (theme) => ({
 })
 
 class AutoExecute extends React.Component {
-  disabled = true
   autoexecute = `injectify.log('initial')`
 
   handleChange = (value) => {
-    const { autoexecute } = this
-    const disabled = value === autoexecute
-    if (disabled !== this.disabled) this.props.disabled(disabled)
-    this.disabled = disabled
+    const { projects, selectedProject } = this.props
+    const project = projects[selectedProject.index]
+
+    const disabled = value === project.config.autoexecute
+    this.props.disabled(disabled)
   }
 
   render() {
-    const { autoexecute } = this
     const { classes, projects, selectedProject } = this.props
     const project = projects[selectedProject.index]
 
@@ -34,10 +33,8 @@ class AutoExecute extends React.Component {
         <div className={classes.editor}>
           <CodeEditor
             disabled={!!this.props.readOnly}
-            default={autoexecute}
-            // onMount={(type, editor) => {
-            //   console.log(type, editor.getValue())
-            // }}
+            default={project.config.autoexecute}
+            onMount={this.props.onMount.bind(this)}
             onChange={this.handleChange.bind(this)}
             options={{
               minimap: {

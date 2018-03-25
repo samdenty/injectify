@@ -20,6 +20,8 @@ const RateLimit = require('express-rate-limit')
 import getIP from './lib/getIP.js'
 const pretty = require('express-prettify')
 
+import Update from './database/Project/Update'
+
 /**
  * Read configuration
  */
@@ -452,8 +454,8 @@ MongoClient.connect(config.mongodb, (err, client) => {
                   myPermissionLevel = 2
                 }
                 resolve({
-                  doc: doc,
-                  myPermissionLevel: myPermissionLevel
+                  doc,
+                  myPermissionLevel
                 })
               } else {
                 reject({
@@ -759,7 +761,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
                               if ('data' in entry) {
                                 try {
                                   entry.data = JSON.parse(entry.data)
-                                } catch(e) {}
+                                } catch (e) {}
                               }
                             }
                           }
@@ -1251,6 +1253,30 @@ MongoClient.connect(config.mongodb, (err, client) => {
                     socket.emit('err', {
                       title: 'Invalid request',
                       message: 'New project name not specified'
+                    })
+                  }
+                }
+                if (command === 'autoexecute') {
+                  if (data.project && typeof data.code === 'string' && thisProject.myPermissionLevel < 3) {
+                    Update(data.project, {
+                      $set: {
+                        'config.autoexecute': data.code
+                      }
+                    }).then(() => {
+                      socket.emit('notify', {
+                        title: 'Updated',
+                        message: 'Successfully updated code'
+                      })
+                    }).catch(() => {
+                      socket.emit('err', {
+                        title: 'Error',
+                        message: 'Failed to update code'
+                      })
+                    })
+                  } else {
+                    socket.emit('err', {
+                      title: 'Error',
+                      message: 'Insufficient permissions'
                     })
                   }
                 }
