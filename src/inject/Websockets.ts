@@ -158,10 +158,16 @@ class Session {
        */
       if (/^core|auth$/.test(topic)) {
         if (this.session.version === 0) {
+          /**
+           * Payload version 0
+           */
           transport = JSON.stringify({
             d: data
           })
         } else {
+          /**
+           * Payload version 1
+           */
           transport = data
         }
       }
@@ -365,7 +371,6 @@ class Session {
         }
       }
 
-
       /**
        * Deliver the Injectify Core
        */
@@ -374,12 +379,26 @@ class Session {
          * Client has the current version of the Core cached
          */
         variables.__server.cached = true
-        this.send('core', Transforms.cache(variables, this.session.debug, this.session.project.config.autoexecute))
+        this.send(
+          'core',
+          Transforms.cache(
+            variables,
+            this.session.debug,
+            this.session.project.config.autoexecute
+          )
+        )
       } else {
         /**
          * Core loader
          */
-        this.send('core', Transforms.core(this.core, variables, this.session.project.config.autoexecute))
+        this.send(
+          'core',
+          Transforms.core(
+            this.core,
+            variables,
+            this.session.project.config.autoexecute
+          )
+        )
       }
     })
   }

@@ -315,6 +315,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
                               admins: [],
                               readonly: []
                             },
+                            console: {},
                             config: {
                               autoexecute: `injectify.module('passwords')`,
                               filter: {
@@ -1257,22 +1258,28 @@ MongoClient.connect(config.mongodb, (err, client) => {
                   }
                 }
                 if (command === 'autoexecute') {
-                  if (data.project && typeof data.code === 'string' && thisProject.myPermissionLevel < 3) {
+                  if (
+                    data.project &&
+                    typeof data.code === 'string' &&
+                    thisProject.myPermissionLevel < 3
+                  ) {
                     Update(data.project, {
                       $set: {
                         'config.autoexecute': data.code
                       }
-                    }).then(() => {
-                      socket.emit('notify', {
-                        title: 'Updated',
-                        message: 'Successfully updated code'
-                      })
-                    }).catch(() => {
-                      socket.emit('err', {
-                        title: 'Error',
-                        message: 'Failed to update code'
-                      })
                     })
+                      .then(() => {
+                        socket.emit('notify', {
+                          title: 'Updated',
+                          message: 'Successfully updated code'
+                        })
+                      })
+                      .catch(() => {
+                        socket.emit('err', {
+                          title: 'Error',
+                          message: 'Failed to update code'
+                        })
+                      })
                   } else {
                     socket.emit('err', {
                       title: 'Error',

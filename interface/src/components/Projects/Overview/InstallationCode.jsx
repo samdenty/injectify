@@ -57,7 +57,7 @@ const styles = (theme) => ({
     color: '#fff'
   },
   copyIcon: {
-    height: 20,
+    height: 20
   },
   copyButton: {
     marginRight: 10
@@ -78,7 +78,7 @@ const styles = (theme) => ({
   },
   codeLight: {
     backgroundColor: 'rgba(0, 0, 0, 0.15)'
-  },
+  }
 })
 
 class InstallationCode extends React.Component {
@@ -131,7 +131,9 @@ class InstallationCode extends React.Component {
           avatar={<PayloadIcon className={classes.icon} />}
           className={settings.dark ? classes.headerDark : classes.header}
           action={
-            <IconButton onClick={() => this.copy(code)} className={classes.copyButton}>
+            <IconButton
+              onClick={() => this.copy(code)}
+              className={classes.copyButton}>
               {this.state.copied ? (
                 <CheckIcon className={classes.copyIcon} />
               ) : (
