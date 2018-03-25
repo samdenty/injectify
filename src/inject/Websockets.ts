@@ -47,10 +47,12 @@ export default class {
       if (url) {
         let state = {
           project: url[url.length - 1],
+          version: +url[0].substr(2) || 0,
           debug: false
         }
         if (state.project.charAt(0) === '$') {
           state = {
+            ...state,
             project: state.project.substring(1),
             debug: true
           }
@@ -79,6 +81,7 @@ export default class {
                       config: doc.config
                     },
                     id: uuidv4(),
+                    version: state.version,
                     debug: state.debug
                   })
                 } else {
@@ -154,7 +157,13 @@ class Session {
        * Basic RAW transport
        */
       if (/^core|auth$/.test(topic)) {
-        transport = data
+        if (this.session.version === 0) {
+          transport = JSON.stringify({
+            d: data
+          })
+        } else {
+          transport = data
+        }
       }
       this.socket.send(transport)
     } catch (error) {
