@@ -66,8 +66,12 @@ const timeSearch = (value, filter) => {
 }
 
 const timeSort = (a, b) => {
-  if (a.unix === b.unix) return 0
-  return a.unix > b.unix ? -1 : 1
+  if (a.unix && b.unix) {
+    if (a.unix === b.unix) return 0
+    return a.unix > b.unix ? -1 : 1
+  } else {
+    return 0
+  }
 }
 
 const dataSort = (a, b) => {
