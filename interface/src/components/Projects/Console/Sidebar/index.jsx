@@ -68,7 +68,7 @@ class Sidebar extends React.Component {
             <div className="graph">
               <Graph width={width} />
               <Tooltip title='Execute code on all clients' placement='top'>
-                <Button /*onClick={() => this.execute('*')}*/ className='execute-all'>
+                <Button onClick={() => dispatch(execute(code.editor.getValue(), '*'))} className='execute-all'>
                   Execute all
                 </Button>
               </Tooltip>
@@ -97,7 +97,7 @@ class Sidebar extends React.Component {
                   </ListItem>
                 </ContextMenuTrigger>
                 <ContextMenu id={token}>
-                  <MenuItem  onClick={() => dispatch(execute(`INSERT_CODE`, token))}>
+                  <MenuItem  onClick={() => dispatch(execute(code.editor.getValue(), token))}>
                     Execute on all tabs
                   </MenuItem>
                   <MenuItem onClick={() => window.open(`https://www.iplocation.net/?query=${client.ip.query}`)}>
