@@ -314,7 +314,18 @@ pre {
         &.required {
           cursor: pointer;
           opacity: 1;
-          box-shadow: -10px 0 16px 20px #525252;
+          &::after {
+            content: '';
+            height: 100%;
+            width: 17px;
+            background: linear-gradient(
+              to right,
+              #535353 17%,
+              transparent 100%
+            );
+            display: block;
+            margin-left: 18px;
+          }
           &:hover {
             opacity: 1;
           }
@@ -816,7 +827,7 @@ pre {
           padding-top: 8px;
         }
         .chrome-tab {
-          animation-name: tab-added-fade
+          animation-name: tab-added-fade;
         }
         .inject-list-menu {
           display: block;
@@ -831,7 +842,9 @@ pre {
     }
     &.open {
       .inject-list-container {
-        box-shadow: 0px 8px 10px -5px rgba(0, 0, 0, 0.2), 0px 16px 24px 2px rgba(0, 0, 0, 0.14), 0px 6px 30px 5px rgba(0, 0, 0, 0.12);
+        box-shadow: 0px 8px 10px -5px rgba(0, 0, 0, 0.2),
+          0px 16px 24px 2px rgba(0, 0, 0, 0.14),
+          0px 6px 30px 5px rgba(0, 0, 0, 0.12);
         z-index: 999;
         transform: initial;
         pointer-events: initial;

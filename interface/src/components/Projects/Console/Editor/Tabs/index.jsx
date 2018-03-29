@@ -32,6 +32,10 @@ class Tabs extends Component {
   //   }
   // }
 
+  componentDidMount() {
+    this.updateScroll()
+  }
+
   update(tabCount) {
     if (tabCount instanceof Number) {
       let w = this.state.dimensions.width / tabCount
@@ -70,22 +74,23 @@ class Tabs extends Component {
     }
   }
 
-  previous() {
-    let tab = Math.floor(((this.state.dimensions.width + this.tabs.scrollLeft - 5) / (this.state.tabWidth - 14)) - (this.state.dimensions.width  / (this.state.tabWidth - 14)))
-    if (this.tabs.childNodes[tab])
-      this.tabs.childNodes[tab].scrollIntoView({
-        inline: 'start',
+  scrollToTab = (i, inline) => {
+    const tab = this.tabs.childNodes[i * 2]
+    if (tab) {
+      tab.childNodes[0].scrollIntoView({
+        block: 'end',
+        inline,
         behavior: 'smooth'
       })
+    }
+  }
+
+  previous() {
+    this.scrollToTab(Math.floor(((this.state.dimensions.width + this.tabs.scrollLeft - 5) / (this.state.tabWidth - 14)) - (this.state.dimensions.width  / (this.state.tabWidth - 14))), 'start')
   }
 
   next() {
-    let tab = Math.ceil((this.state.dimensions.width + this.tabs.scrollLeft) / (this.state.tabWidth - 14)) - 1
-    if (this.tabs.childNodes[tab])
-      this.tabs.childNodes[tab].scrollIntoView({
-        inline: 'end',
-        behavior: 'smooth'
-      })
+    this.scrollToTab(Math.ceil((this.state.dimensions.width + this.tabs.scrollLeft) / (this.state.tabWidth - 14)) - 1, 'end')
   }
 
   render() {
