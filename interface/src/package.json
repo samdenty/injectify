@@ -64,7 +64,7 @@
     "material-ui-icons": "^1.0.0-beta.36",
     "moment": "^2.21.0",
     "nprogress": "^0.2.0",
-    "query-string": "^6.0.0",
+    "query-string": "^5.0.1",
     "react": "^16.2.0",
     "react-autosuggest": "^9.3.4",
     "react-codemirror2": "^4.2.1",
