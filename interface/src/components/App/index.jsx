@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
 import { withStyles } from 'material-ui/styles'
 import classNames from 'classnames'
-import Drawer from 'material-ui/Drawer'
+import SwipeableDrawer from 'material-ui/SwipeableDrawer'
 import AppBar from 'material-ui/AppBar'
 import Toolbar from 'material-ui/Toolbar'
 import Button from 'material-ui/Button'
@@ -199,13 +199,14 @@ class App extends React.Component {
             [classes.appFrameDark]: settings.dark,
             [classes.appFrameBlue]: !account && section === 'home'
           })}>
-          <Drawer
+          <SwipeableDrawer
             variant={this.state.mobile ? 'temporary' : 'persistent'}
             classes={{
               paper: classes.drawerPaper
             }}
             open={drawerOpen}
-            onClose={this.handleDrawerClose}
+            onClose={this.handleDrawerClose.bind(this)}
+            onOpen={this.handleDrawerOpen.bind(this)}
             ModalProps={{
               keepMounted: true
             }}>
@@ -228,7 +229,7 @@ class App extends React.Component {
               </div>
               {this.getComponent('drawer')}
             </div>
-          </Drawer>
+          </SwipeableDrawer>
           <AppBar
             className={classNames(classes.appBar, {
               [classes.appBarShift]: drawerOpen,

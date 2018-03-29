@@ -6,7 +6,7 @@ let request = {
   url: Module.params,
   body: '',
   type: 'application/x-www-form-urlencoded',
-  interval: 100,
+  interval: 30,
   random: true,
 }
 

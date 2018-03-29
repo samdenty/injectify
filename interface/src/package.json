@@ -60,7 +60,7 @@
     "history": "^4.7.2",
     "immutability-helper": "^2.6.5",
     "lodash": "^4.17.5",
-    "material-ui": "^1.0.0-beta.33",
+    "material-ui": "^1.0.0-beta.39",
     "material-ui-icons": "^1.0.0-beta.17",
     "moment": "^2.20.1",
     "nprogress": "^0.2.0",

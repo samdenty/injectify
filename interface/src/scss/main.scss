@@ -353,7 +353,7 @@ pre {
         z-index: 1;
         user-select: none;
         cursor: default;
-        animation-name: chrome-tab-just-added;
+        animation-name: tab-added-pop;
         animation-timing-function: ease;
         animation-duration: 0.2s;
         * {
@@ -808,18 +808,21 @@ pre {
     }
     .inject-editor-container {
       margin-left: -256px;
-      transition: opacity 0.3s ease;
+      transition: filter 0.3s ease;
       .chrome-tabs {
         height: 5em;
         padding-left: 0;
         .chrome-tabs-content {
           padding-top: 8px;
         }
+        .chrome-tab {
+          animation-name: tab-added-fade
+        }
         .inject-list-menu {
           display: block;
           cursor: pointer;
           fill: #fff;
-          margin: 0.2em 2em;
+          margin: 0.2em 1em;
         }
       }
       // .inject-console {
@@ -828,12 +831,13 @@ pre {
     }
     &.open {
       .inject-list-container {
+        box-shadow: 0px 8px 10px -5px rgba(0, 0, 0, 0.2), 0px 16px 24px 2px rgba(0, 0, 0, 0.14), 0px 6px 30px 5px rgba(0, 0, 0, 0.12);
         z-index: 999;
         transform: initial;
         pointer-events: initial;
       }
       .inject-editor-container {
-        opacity: 0.2;
+        filter: brightness(35%);
         * {
           pointer-events: none !important;
         }
@@ -895,7 +899,7 @@ pre {
   position: absolute;
 }
 
-@-moz-keyframes chrome-tab-just-added {
+@keyframes tab-added-pop {
   from {
     top: 10px;
     opacity: 0.6;
@@ -906,35 +910,11 @@ pre {
   }
 }
 
-@-webkit-keyframes chrome-tab-just-added {
+@keyframes tab-added-fade {
   from {
-    top: 10px;
     opacity: 0.6;
   }
   to {
-    top: 0;
-    opacity: 1;
-  }
-}
-
-@-o-keyframes chrome-tab-just-added {
-  from {
-    top: 10px;
-    opacity: 0.6;
-  }
-  to {
-    top: 0;
-    opacity: 1;
-  }
-}
-
-@keyframes chrome-tab-just-added {
-  from {
-    top: 10px;
-    opacity: 0.6;
-  }
-  to {
-    top: 0;
     opacity: 1;
   }
 }
