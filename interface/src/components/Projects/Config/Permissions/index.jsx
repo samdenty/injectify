@@ -1,7 +1,7 @@
 import ReactDOM, { render } from 'react-dom'
 import React from 'react'
 import { connect } from 'react-redux'
-import _ from 'lodash'
+import capitalize from 'lodash/capitalize'
 import { withStyles } from 'material-ui/styles'
 import Typography from 'material-ui/Typography'
 import Button from 'material-ui/Button'
@@ -106,7 +106,7 @@ class Permissions extends React.Component {
     return (
       <React.Fragment>
         <Typography type="subheading" gutterBottom className={classes.group}>
-          <span className={classes.header}>{_.capitalize(variant)}s:</span>
+          <span className={classes.header}>{capitalize(variant)}s:</span>
           {modifiable ? (
             <Button
               size="small"

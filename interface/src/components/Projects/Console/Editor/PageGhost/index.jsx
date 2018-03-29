@@ -1,7 +1,7 @@
 import React from 'react'
 import { withStyles } from 'material-ui/styles'
 import { connect } from 'react-redux'
-import _ from 'lodash'
+import find from 'lodash/find'
 
 import Rnd from 'react-rnd'
 import Tooltip from 'material-ui/Tooltip'
@@ -167,7 +167,7 @@ class PageGhost extends React.Component {
     const { projects, selectedProject, pageGhost } = this.props
     const project = projects[selectedProject.index]
     const client = project.console.state.clients ? project.console.state.clients[project.console.state.selected] : null
-    const session = client ? _.find(client.sessions, { id: pageGhost.selected }) : null
+    const session = client ? find(client.sessions, { id: pageGhost.selected }) : null
     return {
       project,
       client,

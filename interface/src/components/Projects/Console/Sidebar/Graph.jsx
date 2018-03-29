@@ -1,6 +1,6 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import _ from 'lodash'
+import isEqual from 'lodash/isEqual'
 
 import { LineChart } from 'react-easy-chart'
 import { ContextMenu, MenuItem, ContextMenuTrigger } from 'react-contextmenu'
@@ -35,8 +35,8 @@ class Graph extends React.Component {
     const project = this.props.projects[this.props.selectedProject.index].console.state
     const nextProject = nextProps.projects[nextProps.selectedProject.index].console.state
 
-    return !_.isEqual(nextState.graph, this.state.graph) ||
-      _.isEqual(project, nextProject)
+    return !isEqual(nextState.graph, this.state.graph) ||
+      isEqual(project, nextProject)
   }
 
   stub = (type) => {
@@ -81,8 +81,10 @@ class Graph extends React.Component {
       let totalSessions = 0
       let totalClients = 0
       if (project.console.state.clients) {
-        totalClients = _(project.console.state.clients).size()
-        _.forEach(project.console.state.clients, client => {
+        const clients = Object.keys(project.console.state.clients)
+        totalClients = clients.length
+        clients.forEach(i => {
+          const client = project.console.state.clients[i]
           if (client.sessions) {
             totalSessions += client.sessions.length
           }

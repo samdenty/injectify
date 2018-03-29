@@ -1,6 +1,5 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import _ from 'lodash'
 import { switchSection, toggleDrawer } from '../../../actions'
 import Project from './Project'
 import Search from './Search'

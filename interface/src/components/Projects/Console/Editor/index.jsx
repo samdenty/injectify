@@ -1,7 +1,6 @@
 import ReactDOM, { render } from 'react-dom'
 import React from 'react'
 import { connect } from 'react-redux'
-import _ from 'lodash'
 
 import Tabs from './Tabs'
 import Console from './Console'

@@ -1,7 +1,7 @@
 import ReactDOM, { render } from 'react-dom'
 import React from 'react'
 import { connect } from 'react-redux'
-import _ from 'lodash'
+import isEqual from 'lodash/isEqual'
 
 import Rnd from 'react-rnd'
 import Linkify from 'react-linkify'
@@ -36,7 +36,7 @@ class Console extends React.Component {
     const project = this.props.projects[this.props.selectedProject.index]
     const nextProject = nextProps.projects[nextProps.selectedProject.index]
 
-    return !_.isEqual(project.console.state.logs, nextProject.console.state.logs)
+    return !isEqual(project.console.state.logs, nextProject.console.state.logs)
   }
 
   componentWillUpdate(nextProps) {

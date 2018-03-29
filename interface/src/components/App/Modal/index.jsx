@@ -1,6 +1,6 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import _ from 'lodash'
+import startCase from 'lodash/startCase'
 import PropTypes from 'prop-types'
 import { withStyles } from 'material-ui/styles'
 import Dialog, {
@@ -35,7 +35,7 @@ class Modal extends React.Component {
 
     return (
       <Dialog open={modal.open} onClose={this.close}>
-        <DialogTitle>{_.startCase(modal.type)}</DialogTitle>
+        <DialogTitle>{startCase(modal.type)}</DialogTitle>
         {modal.type === 'newProject' ? (
           <React.Fragment>
             <DialogContent>

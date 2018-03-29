@@ -20,6 +20,7 @@
     "redux-devtools": "^3.4.1",
     "sass-loader": "^6.0.7",
     "webpack": "3.10.0",
+    "webpack-bundle-analyzer": "^2.11.1",
     "webpack-dev-server": "^2.9.7"
   },
   "babel": {

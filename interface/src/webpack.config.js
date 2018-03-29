@@ -3,6 +3,11 @@ const webpack = require('webpack')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 const UglifyJSPlugin = require('uglifyjs-webpack-plugin')
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
+
+const specific = process.env.NODE_ENV === 'development' ? [
+	new BundleAnalyzerPlugin()
+] : []
 
 module.exports = {
 	entry: ['react-hot-loader/patch', './main.jsx', './scss/main.scss'],
@@ -49,7 +54,8 @@ module.exports = {
 			}
 		]),
 		new webpack.NamedModulesPlugin(),
-		new webpack.HotModuleReplacementPlugin()
+		new webpack.HotModuleReplacementPlugin(),
+		...specific
 	],
 	resolve: {
 		extensions: ['.*', '.js', '.jsx']

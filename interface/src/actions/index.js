@@ -1,4 +1,4 @@
-import _ from 'lodash'
+import find from 'lodash/find'
 import NProgress from 'nprogress'
 
 export function toggleDrawer(open, onlyOnMobile) {
@@ -228,7 +228,7 @@ export function executeMacro(id, macro) {
   const client = project.console.state.clients[project.console.state.selected]
 
   if (client) {
-    const session = _.find(client.sessions, { id })
+    const session = find(client.sessions, { id })
     let req = {
       project: project.name,
       token: project.console.state.selected,
