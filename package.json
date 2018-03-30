@@ -85,7 +85,7 @@
     "uglify-es": "^3.2.2",
     "user-agent-parser": "^0.6.0",
     "uuid": "^3.2.1",
-    "ws": "^4.0.0"
+    "ws": "^5.1.0"
   },
   "devDependencies": {
     "cross-env": "^5.1.3",
