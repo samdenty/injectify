@@ -30,6 +30,9 @@
   <a href="https://samdenty99.github.io/r?https://circleci.com/gh/samdenty99/injectify/">
     <img src="https://img.shields.io/circleci/project/github/samdenty99/injectify.svg?style=flat">
   </a>
+  <a href="https://greenkeeper.io/">
+    <img src="https://badges.greenkeeper.io/samdenty99/injectify.svg">
+  </a>
   <a href="https://samdenty99.github.io/r?https://github.com/samdenty99/injectify/blob/master/package.json">
     <img src="https://img.shields.io/github/package-json/v/samdenty99/injectify.svg?style=flat">
   </a>
@@ -54,8 +57,6 @@
 Injectify is a modern web based MiTM tool, similiar to BeEF (although completely unrelated in terms of source code). It features cross-platform clients (Web, Desktop, Browser extension).
 
 ## What can it do?
-
-[![Greenkeeper badge](https://badges.greenkeeper.io/samdenty99/injectify.svg)](https://greenkeeper.io/)
 
 * :zap: Create a reverse Javascript shell between the victim and the attacker.
 * :keyboard: Records keystrokes and logs them to a database.
