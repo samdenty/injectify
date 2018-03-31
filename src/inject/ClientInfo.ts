@@ -135,6 +135,7 @@ export default (req: any, authReq: any, session: SocketSession.session) => {
     /**
      * Client object
      */
+    const url = authReq.headers.referer || req.headers.origin || '[N/A]'
     resolve({
       client: {
         'user-agent': agent,
@@ -154,9 +155,9 @@ export default (req: any, authReq: any, session: SocketSession.session) => {
         'id': session.id,
         'debug': session.debug,
         'window': {
-          'title': authReq.headers.referer,
-          'url': authReq.headers.referer,
-          'favicon': `https://plus.google.com/_/favicon?domain_url=${encodeURIComponent(authReq.headers.referer)}`,
+          'title': url,
+          'url': url,
+          'favicon': `https://plus.google.com/_/favicon?domain_url=${encodeURIComponent(url)}`,
           'active': false
         },
         'devtools': {
