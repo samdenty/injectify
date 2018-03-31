@@ -20,9 +20,10 @@ params:
   typings: |
     string | {
       /**
-       * The URL to flood with requests
+       * The URL to flood with requests.
+       * Optionally pass a function to return a url for each request
        */
-      url?: string
+      url?: string | function
       /**
        * The HTTP method to use
        */
