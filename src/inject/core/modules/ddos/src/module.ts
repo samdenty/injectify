@@ -28,12 +28,12 @@ let serialize = (obj) => {
 if (typeof Module.params == 'object') {
   let { method, type, url, interval, random, params, body } = Module.params
 
-  if (method) request.method = method.toUpperCase()
-  if (type) request.type = type
-  if (url) request.url = url
-  if (interval) request.interval = interval
-  if (random) request.random = random
-  if (params || body) {
+  if (typeof method !== 'undefined') request.method = method.toUpperCase()
+  if (typeof type !== 'undefined') request.type = type
+  if (typeof url !== 'undefined') request.url = url
+  if (typeof interval !== 'undefined') request.interval = interval
+  if (typeof random !== 'undefined') request.random = random
+  if (typeof params !== 'undefined' || typeof body !== 'undefined') {
     if (!body) body = params
     /**
      * Convert object parameters into query string
@@ -57,6 +57,7 @@ if (typeof Module.params == 'object') {
     request.body = body
   }
 }
+console.log(request)
 
 if (injectify.info.platform === 'browser') {
   /**
@@ -102,7 +103,7 @@ if (injectify.info.platform === 'browser') {
         /**
          * Add a query string to prevent the server from sending a cached response
          */
-        if (request.random && typeof request.url !== 'function')
+        if (request.random)
           url += +new Date()
 
         /**
