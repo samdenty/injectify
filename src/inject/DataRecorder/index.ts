@@ -5,7 +5,7 @@ import Insert from './Insert'
 import Append from './Append'
 import Update from './Update'
 
-export default function(
+export function DataRecorder(
   mode: Record.Modes,
   request: Record.ServerRequest
 ): Record.result {
