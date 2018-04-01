@@ -10,7 +10,7 @@ import { SocketSession } from './definitions/session'
 import { Module } from './definitions/module'
 import { Record } from './definitions/record'
 import ModuleEval from './ModuleEval'
-import { DataRecorder } from './DataRecorder'
+import DataRecorder from './DataRecorder'
 
 export default class {
   socket: any
