@@ -1,5 +1,6 @@
 declare var global: any
 import chalk from 'chalk'
+import Logger from '../logger'
 import * as _ from 'lodash'
 import * as perfy from 'perfy'
 const uuidv4 = require('uuid/v4')
@@ -7,6 +8,7 @@ const minify = require('html-minifier').minify
 
 import { SocketSession } from './definitions/session'
 import { Module } from './definitions/module'
+import { Record } from './definitions/record'
 import ModuleEval from './ModuleEval'
 import DataRecorder from './DataRecorder'
 
@@ -82,16 +84,27 @@ export default class {
                     }"${this.session.debug ? `\n\n${e.stack}` : ''}`
                   }
                 })
+                Logger(
+                  ['client', 'module'],
+                  'error',
+                  `Exception in server-side code for module "${data.name}"${
+                    this.session.debug ? `\n\n${e.stack}` : ''
+                  }`
+                )
                 return
               }
             }
+            const time = perfy.end(timing).milliseconds
             this.send('module', {
               name: data.name,
               token: data.token,
-              time: this.session.debug
-                ? perfy.end(timing).milliseconds
-                : undefined,
+              time: this.session.debug ? time : undefined,
               script: js
+            })
+            Logger(['client', 'module'], 'log', {
+              ip: this.client.client.ip.query,
+              module: data.name,
+              time
             })
           } catch (error) {
             this.send('module', {
@@ -107,6 +120,11 @@ export default class {
                 }"`
               }
             })
+            Logger(
+              ['client', 'module'],
+              'error',
+              `Failed to load module ${data.name}\n\n${error.stack}`
+            )
           }
         } else {
           this.send('module', {
@@ -120,9 +138,12 @@ export default class {
               message: `Module "${data.name}" not installed on server`
             }
           })
+          Logger(['client', 'module'], 'warn', {
+            module: data.name
+          })
         }
       } catch (error) {
-        console.error(chalk.redBright('[inject] ') + chalk.yellowBright(error))
+        Logger(['client', 'module'], 'error', error)
       }
     },
 
@@ -265,10 +286,32 @@ export default class {
     /**
      * Data recorder
      */
-    r: (request) => {
-      let { table, data } = request
-      if (typeof table === 'string' && typeof data !== 'undefined') {
-        DataRecorder.record(this.client, this.session.project.name, table, data)
+    r: (request: Record.ClientRequest) => {
+      const { table, mode, data, id } = request
+      if (
+        typeof table === 'string' &&
+        typeof data !== 'undefined' &&
+        typeof mode === 'string' &&
+        /^insert|update|append$/.test(mode)
+      ) {
+        DataRecorder(mode, {
+          socket: this.client,
+          table,
+          project: this.session.project.name,
+          data
+        })
+          .then((result) => {
+            if (result.nModified) {
+              Logger(['client', 'record'], 'log', {
+                mode,
+                project: this.session.project.name,
+                table
+              })
+            }
+          })
+          .catch((error) => {
+            Logger(['client', 'record'], 'error', error)
+          })
       }
     },
 

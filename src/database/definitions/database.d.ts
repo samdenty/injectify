@@ -1,7 +1,7 @@
-import { GitHub } from "./github";
+import { GitHub } from './github'
 
 export namespace Database {
-  export class user {
+  export interface user {
     _id: string
     username: string
     id: number
@@ -13,7 +13,7 @@ export namespace Database {
     logins: object
   }
 
-  export class project {
+  export interface project {
     _id: string
     name: string
     permissions: {
@@ -37,5 +37,20 @@ export namespace Database {
         data: any
       }[]
     }
+  }
+
+  export interface result {
+    n: number
+    nModified: number
+    opTime: {
+      ts: {
+        _bsontype: string
+        low_: number
+        high_: number
+      }
+      t: 3
+    }
+    electionId: number
+    ok: number
   }
 }

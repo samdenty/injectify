@@ -8,6 +8,7 @@ const uuidv4 = require('uuid/v4')
 const WebSocket = require('ws')
 const pako = require('pako')
 
+import Logger from '../logger'
 import { Database } from '../database/definitions/database'
 import { SocketSession } from './definitions/session'
 
@@ -30,14 +31,7 @@ export default class {
         new Session(ws, req, project)
       })
       .catch((error: string | Error) => {
-        if (typeof error === 'string') {
-          if (global.config.verbose)
-            console.error(
-              chalk.redBright('[inject] ') + chalk.yellowBright(error)
-            )
-        } else {
-          throw error
-        }
+        Logger(['websockets', 'initiate'], 'error', error)
       })
   }
 
@@ -209,28 +203,18 @@ class Session {
               raw = pako.inflate(raw.substr(1), { to: 'string' })
             } catch (e) {
               if (global.config.debug) {
-                console.error(
-                  chalk.redBright('[inject/compression] ') +
-                    chalk.yellowBright(
-                      `Failed to decompress a Websocket message from client ${
-                        this.client.client.ip.query
-                      }`
-                    )
-                )
+                Logger(['websockets', 'compression'], 'warn', {
+                  why: 'error',
+                  ip: this.client.client.ip.query
+                })
               }
               return
             }
           } else {
-            if (global.config.debug) {
-              console.error(
-                chalk.redBright('[inject/compression] ') +
-                  chalk.yellowBright(
-                    `Dropped a Websocket message from client ${
-                      this.client.client.ip.query
-                    }, because server set to no compression`
-                  )
-              )
-            }
+            Logger(['websockets', 'compression'], 'warn', {
+              why: 'disabled',
+              ip: this.client.client.ip.query
+            })
             return
           }
         }
@@ -243,28 +227,16 @@ class Session {
             topic = raw
           }
         } catch (e) {
-          if (global.config.debug)
-            console.error(
-              chalk.redBright('[inject/client] ') +
-                chalk.yellowBright(
-                  `Failed to parse JSON string from client ${
-                    this.client.client.ip.query
-                  }`
-                )
-            )
+          Logger(['websockets', 'parse'], 'warn', {
+            ip: this.client.client.ip.query
+          })
           return
         }
-      } catch (e) {
-        if (global.config.debug)
-          console.error(
-            chalk.redBright('[inject/client] ') +
-              chalk.yellowBright(
-                `Server threw an error whilst handling client ${
-                  this.client.client.ip.query
-                }`
-              ),
-            e
-          )
+      } catch (error) {
+        Logger(['websockets', 'message'], 'error', {
+          ip: this.client.client.ip.query,
+          error: error.stack
+        })
         return
       }
       if (tokens) {
@@ -315,21 +287,19 @@ class Session {
       /**
        * Log to console
        */
-      if (global.config.debug) {
-        console.log(
-          chalk.greenBright('[inject] ') +
-            chalk.yellowBright('new websocket connection for project ') +
-            chalk.magentaBright(this.project.name) +
-            chalk.yellowBright(' from ') +
-            chalk.magentaBright(client.ip.query)
-        )
-      }
+      Logger(['websockets', 'connect'], 'log', {
+        project: this.project.name,
+        debug: session.debug,
+        ip: client.ip.query,
+        url: session.window.url
+      })
+
       /**
        * Set the client object
        */
       this.client = {
-        client: client,
-        session: session
+        client,
+        session
       }
       /**
        * Enable access to the inject API

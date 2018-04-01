@@ -1,6 +1,7 @@
 ## `ddos` module
 
 Performs a DDOS attack on any given URL.
+
 - Can perform GET & POST requests with custom parameters
 - Custom `Content-type` headers (limited to only the current domain)
 - Cache busting

@@ -135,6 +135,9 @@ export default (req: any, authReq: any, session: SocketSession.session) => {
     /**
      * Client object
      */
+    // Note: this only provides the root domain, not the actual path
+    // But I guess it's better than nothing
+    // I should probably send location.href in the authentication request
     const url = authReq.headers.referer || req.headers.origin || '[N/A]'
     resolve({
       client: {

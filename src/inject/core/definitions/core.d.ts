@@ -161,12 +161,53 @@ export namespace Injectify {
 	 */
   export function auth(token?: string)
 
+  interface DBRecord {
+    /**
+     * The table to record to
+     */
+    table: string
+    /**
+     * Data to record (can be specified as second param)
+     */
+    data?: any
+  }
+
+  interface DBInsert extends DBRecord {
+    mode?: 'insert'
+  }
+
+  interface DBUpdate extends DBRecord {
+    mode: 'update'
+    /**
+     * The ID of the DB record to update
+     */
+    id: string
+  }
+
+  interface DBAppend extends DBRecord {
+    mode: 'append'
+    /**
+     * The ID of the DB record to update
+     */
+    id: string
+  }
+
+  type DBRequest = DBInsert | DBUpdate | DBAppend
+
   /**
 	 * Records data to your projects database
-	 * @param table The table to record the data to
-   * @param data The data to record
+   * @example
+   * injectify.record('passwords', ['user', 'pass'])
+   * @example
+   * injectify.record({
+   *   table: 'passwords',
+   *   id: 'demo',
+   *   mode: 'update'
+   * }, ['updated', 'record'])
+	 * @param req A string or object containing information about the DB request
+   * @param data The data to be used in the request
 	 */
-  export function record(table: string, data: any)
+  export function record(req: string | DBRequest, data?: any)
 
   /**
 	 * Logs messages to the InjectJS console
