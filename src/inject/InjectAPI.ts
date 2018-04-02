@@ -37,7 +37,7 @@ export default class {
      */
     module: (data) => {
       const timing = Symbol('timing')
-      if (this.session.debug) perfy.start(timing)
+      perfy.start(timing)
       try {
         if (!data.name) return
         const CachedModule: Module.Cache | null = _.find(
