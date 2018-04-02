@@ -1,6 +1,6 @@
 import { Injectify } from '../../definitions/core'
 declare const injectify: typeof Injectify
-const ws: WebSocket = (<any>window).ws || (<any>window).i‍// <- invisible space
+import { ws } from '../components/Websockets'
 import Promise from './Promise'
 
 function ErrorGuarder(ErrorGuarded: Function, reject?: Function) {

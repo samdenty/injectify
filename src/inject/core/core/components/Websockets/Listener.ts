@@ -1,13 +1,11 @@
 import { Injectify } from '../../../definitions/core'
 declare const injectify: typeof Injectify
-const ws: WebSocket = (<any>window).ws || (<any>window).i‍// <- invisible space
-const pako = require('pako')
+import { ws } from '../../components/Websockets'
+import * as pako from 'pako'
 
 export default function(callback: Function) {
   ws.onmessage = ({ data: raw }) => {
-    /**
-     * Decompress message
-     */
+    // Decompress message
     if (raw.charAt(0) === '#') {
       try {
         raw = pako.inflate(raw.substr(1), { to: 'string' })
@@ -19,9 +17,7 @@ export default function(callback: Function) {
       }
     }
 
-    /**
-     * Parse message
-     */
+    // Parse message
     let topic: string
     let data: any
     try {
@@ -39,19 +35,9 @@ export default function(callback: Function) {
       return
     }
 
-    /**
-     * Take action upon message
-     */
+    // Take action upon message
     if (topic && injectify.global.listeners.websocket[topic]) {
-      /**
-       * Pre-process some topic's data
-       */
-      if (topic == 'pong') {
-        data = +new Date() - data
-      }
-      /**
-       * Callback the listeners
-       */
+      // Callback the listeners
       injectify.global.listeners.websocket[topic].callback(data)
       if (injectify.global.listeners.websocket[topic].once) delete injectify.global.listeners.websocket[topic]
     } else {

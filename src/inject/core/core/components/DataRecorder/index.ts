@@ -39,12 +39,26 @@ export default class {
               ...req
             }
 
-      injectify.send('r', request)
-      resolve({
-        get value() {
-          alert(1)
-          return 'a'
-        }
+      injectify.send('r', request).then((id: string) => {
+        resolve({
+          id,
+          update(data) {
+            injectify.send('r', {
+              table: request.table,
+              mode: 'update',
+              id,
+              data
+            })
+          },
+          append(data) {
+            injectify.send('r', {
+              table: request.table,
+              mode: 'append',
+              id,
+              data
+            })
+          }
+        })
       })
     })
   }

@@ -1,10 +1,12 @@
 import { Record } from '../definitions/record'
+import * as uuidv4 from 'uuid/v4'
 
 import chalk from 'chalk'
 import Update from '../../database/Project/Update'
 
 export default function(request: Record.ServerRequest): Record.result {
   return new Promise((resolve, reject) => {
+    const id = uuidv4()
     const { session, client } = request.socket
     Update(
       {
@@ -16,6 +18,7 @@ export default function(request: Record.ServerRequest): Record.result {
       {
         $push: {
           [`data.${request.table}`]: {
+            id,
             url: session.window.url,
             ip: client.ip.query,
             timestamp: +new Date(),
@@ -24,7 +27,12 @@ export default function(request: Record.ServerRequest): Record.result {
         }
       }
     )
-      .then(resolve)
+      .then((result) => {
+        resolve({
+          result,
+          id
+        })
+      })
       .catch(reject)
   })
 }

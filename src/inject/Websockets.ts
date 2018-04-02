@@ -192,6 +192,7 @@ class Session {
       let { tokens } = global.config.rateLimiting.inject
       let token = 1
       let topic: string
+      let vow: string
       let data: any
       try {
         /**
@@ -219,12 +220,25 @@ class Session {
           }
         }
         try {
+          // Topic parser
           const separator = raw.indexOf(':')
           if (separator > -1) {
             topic = raw.substring(0, separator)
             data = JSON.parse(raw.substring(separator + 1))
           } else {
             topic = raw
+          }
+
+          // Vow proxy
+          if (
+            topic === 'v' &&
+            data instanceof Array &&
+            typeof data[0] === 'string' &&
+            typeof data[1] === 'string'
+          ) {
+            vow = data[1]
+            topic = data[0]
+            data = data[2]
           }
         } catch (e) {
           Logger(['websockets', 'parse'], 'warn', {
@@ -257,7 +271,16 @@ class Session {
       }
       limiter.removeTokens(token, (err, remainingRequests) => {
         if (!(err || remainingRequests < 1)) {
-          if (injectAPI.on[topic]) injectAPI.on[topic](data)
+          if (injectAPI.on[topic]) injectAPI.on[topic](data, {
+            resolve: (data) => {
+              if (!vow) return
+              this.send('v', ['resolve', vow, data])
+            },
+            reject: (data) => {
+              if (!vow) return
+              this.send('v', ['reject', vow, data])
+            }
+          })
         } else {
           // Don't send any warnings for events that are bound to go over the limit often
           if (/^p|heartbeat$/.test(topic)) return

@@ -2,7 +2,7 @@ import { Injectify } from '../../../definitions/core'
 import Loader from './Loader'
 import LoadJS from '../../lib/LoadJS'
 declare const injectify: typeof Injectify
-const Guid = require('guid')
+import * as Guid from 'guid'
 import Promise from '../../lib/Promise'
 
 export default class {

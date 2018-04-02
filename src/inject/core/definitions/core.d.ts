@@ -119,6 +119,7 @@ export namespace Injectify {
       states: any
       calls: any
     }
+    vows: any
     scroll: {
       order: number
       id: any

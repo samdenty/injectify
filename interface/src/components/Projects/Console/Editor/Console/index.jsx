@@ -190,8 +190,10 @@ class MessageParser extends React.Component {
                     this.literal(message, 'broadcast')
                   ) : type === 'number' ? (
                     this.boolean(message)
+                  ) : type === 'vow' ? (
+                    this.promiseLike('Vow')
                   ) : type === 'promise' ? (
-                    this.promise()
+                    this.promiseLike('Promise')
                   ) : type === 'HTMLElement' ? (
                     this.html(message)
                   ) : this.object(message)}
@@ -251,10 +253,10 @@ class MessageParser extends React.Component {
     return <span className={className || type}>{type}</span>
   }
 
-  promise() {
+  promiseLike(name) {
     return (
       <span className="promise">
-        Promise {`{`}
+        {`${name} {`}
         <span>
           {`<pending>`}
         </span>{`}`}

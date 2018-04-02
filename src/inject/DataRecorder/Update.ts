@@ -24,7 +24,12 @@ export default function(request: Record.ServerRequest): Record.result {
         }
       }
     )
-      .then(resolve)
+      .then((result) => {
+        resolve({
+          result,
+          id: null
+        })
+      })
       .catch(reject)
   })
 }

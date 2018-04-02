@@ -1,6 +1,6 @@
 import { Injectify } from '../definitions/core'
 declare let require, process: any
-const ws: WebSocket = (<any>window).ws || (<any>window).i‍ // <- invisible space
+import { ws } from './components/Websockets'
 
 // Components
 import Modules from './components/Modules'
@@ -8,7 +8,7 @@ import WindowInjection from './components/WindowInjection'
 import Console from './components/Console'
 import DOMExtractor from './components/DOMExtractor'
 import DevtoolsListener from './components/Devtools/Listener'
-import Websockets from './components/Websockets'
+import * as Websockets from './components/Websockets'
 import DataRecorder from './components/DataRecorder'
 import { Info, SessionInfo } from './components/Info'
 
@@ -55,11 +55,11 @@ ErrorGuard(() => {
     /**
      * Websocket functions
      */
-    static listener = Websockets.listener
-    static listen = Websockets.topics.listen
-    static unlisten = Websockets.topics.unlisten
-    static send = Websockets.send
-    static ping = Websockets.ping
+    static listener = Websockets.Listener
+    static listen = Websockets.Listen
+    static unlisten = Websockets.Unlisten
+    static send = Websockets.Send
+    static ping = Websockets.Ping
 
     static get DOMExtractor() {
       return DOMExtractor()
@@ -193,6 +193,7 @@ ErrorGuard(() => {
             states: {},
             calls: {}
           },
+          vows: {},
           scroll: {
             order: -1,
             id: null,
@@ -286,6 +287,10 @@ ErrorGuard(() => {
       }
       case 'module': {
         new Modules.loader(data)
+        break
+      }
+      case 'v': {
+        Websockets.Vow(data[0], data[1], data[2])
         break
       }
       case 'execute': {

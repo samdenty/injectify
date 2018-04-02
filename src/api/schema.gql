@@ -101,6 +101,7 @@ type Config {
   }
 
 type TableData {
+  id: String!
   url: String
   ip: String!
   timestamp: Int!

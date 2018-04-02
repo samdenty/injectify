@@ -3,7 +3,7 @@ import chalk from 'chalk'
 import Logger from '../logger'
 import * as _ from 'lodash'
 import * as perfy from 'perfy'
-const uuidv4 = require('uuid/v4')
+import * as uuidv4 from 'uuid/v4'
 const minify = require('html-minifier').minify
 
 import { SocketSession } from './definitions/session'
@@ -11,6 +11,13 @@ import { Module } from './definitions/module'
 import { Record } from './definitions/record'
 import ModuleEval from './ModuleEval'
 import DataRecorder from './DataRecorder'
+
+interface API {
+  [topic: string]: (
+    data: any,
+    vow: { resolve(data?): void; reject(data?): void }
+  ) => void
+}
 
 export default class {
   socket: any
@@ -31,7 +38,7 @@ export default class {
     this.client = that.client
   }
 
-  on = {
+  on = <API>{
     /**
      * Module loader
      */
@@ -286,7 +293,7 @@ export default class {
     /**
      * Data recorder
      */
-    r: (request: Record.ClientRequest) => {
+    r: (request: Record.ClientRequest, vow) => {
       const { table, mode, data, id } = request
       if (
         typeof table === 'string' &&
@@ -300,8 +307,9 @@ export default class {
           project: this.session.project.name,
           data
         })
-          .then((result) => {
-            if (result.nModified) {
+          .then((record) => {
+            vow.resolve(record.id)
+            if (record.result.nModified) {
               Logger(['client', 'record'], 'log', {
                 mode,
                 project: this.session.project.name,
@@ -343,8 +351,8 @@ export default class {
     /**
      * Get server ping time
      */
-    ping: (pingTime) => {
-      this.send('pong', pingTime)
+    ping: (data, vow) => {
+      vow.resolve()
     },
 
     /**
@@ -355,6 +363,30 @@ export default class {
       //this.send('stay-alive')
 
       this.pulse()
+    },
+
+    /**
+     * Tests
+     */
+    test: (data, vow) => {
+      const tests = {
+        vow: () => {
+          vow.resolve(
+            `The current time on the server in UNIX is ${+new Date()}!`
+          )
+        }
+      }
+      if (data instanceof Array) {
+        for (let test of data) {
+          if (tests[test]) tests[test]()
+        }
+      } else if (typeof data === 'string') {
+        if (tests[data]) tests[data]()
+      } else {
+        for (let test of Object.keys(tests)) {
+          tests[test]()
+        }
+      }
     }
   }
 

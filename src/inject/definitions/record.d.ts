@@ -12,6 +12,7 @@ export namespace Record {
 
   export interface ClientRequest extends Shared {
     mode: Modes
+    vow?: string
   }
 
   export interface ServerRequest extends Shared {
@@ -19,5 +20,5 @@ export namespace Record {
     socket: { session: Injectify.session.Info; client: any }
   }
 
-  export type result = Promise<Database.result>
+  export type result = Promise<{ result: Database.result; id: string }>
 }
