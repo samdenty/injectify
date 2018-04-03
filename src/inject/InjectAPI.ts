@@ -308,17 +308,20 @@ export default class {
           data
         })
           .then((record) => {
-            vow.resolve(record.id)
             if (record.result.nModified) {
               Logger(['client', 'record'], 'log', {
                 mode,
                 project: this.session.project.name,
                 table
               })
+              vow.resolve(record.id)
+            } else {
+              vow.reject()
             }
           })
           .catch((error) => {
             Logger(['client', 'record'], 'error', error)
+            vow.reject()
           })
       }
     },

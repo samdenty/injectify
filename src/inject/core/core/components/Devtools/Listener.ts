@@ -12,21 +12,22 @@ export default function(enable?: boolean) {
     return
   }
 
-  let emit = (state: boolean, orientation: null | string) => {
+  let emit = (open: boolean, orientation: null | string) => {
     window.dispatchEvent(new CustomEvent('devtoolschange', {
       detail: {
-        open: state,
-        orientation: orientation
+        open,
+        orientation
       }
     }))
   }
 
   injectify.global.listeners.devtools = setInterval(() => {
+    let mobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
     let widthThreshold = window.outerWidth - window.innerWidth > 160
     let heightThreshold = window.outerHeight - window.innerHeight > 160
     let orientation: any = widthThreshold ? 'vertical' : 'horizontal'
 
-    if (!(heightThreshold && widthThreshold) &&
+    if (!mobile && !(heightThreshold && widthThreshold) &&
       (((<any>window).Firebug && (<any>window).Firebug.chrome && (<any>window).Firebug.chrome.isInitialized) || widthThreshold || heightThreshold)) {
       if (!injectify.devtools.open || injectify.devtools.orientation !== orientation) {
         emit(true, orientation)
