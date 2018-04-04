@@ -1,7 +1,7 @@
 import { Module } from './definitions/module'
-const fs = require('fs')
-const yaml = require('node-yaml')
-const chalk = require('chalk')
+import Logger from '../logger'
+import * as fs from 'fs'
+import * as yaml from 'node-yaml'
 
 export default class {
   state = {
@@ -48,11 +48,9 @@ export default class {
               )
             } catch (err) {
               error = true
-              console.log(
-                chalk.redBright('[inject:module] ') +
-                  chalk.yellowBright('failed to load module ') +
-                  chalk.magentaBright('./' + folder + '/')
-              )
+              Logger(['core', 'module-config'], 'error', {
+                module: folder
+              })
             }
             if (!error) {
               try {

@@ -2,24 +2,21 @@
 declare const global: any
 
 const MongoClient = require('mongodb').MongoClient
-const fs = require('fs-extra')
-const chalk = require('chalk')
-const path = require('path')
-const request = require('request')
-const { URL } = require('url')
+import * as fs from 'fs-extra'
+import chalk from 'chalk'
+import * as path from 'path'
+import * as request from 'request'
+import * as atob from 'atob'
+import * as btoa from 'btoa'
+import * as cookieParser from 'cookie-parser'
+import * as RateLimit from 'express-rate-limit'
+import * as pretty from 'express-prettify'
+
+import Logger from './logger'
 import apiHandler from './api/handler'
 import LocalTunnel from './network/LocalTunnel'
 import injectHandler from './inject/handler'
-const atob = require('atob')
-const btoa = require('btoa')
-const reverse = require('reverse-string')
-const cookieParser = require('cookie-parser')
-const parseAgent = require('user-agent-parser')
-const me = require('mongo-escape').escape
-const RateLimit = require('express-rate-limit')
 import getIP from './lib/getIP.js'
-const pretty = require('express-prettify')
-
 import Update from './database/Project/Update'
 
 /**
@@ -47,16 +44,14 @@ const io = require('socket.io').listen(server)
 const apiLimiter = new RateLimit(config.rateLimiting.api)
 const injectLimiter = new RateLimit(config.rateLimiting.inject.auth)
 
-console.log(
-  chalk.greenBright('[Injectify] ') + 'listening on port ' + config.express
-)
+Logger(['express', 'attach'], 'log', {
+  port: config.express
+})
 
-process.on('unhandledRejection', (reason, p) => {
-  console.log(
-    chalk.redBright('[Promise] ') + ' Unhandled Rejection at:',
-    p,
-    chalk.redBright('\nREASON:'),
-    reason
+process.on('unhandledRejection', (error) => {
+  console.error(
+    chalk.redBright('[Promise] ') + ' Unhandled Rejection:',
+    error
   )
 })
 
@@ -1578,14 +1573,8 @@ MongoClient.connect(config.mongodb, (err, client) => {
     })
   })
 
-  /**
-   * Enable the cookie parser
-   */
+  // Express middleware
   app.use(cookieParser())
-
-  /**
-   * Enable the pretty printer with the pretty param
-   */
   app.use(pretty({ query: 'pretty' }))
 
   /**

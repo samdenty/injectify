@@ -1,6 +1,9 @@
+import * as _ from 'lodash'
 import chalk from 'chalk'
 import * as client from './client'
+import * as express from './express'
 import * as websockets from './websockets'
+import Block from './Block'
 
 /**
  * Records events and actions to the console
@@ -13,23 +16,23 @@ export default function(
   data?: any
 ) {
   const [category, action] = id
+  const func = _.camelCase(action)
   /**
    * Call the appropriate handler
    */
   const message = (() => {
     try {
-      switch (category) {
-        case 'client': {
-          return client[action](type, data)
-        }
-        case 'websockets': {
-          return websockets[action](type, data)
-        }
-        default: {
-          throw new Error(`Failed to log info! No handlers for the log type ${JSON.stringify(id)}`)
-        }
+      const handler = require(`./${category}`)
+      if (handler && handler[func]) {
+        return handler[func](type, data)
+      } else {
+        throw new Error(
+          `Failed to log info! No handlers for the log type ${JSON.stringify(
+            [category, func]
+          )}`
+        )
       }
-    } catch(error) {
+    } catch (error) {
       throw new Error(`Error in the Logger API\n${error.stack}`)
     }
   })()
@@ -42,11 +45,14 @@ export default function(
   /**
    * Get color
    */
-  const color =
-    type === 'log' ? 'bgGreen' : type === 'warn' ? 'bgYellow' : 'bgRed'
+  const color = type === 'log' ? 'green' : type === 'warn' ? 'yellow' : 'red'
 
   /**
    * Log to console
    */
-  console[type](chalk.bold[color](`[${category}:${action}]`), ...log)
+  console[type](
+    Block(category, chalk.bgBlackBright.black),
+    Block(action, chalk[`${color}Bright`], true),
+    ...log
+  )
 }

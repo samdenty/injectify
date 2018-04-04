@@ -1739,10 +1739,6 @@ mkdirp@0.5, "mkdirp@>=0.5 0", mkdirp@^0.5.1, mkdirp@~0.5.0:
   dependencies:
     minimist "0.0.8"
 
-mongo-escape@^2.0.6:
-  version "2.0.6"
-  resolved "https://registry.yarnpkg.com/mongo-escape/-/mongo-escape-2.0.6.tgz#0180fa8f37c8e38dea807e53ea36951403662c9e"
-
 mongodb-core@3.0.1:
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/mongodb-core/-/mongodb-core-3.0.1.tgz#ff6dc36ee96ff596953d80a6840d6731bc92efed"
@@ -2293,10 +2289,6 @@ resolve@^1.1.6:
   dependencies:
     path-parse "^1.0.5"
 
-reverse-string@0.0.6:
-  version "0.0.6"
-  resolved "https://registry.yarnpkg.com/reverse-string/-/reverse-string-0.0.6.tgz#ce5a91e53d5ae730b53ed564856ba51d7dfe0872"
-
 rimraf@2, rimraf@^2.5.1, rimraf@^2.5.2, rimraf@^2.6.1:
   version "2.6.2"
   resolved "https://registry.yarnpkg.com/rimraf/-/rimraf-2.6.2.tgz#2ed8150d24a16ea8651e6d6ef0f47c4158ce7a36"
@@ -2828,13 +2820,11 @@ write-file-atomic@^2.0.0:
     imurmurhash "^0.1.4"
     signal-exit "^3.0.2"
 
-ws@^4.0.0:
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/ws/-/ws-4.0.0.tgz#bfe1da4c08eeb9780b986e0e4d10eccd7345999f"
+ws@^5.1.0:
+  version "5.1.1"
+  resolved "https://registry.yarnpkg.com/ws/-/ws-5.1.1.tgz#1d43704689711ac1942fd2f283e38f825c4b8b95"
   dependencies:
     async-limiter "~1.0.0"
-    safe-buffer "~5.1.0"
-    ultron "~1.1.0"
 
 ws@~3.3.1:
   version "3.3.3"

@@ -1,14 +1,20 @@
 declare var global: any
 
-import chalk from 'chalk'
+import Logger from '../logger'
 import Modules from './LoadModules'
 import Websockets from './Websockets'
 
 const fs = require('fs')
 const UglifyJS = require('uglify-es')
 const WebSocket = require('ws')
-const production_bundle = fs.readFileSync(`${__dirname}/core/bundle.min.js`, 'utf8')
-const development_bundle = fs.readFileSync(`${__dirname}/core/bundle.js`, 'utf8')
+const production_bundle = fs.readFileSync(
+  `${__dirname}/core/bundle.min.js`,
+  'utf8'
+)
+const development_bundle = fs.readFileSync(
+  `${__dirname}/core/bundle.js`,
+  'utf8'
+)
 
 export default class {
   db: any
@@ -18,11 +24,17 @@ export default class {
     core: {
       production: {
         bundle: <string>production_bundle,
-        hash: <string>require('crypto').createHash('md5').update(production_bundle).digest('hex')
+        hash: <string>require('crypto')
+          .createHash('md5')
+          .update(production_bundle)
+          .digest('hex')
       },
       development: {
         bundle: <string>development_bundle,
-        hash: <string>require('crypto').createHash('md5').update(development_bundle).digest('hex')
+        hash: <string>require('crypto')
+          .createHash('md5')
+          .update(development_bundle)
+          .digest('hex')
       }
     },
     modules: [],
@@ -62,17 +74,12 @@ export default class {
         this.setState({
           modules
         })
-        console.log(
-          chalk.greenBright('[inject:modules] ') +
-            chalk.yellowBright(
-              `successfully loaded ${chalk.magentaBright(
-                count.toString()
-              )} modules into memory`
-            )
-        )
+        Logger(['core', 'modules'], 'log', {
+          count: count
+        })
       })
       .catch(({ title, error }) => {
-        console.error(title, error)
+        Logger(['core', 'modules'], 'error', { title, error })
       })
   }
 

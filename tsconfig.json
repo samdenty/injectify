@@ -5,6 +5,7 @@
     "moduleResolution": "node",
     "lib": [
       "dom",
+      "es2017.string",
       "es7"
     ]
   },

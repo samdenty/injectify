@@ -67,7 +67,6 @@
     "js-obfuscator": "^0.1.2",
     "limiter": "^1.1.2",
     "localtunnel": "^1.8.3",
-    "mongo-escape": "^2.0.6",
     "mongodb": "^3.0.1",
     "node-yaml": "^3.1.1",
     "octonode": "^0.9.1",
@@ -75,7 +74,6 @@
     "perfy": "^1.1.2",
     "ps-node": "^0.1.6",
     "request": "^2.83.0",
-    "reverse-string": "0.0.6",
     "run-script-os": "^1.0.3",
     "shelljs": "^0.8.1",
     "socket.io": "^2.0.4",
@@ -94,6 +92,8 @@
   "nodemonConfig": {
     "ext": "js,json,yml,gql",
     "ignore": [
+      "logs/*",
+      "./node_modules/**/*",
       "./interface/**/*",
       "./ci/**/*",
       "./database/**/*",

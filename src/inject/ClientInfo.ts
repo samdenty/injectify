@@ -1,10 +1,10 @@
 import { SocketSession } from './definitions/session'
 
 import getIP from '../lib/getIP'
+import * as geoip from 'geoip-lite'
+import * as parseAgent from 'user-agent-parser'
+import * as twemoji from 'twemoji'
 const { flag } = require('country-emoji')
-const geoip = require('geoip-lite')
-const parseAgent = require('user-agent-parser')
-const twemoji = require('twemoji')
 
 export default (req: any, authReq: any, session: SocketSession.session) => {
   return new Promise((resolve) => {
