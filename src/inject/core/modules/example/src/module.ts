@@ -1,8 +1,8 @@
 /**
  * Import the Typescript typings
  */
-import ModuleTypings from '../../../definitions/module'
-declare const { Module, injectify, $ } : ModuleTypings
+import { Module, injectify, ServerExecution } from '../../../definitions/module'
+declare const $: ServerExecution
 
 /**
  * Place the Javascript here you want your module to execute

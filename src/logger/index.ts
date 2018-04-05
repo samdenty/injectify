@@ -51,7 +51,7 @@ export default function(
    * Log to console
    */
   console[type](
-    Block(category, chalk.bgBlackBright.black),
+    Block(category, chalk.bgBlackBright.whiteBright),
     Block(action, chalk[`${color}Bright`], true),
     ...log
   )

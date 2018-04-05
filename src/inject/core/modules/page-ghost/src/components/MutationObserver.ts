@@ -1,6 +1,5 @@
-import ModuleTypings from '../../../../definitions/module'
+import { Module, injectify } from '../../../../definitions/module'
 import { Mutation } from '../definitions/mutation'
-declare const { Module, injectify }: ModuleTypings
 
 export default class {
   listener = null

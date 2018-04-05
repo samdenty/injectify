@@ -1,16 +1,22 @@
 import { Injectify } from '../../../definitions/core'
-import Core from '../../../definitions/module'
+import * as Core from '../../../definitions/module'
+import { CurrentScope } from '../../../definitions/module/CurrentScope'
 declare const injectify: typeof Injectify
 import ErrorGuard from '../../lib/ErrorGuard'
+
+/// #if DEBUG
 import * as time from 'pretty-ms'
+import * as prettyBytes from 'pretty-bytes'
+import { byteLength } from 'byte-length'
+/// #endif
 
 export default class {
-  constructor(data: Core['ServerResponse']) {
+  constructor(data: Core.ServerResponse) {
     /**
      * Create the module object
      */
     const call = injectify.global.modules.calls[data.token]
-    var Module: Core['Module'] = {
+    var Module: typeof Core.Module = {
       name: data.name,
       token: data.token,
       params: call.params,
@@ -64,6 +70,11 @@ export default class {
       }
     }
 
+    var __CurrentScope__: CurrentScope = {
+      injectify,
+      Module
+    }
+
     if (!data.error) {
       /**
        * Evaluate the script
@@ -79,15 +90,18 @@ export default class {
       injectify.debugLog(
         'module',
         'warn',
-        `Executed module "${Module.name}" ${
-          Module.time ? `- ${time(Module.time)} ` : ''
-        }`,
+        `Executed module "${Module.name}" - ${prettyBytes(
+          byteLength(data.script)
+        )} ${Module.time ? `- ${time(Module.time)} ` : ''}`,
         Module
       )
       /// #endif
     } else {
-      if (data.error.message)
+      /// #if DEBUG
+      if (data.error.message) {
         injectify.error(`📦 ${data.error.message}`, Module)
+      }
+      /// #endif
       Module.reject(data.error.message)
     }
   }

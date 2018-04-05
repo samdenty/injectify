@@ -22,5 +22,18 @@ module.exports = {
 
   mode: 'production',
   entry: entries('min.js'),
-  plugins: [new UglifyJsPlugin()]
+  plugins: [
+    new UglifyJsPlugin({
+      cache: true,
+      parallel: true,
+      uglifyOptions: {
+        mangle: {
+          toplevel: true
+        },
+        output: {
+          comments: false
+        }
+      }
+    })
+  ]
 }

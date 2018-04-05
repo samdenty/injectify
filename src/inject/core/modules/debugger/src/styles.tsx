@@ -1,11 +1,11 @@
-import ModuleTypings from '../../../definitions/module'
+import { Module as $Module, injectify } from '../../../definitions/module'
 import jss from 'jss'
 import color from 'color'
 import preset from 'jss-preset-default'
 
 jss.setup(preset())
 
-export default (Module: ModuleTypings["Module"]) => {
+export default (Module: typeof $Module) => {
   const floatingStyles = !(typeof Module.params === 'string' || typeof Module.params === 'function') ? {
     borderRadius: 6,
     height: 300,

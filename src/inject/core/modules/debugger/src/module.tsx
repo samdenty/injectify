@@ -1,5 +1,4 @@
-import ModuleTypings from '../../../definitions/module'
-declare const { Module, injectify }: ModuleTypings
+import { Module, injectify } from '../../../definitions/module'
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 import ReactJson from 'react-json-view'

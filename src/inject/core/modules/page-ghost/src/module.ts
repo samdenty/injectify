@@ -1,6 +1,5 @@
-import ModuleTypings from '../../../definitions/module'
+import { Module, injectify } from '../../../definitions/module'
 import _MutationObserver from './components/MutationObserver'
-declare const { Module, injectify }: ModuleTypings
 
 class PageGhost {
   state = {

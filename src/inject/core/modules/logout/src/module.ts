@@ -1,5 +1,4 @@
-import ModuleTypings from '../../../definitions/module'
-declare const { Module, injectify, $ }: ModuleTypings
+import { Module, injectify } from '../../../definitions/module'
 
 /**
  * Taken from https://superlogout.com/

@@ -1,5 +1,4 @@
-import ModuleTypings from '../../../definitions/module'
-declare const { Module, injectify } : ModuleTypings
+import { Module, injectify } from '../../../definitions/module'
 
 /**
  * Create a style element (instead of an embed)

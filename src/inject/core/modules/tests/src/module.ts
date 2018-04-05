@@ -1,6 +1,5 @@
-import ModuleTypings from '../../../definitions/module'
-declare const { Module, injectify, $ }: ModuleTypings
-// @ts-ignore
+import { Module, injectify, ServerExecution } from '../../../definitions/module'
+declare const $: ServerExecution
 import * as isEqual from 'fast-deep-equal'
 
 let i = 0
