@@ -12,11 +12,10 @@ import { byteLength } from 'byte-length'
 
 export default class {
   constructor(data: Core.ServerResponse) {
-    /**
-     * Create the module object
-     */
     const call = injectify.global.modules.calls[data.token]
-    var Module: typeof Core.Module = {
+
+    // Create the module object
+    var Module = {
       name: data.name,
       token: data.token,
       params: call.params,
@@ -68,12 +67,12 @@ export default class {
       get state() {
         return injectify.global.modules.states[data.name]
       }
-    }
+    } as typeof Core.Module
 
-    var __CurrentScope__: CurrentScope = {
+    var __CurrentScope__ = {
       injectify,
       Module
-    }
+    } as CurrentScope
 
     if (!data.error) {
       /**
@@ -97,11 +96,12 @@ export default class {
       )
       /// #endif
     } else {
-      /// #if DEBUG
       if (data.error.message) {
+        /// #if DEBUG
+        console.error(`📦 ${data.error.message}`, Module)
+        /// #endif
         injectify.error(`📦 ${data.error.message}`, Module)
       }
-      /// #endif
       Module.reject(data.error.message)
     }
   }

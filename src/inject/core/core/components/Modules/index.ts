@@ -5,8 +5,10 @@ declare const injectify: typeof Injectify
 import * as Guid from 'guid'
 import Promise from '../../lib/Promise'
 
-export default class {
-  static loadModule(name: string, params?: any) {
+export namespace Modules {
+  export function loadModule(name: string, ...args: any[]) {
+    const params = args.length > 1 ? args : args[0]
+
     return new Promise((resolve, reject) => {
       let token = Guid.create()
       /**
@@ -36,7 +38,7 @@ export default class {
     })
   }
 
-  static loadApp(name: string, params?: any) {
+  export function loadApp(name: string, ...params) {
     return new Promise((resolve, reject) => {
       let type = 'production.min.js'
       /// #if DEBUG
@@ -45,14 +47,19 @@ export default class {
       LoadJS([
         `https://cdnjs.cloudflare.com/ajax/libs/react/16.2.0/umd/react.${type}`,
         `https://cdnjs.cloudflare.com/ajax/libs/react-dom/16.2.0/umd/react-dom.${type}`
-      ]).then(() => {
-        injectify.module(<any>name, params).then(resolve).catch(reject)
-      }).catch(error => {
-        injectify.error(error)
-        reject(error)
-      })
+      ])
+        .then(() => {
+          injectify
+            .module(name as any, ...params)
+            .then(resolve)
+            .catch(reject)
+        })
+        .catch((error) => {
+          injectify.error(error)
+          reject(error)
+        })
     })
   }
 
-  static loader = Loader
+  export const loader = Loader
 }

@@ -46,7 +46,8 @@ if (typeof Module.params == 'object') {
         /**
          * Remove proceeding ?
          */
-        if (request.body.slice(0, 1) === '?') request.body = request.body.slice(1)
+        if (request.body.slice(0, 1) === '?')
+          request.body = request.body.slice(1)
       } else if (typeof request.body === 'object') {
         request.body = serialize(request.body)
       }
@@ -105,8 +106,7 @@ if (injectify.info.platform === 'browser') {
         /**
          * Add a query string to prevent the server from sending a cached response
          */
-        if (request.random)
-          url += +new Date()
+        if (request.random) url += +new Date()
 
         /**
          * Make a request

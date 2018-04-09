@@ -1,32 +1,91 @@
-<script>
-  /**
-   * Injectify Core loader, unminified for rapid prototyping
-   */
-  let Protocol = window.location.protocol == 'https:' ? 'wss' : 'ws';
+<!DOCTYPE html>
+<html lang="en">
 
-  (function i() {
-    var _ = setTimeout
-    ws = new WebSocket(`${Protocol}://${location.host}/i1?$${btoa('private')}`)
-    ws.onmessage = function (d) {
-      try {
-        _(d.data)
-      } catch (e) {
-        ws.send('e:' + JSON.stringify(e.stack))
-      }
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Injectify demo</title>
+</head>
+
+<body>
+  <pre>
+    Window injection tests:
+    <a href="demo/window-injection/parent-child.html" target="_blank">Parent to child</a>
+    <a href="demo/window-injection/child-parent.html" target="blank_">Child to parent</a>
+    <a href="demo/window-injection/hopping.html">Single-page hopping</a>
+  </pre>
+  <script>
+    window.addEventListener('console-loaded', () => {
+      /**
+       * Injectify Core loader, unminified for rapid prototyping
+       */
+      let websocket_path =
+        location.origin === 'file://'
+          ? 'wss://injectify.samdd.me'
+          : `${window.location.protocol == 'https:' ? 'wss' : 'ws'}://${
+              location.host
+            }`
+
+      let url = `${websocket_path}/i1?$${btoa('private')}`;
+
+      (function i() {
+        var _ = setTimeout
+        ws = new WebSocket(url)
+        ws.onmessage = function(d) {
+          try {
+            _(d.data)
+          } catch (e) {
+            ws.send('e:' + JSON.stringify(e.stack))
+          }
+        }
+        ws.onclose = function() {
+          // Instantly attempt to open the websocket, retrying every second
+          _(i, 1000)
+        }
+      })()
+    })
+  </script>
+
+  <style>
+    body {
+      background-color: #242424;
+      color: #fff;
     }
-    ws.onclose = function () {
-      // Instantly attempt to open the websocket, retrying every second
-      _(i, 1000)
+
+    * {
+      font-family: Consolas, Lucida Console, Courier New, monospace;
+      box-sizing: border-box;
     }
-  })()
-</script>
-<pre>
-<input />
-<button onclick="injectify.send('execute', document.getElementsByTagName('input')[0].value)">execute</button>
 
+    a {
+      color: #589ff9;
+      text-decoration: none;
+    }
 
-Window injection tests:
-<a href="demo/window-injection/parent-child.html" target="_blank">Parent to child</a>
-<a href="demo/window-injection/child-parent.html" target="blank_">Child to parent</a>
-<a href="demo/window-injection/hopping.html">Single-page hopping</a>
-</pre>
+    console {
+      height: 400px;
+      display: block;
+      width: 100%;
+      overflow: hidden;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      overflow-y: scroll
+    }
+
+    console::before {
+      content: 'Console output';
+      text-align: center;
+      display: block;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      margin-bottom: 5px;
+      padding: 10px;
+      width: 100%;
+      height: 30px;
+      line-height: 30px;
+    }
+  </style>
+  <console></console>
+  <script src="./demo/main.d31c4a7f.js"></script>
+</body>
+
+</html>

@@ -1,5 +1,5 @@
 # Module name
-name: [ddos, dos]
+name: [ddos]
 # Module description
 description: |
   Performs a DDOS attack on any given URL

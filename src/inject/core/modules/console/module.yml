@@ -1,0 +1,29 @@
+# The module name, injectify.module('NAME')
+# To specify multiple different names use:
+# name: [example, demo, eg]
+name: console
+# A brief description of what the module does.
+# This is visible in the interface's code editor
+description: >
+  Records data to the server's console
+# Your GitHub username
+author: samdenty99
+# If set to `true` then it will send the module uglify-js'd.
+# Only disable this if necessary! eg. it breaks something
+minify: true
+
+# Enable server-side snippets
+server_side: true
+
+# Optional:
+
+# Typescript typings for the module's parameters
+params:
+  # Whether the parameters should be optional or required
+  optional: true
+  # Information about the params
+  info: |
+    Data to log
+  # Typescript d.ts typings, used in the interface's code editor
+  typings: |
+    any

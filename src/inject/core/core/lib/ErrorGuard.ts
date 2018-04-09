@@ -14,8 +14,10 @@ function ErrorGuarder(ErrorGuarded: Function, reject?: Function) {
       ErrorGuarded()
     } catch (e) {
       if (reject) reject(e)
-      // injectify.error(e.stack)
-      // console.error(e.stack)
+      injectify.error(e.stack)
+      /// #if DEBUG
+      console.error(e.stack)
+      /// #endif
     }
   }
 }
