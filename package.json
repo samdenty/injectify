@@ -59,7 +59,7 @@
     "express-graphql": "^0.6.12",
     "express-prettify": "0.0.10",
     "express-rate-limit": "^2.11.0",
-    "fs-extra": "^5.0.0",
+    "fs-extra": "^6.0.0",
     "geoip-lite": "^1.2.1",
     "graphql": "^0.13.2",
     "html-minifier": "^3.5.9",
