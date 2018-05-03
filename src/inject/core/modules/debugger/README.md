@@ -9,7 +9,7 @@ injectify.app('debugger')
 // undefined
 
 
-injectify.app('debugger', 'document.body').then((element) => {
+injectify.app('debugger', document.body).then((element) => {
     console.log(element)
 })
 // undefined
