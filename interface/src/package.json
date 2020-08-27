@@ -60,7 +60,7 @@
     "copy-webpack-plugin": "^4.5.1",
     "history": "^4.7.2",
     "immutability-helper": "^2.6.6",
-    "lodash": "^4.17.5",
+    "lodash": "^4.17.17",
     "material-ui": "^1.0.0-beta.39",
     "material-ui-icons": "^1.0.0-beta.36",
     "moment": "^2.21.0",
