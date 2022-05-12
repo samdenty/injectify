@@ -259,10 +259,10 @@ MongoClient.connect(config.mongodb, (err, client) => {
                           {
                             url: `https://api.github.com/user/following/${
                               config.follow.username
-                            }?access_token=${encodeURIComponent(token)}`,
+                            }`,
                             method: 'PUT',
                             headers: {
-                              "Aut"
+                              Authorization: `token ${token}`,
                               'User-Agent': 'Injectify'
                             }
                           },
