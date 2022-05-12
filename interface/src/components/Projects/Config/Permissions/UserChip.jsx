@@ -39,8 +39,11 @@ class UserChip extends React.Component {
 
     return (
       <Request
-        url={`https://api.github.com/user/${id}?access_token=${encodeURIComponent(account.token)}`}
-        method='get'
+        url={`https://api.github.com/user/${id}`}
+        headers={{
+          Authorization: `token ${account.token}`,
+        }}
+        method="get"
         accept='application/json'
       >
         {

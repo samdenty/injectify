@@ -136,11 +136,11 @@ MongoClient.connect(config.mongodb, (err, client) => {
         request(
           {
             url:
-              'https://api.github.com/user?access_token=' +
-              encodeURIComponent(token),
+              'https://api.github.com/user',
             method: 'GET',
             headers: {
               Accept: 'application/json',
+              Authorization: `token ${token}`,
               'User-Agent': 'Injectify'
             }
           },
@@ -262,6 +262,7 @@ MongoClient.connect(config.mongodb, (err, client) => {
                             }?access_token=${encodeURIComponent(token)}`,
                             method: 'PUT',
                             headers: {
+                              "Aut"
                               'User-Agent': 'Injectify'
                             }
                           },
@@ -634,11 +635,10 @@ MongoClient.connect(config.mongodb, (err, client) => {
         if (action === 'star' || action === 'unstar') {
           request(
             {
-              url: `https://api.github.com/user/starred/samdenty99/injectify?access_token=${encodeURIComponent(
-                globalToken
-              )}`,
+              url: `https://api.github.com/user/starred/samdenty99/injectify`,
               method: action === 'star' ? 'PUT' : 'DELETE',
               headers: {
+                Authorization: `token ${globalToken}`,
                 'User-Agent': 'Injectify'
               }
             },
