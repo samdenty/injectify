@@ -88,8 +88,8 @@
     "react-syntax-highlighter": "^7.0.2",
     "redux": "^3.7.2",
     "redux-thunk": "^2.2.0",
-    "socket.io": "^2.0.4",
-    "socket.io-client": "^2.0.4",
+    "socket.io": "^3.0.0",
+    "socket.io-client": "^3.0.0",
     "source-map-loader": "^0.2.3",
     "tapable": "^1.0.0-beta.5",
     "uglifyjs-webpack-plugin": "^1.2.4"
