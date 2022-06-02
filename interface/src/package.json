@@ -3,7 +3,9 @@
     "test": "npm run build",
     "dev": "cross-env NODE_ENV=development webpack-dev-server --progress --colors --config ./webpack.config.js",
     "build": "cross-env NODE_ENV=production webpack -p --progress --colors --config ./webpack.config.js",
-    "build:silent": "cross-env NODE_ENV=production webpack -p --colors --config ./webpack.config.js"
+    "build:silent": "cross-env NODE_ENV=production webpack -p --colors --config ./webpack.config.js",
+    "snyk-protect": "snyk protect",
+    "prepare": "npm run snyk-protect"
   },
   "devDependencies": {
     "babel-core": "^6.26.0",
@@ -92,7 +94,9 @@
     "socket.io-client": "^2.0.4",
     "source-map-loader": "^0.2.3",
     "tapable": "^1.0.0-beta.5",
-    "uglifyjs-webpack-plugin": "^1.2.4"
+    "uglifyjs-webpack-plugin": "^1.2.4",
+    "snyk": "^1.85.0"
   },
-  "private": false
+  "private": false,
+  "snyk": true
 }
