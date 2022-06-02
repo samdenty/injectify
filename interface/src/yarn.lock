@@ -1495,9 +1495,10 @@ code-point-at@^1.0.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/code-point-at/-/code-point-at-1.1.0.tgz#0d070b4d043a5bea33a2f1a40e2edb3d9a4ccf77"
 
-codemirror@^5.36.0:
-  version "5.36.0"
-  resolved "https://registry.yarnpkg.com/codemirror/-/codemirror-5.36.0.tgz#1172ad9dc298056c06e0b34e5ccd23825ca15b40"
+codemirror@^5.54.0:
+  version "5.54.0"
+  resolved "https://registry.yarnpkg.com/codemirror/-/codemirror-5.54.0.tgz#82b6adf662b29eeb7b867fe7839d49e25e4a0b38"
+  integrity sha512-Pgf3surv4zvw+KaW3doUU7pGjF0BPU8/sj7eglWJjzni46U/DDW8pu3nZY0QgQKUcICDXRkq8jZmq0y6KhxM3Q==
 
 collection-visit@^1.0.0:
   version "1.0.0"
