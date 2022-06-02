@@ -27,7 +27,9 @@
     "server": "yarn run server:dev",
     "tsc": "tsc || echo done. && yarn run modules && cd src/inject/core && yarn run build",
     "tsc:silent": "tsc || echo done. && yarn run modules && cd src/inject/core && yarn run build:silent",
-    "modules": "cd src/inject/ && node TypingsGenerator.js"
+    "modules": "cd src/inject/ && node TypingsGenerator.js",
+    "snyk-protect": "snyk protect",
+    "prepare": "yarn run snyk-protect"
   },
   "repository": {
     "type": "git",
@@ -83,7 +85,8 @@
     "uglify-es": "^3.2.2",
     "user-agent-parser": "^0.6.0",
     "uuid": "^3.2.1",
-    "ws": "^5.1.0"
+    "ws": "^5.1.0",
+    "snyk": "^1.258.2"
   },
   "devDependencies": {
     "cross-env": "^5.1.3",
@@ -99,5 +102,6 @@
       "./database/**/*",
       "./src/inject/core/modules/*/src"
     ]
-  }
+  },
+  "snyk": true
 }
